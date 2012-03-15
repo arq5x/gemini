@@ -27,19 +27,18 @@ The workflow will be as follows:
     
 2. Explore the variation therein using shortcuts, custom queries, etc.  Here are a few brief examples:
 
-# compute the transition / transversion ratio
-    pop get -s tstv my.db
-
-# compute the site frequency spectrum
-    pop get -s sfs my.db
+    # compute the transition / transversion ratio
+        pop get -s tstv my.db
     
-# extract all transitions with a call rate > 95%
-    pop get -q "select * from variants where sub_type = 'ts' and call_rate >= 0.95"
-    
-# extract the nucleotide diversity for each variant
-    pop get -q "select chrom, start, end, pi from variants"
-    
-# combine ``pop`` with ``bedtools`` to compute nucleotide 
-# diversity estimates across 100kb windows
-    pop get -q "select chrom, start, end, pi from variants" | \
-    bedtools map -a hg19.windows.bed -b - -c 4 -o mean
+    # compute the site frequency spectrum
+        pop get -s sfs my.db
+        
+    # extract all transitions with a call rate > 95%
+        pop get -q "select * from variants where sub_type = 'ts' and call_rate >= 0.95"
+        
+    # extract the nucleotide diversity for each variant
+        pop get -q "select chrom, start, end, pi from variants"
+        
+    # combine ``pop`` with ``bedtools`` to compute nucleotide diversity estimates across 100kb windows
+        pop get -q "select chrom, start, end, pi from variants" | \
+        bedtools map -a hg19.windows.bed -b - -c 4 -o mean
