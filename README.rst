@@ -1,8 +1,6 @@
 pop - a lightweight db framework for disease and population genetics.
 ======================================================================
 
-.. DANGER::
-
 ``pop`` is not yet ready for safe consumption, but stay tuned...we're working hard on it.
 
 If you are okay living dangerously and potentially being disappointed, you can install and play with ``pop`` as follows::

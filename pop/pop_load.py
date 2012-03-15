@@ -9,76 +9,13 @@ import infotag
 import effect
 import stats
 import database
-import annotations
 import pysam
 import sqlite3
 import cPickle
 import numpy as np
 import zlib
-import collections
+import annotations
 from optparse import OptionParser
-
-
-def get_cyto_info(var, cytoband_handle):
-    """
-    Returns a comma-separated list of the chromosomal
-    cytobands that a variant overlaps.
-    """
-    # our annotation files enforce a "chr*" naming scheme.
-    # enforce that the VCF file chroms abide by this.
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-    cyto_band = ''
-    for hit in cytoband_handle.fetch(chrom, var.start, var.end, 
-                                     parser=pysam.asBed()): 
-        if len(cyto_band) > 0:
-            cyto_band += "," + chrom + hit.name
-        else: 
-            cyto_band += chrom + hit.name
-    return cyto_band if len(cyto_band) > 0 else None
-
-
-def get_dbsnp_info(var, dbsnp):
-    """
-    Returns a suite of annotations from dbSNP
-    """
-    DbSnpInfo = collections.namedtuple("DbSnpInfo", "rs_ids in_omim clin_sig")
-    
-    chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
-    rs_ids  = []
-    clin_sigs = []
-    in_omim = 0
-    for hit in dbsnp.fetch(chrom, var.start, var.end, parser=pysam.asVCF()):
-        rs_ids.append(hit.id)
-        # load each VCF INFO key/value pair into a DICT
-        info_map = {}
-        for info in hit.info.split(";"):
-            if info.find("=") > 0:
-                (key, value) = info.split("=")
-                info_map[key] = value
-        # is the variant in OMIM?
-        if info_map['SAO'] == 0 and info_map['OM']:
-            in_omim = 1
-        # what is the clinical significance of the variant?
-        if info_map.get('SCS') is not None:
-            clin_sigs.append(info_map['SCS'])
-
-    rs_str = ",".join(rs_ids) if len(rs_ids) > 0 else None
-    clin_sigs_str = ",".join(clin_sigs) if len(clin_sigs) > 0 else None
-    return DbSnpInfo(rs_str, in_omim, clin_sigs_str)
-
-
-def get_rmsk_info(var, rmsk):
-    """
-    Returns a comma-separated list of annotated repeats
-    that overlap a variant.  Derived from the UCSC rmsk track 
-    """
-    # our annotation files enforce a "chr*" naming scheme.
-    # enforce that the VCF file chroms abide by this.
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-    rmsk_hits = []
-    for hit in rmsk.fetch(chrom, var.start, var.end, parser=pysam.asBed()):
-        rmsk_hits.append(hit.name)
-    return ",".join(rmsk_hits) if len(rmsk_hits) > 0 else None
 
 
 def get_hwe_likelihood(obs_hom_ref, obs_het, obs_hom_alt, aaf):
@@ -105,8 +42,7 @@ def get_hwe_likelihood(obs_hom_ref, obs_het, obs_hom_alt, aaf):
     x2_het     = ((obs_het - exp_het)**2)/exp_het if exp_het > 0 else 0
     x2_statistic = x2_hom_ref + x2_hom_alt + x2_het
     # return the p-value (null hyp. is that the genotypes are in HWE)
-    # 1 degree of freedom b/c 3 genotypes, 2 alleles (3-2)
-    
+    # 1 degree of freedom b/c 3 genotypes, 2 alleles (3-2)    
     # estimate the inbreeding coefficient (F_hat):
     # F_hat = 1 - O_hets / E_hets
     inbreeding_coeff = (1.0 - (float(obs_het)/(float(exp_het)))) if obs_het > 0 else None
@@ -137,7 +73,7 @@ def interpret_impact(var):
     return impact_all
 
 
-def prepare_variation(args, var, v_id, annos):
+def prepare_variation(args, var, v_id):
     
     # these metric require that genotypes are present in the file
     call_rate = None
@@ -159,10 +95,11 @@ def prepare_variation(args, var, v_id, annos):
         aaf = extract_aaf(var)
     
     # collect annotations from pop's custom annotation files
-    cyto_band  = get_cyto_info(var, annos['cytoband'])
-    dbsnp_info = get_dbsnp_info(var, annos['dbsnp'])
+    cyto_band  = annotations.get_cyto_info(var)
+    dbsnp_info = annotations.get_dbsnp_info(var)
     in_dbsnp   = 0 if dbsnp_info.rs_ids is None else 1
-    rmsk_hits  = get_rmsk_info(var, annos['rmsk'])
+    rmsk_hits  = annotations.get_rmsk_info(var)
+    in_cpg     = annotations.get_cpg_island_info(var)
 
     # impact is a list of impacts for this variant
     impacts = interpret_impact(var) 
@@ -200,7 +137,7 @@ def prepare_variation(args, var, v_id, annos):
                           packed_gt_bases, packed_gt_types, packed_gt_phases,
                           call_rate,
                           in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, db_snp_info.clin_sig,
-                          cyto_band, rmsk_hits, 
+                          cyto_band, rmsk_hits, in_cpg,
                           hom_ref, het, 
                           hom_alt, unknown, aaf,
                           hwe_p_value, pi_hat, inbreeding_coeff,
@@ -222,7 +159,7 @@ def prepare_variation(args, var, v_id, annos):
                packed_gt_bases, packed_gt_types, packed_gt_phases,
                call_rate,
                in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
-               cyto_band, rmsk_hits, 
+               cyto_band, rmsk_hits, in_cpg,
                hom_ref, het, 
                hom_alt, unknown, aaf,
                hwe_p_value, pi_hat, inbreeding_coeff,
@@ -261,7 +198,7 @@ def prepare_samples(samples, ped_file, sample_to_id, cursor):
 
 def populate_db_from_vcf(args, cursor, buffer_size = 10000):
     # collect of the the add'l annotation files
-    annos = annotations.load_annos()
+    annotations.load_annos()
     # open the VCF file for reading
     vcf_reader = vcf.VCFReader(open(args.vcf), 'rb')
 
@@ -279,7 +216,7 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
     for var in vcf_reader:
         print var
         # process add'l attributes for this variant and add it to the buffer
-        variant_effects = prepare_variation(args, var, v_id, annos)
+        variant_effects = prepare_variation(args, var, v_id)
         # add the impact of this variant on each gene/transcript
         for var_effect in variant_effects:
             var_buffer.append(var_effect)
