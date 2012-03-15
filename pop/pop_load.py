@@ -3,8 +3,9 @@
 import os.path
 import sys
 import re
-import vcf
+import vcf # PyVCF
 from ped import pedformat
+import infotag
 import effect
 import stats
 import database
@@ -16,93 +17,6 @@ import numpy as np
 import zlib
 from optparse import OptionParser
 
-
-def extract_aaf(var):
-    """
-    Extract the AAF directly from the INFO field.
-    """
-    return var.INFO.get('AF')
-
-def get_depth(var):
-    """
-    Return the depth of aligned sequences for a given variant,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('DP')
-
-def get_strand_bias(var):
-    """
-    Return the likelihood of strand bias,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('SB')
-
-def get_rms_map_qual(var):
-    """
-    Return the RMS mapping quality,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('MQ')
-
-def get_homopol_run(var):
-    """
-    Return the largest contiguous homopolymer run of the variant allele,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('HRun')
-
-def get_map_qual_zero(var):
-    """
-    Return the total counts of mapping quality zero reads,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('MQ0')
-
-def get_num_of_alleles(var):
-    """
-    return the total number of alleles in called genotypes,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('AN')
-
-def get_frac_dels(var):
-    """
-    Returns the fraction of reads containing spanning deletions,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('Dels')
-
-def get_haplotype_score(var):
-    """
-    Returns consistency of the site with two segregating haplotypes,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('HaplotypeScore')
-
-def get_quality_by_depth(var):
-    """
-    Returns the quality by depth or the variant confidence,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('QD')
-
-def get_allele_count(var):
-    """
-    Returns allele counts in genotypes,
-    or None if it isn't present in the VCF.
-    """
-    allele_counts = var.INFO.get('AC')
-    if allele_counts is not None:
-        return allele_counts[0]
-    else:
-        return None
-
-def get_allele_bal(var):
-    """
-    Returns allele balance for hets,
-    or None if it isn't present in the VCF.
-    """
-    return var.INFO.get('AB')
 
 def get_cyto_band(var, cytoband_handle):
     """
@@ -124,6 +38,7 @@ def get_cyto_band(var, cytoband_handle):
 
 def compare_to_dbsnp(var, dbsnp_handle):
     """
+    Returns a suite of annotations from dbSNP
     """
     chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
     rs_ids  = []
@@ -272,10 +187,10 @@ def prepare_variation(args, var, v_id, annos):
                           impact.transcript, impact.exonic, impact.exon,
                           impact.coding, impact.codon_change, impact.aa_change,
                           impact.effect_name, impact.effect_severity, impact.is_lof,
-                          get_depth(var), get_strand_bias(var), get_rms_map_qual(var),
-                          get_homopol_run(var), get_map_qual_zero(var), get_num_of_alleles(var),
-                          get_frac_dels(var), get_haplotype_score(var), get_quality_by_depth(var),
-                          get_allele_count(var), get_allele_bal(var)]
+                          infoinfotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
+                          infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
+                          infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
+                          infotag.get_allele_count(var), infotag.get_allele_bal(var)]
             variant_list.append(var_impact)
         return variant_list
     else:
@@ -293,10 +208,10 @@ def prepare_variation(args, var, v_id, annos):
                None, None, None,
                None, None, None,
                None, None, None,
-               get_depth(var), get_strand_bias(var), get_rms_map_qual(var),
-               get_homopol_run(var), get_map_qual_zero(var), get_num_of_alleles(var),
-               get_frac_dels(var), get_haplotype_score(var), get_quality_by_depth(var),
-               get_allele_count(var), get_allele_bal(var)]]
+               infoinfotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
+               infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
+               infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
+               infotag.get_allele_count(var), infotag.get_allele_bal(var)]]
 
 
 def prepare_samples(samples, ped_file, sample_to_id, cursor):
