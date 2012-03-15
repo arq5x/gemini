@@ -1,4 +1,4 @@
-pop - a unique database framework for disease and population genetics.
+pop - a lightweight db framework for disease and population genetics.
 ======================================================================
 
 .. DANGER::
