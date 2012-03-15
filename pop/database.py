@@ -51,6 +51,7 @@ def create_tables(cursor):
                                                             in_dbsnp bool,                 \
                                                             rs_ids text default NULL,      \
                                                             in_omim integer,               \
+                                                            clin_sigs text default NULL,   \
                                                             cyto_band text,                \
                                                             num_hom_ref integer,           \
                                                             num_het integer,               \

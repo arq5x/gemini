@@ -32,6 +32,12 @@ in_dbsnp          BOOL          | Is this variant found in dbSnp (build 135)?
 rs_ids            STRING        | A comma-separated list of rs ids for variants present in dbsnp
 in_omim           BOOL          | 0 : Absence of the variant in OMIM database
                                 | 1 : Presence of the variant in OMIM database
+clins_sigs        STRING        | A comma-separated list of clinical significance scores for each
+                                | of the rs_ids that the variant overlaps in dbsnp. Per dbSNP:
+                                | 0 : unknown   1 : untested   2 : non-pathogenic
+                                | 3 : probable-non-pathogenic  4 : probable-pathogenic
+                                | 5 : pathogenic  6 : drug-response  7 : histocompatibility
+                                | 255 : other
 cyto_band         STRING        Chromosomal cytobands that a variant overlaps
 num_hom_ref       INTEGER       The total number of of homozygotes for the reference (``ref``) allele
 num_het           INTEGER       The total number of heterozygotes observed.

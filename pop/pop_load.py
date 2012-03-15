@@ -15,6 +15,7 @@ import sqlite3
 import cPickle
 import numpy as np
 import zlib
+import collections
 from optparse import OptionParser
 
 
@@ -40,26 +41,33 @@ def compare_to_dbsnp(var, dbsnp_handle):
     """
     Returns a suite of annotations from dbSNP
     """
+    DbSnpInfo = collections.namedtuple("DbSnpInfo", "rs_ids in_omim clin_sig")
+    
     chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
     rs_ids  = []
+    clin_sigs = []
     in_omim = 0
     #for hit in dbsnp_handle.fetch(chrom, start, end):
     for hit in dbsnp_handle.fetch(chrom, var.start, var.end, 
                                   parser=pysam.asVCF()):
+       
         rs_ids.append(hit.id)
         # load each VCF INFO key/value pair into a DICT
-        # to test if the variant if germline (SAO=0)
-        # and is flagged as an OMIM variant (OM)
         info_map = {}
         for info in hit.info.split(";"):
             if info.find("=") > 0:
                 (key, value) = info.split("=")
                 info_map[key] = value
+        # is the variant in OMIM?
         if info_map['SAO'] == 0 and info_map['OM']:
             in_omim = 1
-    # build and return a string of the overlapping rs_ids
-    rs_string = ",".join(rs_ids) if len(rs_ids) > 0 else None
-    return rs_string, in_omim
+        # what is the clinical significance of the variant?
+        if info_map.get('SCS') is not None:
+            clin_sigs.append(info_map['SCS'])
+
+    rs_str = ",".join(rs_ids) if len(rs_ids) > 0 else None
+    clin_sigs_str = ",".join(clin_sigs) if len(clin_sigs) > 0 else None
+    return DbSnpInfo(rs_str, in_omim, clin_sigs_str)
 
 
 def get_hwe_likelihood(obs_hom_ref, obs_het, obs_hom_alt, aaf):
@@ -140,9 +148,9 @@ def prepare_variation(args, var, v_id, annos):
         aaf = extract_aaf(var)
     
     # collect annotations from pop's custom annotation files
-    cyto_band = get_cyto_band(var, annos['cytoband'])
-    (rs_ids, in_omim) = compare_to_dbsnp(var, annos['dbsnp'])
-    in_dbsnp = 0 if rs_ids is None else 1
+    cyto_band  = get_cyto_band(var, annos['cytoband'])
+    dbsnp_info = compare_to_dbsnp(var, annos['dbsnp'])
+    in_dbsnp = 0 if dbsnp_info.rs_ids is None else 1
 
     # impact is a list of impacts for this variant
     impacts = interpret_impact(var) 
@@ -179,7 +187,7 @@ def prepare_variation(args, var, v_id, annos):
                           var.var_type, var.var_subtype, 
                           packed_gt_bases, packed_gt_types, packed_gt_phases,
                           call_rate,
-                          in_dbsnp, rs_ids, in_omim,
+                          in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, db_snp_info.clin_sig,
                           cyto_band, hom_ref, het, 
                           hom_alt, unknown, aaf,
                           hwe_p_value, pi_hat, inbreeding_coeff,
@@ -200,7 +208,7 @@ def prepare_variation(args, var, v_id, annos):
                var.var_type, var.var_subtype,
                packed_gt_bases, packed_gt_types, packed_gt_phases,
                call_rate,
-               in_dbsnp, rs_ids, in_omim,
+               in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
                cyto_band, hom_ref, het, 
                hom_alt, unknown, aaf,
                hwe_p_value, pi_hat, inbreeding_coeff,
@@ -246,7 +254,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
 
