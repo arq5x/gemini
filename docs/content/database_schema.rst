@@ -42,7 +42,9 @@ cyto_band         STRING        Chromosomal cytobands that a variant overlaps
 rmsk              STRING        | A comma-separated list of RepeatMasker annotations that the variant overlaps.
                                 | Each hit is of the form: ``name_class_family``
 in_cpg_island     BOOL          | Does the variant overlap a CpG island?.
-                                | Based on UCSC Regulation > CpG Islands > cpgIslandExt track
+                                | Based on UCSC: Regulation > CpG Islands > cpgIslandExt 
+in_segdup         BOOL          | Does the variant overlap a segmental duplication?.
+                                | Based on UCSC: Variation&Repeats > Segmental Dups > genomicSuperDups track
 num_hom_ref       INTEGER       The total number of of homozygotes for the reference (``ref``) allele
 num_het           INTEGER       The total number of heterozygotes observed.
 num_hom_alt       INTEGER       The total number of homozygotes for the reference (``alt``) allele

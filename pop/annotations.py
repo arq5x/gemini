@@ -36,6 +36,17 @@ def load_annos():
         annos[anno] = pysam.Tabixfile(anno_files[anno])
 
 
+def get_cpg_island_info(var):
+    """
+    Returns a boolean indicating whether or not the
+    variant overlaps a CpG island 
+    """
+    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    for hit in annos['cpg_island'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+        return True
+    return False
+
+
 def get_cyto_info(var):
     """
     Returns a comma-separated list of the chromosomal
@@ -94,12 +105,12 @@ def get_rmsk_info(var):
     return ",".join(rmsk_hits) if len(rmsk_hits) > 0 else None
 
 
-def get_cpg_island_info(var):
+def get_segdup_info(var):
     """
     Returns a boolean indicating whether or not the
-    variant overlaps a CpG island 
+    variant overlaps a known segmental duplication. 
     """
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-    for hit in annos['cpg_island'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+    for hit in annos['segdup'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
         return True
     return False

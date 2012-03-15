@@ -100,6 +100,7 @@ def prepare_variation(args, var, v_id):
     in_dbsnp   = 0 if dbsnp_info.rs_ids is None else 1
     rmsk_hits  = annotations.get_rmsk_info(var)
     in_cpg     = annotations.get_cpg_island_info(var)
+    in_segdup  = annotations.get_segdup_info(var)
 
     # impact is a list of impacts for this variant
     impacts = interpret_impact(var) 
@@ -138,6 +139,7 @@ def prepare_variation(args, var, v_id):
                           call_rate,
                           in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, db_snp_info.clin_sig,
                           cyto_band, rmsk_hits, in_cpg,
+                          in_segdup,
                           hom_ref, het, 
                           hom_alt, unknown, aaf,
                           hwe_p_value, pi_hat, inbreeding_coeff,
@@ -160,6 +162,7 @@ def prepare_variation(args, var, v_id):
                call_rate,
                in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
                cyto_band, rmsk_hits, in_cpg,
+               in_segdup,
                hom_ref, het, 
                hom_alt, unknown, aaf,
                hwe_p_value, pi_hat, inbreeding_coeff,
