@@ -69,24 +69,6 @@ allele_count      INTEGER       Allele counts in genotypes
 allele_bal        FLOAT         Allele balance for hets
 ================  ========      ===========================================================================
 
-
-
-The ``genotypes`` table
-----------------------
-
-==============  =========   =============================
-column name     type        notes        
-==============  =========   =============================
-variant_id      INTEGER     PRIMARY_KEY
-sample_id       INTEGER     PRIMARY_KEY
-genotype        STRING      The genotype for the variant
-type            INTEGER     * 0 : homozygous for reference allele
-                            * 1 : heterozygous
-                            * 2 : homozygous for alternate allele
-phased          BOOL        * 0 : genotype is unphased
-                            * 1 : genotype is phased
-==============  =========   =============================
-
 |
 
 The ``samples`` table
