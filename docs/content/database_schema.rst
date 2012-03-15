@@ -54,9 +54,9 @@ hwe               FLOAT         The Chi-square probability of deviation from HWE
 pi                FLOAT         The computed nucleotide diversity (pi) for the site
 gene              STRING        What gene does the variant impact?
 transcript        STRING        Possible affected transcripts
-exonic            BOOL          Does the variant affect an exon?
+is_exonic         BOOL          Does the variant affect an exon?
 exon              STRING        Exon information for the variants that are exonic
-coding            BOOL          Does the variant fall in a coding region (excludes 3' & 5' UTR's of exons)?
+is_coding         BOOL          Does the variant fall in a coding region (excludes 3' & 5' UTR's of exons)?
 codon_change      STRING        What is the codon change?
 aa_change         STRING        What is the amino acid change?
 impact            STRING        Impacts due to variation (ref.impact category)

@@ -12,8 +12,8 @@ def index_variation(cursor):
     cursor.execute('''create index var_in_dbsnp_idx on variants(in_dbsnp)''')
     cursor.execute('''create index var_in_call_rate_idx on variants(call_rate)''')
     cursor.execute('''create index var_gene_idx on variants(gene)''')
-    cursor.execute('''create index var_exonic_idx on variants(exonic)''')
-    cursor.execute('''create index var_coding_idx on variants(coding)''')
+    cursor.execute('''create index var_exonic_idx on variants(is_exonic)''')
+    cursor.execute('''create index var_coding_idx on variants(is_coding)''')
     cursor.execute('''create index var_impact_idx on variants(impact)''')
     cursor.execute('''create index var_depth_idx on variants(depth)''')
 
@@ -50,7 +50,7 @@ def create_tables(cursor):
                                                             call_rate float,               \
                                                             in_dbsnp bool,                 \
                                                             rs_ids text default NULL,      \
-                                                            in_omim integer,               \
+                                                            in_omim bool,                  \
                                                             clin_sigs text default NULL,   \
                                                             cyto_band text default NULL,   \
                                                             rmsk text default NULL,        \
@@ -66,14 +66,14 @@ def create_tables(cursor):
                                                             pi float,                      \
                                                             gene text,                     \
                                                             transcript text,               \
-                                                            exonic bool,                   \
+                                                            is_exonic bool,                \
                                                             exon text,                     \
-                                                            coding bool,                   \
+                                                            is_coding bool,                \
                                                             codon_change text,             \
                                                             aa_change text,                \
                                                             impact text,                   \
                                                             impact_severity text,          \
-                                                            is_lof integer,                \
+                                                            is_lof bool,                   \
                                                             depth integer default NULL,                 \
                                                             strand_bias float default NULL,             \
                                                             rms_map_qual float default NULL,            \
