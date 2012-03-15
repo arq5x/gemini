@@ -19,7 +19,7 @@ import collections
 from optparse import OptionParser
 
 
-def get_cyto_band(var, cytoband_handle):
+def get_cyto_info(var, cytoband_handle):
     """
     Returns a comma-separated list of the chromosomal
     cytobands that a variant overlaps.
@@ -37,7 +37,7 @@ def get_cyto_band(var, cytoband_handle):
     return cyto_band if len(cyto_band) > 0 else None
 
 
-def compare_to_dbsnp(var, dbsnp_handle):
+def get_dbsnp_info(var, dbsnp):
     """
     Returns a suite of annotations from dbSNP
     """
@@ -47,10 +47,7 @@ def compare_to_dbsnp(var, dbsnp_handle):
     rs_ids  = []
     clin_sigs = []
     in_omim = 0
-    #for hit in dbsnp_handle.fetch(chrom, start, end):
-    for hit in dbsnp_handle.fetch(chrom, var.start, var.end, 
-                                  parser=pysam.asVCF()):
-       
+    for hit in dbsnp.fetch(chrom, var.start, var.end, parser=pysam.asVCF()):
         rs_ids.append(hit.id)
         # load each VCF INFO key/value pair into a DICT
         info_map = {}
@@ -68,6 +65,20 @@ def compare_to_dbsnp(var, dbsnp_handle):
     rs_str = ",".join(rs_ids) if len(rs_ids) > 0 else None
     clin_sigs_str = ",".join(clin_sigs) if len(clin_sigs) > 0 else None
     return DbSnpInfo(rs_str, in_omim, clin_sigs_str)
+
+
+def get_rmsk_info(var, rmsk):
+    """
+    Returns a comma-separated list of annotated repeats
+    that overlap a variant.  Derived from the UCSC rmsk track 
+    """
+    # our annotation files enforce a "chr*" naming scheme.
+    # enforce that the VCF file chroms abide by this.
+    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    rmsk_hits = []
+    for hit in rmsk.fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+        rmsk_hits.append(hit.name)
+    return ",".join(rmsk_hits) if len(rmsk_hits) > 0 else None
 
 
 def get_hwe_likelihood(obs_hom_ref, obs_het, obs_hom_alt, aaf):
@@ -148,9 +159,10 @@ def prepare_variation(args, var, v_id, annos):
         aaf = extract_aaf(var)
     
     # collect annotations from pop's custom annotation files
-    cyto_band  = get_cyto_band(var, annos['cytoband'])
-    dbsnp_info = compare_to_dbsnp(var, annos['dbsnp'])
-    in_dbsnp = 0 if dbsnp_info.rs_ids is None else 1
+    cyto_band  = get_cyto_info(var, annos['cytoband'])
+    dbsnp_info = get_dbsnp_info(var, annos['dbsnp'])
+    in_dbsnp   = 0 if dbsnp_info.rs_ids is None else 1
+    rmsk_hits  = get_rmsk_info(var, annos['rmsk'])
 
     # impact is a list of impacts for this variant
     impacts = interpret_impact(var) 
@@ -188,7 +200,8 @@ def prepare_variation(args, var, v_id, annos):
                           packed_gt_bases, packed_gt_types, packed_gt_phases,
                           call_rate,
                           in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, db_snp_info.clin_sig,
-                          cyto_band, hom_ref, het, 
+                          cyto_band, rmsk_hits, 
+                          hom_ref, het, 
                           hom_alt, unknown, aaf,
                           hwe_p_value, pi_hat, inbreeding_coeff,
                           impact.gene, 
@@ -209,7 +222,8 @@ def prepare_variation(args, var, v_id, annos):
                packed_gt_bases, packed_gt_types, packed_gt_phases,
                call_rate,
                in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
-               cyto_band, hom_ref, het, 
+               cyto_band, rmsk_hits, 
+               hom_ref, het, 
                hom_alt, unknown, aaf,
                hwe_p_value, pi_hat, inbreeding_coeff,
                None, 

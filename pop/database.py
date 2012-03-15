@@ -52,7 +52,8 @@ def create_tables(cursor):
                                                             rs_ids text default NULL,      \
                                                             in_omim integer,               \
                                                             clin_sigs text default NULL,   \
-                                                            cyto_band text,                \
+                                                            cyto_band text default NULL,   \
+                                                            rmsk text default NULL,        \
                                                             num_hom_ref integer,           \
                                                             num_het integer,               \
                                                             num_hom_alt integer,           \
@@ -106,7 +107,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
 

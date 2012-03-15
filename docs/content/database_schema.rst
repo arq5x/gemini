@@ -5,9 +5,9 @@ Database Schema
 
 The ``variants`` table
 ----------------------
-================  ========      ===========================================================================
+================  ========      ===============================================================================
 column_name       type          notes
-================  ========      ===========================================================================
+================  ========      ===============================================================================
 chrom             STRING        The chromosome on which the variant resides
 start             INTEGER       The 0-based start position. 
 end               INTEGER       The 1-based end position.
@@ -39,6 +39,9 @@ clins_sigs        STRING        | A comma-separated list of clinical significanc
                                 | 5 : pathogenic  6 : drug-response  7 : histocompatibility
                                 | 255 : other
 cyto_band         STRING        Chromosomal cytobands that a variant overlaps
+rmsk              STRING        | A comma-separated list of RepeatMasker annotations that the variant overlaps.
+                                | Each hit is of the form: ``name_class_family``
+                                | See http://genome.ucsc.edu/cgi-bin/hgTables for details.
 num_hom_ref       INTEGER       The total number of of homozygotes for the reference (``ref``) allele
 num_het           INTEGER       The total number of heterozygotes observed.
 num_hom_alt       INTEGER       The total number of homozygotes for the reference (``alt``) allele
@@ -67,7 +70,7 @@ haplotype_score   FLOAT         Consistency of the site with two segregating hap
 qual_depth        FLOAT         Variant confidence or quality by depth
 allele_count      INTEGER       Allele counts in genotypes
 allele_bal        FLOAT         Allele balance for hets
-================  ========      ===========================================================================
+================  ========      ===============================================================================
 
 |
 
