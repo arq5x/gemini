@@ -3,6 +3,12 @@ import sys
 import os
 import subprocess
 
+"""
+    This installation script was inspired by a helpful suggestion from
+    Brad Chapman, and is based on his code at:
+    https://github.com/chapmanb/bcbb/blob/master/nextgen/tests/test_automated_analysis.py
+"""
+
 def install_annotation_files():
     """Download required annotation files.
     """
@@ -32,8 +38,8 @@ def _download_to_dir(url, dirname):
     print "* downloading " + url + " to " + dirname + "\n"
     stub = os.path.basename(url)
     # download data file to pwd
-    cl = ["curl", "-OL", url]
-    subprocess.check_call(cl)
+    cmd = ["curl", "-OL", url]
+    subprocess.check_call(cmd)
     # move to system directory (/usr/share/pop/data) and remove from pwd
     dest = os.path.join(dirname, stub)
     os.rename(stub, dest)
