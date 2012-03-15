@@ -1,6 +1,8 @@
 pop - a unique database framework for disease and population genetics.
 ======================================================================
 
+.. DANGER::
+
 ``pop`` is not yet ready for safe consumption, but stay tuned...we're working hard on it.
 The vision is outlined below.
 
