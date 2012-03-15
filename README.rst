@@ -18,6 +18,8 @@ and provide a wealth of useful annotations.  It will allow the user to explore g
 variation using custom SQL queries, a large set of pre-defined analysis "shortcuts",
 and it will eventually support data visualization and interactive plotting.
 
+In short, we intend for it to be a "one stop shop" for large scale human population research.
+
 
 The workflow will be as follows:
 
