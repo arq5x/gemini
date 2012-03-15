@@ -27,23 +27,29 @@ The workflow will be as follows:
 
     pop load -v my.vcf my.db
     
-2. Explore the variation therein using shortcuts, custom queries, etc.  Here are a few brief examples::
+2. Explore the variation therein using shortcuts, custom queries, etc.  Here are a few brief examples
 
-    # compute the transition / transversion ratio
-        pop get -s tstv my.db
+a. compute the transition / transversion ratio::
 
-    # compute the site frequency spectrum
-        pop get -s sfs my.db
+    pop get -s tstv my.db
 
-    # extract all transitions with a call rate > 95%
-        pop get -q "select * from variants where sub_type = 'ts' and call_rate >= 0.95" my.db
+b. compute the site frequency spectrum::
 
-    # extract all loss-of-function variants with an alternate allele frequency < 1%
-        pop get -q "select * from variants where is_lof = 1 and aaf >= 0.01" my.db
+    pop get -s sfs my.db
 
-    # extract the nucleotide diversity for each variant
-        pop get -q "select chrom, start, end, pi from variants" my.db
+c. extract all transitions with a call rate > 95%::
 
-    # combine ``pop`` with ``bedtools`` to compute nucleotide diversity estimates across 100kb windows
-        pop get -q "select chrom, start, end, pi from variants" my.db | \
-        bedtools map -a hg19.windows.bed -b - -c 4 -o mean
+    pop get -q "select * from variants where sub_type = 'ts' and call_rate >= 0.95" my.db
+
+d. extract all loss-of-function variants with an alternate allele frequency < 1%::
+
+    pop get -q "select * from variants where is_lof = 1 and aaf >= 0.01" my.db
+
+e. extract the nucleotide diversity for each variant::
+    
+    pop get -q "select chrom, start, end, pi from variants" my.db
+
+f. combine ``pop`` with ``bedtools`` to compute nucleotide diversity estimates across 100kb windows::
+
+    pop get -q "select chrom, start, end, pi from variants" my.db | \
+    bedtools map -a hg19.windows.bed -b - -c 4 -o mean
