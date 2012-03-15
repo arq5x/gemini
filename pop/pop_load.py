@@ -242,33 +242,7 @@ def prepare_samples(samples, ped_file, sample_to_id, cursor):
                            ped.maternal, ped.sex, ped.phenotype, ped.ethnicity]
         else:
             sample_list = [i, sample, None, None, None, None, None, None]
-        insert_sample(cursor, sample_list)
-
-
-def insert_variation(cursor, buffer):
-    """
-    Populate the variants table with each variant in the buffer.
-    """
-    cursor.execute("BEGIN TRANSACTION")
-    cursor.executemany('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?)', \
-                                                     buffer)
-    cursor.execute("END")
-
-
-
-def insert_sample(cursor,sample_list):
-    """
-    Populate the samples with sample ids, names, and 
-    other indicative information.
-    """
-    cursor.execute("BEGIN TRANSACTION")
-    cursor.execute("""insert into samples values (?,?,?,?,?,?,?,?)""", sample_list)
-    cursor.execute("END")
-
+        database.insert_sample(cursor, sample_list)
 
 
 def populate_db_from_vcf(args, cursor, buffer_size = 10000):
@@ -303,12 +277,12 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
             total_loaded += len(var_buffer)
             sys.stderr.write(str(v_id) + " variants processed.\n")
             # add the buffers of records to the db
-            insert_variation(cursor, var_buffer)
+            database.insert_variation(cursor, var_buffer)
             # reset for the next batch
             var_buffer = []
         v_id += 1
     # final load to the database
-    insert_variation(cursor, var_buffer)
+    database.insert_variation(cursor, var_buffer)
     sys.stderr.write(str(v_id) + " variants processed.\n")
 
 

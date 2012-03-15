@@ -97,6 +97,29 @@ def create_tables(cursor):
                                       
 
 
+def insert_variation(cursor, buffer):
+    """
+    Populate the variants table with each variant in the buffer.
+    """
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.executemany('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?,?,?,?,?,?,?,?,?)', \
+                                                     buffer)
+    cursor.execute("END")
+
+
+def insert_sample(cursor,sample_list):
+    """
+    Populate the samples with sample ids, names, and 
+    other indicative information.
+    """
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.execute("""insert into samples values (?,?,?,?,?,?,?,?)""", sample_list)
+    cursor.execute("END")
+
 
 def close_and_commit(cursor, connection):
     """
@@ -104,6 +127,7 @@ def close_and_commit(cursor, connection):
     """
     connection.commit()
     cursor.close
+
 
 def empty_tables(cursor):
     cursor.execute('''delete * from variation''')
