@@ -187,7 +187,7 @@ def prepare_variation(args, var, v_id, annos):
                           impact.transcript, impact.exonic, impact.exon,
                           impact.coding, impact.codon_change, impact.aa_change,
                           impact.effect_name, impact.effect_severity, impact.is_lof,
-                          infoinfotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
+                          infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                           infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
                           infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
                           infotag.get_allele_count(var), infotag.get_allele_bal(var)]
@@ -208,7 +208,7 @@ def prepare_variation(args, var, v_id, annos):
                None, None, None,
                None, None, None,
                None, None, None,
-               infoinfotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
+               infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
                infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
                infotag.get_allele_count(var), infotag.get_allele_bal(var)]]
