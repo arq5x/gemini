@@ -4,7 +4,13 @@ pop - a unique database framework for disease and population genetics.
 .. DANGER::
 
 ``pop`` is not yet ready for safe consumption, but stay tuned...we're working hard on it.
-The vision is outlined below.
+
+If you are okay living dangerously and potentially being disappointed, you can install and play with ``pop`` as follows::
+
+    python setup.py install
+    sudo ./install-data.py
+    
+
 
 Overview
 --------
@@ -25,9 +31,9 @@ In short, we intend for it to be a "one stop shop" for large scale human populat
 
 The workflow will be as follows:
 
-1. Import a VCF file into the ``pop`` framework::
-
-    pop load -v my.vcf my.db
+1. Import a VCF file into the ``pop`` framework. We recommend first annotating your VCF with SnpEff (other tools will be supported soon)::
+    
+    pop load -v my.snpEff.vcf my.db
     
 2. Explore the variation therein using shortcuts, custom queries, etc.  Here are a few brief examples
 
