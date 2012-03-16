@@ -59,3 +59,24 @@ The workflow will be as follows:
 
     pop get -q "select chrom, start, end, pi from variants" my.db | \
     bedtools map -a hg19.windows.bed -b - -c 4 -o mean
+
+
+Urgent areas of improvement
+---------------------------
+1. Full SQL support for the BLOB gts, gt_types, and gt_phases fields.  Currently, some
+support is present, but the SQL "parser/interceptor" doesn't handle all cases.  The
+goal is to be able to allow "slicing" into the BLOB's to support retrieval of a individual genotypes.  E.g.::
+
+    pop get -q "select chrom, start, ref, alt, gts.NA12878, gts.NA12879 from variants" my.db
+    chr1	100	A	G	A/A	A/G
+    chr1	200	C	G	C/G	G/G
+
+2. Support for multiple third-party "functional annotation" tools.  ``pop`` depends upon tools like ``SnpEff``, 
+``VEP``, and ``ANNOVAR`` for predicting the impact of variants on genes.  Currently, we support SnpEff, but our
+goal is to support other tools as well.  Currently, this is a bit complex as these tools are changing rapidly, 
+and each tool reports functiona consequences a bit differently.
+
+3. Add a table that stores a vector of genotypes for each sample.  This will facilitate fast computation of many
+popgen metrics.
+
+4. Move variant impacts to a separate table such that the ``variants`` table only contains one row per variant?
