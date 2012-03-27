@@ -12,7 +12,7 @@ If you are okay living dangerously and potentially being disappointed, you can i
 
 Overview
 --------
-The intent of `gemini` is to provide a simple, flexible, and powerful
+The intent of ``gemini`` is to provide a simple, flexible, and powerful
 framework for exploring genetic variation for disease and population genetics.
 We aim to leverage the expressive power of SQL while attempting to overcome the fundamental challenges associated with using 
 databases for very large (e.g. 1,000,000 variants times 1,000 samples 
@@ -40,13 +40,26 @@ into a ``sqlite`` database framework, ``gemini`` provides a flexible database-dr
 
 - A simple to use framework for developers to create new tools.
 
+Current annotations that are derived for each variant are listed below.  We emphasize that this is a very preliminary list.
+Using the framework we have developed, it is very easy for us to add new annotations. Therefore, we intend to add many other annotations
+including: ENCODE regulatory and histone modification tracks, conservation, GWAS analyses, etc.:
+
+- cyto_band: the chromosome band based on Giemsa staining
+- dbSNP status: is the variant in dbSNP? what are the rsIds?
+- OMIM status
+- Clinical significance
+- RepeatMasker annotations
+- Overlap with CpG Islands
+- Overlap with segmental duplications
 
 
 
 Basic workflow
 ---------------
 
-1. Import a VCF file into the ``gemini`` framework. We recommend first annotating your VCF with SnpEff (other tools will be supported soon)::
+1. Import a VCF file into the ``gemini`` framework. We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools may be supported soon).  
+   In the process of loading the VCF into the database framework, many other annotations are calculated for each variant and stored for 
+   subsequent querying/analysis::
     
     gemini load -v my.snpEff.vcf my.db
     
