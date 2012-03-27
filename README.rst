@@ -1,4 +1,4 @@
-gemini - a lightweight db framework for disease and geminiulation genetics.
+gemini - a lightweight db framework for disease and population genetics.
 ======================================================================
 
 ``gemini`` is not yet ready for safe consumption, but stay tuned...we're working hard on it.
@@ -13,18 +13,18 @@ If you are okay living dangerously and potentially being disappointed, you can i
 Overview
 --------
 The vision for gemini is simple: to provide a simple, flexible, and powerful
-framework for exploring genetic variation for disease and geminiulation genetics.
+framework for exploring genetic variation for disease and population genetics.
 We aim to utilize the expressive power of databases (particularly SQL) while
 attempting to overcome the fundamental challenges associated with using 
 databases for very large (e.g. 1,000,000 variants times 1,000 samples 
 yields one billion genotypes) datasets.
 
-``Pop`` will support standard geminiulation genetics metrics, genetic disease models,
+``Pop`` will support standard population genetics metrics, genetic disease models,
 and provide a wealth of useful annotations.  It will allow the user to explore genetic
 variation using custom SQL queries, a large set of pre-defined analysis "shortcuts",
 and it will eventually support data visualization and interactive plotting.
 
-In short, we intend for it to be a "one stop shop" for large scale human geminiulation research.
+In short, we intend for it to be a "one stop shop" for large scale human population research.
 
 
 The workflow will be as follows:
