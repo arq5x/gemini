@@ -1,5 +1,5 @@
-gemini - a lightweight db framework for disease and population genetics.
-======================================================================
+gemini - a framework for mining genome variation.
+=================================================
 
 ``gemini`` is not yet ready for safe consumption, but stay tuned...we're working hard on it.
 
@@ -12,22 +12,39 @@ If you are okay living dangerously and potentially being disappointed, you can i
 
 Overview
 --------
-The vision for gemini is simple: to provide a simple, flexible, and powerful
+The intent of `gemini` is to provide a simple, flexible, and powerful
 framework for exploring genetic variation for disease and population genetics.
-We aim to utilize the expressive power of databases (particularly SQL) while
-attempting to overcome the fundamental challenges associated with using 
+We aim to leverage the expressive power of SQL while attempting to overcome the fundamental challenges associated with using 
 databases for very large (e.g. 1,000,000 variants times 1,000 samples 
 yields one billion genotypes) datasets.
 
-``Pop`` will support standard population genetics metrics, genetic disease models,
-and provide a wealth of useful annotations.  It will allow the user to explore genetic
-variation using custom SQL queries, a large set of pre-defined analysis "shortcuts",
-and it will eventually support data visualization and interactive plotting.
+By augmenting VCF files with many informative annotations, and converting the information
+into a ``sqlite`` database framework, ``gemini`` provides a flexible database-driven API for:
 
-In short, we intend for it to be a "one stop shop" for large scale human population research.
+- *Ad hoc* queries.  Return all loss-of-function INDELs::
+
+	$ gemini get -q "select * from variants where type = 'indel' and is_lof = 1" my.db
+
+- Pre-defined analysis short-cuts. Compute the ratio of transitions to transversions::
+
+	$ gemini get -s tstv my.db
+	transitions	transversions	ts/tv
+	1,302,778	511,578		2.547
+
+- A framework for exploring genetic variation in the context of built-in genome annotations. Return the coordinates, alleles, and clinical significance of all OMIM variants with an alternate allele frequency l.t.e 1%::
+	
+	$ gemini get -q "select chrom, start, ref, alt, clin_sigs \
+                     from variants where in_omim = 1 and aaf < 0.1" my.db
+
+- A platform for genomic discovery
+
+- A simple to use framework for developers to create new tools.
 
 
-The workflow will be as follows:
+
+
+Basic workflow
+---------------
 
 1. Import a VCF file into the ``gemini`` framework. We recommend first annotating your VCF with SnpEff (other tools will be supported soon)::
     
@@ -61,7 +78,7 @@ The workflow will be as follows:
     bedtools map -a hg19.windows.bed -b - -c 4 -o mean
 
 
-Urgent areas of improvement
+Active areas of improvement
 ---------------------------
 1. Full SQL support for the BLOB gts, gt_types, and gt_phases columns.  Currently, some
 support is present, but the SQL "parser/interceptor" doesn't handle all cases.  The
