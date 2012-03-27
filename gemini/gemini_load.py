@@ -217,7 +217,6 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
     var_buffer = []
     total_loaded = 0
     for var in vcf_reader:
-        print var
         # process add'l attributes for this variant and add it to the buffer
         variant_effects = prepare_variation(args, var, v_id)
         # add the impact of this variant on each gene/transcript

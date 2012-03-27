@@ -11,25 +11,25 @@ if 'setuptools.extension' in sys.modules:
     m = sys.modules['setuptools.extension']
     m.Extension.__dict__ = m._Extension.__dict__
 
-version_py = os.path.join(os.path.dirname(__file__), 'pop', 'version.py')
+version_py = os.path.join(os.path.dirname(__file__), 'gemini', 'version.py')
 version = open(version_py).read().strip().split('=')[-1].replace('"','')
 long_description = """
-``pop`` is a database framework for exploring genetic variation'
+``gemini`` is a database framework for exploring genetic variation'
 """
 
 setup(
-        name="pop",
+        name="gemini",
         version=version,
         install_requires=['numpy>=1.6.0', 'pyparsing>=1.5.6', 'pysam>=0.6', 'pyvcf>=0.4.2'],
         requires = ['python (>=2.5, <3.0)'],
-        packages=['pop',
-                  'pop.scripts'],
+        packages=['gemini',
+                  'gemini.scripts'],
         author="Aaron Quinlan and Uma Paila",
         description='A database framework for exploring genetic variation',
         long_description=long_description,
         url="none",
-        package_dir = {'pop': "pop"},
-        scripts = ['pop/scripts/pop'],
+        package_dir = {'gemini': "gemini"},
+        scripts = ['gemini/scripts/gemini'],
         author_email="arq5x@virginia.edu",
         classifiers=[
             'Development Status :: 4 - Beta',

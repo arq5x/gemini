@@ -1,4 +1,0 @@
-#!/usr/bin/env python
-
-import pop.scripts
-pop.pop_main.main()

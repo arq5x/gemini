@@ -4,14 +4,14 @@ import os.path
 import sys
 import argparse
 import textwrap
-import pop_load, pop_get, pop_update
+import gemini_load, gemini_get, gemini_update
 
 def main():
     
     #########################################
     # create the top-level parser
     #########################################
-    parser = argparse.ArgumentParser(prog='pop')
+    parser = argparse.ArgumentParser(prog='gemini')
     subparsers = parser.add_subparsers()
 
 
@@ -29,7 +29,7 @@ def main():
                             help='Genotypes exist in the file, but should not be stored.', default=False)
     parser_load.add_argument('--no-genotypes', dest='no_genotypes', action='store_true',
                             help='There are no genotypes in the file (e.g. some 1000G VCFs)', default=False)
-    parser_load.set_defaults(func=pop_load.load)
+    parser_load.set_defaults(func=gemini_load.load)
 
 
     #######################################################
@@ -60,7 +60,7 @@ def main():
                            "  sfs             - report the site frequency spectrum of the variants.\n"
                            "  mds             - returns the genetic distance between any two samples.\n"
                            )
-    parser_get.set_defaults(func=pop_get.get)
+    parser_get.set_defaults(func=gemini_get.get)
 
 
     #######################################################
@@ -75,7 +75,7 @@ def main():
                            "Options are:\n"
                            "        append - add a new column to the table (-f).\n"
                            "        update - update an existing column in the table (-f).\n")
-    parser_get.set_defaults(func=pop_update.apply)
+    parser_get.set_defaults(func=gemini_update.apply)
 
 
     #######################################################

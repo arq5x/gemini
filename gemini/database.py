@@ -97,8 +97,10 @@ def create_tables(cursor):
                                                             phenotype text default NULL,  \
                                                             ethnicity text default NULL,  \
                                                             PRIMARY KEY(sample_id ASC))''')
-                                      
 
+    cursor.execute('''create table if not exists sample_genotypes   (sample_id integer,    \
+                                                                     gt_types BLOB,  \
+                                                                     PRIMARY KEY(sample_id ASC))''')
 
 def insert_variation(cursor, buffer):
     """

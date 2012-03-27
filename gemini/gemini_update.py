@@ -3,7 +3,7 @@
 import os
 import sys
 import sqlite3
-import pop_constants
+import gemini_constants
 
 
 def validate_file_for_variants_table(file):
