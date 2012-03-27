@@ -37,8 +37,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pop'
-copyright = u'2011, EPFL BBCF'
+project = u'gemini'
+copyright = u'2012'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -107,12 +107,12 @@ html_short_title = project + " v" + release
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'pop-logo.png'
+html_logo = 'gemini.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = 'pop-logo.png'
+html_favicon = 'gemini.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -164,7 +164,7 @@ html_show_sphinx = False
 htmlhelp_basename = 'trackdoc'
 
 # Google analytics
-googleanalytics_id = "UA-24167610-15"
+#googleanalytics_id = "UA-24167610-15"
 
 # -- Options for LaTeX output --------------------------------------------------
 

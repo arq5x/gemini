@@ -2,58 +2,58 @@
 Quick start
 ###########
 
-`pop` is designed to allow researchers to explore genetic variation contained in a `VCF <http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41>`_ file.
-The basic workflow for working with pop is outlined below.
+`gemini` is designed to allow researchers to explore genetic variation contained in a `VCF <http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41>`_ file.
+The basic workflow for working with `gemini` is outlined below.
 
 
-1. Importing a VCF file into the `pop` framework.
+1. Importing VCF files.
 -------------------------------------------------
 
 Assuming you have a valid VCF file produced by standard variation discovery programs (e.g., GATK, FreeBayes, etc.), 
-one loads the VCF into the `pop` framework with the **load** submodule::
+one loads the VCF into the `gemini` framework with the **load** submodule::
 
-    pop load -v my.vcf my.db
+    gemini load -v my.vcf my.db
 
-In this step, `pop` reads and loads the my.vcf file into a SQLite database named my.db, whose structure is described `here <http://nowhere>`_.
-While loading the database, `pop` computes many additional population genetics statistics that support downstream analyses. It also stores
+In this step, `gemini` reads and loads the my.vcf file into a SQLite database named my.db, whose structure is described `here <http://nowhere>`_.
+While loading the database, `gemini` computes many additional population genetics statistics that support downstream analyses. It also stores
 the genotypes for each sample at each variant in an efficient data structure that minimizes the database size.
 
 
-2. Querying the `pop` database using SQL queries.
+2. `gemini` queries.
 -------------------------------------------------
 
 If you are familiar with SQL, `pop` allows you to directly query the database in search of interesting variants via the `-q` option.
 For example, here is a query to identify all novel, loss-of-function variants in your database::
 
-    pop get -q "select * from variants where is_lof = 1 and in_dbsnp = 0" my.db
+    gemini get -q "select * from variants where is_lof = 1 and in_dbsnp = 0" my.db
 
 
 Or, we can ask for all variants that substantially deviate from Hardy-Weinberg equilibrium::
 
-    pop get -q "select * from variants where hwe < 0.01" my.db
+    gemini get -q "select * from variants where hwe < 0.01" my.db
 
 
-3. Querying the `pop` database using "shortcuts".
+3. `gemini` shortcuts.
 -------------------------------------------------
 We have also developed a number of "shortcuts" (-s option) that allow one to quickly answer common questions without writing 
 sophisticated SQL queries::
 
 1. Compute the transition / transversion ratio::
 
-    pop get -s tstv my.db
+    gemini get -s tstv my.db
 
 2. Principal component analysis::
 
-    pop get -s pca my.db
+    gemini get -s pca my.db
     
 3. ???::
 
-    pop get -s ??? my.db
+    gemini get -s ??? my.db
 
 !!!!Uma, add a few more shortcut examples.
 
 
-4. Adding your own annotations to the database.
+4. Custom annotations.
 ---------------------------------------------------
 To do.
 
