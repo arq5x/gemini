@@ -110,3 +110,5 @@ and each tool reports functional consequences a bit differently.
 popgen metrics.
 
 4. Move variant impacts to a separate table such that the ``variants`` table only contains one row per variant?
+
+5. Add ESP allele frequency variation as an annotation!
