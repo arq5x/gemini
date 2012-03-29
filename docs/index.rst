@@ -16,6 +16,7 @@ Table of contents
 
    content/installation
    content/quick_start
+   content/functional_annotation
    content/database_schema
    content/bugs
    content/licensing

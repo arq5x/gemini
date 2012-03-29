@@ -112,3 +112,11 @@ popgen metrics.
 4. Move variant impacts to a separate table such that the ``variants`` table only contains one row per variant?
 
 5. Add ESP allele frequency variation as an annotation!
+
+	- ESP5400.snps.vcf.tar.gz from the ESP variant server website.
+
+6. Add GERP score.
+
+7. Add KEGG
+
+8. Add COSMIC
