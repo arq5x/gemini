@@ -3,6 +3,7 @@
 import os.path
 import sys
 import re
+import collections
 import vcf # PyVCF
 from ped import pedformat
 import infotag
@@ -42,7 +43,7 @@ def get_hwe_likelihood(obs_hom_ref, obs_het, obs_hom_alt, aaf):
     x2_het     = ((obs_het - exp_het)**2)/exp_het if exp_het > 0 else 0
     x2_statistic = x2_hom_ref + x2_hom_alt + x2_het
     # return the p-value (null hyp. is that the genotypes are in HWE)
-    # 1 degree of freedom b/c 3 genotypes, 2 alleles (3-2)    
+    # 1 degree of freedom b/c 3 genotypes, 2 alleles (3-2)
     # estimate the inbreeding coefficient (F_hat):
     # F_hat = 1 - O_hets / E_hets
     inbreeding_coeff = (1.0 - (float(obs_het)/(float(exp_het)))) if obs_het > 0 else None
@@ -126,54 +127,42 @@ def prepare_variation(args, var, v_id):
     packed_gt_types  = sqlite3.Binary(zlib.compress(cPickle.dumps(gt_types, cPickle.HIGHEST_PROTOCOL), 9))
     packed_gt_phases = sqlite3.Binary(zlib.compress(cPickle.dumps(gt_phases, cPickle.HIGHEST_PROTOCOL), 9))
     packed_gt_bases = sqlite3.Binary(zlib.compress(cPickle.dumps(gt_bases, cPickle.HIGHEST_PROTOCOL), 9))
-
-    variant_list = []
+    
     # were functional impacts predicted by SnpEFF or VEP?
+    # if so, build up a row for each of the impacts / transcript
+    variant_impacts = []
+    is_exonic = False
+    is_coding = False
+    is_lof    = False
     if impacts is not None:
         for idx, impact in enumerate(impacts):
-            var_impact = [var.CHROM, var.start, var.end, 
-                          v_id, (idx+1), var.REF, 
-                          ','.join(var.ALT), var.QUAL, filter,
-                          var.var_type, var.var_subtype, 
-                          packed_gt_bases, packed_gt_types, packed_gt_phases,
-                          call_rate,
-                          in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, db_snp_info.clin_sig,
-                          cyto_band, rmsk_hits, in_cpg,
-                          in_segdup,
-                          hom_ref, het, 
-                          hom_alt, unknown, aaf,
-                          hwe_p_value, pi_hat, inbreeding_coeff,
-                          impact.gene, 
-                          impact.transcript, impact.exonic, impact.exon,
-                          impact.coding, impact.codon_change, impact.aa_change,
-                          impact.effect_name, impact.effect_severity, impact.is_lof,
-                          infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
-                          infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
-                          infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
-                          infotag.get_allele_count(var), infotag.get_allele_bal(var)]
-            variant_list.append(var_impact)
-        return variant_list
-    else:
-        return [[var.CHROM, var.start, var.end, 
-               v_id, 1, var.REF, 
-               ','.join(var.ALT), var.QUAL, filter,
-               var.var_type, var.var_subtype,
-               packed_gt_bases, packed_gt_types, packed_gt_phases,
-               call_rate,
-               in_dbsnp, dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
+            var_impact = [v_id, (idx+1), impact.gene, 
+                          impact.transcript, impact.exonic, impact.coding,
+                          impact.is_lof, impact.exon, impact.codon_change, 
+                          impact.aa_change, impact.effect_name, impact.effect_severity]
+            variant_impacts.append(var_impact)
+            if impact.exonic == True: is_exonic = True
+            if impact.coding == True: is_coding = True
+            if impact.is_lof == True: is_lof    = True
+
+    # construct the core variant record.
+    # 1 row per variant to VARIANTS table
+    variant = [var.CHROM, var.start, var.end, 
+               v_id, var.REF, ','.join(var.ALT), 
+               var.QUAL, filter, var.var_type, 
+               var.var_subtype, packed_gt_bases, packed_gt_types,
+               packed_gt_phases, call_rate, in_dbsnp,
+               dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
                cyto_band, rmsk_hits, in_cpg,
-               in_segdup,
-               hom_ref, het, 
+               in_segdup, hom_ref, het,
                hom_alt, unknown, aaf,
-               hwe_p_value, pi_hat, inbreeding_coeff,
-               None, 
-               None, None, None,
-               None, None, None,
-               None, None, None,
+               hwe_p_value, inbreeding_coeff, pi_hat,
+               is_exonic, is_coding, is_lof,
                infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
                infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
-               infotag.get_allele_count(var), infotag.get_allele_bal(var)]]
+               infotag.get_allele_count(var), infotag.get_allele_bal(var)]
+    return variant, variant_impacts
 
 
 def prepare_samples(samples, ped_file, sample_to_id, cursor):
@@ -215,27 +204,36 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
     # load the VCF file into the variant and genotype tables
     v_id = 1
     var_buffer = []
+    var_impacts_buffer = []
+    
     total_loaded = 0
     for var in vcf_reader:
-        # process add'l attributes for this variant and add it to the buffer
-        variant_effects = prepare_variation(args, var, v_id)
-        # add the impact of this variant on each gene/transcript
-        for var_effect in variant_effects:
-            var_buffer.append(var_effect)
+        (variant, variant_impacts) = prepare_variation(args, var, v_id)
+        # add the core variant info to the variant buffer
+        var_buffer.append(variant)
+        # add each of the impact for this variant (1 per gene/transcript)
+        for var_impact in variant_impacts:
+            var_impacts_buffer.append(var_impact)
+        
         # only infer genotypes if requested
         if not args.noload_genotypes and not args.no_genotypes:
             pass
-        # load the buffer to the database if it is full
-        if len(var_buffer) >= buffer_size:
+        
+        # buffer full:
+        # insert the buffer records into to the database
+        if len(var_impacts_buffer) >= buffer_size:
             total_loaded += len(var_buffer)
             sys.stderr.write(str(v_id) + " variants processed.\n")
-            # add the buffers of records to the db
             database.insert_variation(cursor, var_buffer)
+            database.insert_variation_impacts(cursor, var_impacts_buffer)
             # reset for the next batch
             var_buffer = []
+            var_impacts_buffer = []
+            
         v_id += 1
     # final load to the database
     database.insert_variation(cursor, var_buffer)
+    database.insert_variation_impacts(cursor, var_impacts_buffer)
     sys.stderr.write(str(v_id) + " variants processed.\n")
 
 

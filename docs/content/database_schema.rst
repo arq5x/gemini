@@ -5,14 +5,13 @@ Database Schema
 
 The ``variants`` table
 ----------------------
-================  ========      ===============================================================================
+================  ========      ====================================================================================
 column_name       type          notes
-================  ========      ===============================================================================
+================  ========      ====================================================================================
 chrom             STRING        The chromosome on which the variant resides
 start             INTEGER       The 0-based start position. 
 end               INTEGER       The 1-based end position.
 variant_id        INTEGER       PRIMARY_KEY
-anno_id           INTEGER       PRIMARY_KEY (Based on variant transcripts)
 ref               STRING        Reference allele
 alt               STRING        Alternate alele for the variant
 qual              INTEGER       Quality score for the assertion made in ALT
@@ -52,16 +51,9 @@ num_unknown       INTEGER       The total number of of unknown genotypes
 aaf               FLOAT         The observed allele frequency for the alternate allele
 hwe               FLOAT         The Chi-square probability of deviation from HWE (assumes random mating)
 pi                FLOAT         The computed nucleotide diversity (pi) for the site
-gene              STRING        What gene does the variant impact?
-transcript        STRING        Possible affected transcripts
-is_exonic         BOOL          Does the variant affect an exon?
-exon              STRING        Exon information for the variants that are exonic
-is_coding         BOOL          Does the variant fall in a coding region (excludes 3' & 5' UTR's of exons)?
-codon_change      STRING        What is the codon change?
-aa_change         STRING        What is the amino acid change?
-impact            STRING        Impacts due to variation (ref.impact category)
-impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
-is_lof            BOOL          Based on the value of the impact col, is the variant LOF?
+is_exonic         BOOL          Does the variant affect an exon for >= 1transcript?
+is_coding         BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
+is_lof            BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
 depth             INTEGER       The number of aligned sequence reads that led to this variant call
 strand_bias       FLOAT         Strand bias at the variant position
 rms_map_qual      FLOAT         RMS mapping quality, a measure of variance of quality scores
@@ -73,6 +65,27 @@ haplotype_score   FLOAT         Consistency of the site with two segregating hap
 qual_depth        FLOAT         Variant confidence or quality by depth
 allele_count      INTEGER       Allele counts in genotypes
 allele_bal        FLOAT         Allele balance for hets
+================  ========      ====================================================================================
+
+|
+
+The ``variant_impacts`` table
+----------------------
+================  ========      ===============================================================================
+column_name       type          notes
+================  ========      ===============================================================================
+variant_id        INTEGER       PRIMARY_KEY (Foreign key to `variants` table)
+anno_id           INTEGER       PRIMARY_KEY (Based on variant transcripts)
+gene              STRING        The gene affected by the variant.
+transcript        STRING        The transcript affected by the variant.
+is_exonic         BOOL          Does the variant affect an exon for this transcript?
+is_coding         BOOL          Does the variant fall in a coding region (excludes 3' & 5' UTR's of exons)?
+is_lof            BOOL          Based on the value of the impact col, is the variant LOF?
+exon              STRING        Exon information for the variants that are exonic
+codon_change      STRING        What is the codon change?
+aa_change         STRING        What is the amino acid change?
+impact            STRING        Impacts due to variation (ref.impact category)
+impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
 ================  ========      ===============================================================================
 
 |

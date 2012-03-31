@@ -158,10 +158,9 @@ def get_query(args, c):
         return sample_to_idx
 
     sample_to_idx = map_samples_to_indicies(c)
-    if not any(s.startswith("gt") for s in args.query.split()) and \
-       not any(s.startswith("gt") for s in args.query.split()) and \
-       not any(s.find(".gt") for s in args.query.split()) and \
-       not any(s.find(".gt") for s in args.query.split()):
+    query_pieces = args.query.split()
+    if not any(s.startswith("gt") for s in query_pieces) and \
+       not any("gt" in s for s in query_pieces):
        apply_query(c, args.query)
     else:
         (select_cols, main_where, gts_where) = \

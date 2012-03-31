@@ -8,28 +8,19 @@ class EffectDetails(object):
         fields = detail_string.split("|")
         self.effect_name = name
         self.effect_severity = severity
-        self.impact = fields[1] if fields[1] != '' else "none"
-        self.codon_change = fields[2] if fields[2] != '' else "none"
-        self.aa_change = fields[3] if fields[3] != '' else "none"
-        self.gene = fields[4] if fields[4] != '' else "none"
-        self.biotype = fields[5] if fields[5] != '' else "none"
-        self.coding = fields[6] if fields[6] != '' else "none"
-        self.transcript = fields[7] if fields[7] != '' else "none"
-        self.exon = fields[8] if fields[8] != '' else "none"
+        self.impact = fields[1] if fields[1] != '' else None
+        self.codon_change = fields[2] if fields[2] != '' else None
+        self.aa_change = fields[3] if fields[3] != '' else None
+        self.gene = fields[4] if fields[4] != '' else None
+        self.biotype = fields[5] if fields[5] != '' else None
+        self.coding = fields[6] if fields[6] != '' else None
+        self.transcript = fields[7] if fields[7] != '' else None
+        self.exon = fields[8] if fields[8] != '' else None
         self.warnings = None
         if len(fields) > 8:
             self.warnings = fields[8]
-            
-        if self.exon == "none":
-            self.exonic = 0
-        else:
-            self.exonic = 1
-
-        if self.effect_severity != "HIGH":
-            self.is_lof = 0
-        else:
-            self.is_lof = 1
-            
+        self.exonic = 0 if self.exon is None else 1
+        self.is_lof = 0 if self.effect_severity != "HIGH" else 1
         # Exons that are coding (excludes UTR's)
         if self.exonic == 0:
             self.coding = 0 
@@ -38,7 +29,6 @@ class EffectDetails(object):
                 self.coding = 0 
             else:
                 self.coding = 1
-
 
     def __str__(self):
         return "\t".join([self.effect_name, self.effect_severity,
@@ -49,7 +39,6 @@ class EffectDetails(object):
                           self.exon])
     def __repr__(self):
         return self.__str__()
-    
 
 
 effect_names    = ["CDS", "CODON_CHANGE", 
