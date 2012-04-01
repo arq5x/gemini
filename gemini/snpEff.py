@@ -2,6 +2,7 @@
 
 import re
 from collections import namedtuple
+from collections import defaultdict
 
 class EffectDetails(object):
     def __init__(self, name, severity, detail_string):
@@ -17,10 +18,16 @@ class EffectDetails(object):
         self.transcript = fields[7] if fields[7] != '' else None
         self.exon = fields[8] if fields[8] != '' else None
         self.warnings = None
-        if len(fields) > 8:
-            self.warnings = fields[8]
+        if len(fields) > 8: self.warnings = fields[8]
         self.exonic = 0 if self.exon is None else 1
         self.is_lof = 0 if self.effect_severity != "HIGH" else 1
+        self.polyphen_pred = None
+        self.polyphen_score = None
+        self.sift_pred = None
+        self.sift_score = None
+        self.condel_pred  = None
+        self.condel_score = None
+        
         # Exons that are coding (excludes UTR's)
         if self.exonic == 0:
             self.coding = 0 
@@ -29,9 +36,10 @@ class EffectDetails(object):
                 self.coding = 0 
             else:
                 self.coding = 1
+        self.consequence = effect_dict[self.effect_name]
 
     def __str__(self):
-        return "\t".join([self.effect_name, self.effect_severity,
+        return "\t".join([self.consequence, self.effect_severity,
                           self.impact, self.codon_change,
                           self.aa_change, self.gene,
                           str(self.biotype), str(self.exonic),
@@ -58,6 +66,17 @@ effect_names    = ["CDS", "CODON_CHANGE",
                    "UTR_3_DELETED", "UTR_3_PRIME",
                    "UTR_5_DELETED", "UTR_5_PRIME",
                    "NON_SYNONYMOUS_START"]
+                   
+effect_dict = defaultdict()                 
+effect_dict = {'CDS': 'CDS', 'CODON_CHANGE': 'inframe_codon_change', 'CODON_CHANGE_PLUS_CODON_DELETION': 'codon_change_del',
+            'CODON_CHANGE_PLUS_CODON_INSERTION': 'codon_change_ins', 'CODON_DELETION': 'inframe_codon_loss', 'CODON_INSERTION': 'inframe_codon_gain', 
+            'DOWNSTREAM': 'downstream', 'EXON': 'exon', 'EXON_DELETED': 'exon_deleted', 'FRAME_SHIFT': 'frame_shift', 'GENE': 'gene', 'INTERGENIC': 'intergenic',  
+            'INTERGENIC_CONSERVED': 'intergenic', 'INTRAGENIC': 'intragenic', 'INTRON': 'intron', 'INTRON_CONSERVED': 'intron_conserved',
+            'NON_SYNONYMOUS_CODING': 'non_syn_coding', 'SPLICE_SITE_ACCEPTOR': 'splice_acceptor', 'SPLICE_SITE_DONOR': 'splice_donor', 
+            'START_GAINED': 'start_gain', 'START_LOST': 'start_loss', 'STOP_GAINED': 'stop_gain', 'STOP_LOST': 'stop_loss', 
+            'SYNONYMOUS_CODING': 'synonymous_coding', 'SYNONYMOUS_START': 'synonymous_start', 'SYNONYMOUS_STOP': 'synonymous_stop', 
+            'TRANSCRIPT': 'transcript', 'UPSTREAM': 'upstream', 'UTR_3_DELETED': 'UTR_3_del', 'UTR_3_PRIME': 'UTR_3_prime',
+            'UTR_5_DELETED': 'UTR_5_del', 'UTR_5_PRIME': 'UTR_5_prime', 'NON_SYNONYMOUS_START': 'non_synonymous_start'}
                    
 effect_desc     = ["The variant hits a CDS.", "One or many codons are changed",
                    "One codon is changed and one or more codons are deleted", "One codon is changed and one or many codons are inserted", 
@@ -112,17 +131,15 @@ effect_priority_codes = [3, 2,
                         2, 3, 
                         2, 3,
                         1]
-                  
-                   
-effect_ids = range(1,34)
 
+effect_ids = range(1,34)
 effect_map = {}
 EffectInfo = namedtuple('EffectInfo', ['id', 'priority', 'priority_code', 'desc'])
+
 for i, effect_name in enumerate(effect_names):
     info = EffectInfo(effect_ids[i], effect_priorities[i], effect_priority_codes[i], effect_desc[i])
     effect_map[effect_name] = info
+    
 eff_pattern   = '(\S+)[(](\S+)[)]'
 eff_search    =  re.compile(eff_pattern)
 
-if __name__ == "__main__":
-    print effect

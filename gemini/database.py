@@ -94,6 +94,12 @@ def create_tables(cursor):
                                                                    aa_change text,                             \
                                                                    impact text,                                \
                                                                    impact_severity text,                       \
+                                                                   polyphen_pred text,                         \
+                                                                   polyphen_score float,                       \
+                                                                   sift_pred text,                             \
+                                                                   sift_score float,                           \
+                                                                   condel_pred text,                           \
+                                                                   condel_score float,                         \
                                                                    PRIMARY KEY(variant_id ASC, anno_id ASC))''')
 
     cursor.execute('''create table if not exists samples   (sample_id integer,                 \
@@ -130,7 +136,7 @@ def insert_variation_impacts(cursor, buffer):
     """
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into variant_impacts values (?,?,?,?,?,?,?,?,?,?, \
-                                                            ?,?)', \
+                                                            ?,?,?,?,?,?,?,?)', \
                                                             buffer)
     cursor.execute("END")
 

@@ -1,87 +1,38 @@
 #!/usr/bin/env python
 
+# native Python imports
 import os.path
 import sys
 import re
 import collections
-import vcf # PyVCF
+from optparse import OptionParser
+import sqlite3
+import numpy as np
+
+# third-party imports
+import vcf
+import pysam
+
+# gemini modules
 from ped import pedformat
 import infotag
-import effect
-import stats
 import database
-import pysam
-import sqlite3
-import cPickle
-import numpy as np
-import zlib
 import annotations
-from optparse import OptionParser
+import func_impact
+import popgen
+from compression import pack_blob
 
 
-def get_hwe_likelihood(obs_hom_ref, obs_het, obs_hom_alt, aaf):
+def prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases):
     """
-    Compute the likelihood of deviation from HWE using X^2, 
-    as well as the inbreeding coefficient.
     """
-    # Bail out if aaf is undefined. This occurs
-    # when there are multiple alternate alleles
-    if aaf is None:
-        return (None, None)
-
-    # how many total genotypes?
-    sum = (float(obs_hom_ref) + float(obs_het) + float(obs_hom_alt))
-    # get the reference allele freq
-    raf = 1.0 - float(aaf)
-    #compute the expected number of each genotype based on p and q
-    exp_hom_ref = (raf**2)*sum
-    exp_het     = (2.0*(raf*aaf))*sum
-    exp_hom_alt = (aaf**2)*sum
-    # get the X^2 statistcs for each genotype class.
-    x2_hom_ref = ((obs_hom_ref - exp_hom_ref)**2)/exp_hom_ref if exp_hom_ref > 0 else 0
-    x2_hom_alt = ((obs_hom_alt - exp_hom_alt)**2)/exp_hom_alt if exp_hom_alt > 0 else 0
-    x2_het     = ((obs_het - exp_het)**2)/exp_het if exp_het > 0 else 0
-    x2_statistic = x2_hom_ref + x2_hom_alt + x2_het
-    # return the p-value (null hyp. is that the genotypes are in HWE)
-    # 1 degree of freedom b/c 3 genotypes, 2 alleles (3-2)
-    # estimate the inbreeding coefficient (F_hat):
-    # F_hat = 1 - O_hets / E_hets
-    inbreeding_coeff = (1.0 - (float(obs_het)/(float(exp_het)))) if obs_het > 0 else None
-    return stats.lchisqprob(x2_statistic, 1), inbreeding_coeff
-
-
-def interpret_impact(var):
-    """
-    Interpret the report from SnpEff to determine the impact of the variant.
-    For example:
-    0    NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|Aca/Gca|T/A|OR4F5|protein_coding|CODING|ENST00000335137|exon_1_69091_70008),
-    1    NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|Aca/Gca|T/A|OR4F5|protein_coding|CODING|ENST00000534990|exon_1_69037_69829)
-    """
-    try:
-        effect_strings = var.INFO["EFF"].split(",")
-    except KeyError:
-        return None
-
-    impact_all = [] # a list of all the transcript impacts for this variant
-    for effect_string in effect_strings:
-        eff_pieces = effect.eff_search.findall(effect_string)
-        for piece in eff_pieces:
-            impact_string = piece[0] # the predicted inpact, which is outside the ()
-            impact_detail = piece[1] # all the other information, which is inside the ()
-            impact_info   = effect.effect_map[impact_string]
-            impact_details = effect.EffectDetails(impact_string, impact_info.priority, impact_detail)
-            impact_all.append(impact_details)
-    return impact_all
-
-
-def prepare_variation(args, var, v_id):
-    
     # these metric require that genotypes are present in the file
     call_rate = None
     hwe_p_value = None
     pi_hat = None
     inbreeding_coeff = None
     hom_ref = het = hom_alt = unknown = None
+    
     # only compute certain metrics if genoypes are available
     if not args.no_genotypes:
         hom_ref = var.num_hom_ref
@@ -90,12 +41,14 @@ def prepare_variation(args, var, v_id):
         unknown = var.num_unknown
         call_rate = var.call_rate
         aaf = var.aaf
-        hwe_p_value, inbreeding_coeff = get_hwe_likelihood(hom_ref, het, hom_alt, aaf)
+        hwe_p_value, inbreeding_coeff = popgen.get_hwe_likelihood(hom_ref, het, hom_alt, aaf)
         pi_hat = var.nucl_diversity
     else:
         aaf = extract_aaf(var)
-    
+
+    ########################################################
     # collect annotations from pop's custom annotation files
+    ########################################################
     cyto_band  = annotations.get_cyto_info(var)
     dbsnp_info = annotations.get_dbsnp_info(var)
     in_dbsnp   = 0 if dbsnp_info.rs_ids is None else 1
@@ -104,29 +57,23 @@ def prepare_variation(args, var, v_id):
     in_segdup  = annotations.get_segdup_info(var)
 
     # impact is a list of impacts for this variant
-    impacts = interpret_impact(var) 
+    impacts = func_impact.interpret_impact(args, var) 
 
     # construct the filter string
     filter = None
-    if var.FILTER is not None:
+    if var.FILTER is not None and var.FILTER != ".":
         if isinstance(var.FILTER, list):
             filter = ";".join(var.FILTER)
         else:
             filter = var.FILTER
 
-    # pack the genotype information into compressed binary values
-    # for storage as BLOB fields in the database.  These binaries
-    # will be decompressed and converted when SELECTed from the DB.
-    gt_types  = []
-    gt_phases = []
-    gt_bases  = []
-    for s in var.samples:
-        gt_types.append(s.gt_type) if s.gt_type is not None else gt_types.append(-1)
-        gt_bases.append(s.gt_bases) if s.gt_bases is not None else gt_bases.append('./.')
-        gt_phases.append(s.phased) if s.phased is not None else gt_phases.append(-1)
-    packed_gt_types  = sqlite3.Binary(zlib.compress(cPickle.dumps(gt_types, cPickle.HIGHEST_PROTOCOL), 9))
-    packed_gt_phases = sqlite3.Binary(zlib.compress(cPickle.dumps(gt_phases, cPickle.HIGHEST_PROTOCOL), 9))
-    packed_gt_bases = sqlite3.Binary(zlib.compress(cPickle.dumps(gt_bases, cPickle.HIGHEST_PROTOCOL), 9))
+    # build up numpy arrays for the genotype information.
+    # these arrays will be pickled-to-binary, compressed,
+    # and loaded as SqlLite BLOB values (see compression.pack_blob)
+    for i, s in enumerate(var.samples):
+        gt_types[i] = s.gt_type  if s.gt_type  is not None else -1
+        gt_bases[i] = s.gt_bases if s.gt_bases is not None else './.'
+        gt_phases[i] = s.phased if s.phased is not None else False
     
     # were functional impacts predicted by SnpEFF or VEP?
     # if so, build up a row for each of the impacts / transcript
@@ -139,7 +86,10 @@ def prepare_variation(args, var, v_id):
             var_impact = [v_id, (idx+1), impact.gene, 
                           impact.transcript, impact.exonic, impact.coding,
                           impact.is_lof, impact.exon, impact.codon_change, 
-                          impact.aa_change, impact.effect_name, impact.effect_severity]
+                          impact.aa_change, impact.effect_name, impact.effect_severity,
+                          impact.polyphen_pred, impact.polyphen_score,
+                          impact.sift_pred, impact.sift_score,
+                          impact.condel_pred, impact.condel_score]
             variant_impacts.append(var_impact)
             if impact.exonic == True: is_exonic = True
             if impact.coding == True: is_coding = True
@@ -150,8 +100,8 @@ def prepare_variation(args, var, v_id):
     variant = [var.CHROM, var.start, var.end, 
                v_id, var.REF, ','.join(var.ALT), 
                var.QUAL, filter, var.var_type, 
-               var.var_subtype, packed_gt_bases, packed_gt_types,
-               packed_gt_phases, call_rate, in_dbsnp,
+               var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
+               pack_blob(gt_phases), call_rate, in_dbsnp,
                dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
                cyto_band, rmsk_hits, in_cpg,
                in_segdup, hom_ref, het,
@@ -188,7 +138,9 @@ def prepare_samples(samples, ped_file, sample_to_id, cursor):
         database.insert_sample(cursor, sample_list)
 
 
-def populate_db_from_vcf(args, cursor, buffer_size = 10000):
+def populate_db_from_vcf(args, cursor, buffer_size = 20000):
+    """
+    """
     # collect of the the add'l annotation files
     annotations.load_annos()
     # open the VCF file for reading
@@ -205,31 +157,35 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
     v_id = 1
     var_buffer = []
     var_impacts_buffer = []
-    
-    total_loaded = 0
+    buffer_count = 0
+    num_samples = len(vcf_reader.samples)
+    # numpy arrays for storing genotype information.
+    # create once here, and update for each variant
+    gt_bases  = np.zeros(num_samples, np.str)  # 'A/G', './.'
+    gt_types  = np.zeros(num_samples, np.int8) # -1, 0, 1, 2
+    gt_phases = np.zeros(num_samples, np.bool) # T F F
     for var in vcf_reader:
-        (variant, variant_impacts) = prepare_variation(args, var, v_id)
+        (variant, variant_impacts) = prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases)
         # add the core variant info to the variant buffer
         var_buffer.append(variant)
         # add each of the impact for this variant (1 per gene/transcript)
         for var_impact in variant_impacts:
+            buffer_count += 1
             var_impacts_buffer.append(var_impact)
         
         # only infer genotypes if requested
         if not args.noload_genotypes and not args.no_genotypes:
             pass
         
-        # buffer full:
-        # insert the buffer records into to the database
-        if len(var_impacts_buffer) >= buffer_size:
-            total_loaded += len(var_buffer)
+        # buffer full - time to insert into DB
+        if buffer_count >= buffer_size:
             sys.stderr.write(str(v_id) + " variants processed.\n")
             database.insert_variation(cursor, var_buffer)
             database.insert_variation_impacts(cursor, var_impacts_buffer)
             # reset for the next batch
             var_buffer = []
             var_impacts_buffer = []
-            
+            buffer_count = 0
         v_id += 1
     # final load to the database
     database.insert_variation(cursor, var_buffer)
@@ -240,13 +196,19 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
 def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
-        exit()
+        exit("ERROR: load needs both a VCF file and a database file\n")
+    if args.anno_type not in ['snpEff', 'VEP']:
+        parser.print_help()
+        exit("\nERROR: Unsupported selection for -t\n")
+
     # open up a new database
     if os.path.exists(args.db):
         os.remove(args.db)
     conn = sqlite3.connect(args.db)
     conn.isolation_level = None
     c = conn.cursor()
+    c.execute('PRAGMA synchronous = OFF')
+    c.execute('PRAGMA journal_mode=MEMORY')
     # Create the database schema and tables.
     database.create_tables(c)
     # populate the tables.
@@ -255,7 +217,3 @@ def load(parser, args):
     database.create_indices(c)
     # commit data and close up
     database.close_and_commit(c, conn)
-
-
-if __name__ == "__main__":
-    main()

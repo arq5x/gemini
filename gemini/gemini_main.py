@@ -23,6 +23,11 @@ def main():
                             help='The name of the database to be created.')
     parser_load.add_argument('-v', dest='vcf', 
                             help='The VCF file to be loaded.')
+    parser_load.add_argument('-t', dest='anno_type', default=None, metavar='STRING',
+                             help="The annotations to be used with the input vcf. Options are:\n"
+                             "  snpEff  - Annotations as reported by snpEff.\n"
+                             "  VEP     - Annotations as reported by VEP.\n"
+                             )
     parser_load.add_argument('-p', dest='ped_file', 
                             help='Sample information file in PED+ format.', default=None)
     parser_load.add_argument('--noload-genotypes', dest='noload_genotypes', action='store_true',
