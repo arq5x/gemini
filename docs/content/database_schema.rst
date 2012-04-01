@@ -86,6 +86,15 @@ codon_change      STRING        What is the codon change?
 aa_change         STRING        What is the amino acid change?
 impact            STRING        Impacts due to variation (ref.impact category)
 impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
+polyphen_pred     STRING        | Impact of the SNP as given by PolyPhen (VEP only) 
+                                | benign, possibly_damaging, probably_damaging, unknown
+polyphen_scores   FLOAT         Polyphen score reflecting severity (higher the impact, *higher* the score)
+sift_pred         STRING        | Impact of the SNP as given by SIFT (VEP only)
+                                | neutral, deleterious
+sift_scores       FLOAT         SIFT prob. scores reflecting severity (Higher the impact, *lower* the score)
+condel_pred       STRING        | Impact of the SNP as given by Condel (VEP only) 
+                                | neutral, deleterious
+condel_scores     FLOAT         Higher the impact, *higher* the score
 ================  ========      ===============================================================================
 
 |
