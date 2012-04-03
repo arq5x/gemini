@@ -7,7 +7,7 @@ import collections
 # This is done at installation time by invoking:
 #    % sudo python install-data.py
 
-anno_dirname = '/usr/share/pop/data/'
+anno_dirname = '/usr/share/gemini/data/'
 
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
