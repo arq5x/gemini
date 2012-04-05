@@ -57,7 +57,9 @@ def prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases):
     in_segdup  = annotations.get_segdup_info(var)
 
     # impact is a list of impacts for this variant
-    impacts = func_impact.interpret_impact(args, var) 
+    impacts = None
+    if args.anno_type is not None:
+        impacts = func_impact.interpret_impact(args, var)
 
     # construct the filter string
     filter = None
@@ -197,7 +199,7 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
-    if args.anno_type not in ['snpEff', 'VEP']:
+    if args.anno_type not in ['snpEff', 'VEP', None]:
         parser.print_help()
         exit("\nERROR: Unsupported selection for -t\n")
 
