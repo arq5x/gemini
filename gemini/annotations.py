@@ -35,6 +35,7 @@ def load_annos():
     for anno in anno_files:
         annos[anno] = pysam.Tabixfile(anno_files[anno])
 
+DbSnpInfo = collections.namedtuple("DbSnpInfo", "rs_ids in_omim clin_sig")
 
 def get_cpg_island_info(var):
     """
@@ -67,8 +68,6 @@ def get_dbsnp_info(var):
     """
     Returns a suite of annotations from dbSNP
     """
-    DbSnpInfo = collections.namedtuple("DbSnpInfo", "rs_ids in_omim clin_sig")
-
     chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
     rs_ids  = []
     clin_sigs = []

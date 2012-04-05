@@ -91,3 +91,4 @@ def get_allele_bal(var):
     or None if it isn't present in the VCF.
     """
     return var.INFO.get('AB')
+
