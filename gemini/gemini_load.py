@@ -55,7 +55,7 @@ def prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases):
     rmsk_hits  = annotations.get_rmsk_info(var)
     in_cpg     = annotations.get_cpg_island_info(var)
     in_segdup  = annotations.get_segdup_info(var)
-
+    esp_info   = annotations.get_esp_info(var)
     # impact is a list of impacts for this variant
     impacts = func_impact.interpret_impact(args, var) 
 
@@ -86,7 +86,7 @@ def prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases):
             var_impact = [v_id, (idx+1), impact.gene, 
                           impact.transcript, impact.exonic, impact.coding,
                           impact.is_lof, impact.exon, impact.codon_change, 
-                          impact.aa_change, impact.effect_name, impact.effect_severity,
+                          impact.aa_change, impact.consequence, impact.effect_severity,
                           impact.polyphen_pred, impact.polyphen_score,
                           impact.sift_pred, impact.sift_score,
                           impact.condel_pred, impact.condel_score]
@@ -111,9 +111,10 @@ def prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases):
                infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
                infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
-               infotag.get_allele_count(var), infotag.get_allele_bal(var)]
+               infotag.get_allele_count(var), infotag.get_allele_bal(var), esp_info.aaf_EA, esp_info.aaf_AA,
+               esp_info.aaf_ALL, esp_info.exome_chip]
     return variant, variant_impacts
-
+    
 
 def prepare_samples(samples, ped_file, sample_to_id, cursor):
     """

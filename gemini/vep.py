@@ -19,15 +19,15 @@ class EffectDetails(object):
         self.effect_name = impact_string
         self.codon_change = fields[1] if fields[1] != '' else None
         self.aa_change = fields[2] if fields[2] != '' else None
-        self.gene = fields[3] if fields[3] != '' else None
-        self.hgnc = fields[4] if fields[4] != '' else None
+        self.ensembl_gene = fields[3] if fields[3] != '' else None
+        self.gene = fields[4] if fields[4] != '' else None
         self.transcript = fields[5] if fields[5] != '' else None
         self.exon = fields[6] if fields[6] != '' else None
         self.polyphen =  fields[7] if fields[7] != '' else None
         self.sift = fields[8] if fields[8] != '' else None
         self.condel = fields[9] if fields[9] != '' else None
         self.warnings = None
-        self.conseq = effect_dict[self.effect_name]
+        self.consequence = effect_dict[self.effect_name]
         if len(fields) > 9:
             self.warnings = fields[9]
         
@@ -72,9 +72,9 @@ class EffectDetails(object):
 
     def __str__(self):
 
-        return "\t".join([self.conseq, self.effect_severity,
-                          self.codons, self.aminoacid,
-                          self.gene, self.hgnc, self.feature,
+        return "\t".join([self.consequence, self.effect_severity,
+                          self.codon_change, self.aa_change,
+                          self.ensembl_gene, self.gene, self.transcript,
                           self.exon, self.exonic, self.polyphen_pred,
                           self.polyphen_score, self.sift_pred, self.sift_score,
                           self.condel_pred, self.condel_score, self.coding, self.is_lof])
@@ -96,7 +96,8 @@ effect_names    = ["splice_acceptor_variant", "splice_donor_variant",
                    "nc_transcript_variant", "2KB_upstream_variant",
                    "5KB_upstream_variant", "500B_downstream_variant",
                    "5KB_downstream_variant", "regulatory_region_variant",
-                   "TF_binding_site_variant", "intergenic_variant"]
+                   "TF_binding_site_variant", "intergenic_variant",
+                   "entirely_within_Gene", "deletion", "entirely_within_Transcript", "partial_overlap"]
                    
 
 effect_dict = defaultdict()
@@ -109,7 +110,8 @@ effect_dict = {'splice_acceptor_variant': 'splice_acceptor', 'splice_donor_varia
               'intron_variant': 'intron', 'NMD_transcript_variant': 'NMD_transcript', 'nc_transcript_variant': 'nc_transcript',
               '2KB_upstream_variant': 'upstream', '5KB_upstream_variant': 'upstream', '500B_downstream_variant': 'downstream', 
               '5KB_downstream_variant': 'downstream', 'regulatory_region_variant': 'regulatory_region', 'TF_binding_site_variant': 'TF_binding_site',
-              'intergenic_variant': 'intergenic'};
+              'intergenic_variant': 'intergenic', 'entirely_within_Gene': 'entirely_within_Gene', 'deletion': 'deletion',
+              'entirely_within_Transcript': 'entirely_within_Transcript', 'partial_overlap': 'partial_overlap' };
 
 effect_desc     = ["The variant hits the splice acceptor site (2 basepair region at 3' end of an intron)", "The variant hits the splice donor site (2 basepair region at 5'end of an intron)",
                    "Variant causes a STOP codon", "Variant causes stop codon to be mutated into a non-stop codon", 
@@ -124,7 +126,8 @@ effect_desc     = ["The variant hits the splice acceptor site (2 basepair region
                    "Variant hits a gene that does not code for a protein", "The variant hits upstream of a gene (within 2KB 5' of a gene)",
                    "Variant hits upstream of a gene (within 5KB 5' of a gene)", "The variant hits downstream of a gene (within half kb of the end of gene)", 
                    "The variant hits downstream of a gene (within 5KB of the end of gene)", "Variant hits the regulatory region annotated by Ensembl(e.g promoter)", 
-                   "Variant falls in a transcription factor binding motif within an Ensembl regulatory region", "The variant is located in the intergenic region, between genes"]
+                   "Variant falls in a transcription factor binding motif within an Ensembl regulatory region", "The variant is located in the intergenic region, between genes",
+                   "SV within gene", "SV- a deletion", "SV within transcript", "SV - partial overlap"]
 
 effect_priorities = ["HIGH", "HIGH",
                    "HIGH", "HIGH",
@@ -139,6 +142,8 @@ effect_priorities = ["HIGH", "HIGH",
                    "LOW", "LOW",
                    "LOW", "LOW",
                    "LOW", "MED",
+                   "MED", "LOW",
+                   "LOW", "LOW",
                    "MED", "LOW"]
 
 effect_priority_codes = [1, 1,
@@ -154,9 +159,11 @@ effect_priority_codes = [1, 1,
                         3, 3,
                         3, 3,
                         3, 2,
+                        2, 3,
+                        3, 3,
                         2, 3]
 
-effect_ids = range(1,29)
+effect_ids = range(1,33)
 
 effect_map = {}
 EffectInfo = namedtuple('EffectInfo', ['id', 'priority', 'priority_code', 'desc'])
