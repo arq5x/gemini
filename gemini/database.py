@@ -80,6 +80,10 @@ def create_tables(cursor):
                                                             qual_depth float default NULL,              \
                                                             allele_count integer default NULL,          \
                                                             allele_bal float default NULL,              \
+                                                            aaf_esp_ea float,                           \
+                                                            aaf_esp_aa float,                           \
+                                                            aaf_esp_all float,                          \
+                                                            exome_chip bool,                            \
                                                             PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (variant_id integer,                         \
@@ -125,7 +129,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
