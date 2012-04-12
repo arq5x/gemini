@@ -23,7 +23,7 @@ import popgen
 from compression import pack_blob
 
 
-def prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases):
+def prepare_variation(args, var, v_id):
     """
     """
     # these metric require that genotypes are present in the file
@@ -72,10 +72,9 @@ def prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases):
     # build up numpy arrays for the genotype information.
     # these arrays will be pickled-to-binary, compressed,
     # and loaded as SqlLite BLOB values (see compression.pack_blob)
-    for i, s in enumerate(var.samples):
-        gt_types[i] = s.gt_type  if s.gt_type  is not None else -1
-        gt_bases[i] = s.gt_bases if s.gt_bases is not None else './.'
-        gt_phases[i] = s.phased if s.phased is not None else False
+    gt_bases  = np.array(var.gt_bases, np.str)  # 'A/G', './.'
+    gt_types  = np.array(var.gt_types, np.int8) # -1, 0, 1, 2
+    gt_phases = np.array(var.gt_phases, np.bool) # T F F
     
     # were functional impacts predicted by SnpEFF or VEP?
     # if so, build up a row for each of the impacts / transcript
@@ -161,13 +160,8 @@ def populate_db_from_vcf(args, cursor, buffer_size = 20000):
     var_impacts_buffer = []
     buffer_count = 0
     num_samples = len(vcf_reader.samples)
-    # numpy arrays for storing genotype information.
-    # create once here, and update for each variant
-    gt_bases  = np.zeros(num_samples, np.str)  # 'A/G', './.'
-    gt_types  = np.zeros(num_samples, np.int8) # -1, 0, 1, 2
-    gt_phases = np.zeros(num_samples, np.bool) # T F F
     for var in vcf_reader:
-        (variant, variant_impacts) = prepare_variation(args, var, v_id, gt_bases, gt_types, gt_phases)
+        (variant, variant_impacts) = prepare_variation(args, var, v_id)
         # add the core variant info to the variant buffer
         var_buffer.append(variant)
         # add each of the impact for this variant (1 per gene/transcript)
