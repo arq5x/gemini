@@ -58,8 +58,8 @@ def interpret_impact(args, var):
                 impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string)
                 impact_all.append(impact_details)
     else:
-        # should not get here, as the valid -t options should be handled
-        # in main()
+        #should not get here, as the valid -t options should be handled
+        #in main()
         sys.exit("ERROR: Unsupported variant annotation type.\n")
-
+    
     return impact_all
