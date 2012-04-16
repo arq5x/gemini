@@ -20,7 +20,8 @@ def install_annotation_files():
     'hg19.dgv.bed.gz', 'hg19.dgv.bed.gz.tbi',
     'hg19.gwas.bed.gz', 'hg19.gwas.bed.gz.tbi',
     'hg19.rmsk.bed.gz', 'hg19.rmsk.bed.gz.tbi',
-    'hg19.segdup.bed.gz', 'hg19.segdup.bed.gz.tbi']
+    'hg19.segdup.bed.gz', 'hg19.segdup.bed.gz.tbi',
+    'ESP5400.all.snps.vcf.gz', 'ESP5400.all.snps.vcf.gz.tbi']
 
     dirname = "/usr/share/gemini/data/"
     if not os.path.exists(dirname):
