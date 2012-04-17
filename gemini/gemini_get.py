@@ -7,7 +7,8 @@ import re
 import cPickle
 import numpy as np
 import zlib
-import sql
+#import sql
+import sql_extended as sql
 from pyparsing import ParseResults
 from collections import defaultdict
 
@@ -31,12 +32,15 @@ def refine_sql(query, sample_to_idx):
     tokens = sql.parse_sql(query)
     # adjust any of the gt_* columns to use sample offsets, not names
     select_columns = []
-    for col in tokens.columns:
-        if not col.startswith("GT"):
+    
+    # build a list of the select columns while converting 
+    # the genotype columns (GT_*) to their appropriate numpy indices
+    for col in tokens.select:
+        if not col.startswith("GT_"):
             select_columns.append(col)
         else:
-            print col
             select_columns.append(correct_genotype_col(col))
+
     # Separate the where clause for the main SQL statement
     # from the conditions placed on the gt* columns.  The
     # latter must be applied post hoc to the rows returned 
@@ -44,40 +48,42 @@ def refine_sql(query, sample_to_idx):
     main_where = []
     gtypes_where = []
     last_keyword = None
-    is_first_gt_where = True
+    is_first_where = True
     # tokens.where[0] b/c pyparsing grammar excessively nests results
-    for w in tokens.where[0]:
+    for where_piece in tokens.where:
         # and | or | in
-        if w in where_keywords:
-            last_keyword = w
+        if where_piece in where_keywords:
+            last_keyword = where_piece
             continue
-        # we are dealing with an actual condition
-        # flatten the pieces of the condition in cases of nested boolean logic
-        pieces = w
-        if any(isinstance(el, ParseResults) for el in w):
-            pieces = flatten(w)
+
+        # at this point, we know we are dealing with an actual condition, so
+        # we flatten the pieces of the condition in cases of 
+        # nested boolean logic
         # add the condition as normal if not a gt* field
-        if not any("GT" in s for s in pieces):
-            main_where.append(last_keyword)
-            for el in pieces:
-                main_where.append(el)
+        if not any("GT" in s for s in where_piece):
+            if not is_first_where:
+                main_where.append(last_keyword)
+                is_first_where = False
+            for piece in where_piece:
+                main_where.append(piece)
         # gt* fileds must be converted from referring to sample name
         # to instead referring to sample offsets in the relevant col. BLOB
         else:
-            if not is_first_gt_where:
+            if not is_first_where:
                 gtypes_where.append(last_keyword)
-                is_first_gt_where = True
-            for el in pieces:
+                is_first_where = False
+            for piece in where_piece:
                 # SQL allows "=" for equality, Python eval needs "=="
-                if el == "=": 
+                if piece == "=": 
                     gtypes_where.append("==")
-                elif el.startswith("GT"):
-                    gtypes_where.append(correct_genotype_col(el))
+                elif piece.startswith("GT"):
+                    gtypes_where.append(correct_genotype_col(piece))
                 else:
-                    gtypes_where.append(el)
+                    gtypes_where.append(piece)
+
     # hand off the select columns and the two different
     # where conditions.
-    return(select_columns,
+    return(tokens, select_columns,
            " ".join(main_where),
            " ".join(gtypes_where))
 
@@ -94,43 +100,42 @@ def apply_query(c, query):
         print "\t".join(str(row[col]) for col in all_cols)
 
 
-def apply_refined_query(c, select_cols, main_where, gts_where):
+def apply_refined_query(c, tokens, select_cols, main_where, gts_where):
     """
     Execute a query that contains gt* columns in either the
     select or the where.
     """
     
-    #create and execute the main query
+    # create and execute the main query
+    query = "select * from variants"
     if len(main_where) > 0:
-        query = "select * from variants " + main_where
-    else:
-        query = "select * from variants"
+        query += " where " + main_where
+    # TO DO : handle GROOUP BY, HAVING, ORDER BY, LIMIT
+
 
     c.execute(query)
     # (select *) a list of all of the non-gt* columns in the table
     all_cols = [str(tuple[0]) for tuple in c.description if not tuple[0].startswith("gt")]
+
     # loop through the results of the main query and remove
     # rows that don't meet the conditions placed on the gt_* columns
-    gts       = None
-    gt_types  = None
-    gt_phases = None
     gts_requested = False
-    if (gts_where != "" or (any("gt" in s for s in select_cols))):
-        gts_requested = True    
+    if (gts_where != "" or (any("gt_" in s for s in select_cols))):
+        gts_requested = True
+
     for row in c:
-        if gts_requested:
-            gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
-            gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
-            gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
-        if gts_where == "" or (gts_where != "" and eval(gts_where)):
-            if '*' in select_cols:
-                print "\t".join(str(row[col]) for col in all_cols),
-            for col in select_cols:
-                if col == "*": continue
-                if not col.startswith("gt"):
-                    print str(row[col]) + "\t",
-                else:
-                    print str(eval(col.strip())) + "\t",
+        gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
+        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
+        gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
+        if '*' in select_cols:
+            print "\t".join(str(row[col]) for col in all_cols),
+        for col in select_cols:
+            if col == "*": continue
+            if not col.startswith("gt"):
+                print str(row[col]) + "\t",
+            else:
+                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
+                print str(eval(col.strip())) + "\t",
         print
 
 
@@ -163,9 +168,9 @@ def get_query(args, c):
        not any("gt" in s for s in query_pieces):
        apply_query(c, args.query)
     else:
-        (select_cols, main_where, gts_where) = \
+        (tokens, select_cols, main_where, gts_where) = \
             refine_sql(args.query, sample_to_idx)
-        apply_refined_query(c, select_cols, main_where, gts_where)
+        apply_refined_query(c, tokens, select_cols, main_where, gts_where)
 
 
 
