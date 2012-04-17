@@ -49,7 +49,6 @@ def refine_sql(query, sample_to_idx):
     gtypes_where = []
     last_keyword = None
     is_first_where = True
-    # tokens.where[0] b/c pyparsing grammar excessively nests results
     for where_piece in tokens.where:
         # and | or | in
         if where_piece in where_keywords:
