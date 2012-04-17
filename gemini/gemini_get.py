@@ -360,7 +360,6 @@ def shortcut_mds(c):
     for row in c:
         gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
         for idx, type in enumerate(gt_types):
-            type = type if type is not None else -1
             genotypes[idx_to_sample[idx]].append(type)
     
     mds = defaultdict(float)
