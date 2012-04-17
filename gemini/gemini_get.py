@@ -9,6 +9,7 @@ import numpy as np
 import zlib
 #import sql
 import sql_extended as sql
+import gemini_shortcuts as shortcut
 from pyparsing import ParseResults
 from collections import defaultdict
 
@@ -49,6 +50,7 @@ def refine_sql(query, sample_to_idx):
     gtypes_where = []
     last_keyword = None
     is_first_where = True
+    # tokens.where[0] b/c pyparsing grammar excessively nests results
     for where_piece in tokens.where:
         # and | or | in
         if where_piece in where_keywords:
@@ -104,38 +106,49 @@ def apply_refined_query(c, tokens, select_cols, main_where, gts_where):
     Execute a query that contains gt* columns in either the
     select or the where.
     """
-    
-    # create and execute the main query
+    # construct and execute the main query
     query = "select * from variants"
     if len(main_where) > 0:
         query += " where " + main_where
     # TO DO : handle GROOUP BY, HAVING, ORDER BY, LIMIT
 
-
     c.execute(query)
     # (select *) a list of all of the non-gt* columns in the table
     all_cols = [str(tuple[0]) for tuple in c.description if not tuple[0].startswith("gt")]
 
-    # loop through the results of the main query and remove
-    # rows that don't meet the conditions placed on the gt_* columns
-    gts_requested = False
-    if (gts_where != "" or (any("gt_" in s for s in select_cols))):
-        gts_requested = True
+    # track whether gt_* columns are involved in the SELECT, WHERE or both
+    gts_where_req = False
+    gts_select_req = False
+    if (gts_where != ""):
+        gts_where_req = True
+    if (any("gt_" in s for s in select_cols)):
+        gts_select_req = True
 
     for row in c:
         gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
         gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
         gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
-        if '*' in select_cols:
-            print "\t".join(str(row[col]) for col in all_cols),
-        for col in select_cols:
-            if col == "*": continue
-            if not col.startswith("gt"):
-                print str(row[col]) + "\t",
+        
+        # only report this row if =:
+        #    a) there was no where clause for gt_* cols
+        # or b) there was a gt_* clause and this row passed
+        if gts_where == "" or (gts_where != "" and eval(gts_where)):
+            # select *
+            if '*' in select_cols:
+                print "\t".join(str(row[col]) for col in all_cols),
+            # select chrom, is_lof
+            elif not gts_select_req:
+                print "\t".join(str(row[col]) for col in select_cols),
+            # select chrom, gt_types.HG00331, gt_types.HG00332
             else:
-                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
-                print str(eval(col.strip())) + "\t",
-        print
+                for col in select_cols:
+                    if col == "*": continue
+                    if not col.startswith("gt"):
+                        print str(row[col]) + "\t",
+                    else:
+                        # e.g., eval gt_types[141] and print result (0,1,2,etc.)
+                        print str(eval(col.strip())) + "\t",
+            print
 
 
 def get_query_file(args):
@@ -154,14 +167,8 @@ def get_query(args, c):
     Execute a user-defined query passed in via
     the command line.
     """
-    def map_samples_to_indicies(c):
-        sample_to_idx = {}
-        c.execute("select sample_id, name from samples")
-        for row in c:
-            sample_to_idx[row['name']] = row['sample_id'] - 1
-        return sample_to_idx
-
-    sample_to_idx = map_samples_to_indicies(c)
+    sample_to_idx = shortcut.map_samples_to_indicies(c)
+    
     query_pieces = args.query.split()
     if not any(s.startswith("gt") for s in query_pieces) and \
        not any("gt" in s for s in query_pieces):
@@ -179,226 +186,28 @@ def get_shortcut(args, c):
     shortcut function.
     """
     if args.shortcut == "variants":
-        shortcut_variants(args)
+        shortcut.shortcut_variants(args)
     elif args.shortcut == "samples":
-        shortcut_samples(args)
+        shortcut.shortcut_samples(args)
     elif args.shortcut == "genotypes":
-        shortcut_genotypes(args)
+        shortcut.shortcut_genotypes(c)
     elif args.shortcut == "tstv":
-        shortcut_tstv(args)
+        shortcut.shortcut_tstv(args)
     elif args.shortcut == "tstv-coding":
-        shortcut_tstv_coding(args)
+        shortcut.shortcut_tstv_coding(args)
     elif args.shortcut == "tstv-noncoding":
-        shortcut_tstv_noncoding(args)
+        shortcut.shortcut_tstv_noncoding(args)
     elif args.shortcut == "snp-counts":
-        shortcut_snpcounts(args)
+        shortcut.shortcut_snpcounts(args)
     elif args.shortcut == "ir-candidates":
-        shortcut_ir_candidates(args)
+        shortcut.shortcut_ir_candidates(args)
     elif args.shortcut == "sfs":
-        shortcut_sfs(args)
+        shortcut.shortcut_sfs(args)
     elif args.shortcut == "mds":
-        shortcut_mds(c)
+        shortcut.shortcut_mds(c)
     else:
         sys.stderr.write(shortcut + ": unrecognized get shortcut.\n")
         exit()
-
-
-###############################################################################
-# Individual functions for each shortcut.
-###############################################################################
-def shortcut_genotypes(args):
-    query = "SELECT v.chrom, v.start, v.end, \
-                     v.ref, v.alt, v.qual, \
-                     v.type, v.sub_type, \
-                     v.aaf, v.in_dbsnp, v.gene, \
-                     v.exonic, v.exon, v.impact, v.is_lof, \
-                     s.name, \
-                     g.genotype \
-             FROM    variants v, \
-                     genotypes g, \
-                     samples s \
-             WHERE   v.variant_id = g.variant_id \
-               AND   g.sample_id = s.sample_id"
-    sqlite_cli_call(args, query)
-
-
-def shortcut_ir_candidates(args):
-    query = "SELECT v.*, s.name, g.type \
-               FROM  variants v, \
-                     genotypes g, \
-                     samples s \
-               WHERE v.variant_id       = g.variant_id \
-                AND  g.sample_id       = s.sample_id \
-                AND  v.num_hom_alt = 1 \
-                AND  v.num_het = 0 \
-                AND  g.type   > 0 \
-                AND  v.exonic = 1 \
-                AND  v.depth >= 200 \
-                GROUP BY v.chrom, v.start, v.end, v.impact, v.gene, s.name, g.type" # 1 = het, 2 = hom_alt
-    sqlite_cli_call(args, query)
-
-
-def shortcut_samples(args):
-    query = "SELECT * FROM samples"
-    sqlite_cli_call(args, query)
-
-
-def shortcut_snpcounts(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
-    cmd = "SELECT ref, alt, count(1) \
-           FROM   variants \
-           WHERE  type = \'snp\' \
-           GROUP BY ref, alt"
-    # get the ref and alt alleles for all snps.
-    c.execute(cmd)
-
-    if args.use_header: args.separator.join(c.description)
-    for row in c:
-        ref   = str(row[0])
-        alt   = str(row[1])
-        count = row[2]
-        print ref + "->" + alt + args.separator + str(count)
-
-
-def shortcut_tstv(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
-    ts_cmd = "SELECT count(1) \
-           FROM  variants \
-           WHERE type = \'snp\' \
-           AND   sub_type = \'ts\'"
-    tv_cmd = "SELECT count(1) \
-          FROM  variants v \
-          WHERE type = \'snp\' \
-          AND   sub_type = \'tv\'"
-    # get the number of transitions
-    c.execute(ts_cmd)
-    ts = c.fetchone()[0]
-    # get the number of transversions
-    c.execute(tv_cmd)
-    tv = c.fetchone()[0]
-    # report the transitions, transversions, and the ts/tv ratio
-    print "transitions" + args.separator + "transversions" + args.separator + "ts/tv"
-    print str(ts) + "\t" + str(tv) + "\t" + str(float(ts)/float(tv))
-
-
-def shortcut_tstv_coding(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
-    ts_cmd = "SELECT count(1) \
-           FROM variants v \
-           WHERE v.type = \'snp\' \
-           AND v.sub_type = \'ts\' \
-           AND v.exonic = 1"
-    tv_cmd = "SELECT count(1) \
-          FROM variants v \
-          WHERE v.type = \'snp\' \
-          AND v.sub_type = \'tv\' \
-          AND v.exonic = 1"
-    # get the number of transitions
-    c.execute(ts_cmd)
-    ts = c.fetchone()[0]
-    # get the number of transversions
-    c.execute(tv_cmd)
-    tv = c.fetchone()[0]
-    # report the transitions, transversions, and the ts/tv ratio
-    print "transitions" + args.separator + "transversions" + args.separator + "ts/tv"
-    print str(ts) + "\t" + str(tv) + "\t" + str(float(ts)/float(tv))
-
-
-def shortcut_tstv_noncoding(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
-    ts_cmd = "SELECT count(1) \
-           FROM variants v \
-           WHERE v.type = \'snp\' \
-           AND v.sub_type = \'ts\' \
-           AND v.exonic = 0"
-    tv_cmd = "SELECT count(1) \
-          FROM variants v \
-          WHERE v.type = \'snp\' \
-          AND v.sub_type = \'tv\' \
-          AND v.exonic = 0"
-    # get the number of transitions
-    c.execute(ts_cmd)
-    ts = c.fetchone()[0]
-    # get the number of transversions
-    c.execute(tv_cmd)
-
-    tv = c.fetchone()[0]
-    # report the transitions, transversions, and the ts/tv ratio
-    print "transitions" + args.separator + "transversions" + args.separator + "ts/tv"
-    print str(ts) + args.separator + str(tv) + args.separator + str(float(ts)/float(tv))
-
-
-def shortcut_variants(args):
-    query = "SELECT * FROM variants"
-    sqlite_cli_call(args, query)
-
-
-def shortcut_sfs(args):
-    query = "SELECT round(aaf," + str(args.precision) + "), count(1) \
-             FROM (select aaf from variants group by variant_id) \
-             GROUP BY round(aaf," + str(args.precision) +")"
-    sqlite_cli_call(args, query)
-
-
-def shortcut_mds(c):
-    """
-    Compute the pairwise genetic distance between each sample. 
-    """
-    idx_to_sample = {}
-    c.execute("select sample_id, name from samples")
-    for row in c:
-        idx_to_sample[int(row['sample_id']) - 1] = row['name']
-    
-    mds_cmd = "SELECT DISTINCT v.variant_id, v.gt_types\
-               FROM variants v\
-               WHERE v.type = 'snp'"
-    c.execute(mds_cmd)
-
-    # keep a list of numeric genotype values
-    # for each sample
-    genotypes = defaultdict(list)
-    for row in c:
-        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
-        for idx, type in enumerate(gt_types):
-            genotypes[idx_to_sample[idx]].append(type)
-    
-    mds = defaultdict(float)
-    deno = defaultdict(float)
-    # convert the genotype list for each sample
-    # to a numpy array for performance.
-    # masks stores an array of T/F indicating which genotypes are
-    # known (True, [0,1,2]) and unknown (False [-1]). 
-    masks = {}
-    for sample in genotypes:
-        x = np.array(genotypes[sample])
-        genotypes[sample] = x
-        masks[sample] = \
-            np.ma.masked_where(genotypes[sample]>=0, genotypes[sample]).mask
-    # compute the euclidean distance for each s1/s2 combination
-    # using numpy's vectorized sum() and square() operations.
-    # we use the mask arrays to identify the indices of known genotypes
-    # for each sample.  by doing a bitwise AND of the mask arrays for the
-    # two samples, we have a mask array of variants where __both__ samples
-    # were called.
-    for s1 in genotypes:
-        for s2 in genotypes:
-            pair = (s1,s2)
-            # which variants have known genotypes for both samples?
-            both_mask = masks[s1] & masks[s2]
-            gt1 = genotypes[s1]
-            gt2 = genotypes[s2]
-            eucl_dist = float(np.sum(np.square((gt1-gt2)[both_mask]))) \
-                        / \
-                        float(np.sum(both_mask))
-            mds[pair] = eucl_dist
-            deno[pair] = np.sum(both_mask)
-
-    for pair in mds:
-        print "\t".join([str(pair), str(mds[pair]/deno[pair])])
 
 
 def get(parser, args):

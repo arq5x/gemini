@@ -123,9 +123,9 @@ whereCondition = Group(
     )
 whereExpression << whereCondition + ZeroOrMore( ( and_ | or_ ) + whereExpression )
 
-
 # Combine the grammar rules to define how a SQL statement should be parsed.
-select_core = (SELECT + Optional(DISTINCT | ALL) + Group(delimitedList(columnName))("select") +
+select_core = (SELECT + Optional(DISTINCT | ALL) + 
+                ( '*' | Group(delimitedList(columnName)))("select") +
                 fromToken +
                 tableNameList.setResultsName("tables") +
                 Optional(WHERE + Group(delimitedList(whereExpression))("where")))
