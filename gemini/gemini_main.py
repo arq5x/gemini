@@ -140,6 +140,8 @@ def main():
                               help='Report the site frequency spectrum of the variants.', default=False)
     parser_stats.add_argument('--mds', dest='mds', action='store_true',
                               help='Report the pairwise genetic distance between the samples.', default=False)
+    parser_stats.add_argument('--vars-by-sample', dest='variants_by_sample', action='store_true',
+                              help='Report the number of variants observed in each sample.', default=False)
     parser_stats.set_defaults(func=gemini_stats.stats)
 
 

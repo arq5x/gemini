@@ -8,7 +8,7 @@ def map_samples_to_indicies(c):
     sample_to_idx = {}
     c.execute("select sample_id, name from samples")
     for row in c:
-        name = row['name']
+        name = str(row['name'])
         idx = row['sample_id'] - 1
         sample_to_idx[name] = idx
     return sample_to_idx
@@ -21,7 +21,7 @@ def map_indicies_to_samples(c):
     idx_to_sample = {}
     c.execute("select sample_id, name from samples")
     for row in c:
-        name = row['name']
+        name = str(row['name'])
         idx = row['sample_id'] - 1
         idx_to_sample[idx] = name
     return idx_to_sample

@@ -2,7 +2,12 @@
 import sqlite3
 import os
 import sys
+import numpy as np
+import cPickle
+import zlib
+import collections
 
+import gemini_utils as util
 
 def get_tstv(c, args):
     """
@@ -98,12 +103,10 @@ def get_snpcounts(c, args):
     
     # get the ref and alt alleles for all snps.
     c.execute(query)
-
-    if args.use_header: 
-        print '\t'.join(['type', 'count'])
-        for row in c:
-            print '\t'.join([str(row['ref']) + "->" + str(row['alt']), \
-                             str(row['count(1)'])])
+    print '\t'.join(['type', 'count'])
+    for row in c:
+        print '\t'.join([str(row['ref']) + "->" + str(row['alt']), \
+                         str(row['count(1)'])])
 
 def get_sfs(c, args):
     """
@@ -120,7 +123,7 @@ def get_sfs(c, args):
         print '\t'.join([str(row[0]), str(row[1])])
 
 
-def shortcut_mds(c):
+def shortcut_mds(c, args):
     """
     Compute the pairwise genetic distance between each sample. 
     """
@@ -177,6 +180,30 @@ def shortcut_mds(c):
                             print "\t".join([str(pair), str(mds[pair]/deno[pair])])
 
 
+def get_variants_by_sample(c, args):
+    """
+    Report the number of variants observed for each sample
+    """
+    idx_to_sample = util.map_indicies_to_samples(c)
+    
+    query = "SELECT * FROM variants"
+    c.execute(query)
+    
+    # TO DO: counting variants per sample would be much faster
+    #        if we stored a sample_variants table.
+    sample_counts = collections.defaultdict(int)
+    for row in c:
+        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
+        for idx, gt_type in enumerate(gt_types):
+            if gt_type > 0: 
+                sample_counts[idx_to_sample[idx]] += 1
+    
+    # report the samples in descing order of the number of variants observed.
+    print '\t'.join(['sample', 'num_variants'])
+    for sample in sorted(sample_counts, key=sample_counts.get, reverse=True):
+        print sample + "\t" + str(sample_counts[sample])
+
+
 def stats(parser, args):
 
     if os.path.exists(args.db):
@@ -195,6 +222,8 @@ def stats(parser, args):
             get_snpcounts(c, args)
         elif args.sfs:
             get_sfs(c, args)
+        elif args.variants_by_sample:
+            get_variants_by_sample(c, args)
         elif args.mds:
             get_mds(c, args)
 
