@@ -7,7 +7,6 @@ import cPickle
 ##########################################################################
 # Convenience functions
 ##########################################################################
-
 def map_samples_to_indicies(c):
     """Return a dict mapping samples names (key)
        to sample indices in the numpy genotype arrays (value).
@@ -19,7 +18,8 @@ def map_samples_to_indicies(c):
         idx = row['sample_id'] - 1
         sample_to_idx[name] = idx
     return sample_to_idx
-    
+
+
 def map_indicies_to_samples(c):
     """Return a dict mapping samples indices in the 
        numpy arrays (key) to sample names.
@@ -84,7 +84,7 @@ def shortcut_genotypes(args, c):
     query = "SELECT  v.chrom, v.start, v.end, \
                      v.ref, v.alt, \
                      v.type, v.sub_type, \
-                     v.aaf, v.in_dbsnp, \
+                     v.aaf, v.in_dbsnp, v.gene, \
                      v.gts \
              FROM    variants v"
     c.execute(query)
@@ -173,12 +173,12 @@ def shortcut_tstv_coding(args, c):
            FROM variants v \
            WHERE v.type = \'snp\' \
            AND v.sub_type = \'ts\' \
-           AND v.exonic = 1"
+           AND v.is_coding = 1"
     tv_cmd = "SELECT count(1) \
           FROM variants v \
           WHERE v.type = \'snp\' \
           AND v.sub_type = \'tv\' \
-          AND v.coding = 1"
+          AND v.is_coding = 1"
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
@@ -201,12 +201,12 @@ def shortcut_tstv_noncoding(args, c):
            FROM variants v \
            WHERE v.type = \'snp\' \
            AND v.sub_type = \'ts\' \
-           AND v.exonic = 0"
+           AND v.is_coding = 0"
     tv_cmd = "SELECT count(1) \
           FROM variants v \
           WHERE v.type = \'snp\' \
           AND v.sub_type = \'tv\' \
-          AND v.coding = 0"
+          AND v.is_coding = 0"
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
