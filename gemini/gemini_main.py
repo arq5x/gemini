@@ -50,7 +50,7 @@ def main():
     parser_get.add_argument('--header', dest='use_header', action='store_true',
                             help='Add a header of column names to the output.', default=False)
     parser_get.add_argument('--sep', dest='separator', metavar='STRING',
-                            help='Output column separator', default="'\t'")
+                            help='Output column separator', default="\t")
     parser_get.add_argument('--prec', dest='precision', metavar='INT',
                             help='Output precision. Only relevant to certain shortcuts (e.g. sfs)', default=3)
     parser_get.add_argument('-s', dest='shortcut', default="variants", metavar='STRING',

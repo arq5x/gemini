@@ -4,7 +4,14 @@ import numpy as np
 import zlib
 import cPickle
 
+##########################################################################
+# Convenience functions
+##########################################################################
+
 def map_samples_to_indicies(c):
+    """Return a dict mapping samples names (key)
+       to sample indices in the numpy genotype arrays (value).
+    """
     sample_to_idx = {}
     c.execute("select sample_id, name from samples")
     for row in c:
@@ -14,6 +21,9 @@ def map_samples_to_indicies(c):
     return sample_to_idx
     
 def map_indicies_to_samples(c):
+    """Return a dict mapping samples indices in the 
+       numpy arrays (key) to sample names.
+    """
     idx_to_sample = {}
     c.execute("select sample_id, name from samples")
     for row in c:
@@ -23,7 +33,48 @@ def map_indicies_to_samples(c):
     return idx_to_sample
 
 
-def shortcut_genotypes(c):
+def get_col_names_and_indices(sqlite_description, ignore_gt_cols = False):
+    """Return a list of column namanes and a list of the row indicies.
+       Optionally exclude gt_* columns.
+    """
+    col_indices = []
+    col_names = []
+    for idx, col_tup in enumerate(sqlite_description):
+        # e.g., each col in sqlite desc is a tuple like:
+        # ('variant_id', None, None, None, None, None, None)
+        col_name = col_tup[0]
+        if ((not ignore_gt_cols) or \
+           (ignore_gt_cols and not col_name.startswith('gt'))):
+            col_indices.append(idx)
+            col_names.append(col_name)
+    return col_names, col_indices
+
+
+##########################################################################
+# Shortcuts
+##########################################################################
+
+def shortcut_variants(args, c):
+    """
+    Report all columns in the variant table, except for the
+    genotype vectors. 
+    """
+    query = "SELECT * FROM variants"
+    c.execute(query)
+    
+    # build a list of all the column indices that are NOT
+    # gt_* columns.  These will be the columns reported
+    (col_names, non_gt_idxs) = \
+        get_col_names_and_indices(c.description, ignore_gt_cols=True)
+
+    if args.use_header:
+        print args.separator.join(col for col in col_names)
+    for row in c:
+        print args.separator.join(str(row[i]) if row[i] is not None else "." \
+                                              for i in non_gt_idxs )
+
+
+def shortcut_genotypes(args, c):
     """For each variant, report each sample's genotype
        on a separate line.
     """
@@ -37,55 +88,61 @@ def shortcut_genotypes(c):
                      v.gts \
              FROM    variants v"
     c.execute(query)
+    
+    # build a list of all the column indices that are NOT
+    # gt_* columns.  These will be the columns reported
+    (col_names, non_gt_idxs) = \
+        get_col_names_and_indices(c.description, ignore_gt_cols=True)
+    col_names.append('sample')
+    col_names.append('genotype')
+    
+    if args.use_header: 
+        print args.separator.join(col for col in col_names)
     for row in c:
         gts = np.array(cPickle.loads(zlib.decompress(row['gts'])))
         for idx, gt in enumerate(gts):
-            print "\t".join(str(row[i]) for i in xrange(9)),
-            print "\t".join([idx_to_sample[idx], gt])
+            # xrange(len(row)-1) to avoid printing v.gts
+            print args.separator.join(str(row[i]) for i in xrange(len(row)-1)),
+            print args.separator.join([idx_to_sample[idx], gt])
 
 
-def shortcut_ir_candidates(args):
-    query = "SELECT v.*, s.name, g.type \
-               FROM  variants v, \
-                     genotypes g, \
-                     samples s \
-               WHERE v.variant_id       = g.variant_id \
-                AND  g.sample_id       = s.sample_id \
-                AND  v.num_hom_alt = 1 \
-                AND  v.num_het = 0 \
-                AND  g.type   > 0 \
-                AND  v.exonic = 1 \
-                AND  v.depth >= 200 \
-                GROUP BY v.chrom, v.start, v.end, v.impact, v.gene, s.name, g.type" # 1 = het, 2 = hom_alt
-    sqlite_cli_call(args, query)
-
-
-def shortcut_samples(args):
+def shortcut_samples(args, c):
+    """
+    Report all of the information about the samples in the DB
+    """
     query = "SELECT * FROM samples"
-    sqlite_cli_call(args, query)
+    c.execute(query)
+    
+    (col_names, col_idxs) = get_col_names_and_indices(c.description)
+    if args.use_header: 
+        print args.separator.join(col_names)
+    for row in c:
+        print args.separator.join(str(row[i]) if row[i] is not None else "." \
+                                              for i in xrange(len(row)) )
 
 
-def shortcut_snpcounts(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
-    cmd = "SELECT ref, alt, count(1) \
+def shortcut_snpcounts(args, c):
+    """
+    Report the count of each type of SNP.
+    """
+    query = "SELECT ref, alt, count(1) \
            FROM   variants \
            WHERE  type = \'snp\' \
            GROUP BY ref, alt"
     # get the ref and alt alleles for all snps.
-    c.execute(cmd)
+    c.execute(query)
 
-    if args.use_header: args.separator.join(c.description)
+    if args.use_header: 
+        print args.separator.join(['type', 'count'])
     for row in c:
-        ref   = str(row[0])
-        alt   = str(row[1])
-        count = row[2]
-        print ref + "->" + alt + args.separator + str(count)
+        print args.separator.join([str(row['ref']) + "->" + str(row['alt']), \
+                                   str(row['count(1)'])])
 
 
-def shortcut_tstv(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
+def shortcut_tstv(args, c):
+    """
+    Report the transition / transversion ratio.
+    """
     ts_cmd = "SELECT count(1) \
            FROM  variants \
            WHERE type = \'snp\' \
@@ -101,13 +158,17 @@ def shortcut_tstv(args):
     c.execute(tv_cmd)
     tv = c.fetchone()[0]
     # report the transitions, transversions, and the ts/tv ratio
-    print "transitions" + args.separator + "transversions" + args.separator + "ts/tv"
-    print str(ts) + "\t" + str(tv) + "\t" + str(float(ts)/float(tv))
+    print "transitions" + args.separator + \
+          "transversions" + args.separator + "ts/tv"
+    print str(ts) + args.separator + \
+          str(tv) + args.separator + \
+          str(float(ts)/float(tv))
 
 
-def shortcut_tstv_coding(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
+def shortcut_tstv_coding(args, c):
+    """
+    Report the transition / transversion ratio in coding regions.
+    """
     ts_cmd = "SELECT count(1) \
            FROM variants v \
            WHERE v.type = \'snp\' \
@@ -117,7 +178,7 @@ def shortcut_tstv_coding(args):
           FROM variants v \
           WHERE v.type = \'snp\' \
           AND v.sub_type = \'tv\' \
-          AND v.exonic = 1"
+          AND v.coding = 1"
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
@@ -125,13 +186,17 @@ def shortcut_tstv_coding(args):
     c.execute(tv_cmd)
     tv = c.fetchone()[0]
     # report the transitions, transversions, and the ts/tv ratio
-    print "transitions" + args.separator + "transversions" + args.separator + "ts/tv"
-    print str(ts) + "\t" + str(tv) + "\t" + str(float(ts)/float(tv))
+    print "transitions" + args.separator + \
+          "transversions" + args.separator + "ts/tv"
+    print str(ts) + args.separator + \
+          str(tv) + args.separator + \
+          str(float(ts)/float(tv))
 
 
-def shortcut_tstv_noncoding(args):
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
+def shortcut_tstv_noncoding(args, c):
+    """
+    Report the transition / transversion ratio in coding regions.
+    """
     ts_cmd = "SELECT count(1) \
            FROM variants v \
            WHERE v.type = \'snp\' \
@@ -141,7 +206,7 @@ def shortcut_tstv_noncoding(args):
           FROM variants v \
           WHERE v.type = \'snp\' \
           AND v.sub_type = \'tv\' \
-          AND v.exonic = 0"
+          AND v.coding = 0"
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
@@ -150,20 +215,26 @@ def shortcut_tstv_noncoding(args):
 
     tv = c.fetchone()[0]
     # report the transitions, transversions, and the ts/tv ratio
-    print "transitions" + args.separator + "transversions" + args.separator + "ts/tv"
-    print str(ts) + args.separator + str(tv) + args.separator + str(float(ts)/float(tv))
+    print "transitions" + args.separator + \
+          "transversions" + args.separator + "ts/tv"
+    print str(ts) + args.separator + \
+          str(tv) + args.separator + \
+          str(float(ts)/float(tv))
 
 
-def shortcut_variants(args):
-    query = "SELECT * FROM variants"
-    sqlite_cli_call(args, query)
-
-
-def shortcut_sfs(args):
+def shortcut_sfs(args, c):
+    """
+    Report the site frequency spectrum
+    """
     query = "SELECT round(aaf," + str(args.precision) + "), count(1) \
              FROM (select aaf from variants group by variant_id) \
-             GROUP BY round(aaf," + str(args.precision) +")"
-    sqlite_cli_call(args, query)
+             GROUP BY round(aaf," + str(args.precision) + ")"
+             
+    c.execute(query)
+    if args.use_header:
+        print args.separator.join(['aaf', 'count'])
+    for row in c:
+        print args.separator.join([str(row[0]), str(row[1])])
 
 
 def shortcut_mds(c):
@@ -175,10 +246,10 @@ def shortcut_mds(c):
     for row in c:
         idx_to_sample[int(row['sample_id']) - 1] = row['name']
     
-    mds_cmd = "SELECT DISTINCT v.variant_id, v.gt_types\
+    query = "SELECT DISTINCT v.variant_id, v.gt_types\
                FROM variants v\
                WHERE v.type = 'snp'"
-    c.execute(mds_cmd)
+    c.execute(query)
 
     # keep a list of numeric genotype values
     # for each sample

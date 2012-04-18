@@ -186,25 +186,23 @@ def get_shortcut(args, c):
     shortcut function.
     """
     if args.shortcut == "variants":
-        shortcut.shortcut_variants(args)
+        shortcut.shortcut_variants(args, c)
     elif args.shortcut == "samples":
-        shortcut.shortcut_samples(args)
+        shortcut.shortcut_samples(args, c)
     elif args.shortcut == "genotypes":
-        shortcut.shortcut_genotypes(c)
+        shortcut.shortcut_genotypes(args, c)
     elif args.shortcut == "tstv":
-        shortcut.shortcut_tstv(args)
+        shortcut.shortcut_tstv(args, c)
     elif args.shortcut == "tstv-coding":
-        shortcut.shortcut_tstv_coding(args)
+        shortcut.shortcut_tstv_coding(args, c)
     elif args.shortcut == "tstv-noncoding":
-        shortcut.shortcut_tstv_noncoding(args)
+        shortcut.shortcut_tstv_noncoding(args, c)
     elif args.shortcut == "snp-counts":
-        shortcut.shortcut_snpcounts(args)
-    elif args.shortcut == "ir-candidates":
-        shortcut.shortcut_ir_candidates(args)
+        shortcut.shortcut_snpcounts(args, c)
     elif args.shortcut == "sfs":
-        shortcut.shortcut_sfs(args)
+        shortcut.shortcut_sfs(args, c)
     elif args.shortcut == "mds":
-        shortcut.shortcut_mds(c)
+        shortcut.shortcut_mds(args, c)
     else:
         sys.stderr.write(shortcut + ": unrecognized get shortcut.\n")
         exit()
