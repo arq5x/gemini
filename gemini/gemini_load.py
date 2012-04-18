@@ -10,7 +10,7 @@ import sqlite3
 import numpy as np
 
 # third-party imports
-import vcf
+import cyvcf as vcf
 import pysam
 
 # gemini modules
@@ -82,6 +82,7 @@ def prepare_variation(args, var, v_id):
     is_exonic = False
     is_coding = False
     is_lof    = False
+    gene      = None
     if impacts is not None:
         for idx, impact in enumerate(impacts):
             var_impact = [v_id, (idx+1), impact.gene, 
@@ -92,6 +93,7 @@ def prepare_variation(args, var, v_id):
                           impact.sift_pred, impact.sift_score,
                           impact.condel_pred, impact.condel_score]
             variant_impacts.append(var_impact)
+            gene = impact.gene
             if impact.exonic == True: is_exonic = True
             if impact.coding == True: is_coding = True
             if impact.is_lof == True: is_lof    = True
@@ -108,6 +110,7 @@ def prepare_variation(args, var, v_id):
                in_segdup, hom_ref, het,
                hom_alt, unknown, aaf,
                hwe_p_value, inbreeding_coeff, pi_hat,
+               gene,
                is_exonic, is_coding, is_lof,
                infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
@@ -140,7 +143,7 @@ def prepare_samples(samples, ped_file, sample_to_id, cursor):
         database.insert_sample(cursor, sample_list)
 
 
-def populate_db_from_vcf(args, cursor, buffer_size = 20000):
+def populate_db_from_vcf(args, cursor, buffer_size = 10000):
     """
     """
     # collect of the the add'l annotation files

@@ -66,6 +66,7 @@ def create_tables(cursor):
                                                             hwe float,                                  \
                                                             inbreeding_coeff float,                     \
                                                             pi float,                                   \
+                                                            gene text default NULL,                     \
                                                             is_exonic bool,                             \
                                                             is_coding bool,                             \
                                                             is_lof bool,                                \
@@ -129,7 +130,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
