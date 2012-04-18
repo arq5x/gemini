@@ -100,7 +100,8 @@ def prepare_variation(args, var, v_id):
 
     # construct the core variant record.
     # 1 row per variant to VARIANTS table
-    variant = [var.CHROM, var.start, var.end, 
+    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    variant = [chrom, var.start, var.end, 
                v_id, var.REF, ','.join(var.ALT), 
                var.QUAL, filter, var.var_type, 
                var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
