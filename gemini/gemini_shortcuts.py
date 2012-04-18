@@ -154,6 +154,27 @@ def shortcut_region(args, c):
                                               for i in non_gt_idxs)
 
 
+def shortcut_gene(args, c):
+    """
+    Report all variants in a specific gene. 
+    """
+    query = "SELECT * \
+    FROM variants v \
+    WHERE v.gene = " + args.gene
+    c.execute(query)
+
+    # build a list of all the column indices that are NOT
+    # gt_* columns.  These will be the columns reported
+    (col_names, non_gt_idxs) = \
+    get_col_names_and_indices(c.description, ignore_gt_cols=True)
+
+    if args.use_header:
+        print args.separator.join(col for col in col_names)
+        for row in c:
+            print args.separator.join(str(row[i]) if row[i] is not None else "." \
+            for i in non_gt_idxs)
+
+
 def shortcut_snpcounts(args, c):
     """
     Report the count of each type of SNP.

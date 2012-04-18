@@ -193,6 +193,8 @@ def get_shortcut(args, c):
         shortcut.shortcut_genotypes(args, c)
     elif args.shortcut == "region":
         shortcut.shortcut_region(args, c)
+    elif args.shortcut == "gene":
+        shortcut.shortcut_gene(args, c)
     elif args.shortcut == "tstv":
         shortcut.shortcut_tstv(args, c)
     elif args.shortcut == "tstv-coding":
