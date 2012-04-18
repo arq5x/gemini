@@ -4,21 +4,61 @@ import os.path
 import sys
 import argparse
 import textwrap
-import gemini_load, gemini_query, gemini_get, \
+import gemini_load, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
        gemini_update
+
+def examples(parser, args):
+    
+    print
+    print "[load] - load a VCF file into a gemini database:"
+    print "   gemini load -v my.vcf my.db"
+    print "   gemini load -v my.vcf -t snpEff my.db"
+    print "   gemini load -v my.vcf -t VEP my.db"
+    print
+
+    print "[stats] - report basic statistics about your variants:"
+    print "   gemini stats --tstv my.db"
+    print "   gemini stats --tstv-coding my.db"
+    print "   gemini stats --sfs my.db"
+    print "   gemini stats --snp-counts my.db"
+    print
+    
+    print "[query] - explore the database with ad hoc queries:"
+    print "   gemini query -q \"select * from variants where is_lof = 1 and aaf <= 0.01\" my.db"
+    print "   gemini query -q \"select chrom, pos, gt_bases.NA12878 from variants\" my.db"
+    print "   gemini query -q \"select chrom, pos, in_omim, clin_sigs from variants\" my.db"
+    print
+
+    print "[dump] - convenient \"data dumps\":"
+    print "   gemini dump --variants my.db"
+    print "   gemini dump --genotypes my.db"
+    print "   gemini dump --samples my.db"
+    print
+    
+    print "[region] - access variants in specific genomic regions:"
+    print "   gemini region --reg chr1:100-200 my.db"
+    print "   gemini region --gene TP53 my.db"
+    print
+    
+    exit()
+
 
 def main():
     
     #########################################
     # create the top-level parser
     #########################################
-    parser = argparse.ArgumentParser(prog='gemini')
-    subparsers = parser.add_subparsers()
+    parser = argparse.ArgumentParser(prog='gemini',
+                                     usage='%(prog)s <command> [options]')
+    subparsers = parser.add_subparsers(title='commands')
 
+    # $ gemini examples
+    parser_examples = subparsers.add_parser('examples', help='show usage examples')
+    parser_examples.set_defaults(func=examples)
 
     # $ gemini load
-    parser_load = subparsers.add_parser('load')
+    parser_load = subparsers.add_parser('load',  help='load a VCF file in gemini database')
     parser_load.add_argument('db', metavar='db',
                             help='The name of the database to be created.')
     parser_load.add_argument('-v', dest='vcf', 
@@ -38,7 +78,7 @@ def main():
 
 
     # $ gemini query
-    parser_query = subparsers.add_parser('query', formatter_class=argparse.RawTextHelpFormatter)
+    parser_query = subparsers.add_parser('query',  help='issue ad hoc SQL queries to the DB')
     parser_query.add_argument('db', metavar='db',  
                             help='The name of the database to be queried.')
     parser_query.add_argument('-q', dest='query', metavar='QUERY_STR',
@@ -53,7 +93,7 @@ def main():
 
 
     # $ gemini dump
-    parser_dump = subparsers.add_parser('dump', formatter_class=argparse.RawTextHelpFormatter)
+    parser_dump = subparsers.add_parser('dump', help='shortcuts for extracting data from the DB')
     parser_dump.add_argument('db', metavar='db',  
                             help='The name of the database to be queried.')
     parser_dump.add_argument('--variants', dest='variants', action='store_true',
@@ -70,7 +110,7 @@ def main():
 
 
     # $ gemini region
-    parser_region = subparsers.add_parser('region', formatter_class=argparse.RawTextHelpFormatter)
+    parser_region = subparsers.add_parser('region', help='extract variants from specific genomic loci')
     parser_region.add_argument('db', metavar='db',  
                             help='The name of the database to be queried.')
     parser_region.add_argument('--reg', dest='region', metavar='STRING',
@@ -85,7 +125,7 @@ def main():
 
 
     # $ gemini stats
-    parser_stats = subparsers.add_parser('stats', formatter_class=argparse.RawTextHelpFormatter)
+    parser_stats = subparsers.add_parser('stats', help='compute useful variant stastics')
     parser_stats.add_argument('db', metavar='db',  
                               help='The name of the database to be queried.')
     parser_stats.add_argument('--tstv', dest='tstv', action='store_true',
@@ -101,40 +141,6 @@ def main():
     parser_stats.add_argument('--mds', dest='mds', action='store_true',
                               help='Report the pairwise genetic distance between the samples.', default=False)
     parser_stats.set_defaults(func=gemini_stats.stats)
-    
-
-
-
-    #######################################################
-    # "pop get" create the parser for the "get" command
-    #######################################################
-    parser_get = subparsers.add_parser('get', formatter_class=argparse.RawTextHelpFormatter)
-    parser_get.add_argument('db', metavar='db',  
-                            help='The name of the database to be queried.')
-    parser_get.add_argument('-q', dest='query', metavar='STRING',
-                            help='The query to be issued to the database')
-    parser_get.add_argument('-f', dest='queryfile', metavar='FILE', 
-                            help='A text file containing the query to be issued.')
-    parser_get.add_argument('--header', dest='use_header', action='store_true',
-                            help='Add a header of column names to the output.', default=False)
-    parser_get.add_argument('--sep', dest='separator', metavar='STRING',
-                            help='Output column separator', default="\t")
-    parser_get.add_argument('--reg', dest='region', metavar='STRING',
-                            help='Specify a chromosomal region chr:start-end')
-    parser_get.add_argument('--gene', dest='gene', metavar='STRING',
-                            help='Specify a gene of interest')
-    parser_get.add_argument('--prec', dest='precision', metavar='INT',
-                            help='Output precision. Only relevant to certain shortcuts (e.g. sfs)', default=3)
-    parser_get.add_argument('-s', dest='shortcut', default="variants", metavar='STRING',
-                            help="The shortcut query to be issued to the database. Options are:\n"
-                           "  variants        - all rows/columns from the variants table.\n"
-                           "  samples         - all rows/columns from the samples table.\n"
-                           "  genotypes       - one line per variant and sample genotype.\n"
-                           "  snp-counts      - the count of each type of SNP (A->G, G->T, etc.).\n"
-                           "  sfs             - report the site frequency spectrum of the variants.\n"
-                           "  mds             - returns the genetic distance between any two samples.\n"
-                           )
-    parser_get.set_defaults(func=gemini_get.get)
 
 
     #######################################################
@@ -157,6 +163,6 @@ def main():
     #######################################################
     args = parser.parse_args()
     args.func(parser, args)
-
+    
 if __name__ == "__main__":
     main()
