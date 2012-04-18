@@ -191,6 +191,8 @@ def get_shortcut(args, c):
         shortcut.shortcut_samples(args, c)
     elif args.shortcut == "genotypes":
         shortcut.shortcut_genotypes(args, c)
+    elif args.shortcut == "region":
+        shortcut.shortcut_region(args, c)
     elif args.shortcut == "tstv":
         shortcut.shortcut_tstv(args, c)
     elif args.shortcut == "tstv-coding":

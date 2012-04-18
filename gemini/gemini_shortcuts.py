@@ -2,6 +2,7 @@
 import sqlite3
 import numpy as np
 import zlib
+import re
 import cPickle
 
 ##########################################################################
@@ -119,6 +120,38 @@ def shortcut_samples(args, c):
     for row in c:
         print args.separator.join(str(row[i]) if row[i] is not None else "." \
                                               for i in xrange(len(row)) )
+
+
+def shortcut_region(args, c):
+    """
+    Report all variants in a specific genomic region. 
+    """
+    region_regex = re.compile("(\S+):(\d+)-(\d+)")
+    region = region_regex.findall(args.region)[0]
+    if len(region) != 3:
+        sys.exit("Malformed region (--reg) string")
+
+    chrom = region[0]
+    start = region[1]
+    end   = region[2]
+
+    query = "SELECT * \
+             FROM variants v \
+             WHERE v.chrom = " + "'" + chrom + "'" + \
+             " AND ((v.start BETWEEN " + start + " AND " + end + ")" +\
+             " OR (v.end BETWEEN " + start + " AND " + end + "))"
+    c.execute(query)
+    
+    # build a list of all the column indices that are NOT
+    # gt_* columns.  These will be the columns reported
+    (col_names, non_gt_idxs) = \
+        get_col_names_and_indices(c.description, ignore_gt_cols=True)
+    
+    if args.use_header:
+        print args.separator.join(col for col in col_names)
+    for row in c:
+        print args.separator.join(str(row[i]) if row[i] is not None else "." \
+                                              for i in non_gt_idxs)
 
 
 def shortcut_snpcounts(args, c):

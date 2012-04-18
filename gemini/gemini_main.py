@@ -51,6 +51,8 @@ def main():
                             help='Add a header of column names to the output.', default=False)
     parser_get.add_argument('--sep', dest='separator', metavar='STRING',
                             help='Output column separator', default="\t")
+    parser_get.add_argument('--reg', dest='region', metavar='STRING',
+                            help='Specify a chromosomal region chr:start-end')
     parser_get.add_argument('--prec', dest='precision', metavar='INT',
                             help='Output precision. Only relevant to certain shortcuts (e.g. sfs)', default=3)
     parser_get.add_argument('-s', dest='shortcut', default="variants", metavar='STRING',
@@ -58,6 +60,7 @@ def main():
                            "  variants        - all rows/columns from the variants table.\n"
                            "  samples         - all rows/columns from the samples table.\n"
                            "  genotypes       - one line per variant and sample genotype.\n"
+                           "  region          - returns all variants in a given region (--reg chr:start-end).\n"
                            "  tstv            - report the transition/transversion (Ts/Tv) ratio.\n"
                            "  tstv-coding     - report the Ts/Tv ratio in coding regions.\n"
                            "  tstv-noncoding  - report the Ts/Tv ratio in non-coding regions.\n"
