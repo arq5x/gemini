@@ -7,11 +7,12 @@ import re
 import cPickle
 import numpy as np
 import zlib
-#import sql
-import sql_extended as sql
-import gemini_shortcuts as shortcut
 from pyparsing import ParseResults
 from collections import defaultdict
+
+# gemini imports
+import gemini_utils as util
+import sql_extended as sql
 
 # REGEX to trap the special gt_* columns
 gt_sel_re = re.compile("GT(\S*)\.(\S+)")
@@ -167,7 +168,7 @@ def get_query(args, c):
     Execute a user-defined query passed in via
     the command line.
     """
-    sample_to_idx = shortcut.map_samples_to_indicies(c)
+    sample_to_idx = util.map_samples_to_indicies(c)
     
     query_pieces = args.query.split()
     if not any(s.startswith("gt") for s in query_pieces) and \
@@ -179,40 +180,7 @@ def get_query(args, c):
         apply_refined_query(c, tokens, select_cols, main_where, gts_where)
 
 
-
-def get_shortcut(args, c):
-    """
-    Router for calling the requested
-    shortcut function.
-    """
-    if args.shortcut == "variants":
-        shortcut.shortcut_variants(args, c)
-    elif args.shortcut == "samples":
-        shortcut.shortcut_samples(args, c)
-    elif args.shortcut == "genotypes":
-        shortcut.shortcut_genotypes(args, c)
-    elif args.shortcut == "region":
-        shortcut.shortcut_region(args, c)
-    elif args.shortcut == "gene":
-        shortcut.shortcut_gene(args, c)
-    elif args.shortcut == "tstv":
-        shortcut.shortcut_tstv(args, c)
-    elif args.shortcut == "tstv-coding":
-        shortcut.shortcut_tstv_coding(args, c)
-    elif args.shortcut == "tstv-noncoding":
-        shortcut.shortcut_tstv_noncoding(args, c)
-    elif args.shortcut == "snp-counts":
-        shortcut.shortcut_snpcounts(args, c)
-    elif args.shortcut == "sfs":
-        shortcut.shortcut_sfs(args, c)
-    elif args.shortcut == "mds":
-        shortcut.shortcut_mds(args, c)
-    else:
-        sys.stderr.write(shortcut + ": unrecognized get shortcut.\n")
-        exit()
-
-
-def get(parser, args):
+def query(parser, args):
 
     if (args.db is None):
         parser.print_help()
@@ -227,10 +195,6 @@ def get(parser, args):
             get_query(args, c)
         elif args.queryfile is not None:
             get_query_file(args)
-        elif args.shortcut is not None:
-            get_shortcut(args, c)
-    else:
-        pass
 
 if __name__ == "__main__":
     main()
