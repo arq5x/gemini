@@ -121,9 +121,10 @@ def get_esp_info(var):
                 # get the % minor allele frequencies      
                 if info_map.get('MAF') is not None:
                     lines = info_map['MAF'].split(",")
-                    aaf_EA = lines[0]
-                    aaf_AA = lines[1]
-                    aaf_ALL = lines[2]
+                    # divide by 100 because ESP reports allele frequencies as percentages.
+                    aaf_EA = float(lines[0]) / 100.0
+                    aaf_AA = float(lines[0]) / 100.0
+                    aaf_ALL = float(lines[0]) / 100.0
                     
                 #Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and info_map['EXOME_CHIP'] == "no":
