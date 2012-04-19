@@ -150,8 +150,12 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
     # collect of the the add'l annotation files
     annotations.load_annos()
     # open the VCF file for reading
-    vcf_reader = vcf.VCFReader(open(args.vcf), 'rb')
-
+    vcf_reader = None
+    if args.vcf.endswith(".gz"):
+        vcf_reader = vcf.VCFReader(open(args.vcf), 'rb', compressed=True)
+    else:
+        vcf_reader = vcf.VCFReader(open(args.vcf), 'rb')
+    
     if not args.no_genotypes:
         samples = vcf_reader.samples
         sample_to_id = {}
@@ -171,13 +175,13 @@ def populate_db_from_vcf(args, cursor, buffer_size = 10000):
         var_buffer.append(variant)
         # add each of the impact for this variant (1 per gene/transcript)
         for var_impact in variant_impacts:
-            buffer_count += 1
             var_impacts_buffer.append(var_impact)
         
         # only infer genotypes if requested
         if not args.noload_genotypes and not args.no_genotypes:
             pass
-        
+
+        buffer_count += 1
         # buffer full - time to insert into DB
         if buffer_count >= buffer_size:
             sys.stderr.write(str(v_id) + " variants processed.\n")
