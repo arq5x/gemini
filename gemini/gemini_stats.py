@@ -198,10 +198,54 @@ def get_variants_by_sample(c, args):
             if gt_type > 0: 
                 sample_counts[idx_to_sample[idx]] += 1
     
-    # report the samples in descing order of the number of variants observed.
+    # report the samples in DESC'ing order of the number of variants observed.
     print '\t'.join(['sample', 'num_variants'])
     for sample in sorted(sample_counts, key=sample_counts.get, reverse=True):
         print sample + "\t" + str(sample_counts[sample])
+
+
+def get_gtcounts_by_sample(c, args):
+    """
+    Report the count of each genotype class
+    observed for each sample.
+    """
+    idx_to_sample = util.map_indicies_to_samples(c)
+    
+    # light struct for tracking the count of each genotype type foreach sample
+    class GenoCounts(object):
+        """struct for counting the occ. of each gt type."""
+        def __init__(self):
+            self.hom_ref = 0
+            self.het = 0
+            self.hom_alt = 0
+            self.unknown = 0
+
+    sample_counts = collections.defaultdict(GenoCounts)
+    query = "SELECT * FROM variants"
+    c.execute(query)
+    # count the number of each genotype type obs. for each sample.
+    for row in c:
+        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
+        for idx, gt_type in enumerate(gt_types):
+            sample = idx_to_sample[idx]
+            if gt_type == 0: 
+                sample_counts[sample].hom_ref += 1
+            elif gt_type == 1: 
+                sample_counts[sample].het += 1
+            elif gt_type == 2: 
+                sample_counts[sample].hom_alt += 1
+            elif gt_type == -1: 
+                sample_counts[sample].unknown += 1
+
+    # report.
+    print '\t'.join(['sample', 'num_hom_ref', 'num_het', 
+                     'num_hom_alt', 'num_unknown'])
+    for sample in sorted(sample_counts, key=sample_counts.get, reverse=True):
+        print "\t".join(str(s) for s in [sample, 
+                                         sample_counts[sample].hom_ref,
+                                         sample_counts[sample].het,
+                                         sample_counts[sample].hom_alt,
+                                         sample_counts[sample].hom_alt])
 
 
 def stats(parser, args):
@@ -224,6 +268,8 @@ def stats(parser, args):
             get_sfs(c, args)
         elif args.variants_by_sample:
             get_variants_by_sample(c, args)
+        elif args.genotypes_by_sample:
+            get_gtcounts_by_sample(c, args)
         elif args.mds:
             get_mds(c, args)
 

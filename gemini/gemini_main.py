@@ -142,6 +142,8 @@ def main():
                               help='Report the pairwise genetic distance between the samples.', default=False)
     parser_stats.add_argument('--vars-by-sample', dest='variants_by_sample', action='store_true',
                               help='Report the number of variants observed in each sample.', default=False)
+    parser_stats.add_argument('--gts-by-sample', dest='genotypes_by_sample', action='store_true',
+                              help='Report the count of each genotype class obs. for each sample.', default=False)
     parser_stats.set_defaults(func=gemini_stats.stats)
 
 
