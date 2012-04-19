@@ -7,6 +7,8 @@ import textwrap
 import gemini_load, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
        gemini_update
+import tool_compound_hets
+
 
 def examples(parser, args):
     
@@ -145,6 +147,19 @@ def main():
     parser_stats.add_argument('--gts-by-sample', dest='genotypes_by_sample', action='store_true',
                               help='Report the count of each genotype class obs. for each sample.', default=False)
     parser_stats.set_defaults(func=gemini_stats.stats)
+
+
+
+    #######################################################
+    # TOOLs
+    #######################################################
+    # $ gemini comp_hets
+    parser_comp_hets = subparsers.add_parser('comp_hets', help='Identify compound heterozygotes')
+    parser_comp_hets.add_argument('db', metavar='db',  help='The name of the database to be created.')
+    parser_comp_hets.set_defaults(func=tool_compound_hets.run)
+
+
+
 
 
     #######################################################
