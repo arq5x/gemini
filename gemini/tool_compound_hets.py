@@ -44,18 +44,21 @@ def get_compound_hets(c, args):
 
     comp_hets = collections.defaultdict(lambda: collections.defaultdict(list))
 
-    query = "SELECT * FROM variants where is_exonic = 1"
+    query = "SELECT * FROM variants \
+             WHERE is_coding = 1"
     c.execute(query)
     
-    # count the number of each genotype type obs. for each sample.
+    # screen each vr
     for row in c:
         gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
         gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
         gt_bases  = np.array(cPickle.loads(zlib.decompress(row['gts'])))
         
         site = Site(row)
-        # filters
-        if site.num_hets > 1: continue
+
+        # FILTERS
+        # 1. ignore if there are other individuals that are hets.
+        if site.num_hets > 1 and not args.allow_other_hets: continue
         
         for idx, gt_type in enumerate(gt_types):
             if gt_type == 1:

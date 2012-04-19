@@ -156,11 +156,12 @@ def main():
     # $ gemini comp_hets
     parser_comp_hets = subparsers.add_parser('comp_hets', help='Identify compound heterozygotes')
     parser_comp_hets.add_argument('db', metavar='db',  help='The name of the database to be created.')
+    parser_comp_hets.add_argument('--allow-other-hets', dest='allow_other_hets', action='store_true',
+                              help='Allow other het. individuals when screening candidates.', default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
-
-
-
-
+    
+    
+    
 
     #######################################################
     # "pop update" create the parser for the "update" command
