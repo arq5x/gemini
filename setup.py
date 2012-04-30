@@ -22,7 +22,8 @@ setup(
         version=version,
         #install_requires=['numpy>=1.6.0', 'pyparsing>=1.5.6', 'pysam>=0.6', 'pyvcf>=0.4.2'],
         # temp. until cyvcf is merged intop PyVcf
-        install_requires=['numpy>=1.6.0', 'pyparsing>=1.5.6', 'pysam>=0.6', 'cyvcf>=0.1.1'],
+        install_requires=['pyparsing>=1.5.6', 'pysam>=0.6', 'cyvcf>=0.1.1'],
+        #install_requires=['numpy>=1.6.0', 'pyparsing>=1.5.6', 'pysam>=0.6', 'cyvcf>=0.1.1'],
         dependency_links = ['http://github.com/arq5x/cyvcf/tarball/master#egg=cyvcf-0.1.1'],
         requires = ['python (>=2.5, <3.0)'],
         packages=['gemini',
