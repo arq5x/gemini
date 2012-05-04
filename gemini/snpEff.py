@@ -5,9 +5,10 @@ from collections import namedtuple
 from collections import defaultdict
 
 class EffectDetails(object):
-    def __init__(self, name, severity, detail_string):
+    def __init__(self, name, severity, detail_string, counter):
         fields = detail_string.split("|")
         self.effect_name = name
+        self.anno_id = counter
         self.effect_severity = severity
         self.impact = fields[1] if fields[1] != '' else None
         self.codon_change = fields[2] if fields[2] != '' else None
@@ -37,6 +38,8 @@ class EffectDetails(object):
             else:
                 self.coding = 1
         self.consequence = effect_dict[self.effect_name]
+        
+        
 
     def __str__(self):
         return "\t".join([self.consequence, self.effect_severity,
@@ -44,7 +47,7 @@ class EffectDetails(object):
                           self.aa_change, self.gene,
                           str(self.biotype), str(self.exonic),
                           str(self.coding), self.transcript,
-                          self.exon])
+                          self.exon, self.anno_id])
     def __repr__(self):
         return self.__str__()
 

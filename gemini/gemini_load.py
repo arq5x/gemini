@@ -19,6 +19,7 @@ import infotag
 import database
 import annotations
 import func_impact
+import severe_impact
 import popgen
 from compression import pack_blob
 
@@ -58,9 +59,30 @@ def prepare_variation(args, var, v_id):
     esp_info   = annotations.get_esp_info(var)
     # impact is a list of impacts for this variant
     impacts = None
+    severe_impacts = None
+    affected_gene = transcript = exon = codon_change = aa_change = consequence = effect_severity = None
+    polyphen_pred = polyphen_score = sift_pred = sift_score = condel_pred = condel_score = None
+    
     if args.anno_type is not None:
         impacts = func_impact.interpret_impact(args, var)
-
+        severe_impacts = severe_impact.interpret_severe_impact(args, var)
+        
+        affected_gene = severe_impacts.gene
+        transcript = severe_impacts.transcript
+        exon = severe_impacts.exon
+        codon_change = severe_impacts.codon_change
+        aa_change = severe_impacts.aa_change
+        consequence = severe_impacts.consequence
+        effect_severity = severe_impacts.effect_severity
+        polyphen_pred = severe_impacts.polyphen_pred
+        polyphen_score = severe_impacts.polyphen_score
+        sift_pred = severe_impacts.sift_pred
+        sift_score = severe_impacts.sift_score
+        condel_pred = severe_impacts.condel_pred
+        condel_score = severe_impacts.condel_score
+        anno_id = severe_impacts.anno_id
+        #print v_id, anno_id, var.start, var.end, consequence, transcript, aa_change, affected_gene, exon, polyphen_pred
+        
     # construct the filter string
     filter = None
     if var.FILTER is not None and var.FILTER != ".":
@@ -83,6 +105,7 @@ def prepare_variation(args, var, v_id):
     is_coding = False
     is_lof    = False
     gene      = None
+    
     if impacts is not None:
         for idx, impact in enumerate(impacts):
             var_impact = [v_id, (idx+1), impact.gene, 
@@ -97,12 +120,13 @@ def prepare_variation(args, var, v_id):
             if impact.exonic == True: is_exonic = True
             if impact.coding == True: is_coding = True
             if impact.is_lof == True: is_lof    = True
-
+            
+            
     # construct the core variant record.
     # 1 row per variant to VARIANTS table
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
     variant = [chrom, var.start, var.end, 
-               v_id, var.REF, ','.join(var.ALT), 
+               v_id, anno_id, var.REF, ','.join(var.ALT), 
                var.QUAL, filter, var.var_type, 
                var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                pack_blob(gt_phases), call_rate, in_dbsnp,
@@ -111,8 +135,11 @@ def prepare_variation(args, var, v_id):
                in_segdup, hom_ref, het,
                hom_alt, unknown, aaf,
                hwe_p_value, inbreeding_coeff, pi_hat,
-               gene,
-               is_exonic, is_coding, is_lof,
+               gene, affected_gene, transcript,    
+               is_exonic, is_coding, is_lof, exon, codon_change,
+               aa_change, consequence, effect_severity,
+               polyphen_pred, polyphen_score, sift_pred, 
+               sift_score, condel_pred, condel_score,
                infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
                infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),

@@ -40,6 +40,7 @@ def create_tables(cursor):
                                                             start integer,                              \
                                                             end integer,                                \
                                                             variant_id integer,                         \
+                                                            anno_id_severe integer,                     \
                                                             ref text,                                   \
                                                             alt text,                                   \
                                                             qual float,                                 \
@@ -67,9 +68,22 @@ def create_tables(cursor):
                                                             inbreeding_coeff float,                     \
                                                             pi float,                                   \
                                                             gene text default NULL,                     \
+                                                            affected_gene text,                         \
+                                                            affected_transcript text,                   \
                                                             is_exonic bool,                             \
                                                             is_coding bool,                             \
                                                             is_lof bool,                                \
+                                                            affected_exon text,                         \
+                                                            codon_change text,                          \
+                                                            aa_change text,                             \
+                                                            most_severe_impact text default NULL,       \
+                                                            impact_severity text,                       \
+                                                            polyphen_pred text,                         \
+                                                            polyphen_score float,                       \
+                                                            sift_pred text,                             \
+                                                            sift_score float,                           \
+                                                            condel_pred text,                           \
+                                                            condel_score float,                         \
                                                             depth integer default NULL,                 \
                                                             strand_bias float default NULL,             \
                                                             rms_map_qual float default NULL,            \
@@ -130,7 +144,9 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     

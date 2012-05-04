@@ -13,10 +13,11 @@ from collections import namedtuple
 from collections import defaultdict
 
 class EffectDetails(object):
-    def __init__(self, impact_string, severity, detail_string):
+    def __init__(self, impact_string, severity, detail_string, counter):
         fields = detail_string.split("|")
         self.effect_severity = severity
         self.effect_name = impact_string
+        self.anno_id = counter
         self.codon_change = fields[1] if fields[1] != '' else None
         self.aa_change = fields[2] if fields[2] != '' else None
         self.ensembl_gene = fields[3] if fields[3] != '' else None
@@ -75,7 +76,7 @@ class EffectDetails(object):
         return "\t".join([self.consequence, self.effect_severity,
                           self.codon_change, self.aa_change,
                           self.ensembl_gene, self.gene, self.transcript,
-                          self.exon, self.exonic, self.polyphen_pred,
+                          self.exon, self.exonic, self.anno_id, self.polyphen_pred,
                           self.polyphen_score, self.sift_pred, self.sift_score,
                           self.condel_pred, self.condel_score, self.coding, self.is_lof])
     def __repr__(self):
@@ -97,7 +98,8 @@ effect_names    = ["splice_acceptor_variant", "splice_donor_variant",
                    "5KB_upstream_variant", "500B_downstream_variant",
                    "5KB_downstream_variant", "regulatory_region_variant",
                    "TF_binding_site_variant", "intergenic_variant",
-                   "entirely_within_Gene", "deletion", "entirely_within_Transcript", "partial_overlap"]
+                   "entirely_within_Gene", "deletion", 
+                   "entirely_within_Transcript", "partial_overlap"]
                    
 
 effect_dict = defaultdict()
