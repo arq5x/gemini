@@ -112,18 +112,18 @@ def get_sfs(c, args):
     """
     Report the site frequency spectrum
     """
-    query = "SELECT round(aaf," + str(args.precision) + "), count(1) \
-             FROM (select aaf from variants group by variant_id) \
-             GROUP BY round(aaf," + str(args.precision) + ")"
-             
+    precision = 3
+    query = "SELECT round(aaf," + str(precision) + "), count(1) \
+             FROM variants \
+             GROUP BY round(aaf," + str(precision) + ")"
+
     c.execute(query)
-    if args.use_header:
-        print '\t'.join(['aaf', 'count'])
+    print '\t'.join(['aaf', 'count'])
     for row in c:
         print '\t'.join([str(row[0]), str(row[1])])
 
 
-def shortcut_mds(c, args):
+def get_mds(c, args):
     """
     Compute the pairwise genetic distance between each sample. 
     """
@@ -139,45 +139,58 @@ def shortcut_mds(c, args):
 
     # keep a list of numeric genotype values
     # for each sample
-    genotypes = defaultdict(list)
+    genotypes = collections.defaultdict(list)
     for row in c:
+        
         gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
+        
+        # at this point, gt_types is a numpy array
+        # idx:  0 1 2 3 4 5 6 .. #samples
+        # type [0 1 2 1 2 0 0 ..         ]
         for idx, type in enumerate(gt_types):
-            genotypes[idx_to_sample[idx]].append(type)
+            sample = idx_to_sample[idx]
+            genotypes[sample].append(type)
 
-            mds = defaultdict(float)
-            deno = defaultdict(float)
-            # convert the genotype list for each sample
-            # to a numpy array for performance.
-            # masks stores an array of T/F indicating which genotypes are
-            # known (True, [0,1,2]) and unknown (False [-1]). 
-            masks = {}
-            for sample in genotypes:
-                x = np.array(genotypes[sample])
-                genotypes[sample] = x
-                masks[sample] = \
-                np.ma.masked_where(genotypes[sample]>=0, genotypes[sample]).mask
-                # compute the euclidean distance for each s1/s2 combination
-                # using numpy's vectorized sum() and square() operations.
-                # we use the mask arrays to identify the indices of known genotypes
-                # for each sample.  by doing a bitwise AND of the mask arrays for the
-                # two samples, we have a mask array of variants where __both__ samples
-                # were called.
-                for s1 in genotypes:
-                    for s2 in genotypes:
-                        pair = (s1,s2)
-                        # which variants have known genotypes for both samples?
-                        both_mask = masks[s1] & masks[s2]
-                        gt1 = genotypes[s1]
-                        gt2 = genotypes[s2]
-                        eucl_dist = float(np.sum(np.square((gt1-gt2)[both_mask]))) \
-                        / \
-                        float(np.sum(both_mask))
-                        mds[pair] = eucl_dist
-                        deno[pair] = np.sum(both_mask)
+    mds = collections.defaultdict(float)
+    deno = collections.defaultdict(float)
+    # convert the genotype list for each sample
+    # to a numpy array for performance.
+    # masks stores an array of T/F indicating which genotypes are
+    # known (True, [0,1,2]) and unknown (False [-1]). 
+    masks = {}
+    for s in genotypes:
+        sample = str(s)
+        x = np.array(genotypes[sample])
+        genotypes[sample] = x
+        masks[sample] = \
+        np.ma.masked_where(genotypes[sample]>=0, genotypes[sample]).mask
 
-                        for pair in mds:
-                            print "\t".join([str(pair), str(mds[pair]/deno[pair])])
+    # compute the euclidean distance for each s1/s2 combination
+    # using numpy's vectorized sum() and square() operations.
+    # we use the mask arrays to identify the indices of known genotypes
+    # for each sample.  by doing a bitwise AND of the mask arrays for the
+    # two samples, we have a mask array of variants where __both__ samples
+    # were called.
+    for sample1 in genotypes:
+        for sample2 in genotypes:
+            pair = (sample1,sample2)
+            # which variants have known genotypes for both samples?
+            both_mask = masks[str(sample1)] & masks[str(sample2)]
+            genotype1 = genotypes[sample1]
+            genotype2 = genotypes[sample2]
+            
+            # distance between s1 and s2:
+            eucl_dist = float(np.sum(np.square((genotype1-genotype2)[both_mask]))) \
+            / \
+            float(np.sum(both_mask))
+            
+            mds[pair] = eucl_dist
+            deno[pair] = np.sum(both_mask)
+    
+    # report the pairwise MDS for each sample pair.
+    print "sample1\tsample2\tdistance"
+    for pair in mds:
+        print "\t".join([str(pair[0]), str(pair[1]), str(mds[pair]/deno[pair])])
 
 
 def get_variants_by_sample(c, args):

@@ -42,6 +42,11 @@ def examples(parser, args):
     print "   gemini region --reg chr1:100-200 my.db"
     print "   gemini region --gene TP53 my.db"
     print
+
+    print "[tools] - there are also many specific tools available"
+    print "   1. Find compound heterozygotes."    
+    print "     gemini comp_hets my.db"
+    print
     
     exit()
 

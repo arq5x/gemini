@@ -40,24 +40,23 @@ def get_compound_hets(c, args):
     Report the count of each genotype class
     observed for each sample.
     """
+    # build a mapping of the numpy array index to the appropriate sample name
+    # e.g. 0 == 109400005
+    #     37 == 147800025
     idx_to_sample = util.map_indicies_to_samples(c)
 
     comp_hets = collections.defaultdict(lambda: collections.defaultdict(list))
 
     query = "SELECT * FROM variants \
-             WHERE is_coding = 1"
+             WHERE is_coding = 1" # is_exonic - what about splice?
     c.execute(query)
-    
-    # screen each vr
+
     for row in c:
         gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
         gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
         gt_bases  = np.array(cPickle.loads(zlib.decompress(row['gts'])))
         
         site = Site(row)
-
-        # FILTERS
-        # 1. ignore if there are other individuals that are hets.
         if site.num_hets > 1 and not args.allow_other_hets: continue
         
         for idx, gt_type in enumerate(gt_types):
