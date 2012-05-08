@@ -62,12 +62,12 @@ including: ENCODE regulatory and histone modification tracks, conservation, GWAS
 Basic workflow
 ==============
 
-Import a VCF file into the ``gemini`` framework. We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools may be supported soon).  In the process of loading the VCF into the database framework, many other annotations are calculated for each variant and stored for subsequent querying/analysis.
+**Import a VCF file into the ``gemini`` framework. **
+We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools may be supported soon).  In the process of loading the VCF into the database framework, many other annotations are calculated for each variant and stored for subsequent querying/analysis.
     
     gemini load -v my.snpEff.vcf my.db
     
-Explore variation using shortcuts. Here are a few brief examples
-................................................................
+**Explore variation using shortcuts. Here are a few brief examples**
 
 Compute the transition / transversion ratio:
   
@@ -82,8 +82,7 @@ Compute the pairwise genetic distance for use with PCA:
     gemini stats -s mds my.db
 
 
-Explore variation  using custom queries. Here are a few brief examples:
-.......................................................................
+**Explore variation  using custom queries. Here are a few brief examples:**
 
 Extract all transitions with a call rate > 95%::
   
