@@ -66,8 +66,8 @@ Import a VCF file into the ``gemini`` framework. We recommend first annotating y
     
     gemini load -v my.snpEff.vcf my.db
     
-Explore variation therein using shortcuts. Here are a few brief examples
-------------------------------------------------------------------------
+Explore variation using shortcuts. Here are a few brief examples
+................................................................
 
 Compute the transition / transversion ratio:
   
@@ -82,8 +82,8 @@ Compute the pairwise genetic distance for use with PCA:
     gemini stats -s mds my.db
 
 
-Explore the variation therein using custom queries. Here are a few brief examples:
-----------------------------------------------------------------------------------
+Explore variation  using custom queries. Here are a few brief examples:
+.......................................................................
 
 Extract all transitions with a call rate > 95%::
   
