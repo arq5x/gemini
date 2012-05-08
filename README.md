@@ -65,7 +65,7 @@ Basic workflow
 **Import a VCF file into the ``gemini`` framework.**
 We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools may be supported soon).  In the process of loading the VCF into the database framework, many other annotations are calculated for each variant and stored for subsequent querying/analysis.
     
-    gemini load -v my.snpEff.vcf my.db
+    gemini load -v my.snpEff.vcf -t snpEff my.db
     
 **Explore variation using shortcuts. Here are a few brief examples**
 
