@@ -40,7 +40,6 @@ def create_tables(cursor):
                                                             start integer,                              \
                                                             end integer,                                \
                                                             variant_id integer,                         \
-                                                            anno_id_severe integer,                     \
                                                             ref text,                                   \
                                                             alt text,                                   \
                                                             qual float,                                 \
@@ -59,6 +58,7 @@ def create_tables(cursor):
                                                             rmsk text default NULL,                     \
                                                             in_cpg_island bool,                         \
                                                             in_segdup bool,                             \
+                                                            is_conserved,                               \
                                                             num_hom_ref integer,                        \
                                                             num_het integer,                            \
                                                             num_hom_alt integer,                        \

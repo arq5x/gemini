@@ -6,7 +6,7 @@ import argparse
 import textwrap
 import gemini_load, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
-       gemini_update
+       gemini_annotate
 import tool_compound_hets
 
 
@@ -153,7 +153,21 @@ def main():
                               help='Report the count of each genotype class obs. for each sample.', default=False)
     parser_stats.set_defaults(func=gemini_stats.stats)
 
-
+    
+    # gemini annotate
+    parser_get = subparsers.add_parser('annotate', help='Add new columns for custom annotations')
+    parser_get.add_argument('db', metavar='db',  help='The name of the database to be updated.')
+    parser_get.add_argument('-f', dest='anno_file',   help='The BED file containing the annotations')
+    parser_get.add_argument('-c', dest='col_name',  help='The name of the column to be added to the variant table.')
+    parser_get.add_argument('-t', dest='col_type',   default="append", 
+                           help="The type of data that the new column (-c) should store.\n"
+                           "Options are:\n"
+                           "        boolean - True if variant overlaps 1 or more features in -f. False otherwise.\n"
+                           "        count   - The count of features in -f that the variant overlaps.\n"
+                           "        list    - A list of values extracted from each feature in -f that the variant overlaps. Specify which column should be used from -f with the -e parm.\n")
+    parser_get.add_argument('-e', dest='col_extract',  help='The column number that should be extracted from -f for \"-t list\"')
+    parser_get.set_defaults(func=gemini_annotate.annotate)
+    
 
     #######################################################
     # TOOLs
@@ -165,22 +179,6 @@ def main():
                               help='Allow other het. individuals when screening candidates.', default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
     
-    
-    
-
-    #######################################################
-    # "pop update" create the parser for the "update" command
-    #######################################################
-    parser_get = subparsers.add_parser('update', formatter_class=argparse.RawTextHelpFormatter)
-    parser_get.add_argument('db', metavar='db',  help='The name of the database to be created.')
-    parser_get.add_argument('-t', dest='table',  help='The table to be updated/modified.')
-    parser_get.add_argument('-f', dest='file',   help='The file containing the data to be loaded.')
-    parser_get.add_argument('-m', dest='mode',   default="append", 
-                           help="Are you appending a new column or updating an existing column?.\n"
-                           "Options are:\n"
-                           "        append - add a new column to the table (-f).\n"
-                           "        update - update an existing column in the table (-f).\n")
-    parser_get.set_defaults(func=gemini_update.apply)
 
 
     #######################################################

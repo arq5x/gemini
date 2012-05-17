@@ -28,7 +28,7 @@ def load_annos():
                     'gwas'      : os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
                     'rmsk'      : os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
                     'segdup'    : os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
-                    'conserved' : os.path.join(anno_dirname, 'hg19.29way.bed.gz'),
+                    'conserved' : os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
                     'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
                     'dgv'       : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
                     'esp'       : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz')
@@ -153,5 +153,24 @@ def get_segdup_info(var):
     """
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
     for hit in annos['segdup'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+        return True
+    return False
+    
+def get_conservation_info(var):
+    """
+    Returns a boolean indicating whether or not the
+    variant overlaps a conserved region as defined
+    by the 29-way mammalian conservation study.
+    http://www.nature.com/nature/journal/v478/n7370/full/nature10530.html
+    
+    Data file provenance:
+    http://www.broadinstitute.org/ftp/pub/assemblies/mammals/29mammals/ \
+    29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.gz
+    
+    # Script to convert for gemini:
+    gemini/annotation_provenance/make-29way-conservation.sh
+    """
+    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    for hit in annos['conserved'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
         return True
     return False

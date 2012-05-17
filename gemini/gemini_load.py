@@ -50,13 +50,14 @@ def prepare_variation(args, var, v_id):
     ########################################################
     # collect annotations from pop's custom annotation files
     ########################################################
-    cyto_band  = annotations.get_cyto_info(var)
-    dbsnp_info = annotations.get_dbsnp_info(var)
-    in_dbsnp   = 0 if dbsnp_info.rs_ids is None else 1
-    rmsk_hits  = annotations.get_rmsk_info(var)
-    in_cpg     = annotations.get_cpg_island_info(var)
-    in_segdup  = annotations.get_segdup_info(var)
-    esp_info   = annotations.get_esp_info(var)
+    cyto_band    = annotations.get_cyto_info(var)
+    dbsnp_info   = annotations.get_dbsnp_info(var)
+    in_dbsnp     = 0 if dbsnp_info.rs_ids is None else 1
+    rmsk_hits    = annotations.get_rmsk_info(var)
+    in_cpg       = annotations.get_cpg_island_info(var)
+    in_segdup    = annotations.get_segdup_info(var)
+    is_conserved = annotations.get_conservation_info(var)
+    esp_info     = annotations.get_esp_info(var)
     # impact is a list of impacts for this variant
     impacts = None
     severe_impacts = None
@@ -81,7 +82,6 @@ def prepare_variation(args, var, v_id):
         condel_pred = severe_impacts.condel_pred
         condel_score = severe_impacts.condel_score
         anno_id = severe_impacts.anno_id
-        #print v_id, anno_id, var.start, var.end, consequence, transcript, aa_change, affected_gene, exon, polyphen_pred
         
     # construct the filter string
     filter = None
@@ -126,13 +126,13 @@ def prepare_variation(args, var, v_id):
     # 1 row per variant to VARIANTS table
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
     variant = [chrom, var.start, var.end, 
-               v_id, anno_id, var.REF, ','.join(var.ALT), 
+               v_id, var.REF, ','.join(var.ALT), 
                var.QUAL, filter, var.var_type, 
                var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                pack_blob(gt_phases), call_rate, in_dbsnp,
                dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
                cyto_band, rmsk_hits, in_cpg,
-               in_segdup, hom_ref, het,
+               in_segdup, is_conserved, hom_ref, het,
                hom_alt, unknown, aaf,
                hwe_p_value, inbreeding_coeff, pi_hat,
                gene, affected_gene, transcript,    

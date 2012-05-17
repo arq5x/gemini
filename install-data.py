@@ -14,7 +14,7 @@ def install_annotation_files():
     """
     anno_files = \
     ['dbsnp.135.vcf.gz', 'dbsnp.135.vcf.gz.tbi',
-    'hg19.29way.bed.gz', 'hg19.29way.bed.gz.tbi',
+    '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz', '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz.tbi',
     'hg19.CpG.bed.gz', 'hg19.CpG.bed.gz.tbi',
     'hg19.cytoband.bed.gz', 'hg19.cytoband.bed.gz.tbi',
     'hg19.dgv.bed.gz', 'hg19.dgv.bed.gz.tbi',
