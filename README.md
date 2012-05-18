@@ -115,8 +115,9 @@ illustrated by example.
 Add a new column called "my_col" that tracks whether a given variant overlapped (1)
 or did not overlap (0) intervals in your annotation file.
 
-	# Add my_col to the database
+	# Add my_col to the database as a _boolean_
 	gemini annotate -f my_annos.bed.gz -c my_col -t boolean my.db
+
 	# Now query the results
 	gemini query -q "select chrom, start, end, variant_id, my_col from variants" my.db | head -3
 	chr22	16504479	16504480	1	1
@@ -126,8 +127,9 @@ or did not overlap (0) intervals in your annotation file.
 Add a new column called "my_col" that counts the number of overlaps a given variant 
 has with intervals in your annotation file.
 
-	# Add my_col to the database
+	# Add my_col to the database as a _count_
 	gemini annotate -f my_annos.bed.gz -c my_col -t count my.db
+
 	# Now query the results
 	gemini query -q "select chrom, start, end, variant_id, my_col from variants" my.db | head -3
 	chr22	16504479	16504480	1	2
@@ -137,8 +139,10 @@ has with intervals in your annotation file.
 Add a new column called "my_col" that creates a list of a specific column from the
 annotation file for each given variant.
 
-	# Add my_col to the database
+	# Add my_col to the database as a _list_, extracting the 4th
+	# column from the annotation file to create the list
 	gemini annotate -f my_annos.bed.gz -c my_col -t list -e 4 my.db
+
 	# Now query the results
 	gemini query -q "select chrom, start, end, variant_id, my_col from variants" my.db | head -3
 	chr22	16504479	16504480	1	rs123,rs456
