@@ -101,11 +101,55 @@ Combine ``gemini`` with ``bedtools`` to compute nucleotide diversity estimates a
     gemini query -q "select chrom, start, end, pi from variants order by chrom, start, end" my.db | \
     bedtools map -a hg19.windows.bed -b - -c 4 -o mean
 
+Adding your own, custom annotations to the ``gemini`` framework
+===========================================================
+It is inevitable that researchers will want to enhance the ``gemini``
+framework with their own, custom annotations. ``gemini`` provides a
+sub-command called ``annotate`` for exactly this purpose.  As long as 
+you provide a ``tabix``'ed annotation file in either BED or VCF format,
+the ``annotate`` tool will, for each variant in the ``variants`` table,
+screen for overlaps in your annotation file and update a new column in the
+``variants`` table that you may specify on the command line.  This is best
+illustrated by example. 
+
+Add a new column called "my_col" that tracks whether a given variant overlapped (1)
+or did not overlap (0) intervals in your annotation file.
+
+	# Add my_col to the database
+	gemini annotate -f my_annos.bed.gz -c my_col -t boolean my.db
+	# Now query the results
+	gemini query -q "select chrom, start, end, variant_id, my_col from variants" my.db | head -3
+	chr22	16504479	16504480	1	1
+	chr22	16504488	16504489	2	0
+	chr22	16504490	16504491	3	1
+
+Add a new column called "my_col" that counts the number of overlaps a given variant 
+has with intervals in your annotation file.
+
+	# Add my_col to the database
+	gemini annotate -f my_annos.bed.gz -c my_col -t count my.db
+	# Now query the results
+	gemini query -q "select chrom, start, end, variant_id, my_col from variants" my.db | head -3
+	chr22	16504479	16504480	1	2
+	chr22	16504488	16504489	2	0
+	chr22	16504490	16504491	3	1
+
+Add a new column called "my_col" that creates a list of a specific column from the
+annotation file for each given variant.
+
+	# Add my_col to the database
+	gemini annotate -f my_annos.bed.gz -c my_col -t list -e 4 my.db
+	# Now query the results
+	gemini query -q "select chrom, start, end, variant_id, my_col from variants" my.db | head -3
+	chr22	16504479	16504480	1	rs123,rs456
+	chr22	16504488	16504489	2	None
+	chr22	16504490	16504491	3	rs789
+
 
 Extracting variants from specific regions or genes
 ==================================================
 
-``gemini`` allows one to extract variants that fall within specific genomic coordinates as follows:
+``gemini`` allows one to extract variants that fall within specific genomic coordinates as follows
 
 	gemini region --reg chr1:100-200 my.db
 
