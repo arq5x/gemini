@@ -12,7 +12,8 @@ def get_variants(c, args):
     Report all columns in the variant table, except for the
     genotype vectors. 
     """
-    query = "SELECT * FROM variants"
+    query = "SELECT * FROM variants \
+             ORDER BY chrom, start"
     c.execute(query)
     
     # build a list of all the column indices that are NOT
@@ -38,7 +39,8 @@ def get_genotypes(c, args):
                      v.type, v.sub_type, \
                      v.aaf, v.in_dbsnp, v.gene, \
                      v.gts \
-             FROM    variants v"
+             FROM    variants v \
+             ORDER BY chrom, start"
     c.execute(query)
     
     # build a list of all the column indices that are NOT

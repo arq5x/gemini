@@ -25,7 +25,8 @@ def get_region(c, args):
              FROM variants v \
              WHERE v.chrom = " + "'" + chrom + "'" + \
              " AND ((v.start BETWEEN " + start + " AND " + end + ")" +\
-             " OR (v.end BETWEEN " + start + " AND " + end + "))"
+             " OR (v.end BETWEEN " + start + " AND " + end + "))" + \
+             "ORDER BY chrom, start"
     c.execute(query)
     
     # build a list of all the column indices that are NOT
@@ -46,7 +47,8 @@ def get_gene(c, args):
     """
     query = "SELECT * \
     FROM variants v \
-    WHERE v.gene = " + args.gene
+    WHERE v.gene = " + args.gene + \
+    "ORDER BY chrom, start"
     c.execute(query)
 
     # build a list of all the column indices that are NOT
