@@ -3,8 +3,8 @@
 import sqlite3
 
 def index_variation(cursor):
-    cursor.execute('''create index var_chrpos_idx on\
-                      variants(chrom, start, end)''')
+    cursor.execute('''create index var_chr_start_idx on\
+                      variants(chrom, start)''')
     cursor.execute('''create index var_type_idx on variants(type)''')
     cursor.execute('''create index var_gt_counts_idx on \
                       variants(num_hom_ref, num_het, num_hom_alt, num_unknown)''')
