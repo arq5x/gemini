@@ -6,7 +6,8 @@ import argparse
 import textwrap
 import gemini_load, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
-       gemini_annotate
+       gemini_annotate, gemini_windower
+
 import tool_compound_hets
 
 
@@ -168,7 +169,30 @@ def main():
     parser_get.add_argument('-e', dest='col_extract',  help='The column number that should be extracted from -f for \"-t list\"')
     parser_get.set_defaults(func=gemini_annotate.annotate)
     
+    # gemini windower
+    parser_get = subparsers.add_parser('windower', help='Compute statistics across genome \"windows\"')
+    parser_get.add_argument('db', metavar='db',  help='The name of the database to be updated.')
+    parser_get.add_argument('-w', dest='window_size', default=1000000, 
+                                  help='The name of the column to be added to the variant table.')
+    parser_get.add_argument('-s', dest='step_size', default=0, 
+                                  help="The step size for the windows in bp.\n")
+    parser_get.add_argument('-t', dest='analysis_type',
+                                  help="""The type of windowed analysis requested.
+                           Options are:
+                                   hwe      - Windowed analysis of deviation from HWE.
+                                   nucl_div - Windowed analysis of nucleotide diversity""")
+    parser_get.add_argument('-o', dest='op_type',
+                                  help="""The operation that should be applied to the -t values.
+                           Options are:
+                                   mean   - Compute the mean value of -t for each window.
+                                   median - Compute the median value of -t for each window.
+                                   min    - Compute the minimum value of -t for each window.
+                                   max    - Compute the maximum value of -t for each window.
+                                   list   - List the values of -t for each window.""")
 
+    parser_get.set_defaults(func=gemini_windower.windower)
+    
+    
     #######################################################
     # TOOLs
     #######################################################
