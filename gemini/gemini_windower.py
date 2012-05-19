@@ -59,7 +59,8 @@ def make_windows(c, args):
     windowed_analysis = windows.map(window_data, o=args.op_type, c=op_col)
     for window in windowed_analysis:
         print window,
-
+    # cleanup
+    os.remove('.temp')
        
 def windower(parser, args):
 
