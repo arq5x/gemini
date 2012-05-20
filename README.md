@@ -15,9 +15,6 @@ the necessary data files.
     gemini/install-data.py /path/to/gemini/data/
 
 
-[TOC]
-
-
 Overview
 ========
 The intent of ``gemini`` is to provide a simple, flexible, and powerful
@@ -175,10 +172,25 @@ Or, one can extract variants based on a specific gene name.
 	gemini region --gene PTPN22 my.db
 
 
+Conducting analyses on genome "windows".
+========================================
+
+``gemini`` includes a convenient tool for computing variation metrics across genomic windows (fixed and sliding).
+Here are a few examples to whet your appetite.  If you're still hungry, email us.
+
+Compute the average nucleotide diversity for all variants found in non-overlapping, 50Kb windows.
+
+	gemini windower -w 50000 -s 0 -t nucl_div -o mean my.db
+
+Compute the average nucleotide diversity for all variants found in 50Kb windows that overlap by 10kb.
+
+	gemini windower -w 50000 -s 10000 -t nucl_div -o mean my.db
+
+
+
 Working with individual genotypes.
 ==================================
-To do.
-
+This will take some time to refine and explain.  I am being lazy.  To do.
 
 
 Active areas of improvement
