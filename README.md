@@ -3,10 +3,15 @@ gemini - a framework for mining genome variation.
 
 ``gemini`` is not yet ready for safe consumption, but stay tuned...we're working hard on it.
 
-If you are okay living dangerously and potentially being disappointed, you can install and play with ``gemini`` as follows:
+If you are okay living dangerously and potentially being disappointed, you can install ``gemini`` as follows:
 
     python setup.py install
-    sudo ./install-data.py
+
+One of the more appealing features in ``gemini`` is that it automatically annotates variants in a VCF file with several
+genome annotations (see below for more details).  However, you must first install these data files on your system. 
+It's easy enough --- you just need to run the following script and tell it in which what full path you'd like to install
+the necessary data files.  
+    gemini/install-data.py /path/to/gemini/data/
 
 
 

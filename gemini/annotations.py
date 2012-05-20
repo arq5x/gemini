@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 import pysam
 import os
+import sys
 import collections
 
-# Gemini REQUIRES that the annotation files be installed at /usr/share/gemini/data
-# This is done at installation time by invoking:
-#    % sudo python install-data.py
-
-anno_dirname = '/usr/share/gemini/data/'
-
+# determine where the user installed the gemini annotation suite.
+gemini_installation_path = os.path.split(__file__)[0]
+gemini_config_file = os.path.join(gemini_installation_path, 'data/gemini.conf')
+gemini_conf = open(gemini_config_file, 'r')
+config_lines = gemini_conf.readlines()
+if len(config_lines) > 0:
+    anno_dirname = config_lines[0].rstrip()
+else:
+    sys.exit('Cannot determine where gemini annotation files are located.  Exiting.')
+    
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
 def load_annos():
@@ -20,8 +25,7 @@ def load_annos():
     
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
-    """
-    
+    """    
     anno_files   = {
                     'cytoband'  : os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
                     'dbsnp'     : os.path.join(anno_dirname, 'dbsnp.135.vcf.gz'),
@@ -32,7 +36,8 @@ def load_annos():
                     'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
                     'dgv'       : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
                     'esp'       : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz')
-            }
+                   }
+
     for anno in anno_files:
         annos[anno] = pysam.Tabixfile(anno_files[anno])
 

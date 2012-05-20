@@ -1,4 +1,5 @@
 #!/usr/bin/env python
 
 import gemini.scripts
+import gemini.gemini_main
 gemini.gemini_main.main()
