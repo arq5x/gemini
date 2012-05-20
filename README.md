@@ -11,6 +11,7 @@ One of the more appealing features in ``gemini`` is that it automatically annota
 genome annotations (see below for more details).  However, you must first install these data files on your system. 
 It's easy enough --- you just need to run the following script and tell it in which what full path you'd like to install
 the necessary data files.  
+
     gemini/install-data.py /path/to/gemini/data/
 
 
