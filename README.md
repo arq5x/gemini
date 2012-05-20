@@ -25,11 +25,27 @@ yields one billion genotypes) datasets.
 
 Have a look at this [poster](http://dl.dropbox.com/u/515640/posters_and_slides/Quinlan-Gemini-Poster.pdf) to get a high-level sense of what ``gemini`` is trying to accomplish.
 
-Explore the variation therein using shortcuts. Here are a few brief examples:
+The first thing we have to do is load an existing VCF file into the gemini framework.  We expect you to have
+annotated the functional consequence of each variant in your VCF using either VEP or snpEff.  Logically,
+the loading step is done with the ``gemini load`` command.  Below are two examples based on a VCF file that
+we ingeniously name my.vcf.  The first example assumes that the VCF has been pre-annotated with VEP and the second
+assumes snpEff.
 
+	# VEP-annotated VCF
+	$ gemini load -v my.vcf -t VEP my.db
 
-By augmenting VCF files with many informative annotations, and converting the information
-into a ``sqlite`` database framework, ``gemini`` provides a flexible database-driven API for:
+	# snpEff-annotated VCF
+	$ gemini load -v my.vcf -t VEP my.db
+
+As each variant is loaded into the ``gemini`` database framework, it is being compared against several
+annotation files that come installed with the software.  We have developed an annotation framework
+that leverages Tabix, BEDTools, and pybedtools to make things easy and fairly performant. The idea is that, 
+by augmenting VCF files with many informative annotations, and converting the information
+into a ``sqlite`` database framework, ``gemini`` provides a flexible database-driven API for data exploration,
+visualization, population genomics and medical genomics.  **We feel that this ability to integrate variation
+with the growing wealth of gemome annotations is the most compelling aspect of gemini ``gemini``**.  Combining this
+with the ability to explore data with SQL using a database design that can scale to 1000s of individuals (genotypes too!)
+makes for a tasty data exploration cupcake.  Here are some examples of the things you can do.
 
 *Ad hoc* queries.  Return all loss-of-function INDELs.
 
