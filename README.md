@@ -35,7 +35,7 @@ assumes snpEff.
 	$ gemini load -v my.vcf -t VEP my.db
 
 	# snpEff-annotated VCF
-	$ gemini load -v my.vcf -t VEP my.db
+	$ gemini load -v my.vcf -t snpEff my.db
 
 As each variant is loaded into the ``gemini`` database framework, it is being compared against several
 annotation files that come installed with the software.  We have developed an annotation framework
