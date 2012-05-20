@@ -15,6 +15,8 @@ the necessary data files.
     gemini/install-data.py /path/to/gemini/data/
 
 
+[TOC]
+
 
 Overview
 ========
@@ -117,6 +119,11 @@ the ``annotate`` tool will, for each variant in the ``variants`` table,
 screen for overlaps in your annotation file and update a new column in the
 ``variants`` table that you may specify on the command line.  This is best
 illustrated by example. 
+
+Let's assume you have already created a ``gemini`` database of a VCF file
+using the ``load`` module.
+
+	gemini load -v my.vcf -t VEP my.db
 
 Add a new column called "my_col" that tracks whether a given variant overlapped (1)
 or did not overlap (0) intervals in your annotation file.
