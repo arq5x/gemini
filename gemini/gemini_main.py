@@ -57,9 +57,8 @@ def main():
     #########################################
     # create the top-level parser
     #########################################
-    parser = argparse.ArgumentParser(prog='gemini',
-                                     usage='%(prog)s <command> [options]')
-    subparsers = parser.add_subparsers(title='commands')
+    parser = argparse.ArgumentParser(prog='gemini')
+    subparsers = parser.add_subparsers(title='[sub-commands]')
 
     # $ gemini examples
     parser_examples = subparsers.add_parser('examples', help='show usage examples')
@@ -135,60 +134,82 @@ def main():
     # $ gemini stats
     parser_stats = subparsers.add_parser('stats', help='compute useful variant stastics')
     parser_stats.add_argument('db', metavar='db',  
-                              help='The name of the database to be queried.')
-    parser_stats.add_argument('--tstv', dest='tstv', action='store_true',
-                              help='Report the overall ts/tv ratio.', default=False)
-    parser_stats.add_argument('--tstv-coding', dest='tstv_coding', action='store_true',
-                              help='Report the ts/tv ratio in coding regions.', default=False)
-    parser_stats.add_argument('--tstv-noncoding', dest='tstv_noncoding', action='store_true',
-                              help='Report the ts/tv ratio in non-coding regions.', default=False)
-    parser_stats.add_argument('--snp-counts', dest='snp_counts', action='store_true',
-                              help='Report the count of each type of SNP (A->G, G->T, etc.).', default=False)
-    parser_stats.add_argument('--sfs', dest='sfs', action='store_true',
-                              help='Report the site frequency spectrum of the variants.', default=False)
-    parser_stats.add_argument('--mds', dest='mds', action='store_true',
-                              help='Report the pairwise genetic distance between the samples.', default=False)
-    parser_stats.add_argument('--vars-by-sample', dest='variants_by_sample', action='store_true',
-                              help='Report the number of variants observed in each sample.', default=False)
-    parser_stats.add_argument('--gts-by-sample', dest='genotypes_by_sample', action='store_true',
-                              help='Report the count of each genotype class obs. for each sample.', default=False)
+                                    help='The name of the database to be queried.')
+    parser_stats.add_argument('--tstv', 
+                                    dest='tstv', 
+                                    action='store_true',
+                                    help='Report the overall ts/tv ratio.', 
+                                    default=False)
+    parser_stats.add_argument('--tstv-coding', 
+                                    dest='tstv_coding', 
+                                    action='store_true',
+                                    help='Report the ts/tv ratio in coding regions.',
+                                    default=False)
+    parser_stats.add_argument('--tstv-noncoding', 
+                                    dest='tstv_noncoding', 
+                                    action='store_true',
+                                    help='Report the ts/tv ratio in non-coding regions.', 
+                                    default=False)
+    parser_stats.add_argument('--snp-counts', 
+                                    dest='snp_counts', 
+                                    action='store_true',
+                                    help='Report the count of each type of SNP (A->G, G->T, etc.).', 
+                                    default=False)
+    parser_stats.add_argument('--sfs', 
+                                    dest='sfs', 
+                                    action='store_true',
+                                    help='Report the site frequency spectrum of the variants.', 
+                                    default=False)
+    parser_stats.add_argument('--mds', 
+                                    dest='mds',
+                                    action='store_true',
+                                    help='Report the pairwise genetic distance between the samples.', 
+                                    default=False)
+    parser_stats.add_argument('--vars-by-sample', 
+                                    dest='variants_by_sample', 
+                                    action='store_true',
+                                    help='Report the number of variants observed in each sample.', 
+                                    default=False)
+    parser_stats.add_argument('--gts-by-sample', 
+                                    dest='genotypes_by_sample', 
+                                    action='store_true',
+                                    help='Report the count of each genotype class obs. for each sample.', 
+                                    default=False)
     parser_stats.set_defaults(func=gemini_stats.stats)
 
     
     # gemini annotate
     parser_get = subparsers.add_parser('annotate', help='Add new columns for custom annotations')
-    parser_get.add_argument('db', metavar='db',  help='The name of the database to be updated.')
-    parser_get.add_argument('-f', dest='anno_file',   help='The BED file containing the annotations')
-    parser_get.add_argument('-c', dest='col_name',  help='The name of the column to be added to the variant table.')
-    parser_get.add_argument('-t', dest='col_type',   default="append", 
-                           help="The type of data that the new column (-c) should store.\n"
-                           "Options are:\n"
-                           "        boolean - True if variant overlaps 1 or more features in -f. False otherwise.\n"
-                           "        count   - The count of features in -f that the variant overlaps.\n"
-                           "        list    - A list of values extracted from each feature in -f that the variant overlaps. Specify which column should be used from -f with the -e parm.\n")
-    parser_get.add_argument('-e', dest='col_extract',  help='The column number that should be extracted from -f for \"-t list\"')
+    parser_get.add_argument('db', metavar='db',  
+                                  help='The name of the database to be updated.')
+    parser_get.add_argument('-f', dest='anno_file',
+                                  help='The BED file containing the annotations')
+    parser_get.add_argument('-c', dest='col_name',
+                                  help='The name of the column to be added to the variant table.')
+    parser_get.add_argument('-t', dest='col_type',
+                                  help='How the data for the new column (-c) should be stored.',
+                                  default="append", 
+                                  choices = ['boolean', 'count', 'list'])
     parser_get.set_defaults(func=gemini_annotate.annotate)
-    
+
+
     # gemini windower
     parser_get = subparsers.add_parser('windower', help='Compute statistics across genome \"windows\"')
-    parser_get.add_argument('db', metavar='db',  help='The name of the database to be updated.')
-    parser_get.add_argument('-w', dest='window_size', default=1000000, 
+    parser_get.add_argument('db', metavar='db',  
+                                  help='The name of the database to be updated.')
+    parser_get.add_argument('-w', dest='window_size', 
+                                  default=1000000, 
                                   help='The name of the column to be added to the variant table.')
-    parser_get.add_argument('-s', dest='step_size', default=0, 
+    parser_get.add_argument('-s', dest='step_size', 
+                                  default=0, 
                                   help="The step size for the windows in bp.\n")
     parser_get.add_argument('-t', dest='analysis_type',
-                                  help="""The type of windowed analysis requested.
-                           Options are:
-                                   hwe      - Windowed analysis of deviation from HWE.
-                                   nucl_div - Windowed analysis of nucleotide diversity""")
+                                  help='The type of windowed analysis requested.',
+                                  choices = ['nucl_div', 'hwe'])
     parser_get.add_argument('-o', dest='op_type',
-                                  help="""The operation that should be applied to the -t values.
-                           Options are:
-                                   mean   - Compute the mean value of -t for each window.
-                                   median - Compute the median value of -t for each window.
-                                   min    - Compute the minimum value of -t for each window.
-                                   max    - Compute the maximum value of -t for each window.
-                                   list   - List the values of -t for each window.""")
+                                  help='The operation that should be applied to the -t values.',
+                                  choices=['mean', 'median', 'min', 'max', 'list'])
+
 
     parser_get.set_defaults(func=gemini_windower.windower)
     
