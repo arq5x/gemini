@@ -11,15 +11,26 @@ import gemini
 """
 
 anno_files = \
-['dbsnp.135.vcf.gz', 'dbsnp.135.vcf.gz.tbi',
-'29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz', '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz.tbi',
-'hg19.CpG.bed.gz', 'hg19.CpG.bed.gz.tbi',
-'hg19.cytoband.bed.gz', 'hg19.cytoband.bed.gz.tbi',
-'hg19.dgv.bed.gz', 'hg19.dgv.bed.gz.tbi',
-'hg19.gwas.bed.gz', 'hg19.gwas.bed.gz.tbi',
-'hg19.rmsk.bed.gz', 'hg19.rmsk.bed.gz.tbi',
-'hg19.segdup.bed.gz', 'hg19.segdup.bed.gz.tbi',
-'ESP5400.all.snps.vcf.gz', 'ESP5400.all.snps.vcf.gz.tbi']
+['dbsnp.135.vcf.gz', 
+'dbsnp.135.vcf.gz.tbi',
+'29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz', 
+'29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz.tbi',
+'hg19.CpG.bed.gz', 
+'hg19.CpG.bed.gz.tbi',
+'hg19.cytoband.bed.gz', 
+'hg19.cytoband.bed.gz.tbi',
+'hg19.dgv.bed.gz', 
+'hg19.dgv.bed.gz.tbi',
+'hg19.gwas.bed.gz', 
+'hg19.gwas.bed.gz.tbi',
+'hg19.rmsk.bed.gz', 
+'hg19.rmsk.bed.gz.tbi',
+'hg19.segdup.bed.gz', 
+'hg19.segdup.bed.gz.tbi',
+'ESP5400.all.snps.vcf.gz', 
+'ESP5400.all.snps.vcf.gz.tbi',
+'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz', 
+'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz.tbi']
 
 def install_annotation_files(anno_root_dir):
     """Download required annotation files.

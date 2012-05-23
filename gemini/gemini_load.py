@@ -57,7 +57,9 @@ def prepare_variation(args, var, v_id):
     in_cpg       = annotations.get_cpg_island_info(var)
     in_segdup    = annotations.get_segdup_info(var)
     is_conserved = annotations.get_conservation_info(var)
-    esp_info     = annotations.get_esp_info(var)
+    esp          = annotations.get_esp_info(var)
+    thousandG    = annotations.get_1000G_info(var)
+    print var.CHROM, var.POS, thousandG
     # impact is a list of impacts for this variant
     impacts = None
     severe_impacts = None
@@ -143,8 +145,9 @@ def prepare_variation(args, var, v_id):
                infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
                infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
-               infotag.get_allele_count(var), infotag.get_allele_bal(var), esp_info.aaf_EA, esp_info.aaf_AA,
-               esp_info.aaf_ALL, esp_info.exome_chip]
+               infotag.get_allele_count(var), infotag.get_allele_bal(var), esp.found, esp.aaf_EA, esp.aaf_AA,
+               esp.aaf_ALL, esp.exome_chip, thousandG.found, thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR, 
+               thousandG.aaf_EUR, thousandG.aaf_ALL]
     return variant, variant_impacts
     
 

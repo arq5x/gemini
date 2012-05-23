@@ -35,7 +35,8 @@ def load_annos():
                     'conserved' : os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
                     'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
                     'dgv'       : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
-                    'esp'       : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz')
+                    'esp'       : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
+                    '1000g'     : os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz')
                    }
 
     for anno in anno_files:
@@ -102,19 +103,20 @@ def get_esp_info(var):
     """
     Returns a suite of annotations from the ESP project
     """
-    ESPInfo = collections.namedtuple("ESPInfo", "aaf_EA aaf_AA aaf_ALL exome_chip")
+    ESPInfo = collections.namedtuple("ESPInfo", "found aaf_EA aaf_AA aaf_ALL exome_chip")
      
     chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
     aaf_EA = aaf_AA = aaf_ALL = None
     maf = fetched = con = []
     exome_chip = False
+    found = False
     info_map = {}
     if chrom not in ['Y']:
         for hit in annos['esp'].fetch(chrom, var.start, var.end, parser=pysam.asVCF()):
             fetched.append(hit)
             # We need a single ESP entry for a variant
             if fetched != None and len(fetched) == 1 and hit.alt == var.ALT[0] and hit.ref == var.REF:
-                    
+                found = True    
                 # loads each VCF INFO key/value pair into a DICT
                 for info in hit.info.split(";"):      
                     if info.find("=") > 0:
@@ -136,9 +138,34 @@ def get_esp_info(var):
                     exome_chip = 0
                 elif info_map.get('EXOME_CHIP') is not None and info_map['EXOME_CHIP'] == "yes":
                     exome_chip = 1        
-    return ESPInfo(aaf_EA, aaf_AA, aaf_ALL, exome_chip)  
+    return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)  
         
-               
+def get_1000G_info(var):
+    """
+    Returns a suite of annotations from the 1000 Genomes project
+    """
+    ThousandGInfo = collections.namedtuple("ThousandGInfo", 
+                                           "found aaf_ALL aaf_AMR aaf_ASN aaf_AFR aaf_EUR")
+
+    chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+    fetched = []
+    info_map = {}
+    found = False
+    for hit in annos['1000g'].fetch(chrom, var.start, var.end, parser=pysam.asVCF()):
+        fetched.append(hit)
+        # We need a single 1000G entry for a variant
+        if fetched != None and len(fetched) == 1 and hit.alt == var.ALT[0] and hit.ref == var.REF:
+            # loads each VCF INFO key/value pair into a DICT
+            found = True
+            for info in hit.info.split(";"):      
+                if info.find("=") > 0:
+                    (key, value) = info.split("=", 1)
+                    info_map[key] = value
+
+    return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'), 
+                         info_map.get('ASN_AF'), info_map.get('AFR_AF'), 
+                         info_map.get('EUR_AF'))
+            
 def get_rmsk_info(var):
     """
     Returns a comma-separated list of annotated repeats
