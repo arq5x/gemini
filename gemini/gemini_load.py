@@ -59,7 +59,8 @@ def prepare_variation(args, var, v_id):
     is_conserved = annotations.get_conservation_info(var)
     esp          = annotations.get_esp_info(var)
     thousandG    = annotations.get_1000G_info(var)
-    print var.CHROM, var.POS, thousandG
+    recomb_rate  = annotations.get_recomb_info(var)
+
     # impact is a list of impacts for this variant
     impacts = None
     severe_impacts = None
@@ -137,7 +138,7 @@ def prepare_variation(args, var, v_id):
                in_segdup, is_conserved, hom_ref, het,
                hom_alt, unknown, aaf,
                hwe_p_value, inbreeding_coeff, pi_hat,
-               gene, affected_gene, transcript,    
+               recomb_rate, gene, affected_gene, transcript,    
                is_exonic, is_coding, is_lof, exon, codon_change,
                aa_change, consequence, effect_severity,
                polyphen_pred, polyphen_score, sift_pred, 

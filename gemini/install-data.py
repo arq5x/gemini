@@ -30,7 +30,9 @@ anno_files = \
 'ESP5400.all.snps.vcf.gz', 
 'ESP5400.all.snps.vcf.gz.tbi',
 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz', 
-'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz.tbi']
+'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz.tbi',
+'genetic_map_HapMapII_GRCh37.gz',
+'genetic_map_HapMapII_GRCh37.gz.tbi']
 
 def install_annotation_files(anno_root_dir):
     """Download required annotation files.

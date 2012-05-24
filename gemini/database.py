@@ -67,6 +67,7 @@ def create_tables(cursor):
                                                             hwe float,                                  \
                                                             inbreeding_coeff float,                     \
                                                             pi float,                                   \
+                                                            recomb_rate float,                          \
                                                             gene text default NULL,                     \
                                                             affected_gene text,                         \
                                                             affected_transcript text,                   \
@@ -153,7 +154,8 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?)', \
                                                      buffer)
     cursor.execute("END")
     

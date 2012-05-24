@@ -36,7 +36,8 @@ def load_annos():
                     'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
                     'dgv'       : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
                     'esp'       : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
-                    '1000g'     : os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz')
+                    '1000g'     : os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
+                    'recomb'    : os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz')
                    }
 
     for anno in anno_files:
@@ -206,3 +207,20 @@ def get_conservation_info(var):
     for hit in annos['conserved'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
         return True
     return False
+
+def get_recomb_info(var):
+    """
+    Returns the mean recombination rate at the site.
+    """
+    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    count = 0
+    tot_rate = 0.0
+    if chrom not in ['chrY']:
+        # recomb rate file is in bedgraph format.
+        # pysam will store the rate in the "name" field
+        for hit in annos['recomb'].fetch(chrom, var.start, var.end, 
+                                           parser=pysam.asBed()): 
+            count += 1
+            tot_rate += float(hit.name)
+
+    return float(tot_rate) / float(count) if count > 0 else None
