@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import os
+import shutil
 import subprocess
 import gemini
 
@@ -37,7 +38,6 @@ anno_files = \
 def install_annotation_files(anno_root_dir):
     """Download required annotation files.
     """
-    
     # create the full gemini data path based on
     # the root dir the user provided
     anno_dir = anno_root_dir + "/gemini/data"
@@ -47,9 +47,16 @@ def install_annotation_files(anno_root_dir):
     # retrieve annotation files at runtime.
     gemini_installation_path = gemini.__path__[0]
     gemini_config_file = os.path.join(gemini_installation_path, 'data/gemini.conf')
-    gemini_conf = open(gemini_config_file, 'a')
-    gemini_conf.write(anno_dir + '\n')
-    gemini_conf.close()
+    need_to_add = True
+    with open(gemini_config_file) as in_handle:
+        for line in in_handle:
+            if line.startswith(anno_dir):
+                need_to_add = False
+                break
+    if need_to_add:
+        gemini_conf = open(gemini_config_file, 'a')
+        gemini_conf.write(anno_dir + '\n')
+        gemini_conf.close()
 
     if not os.path.exists(anno_root_dir + "/gemini"):
         os.mkdir(anno_root_dir + "/gemini")
@@ -58,23 +65,25 @@ def install_annotation_files(anno_root_dir):
     for dl in anno_files:
         url = "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)
         _download_to_dir(url, anno_dir)
-    
-    
+ 
 def _download_to_dir(url, dirname):
     """
     Grab an annotation file and place in /usr/share/gemini/data
     """
     print "* downloading " + url + " to " + dirname + "\n"
     stub = os.path.basename(url)
-    # download data file to pwd
-    cmd = ["curl", "-OL", url]
-    subprocess.check_call(cmd)
-    # move to system directory (/usr/share/gemini/data) and remove from pwd
     dest = os.path.join(dirname, stub)
-    os.rename(stub, dest)
+    if not os.path.exists(dest):
+        # download data file to pwd
+        cmd = ["curl", "-OL", url]
+        subprocess.check_call(cmd)
+        # move to system directory (/usr/share/gemini/data) and remove from pwd
+        shutil.move(stub, dest)
 
 if __name__ == "__main__":
     anno_dir = sys.argv[1]
+    if not os.path.exists(anno_dir):
+        os.makedirs(anno_dir)
     if os.path.isdir(anno_dir):
         install_annotation_files(anno_dir)
     else:
