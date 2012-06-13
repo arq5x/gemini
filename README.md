@@ -53,7 +53,7 @@ makes for a tasty data exploration cupcake.  Here are some examples of the thing
 
 Pre-defined analysis short-cuts. Compute the ratio of transitions to transversions::
 
-    $ gemini stats -s tstv my.db
+    $ gemini stats --tstv my.db
     transitions	transversions	ts/tv
     1,302,778	511,578		2.547
 
@@ -92,15 +92,15 @@ We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools m
 
 Compute the transition / transversion ratio:
   
-    gemini stats -s tstv my.db
+    gemini stats --tstv my.db
   
 Compute the site frequency spectrum:
   
-    gemini stats -s sfs my.db
+    gemini stats --sfs my.db
 
 Compute the pairwise genetic distance for use with PCA:
 
-    gemini stats -s mds my.db
+    gemini stats --mds my.db
 
 
 **Explore variation  using custom queries. Here are a few brief examples:**
