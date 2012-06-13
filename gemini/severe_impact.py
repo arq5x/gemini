@@ -17,6 +17,7 @@ def interpret_severe_impact(args, var):
     
     effect_strings_str = ""
     effect_strings = []
+    impact_details = None
     max_severity = 9 # initialize to a value greater than the largest value in impact info priority code
     count = 0 # initialize counter for anno_id
     if args.anno_type == "snpEff":
@@ -25,8 +26,11 @@ def interpret_severe_impact(args, var):
             effect_strings = effect_strings_str.split(",")
             #print len(effect_strings)
         except KeyError:
-            sys.stderr.write("WARNING: The input VCF has no snpEFF annotations. \
-                              Variant impact will be set to unknown\n")
+            if var.INFO.has_key("SNPEFF_EFFECT"):
+                impact_details = snpEff.gatk_effect_details(var.INFO)
+            else:
+                sys.stderr.write("WARNING: The input VCF has no snpEFF annotations. " \
+                                 "Variant impact will be set to unknown\n")
         
         for effect_string in effect_strings:
             count += 1

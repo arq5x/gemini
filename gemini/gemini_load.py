@@ -70,21 +70,21 @@ def prepare_variation(args, var, v_id):
     if args.anno_type is not None:
         impacts = func_impact.interpret_impact(args, var)
         severe_impacts = severe_impact.interpret_severe_impact(args, var)
-        
-        affected_gene = severe_impacts.gene
-        transcript = severe_impacts.transcript
-        exon = severe_impacts.exon
-        codon_change = severe_impacts.codon_change
-        aa_change = severe_impacts.aa_change
-        consequence = severe_impacts.consequence
-        effect_severity = severe_impacts.effect_severity
-        polyphen_pred = severe_impacts.polyphen_pred
-        polyphen_score = severe_impacts.polyphen_score
-        sift_pred = severe_impacts.sift_pred
-        sift_score = severe_impacts.sift_score
-        condel_pred = severe_impacts.condel_pred
-        condel_score = severe_impacts.condel_score
-        anno_id = severe_impacts.anno_id
+        if severe_impacts:
+            affected_gene = severe_impacts.gene
+            transcript = severe_impacts.transcript
+            exon = severe_impacts.exon
+            codon_change = severe_impacts.codon_change
+            aa_change = severe_impacts.aa_change
+            consequence = severe_impacts.consequence
+            effect_severity = severe_impacts.effect_severity
+            polyphen_pred = severe_impacts.polyphen_pred
+            polyphen_score = severe_impacts.polyphen_score
+            sift_pred = severe_impacts.sift_pred
+            sift_score = severe_impacts.sift_score
+            condel_pred = severe_impacts.condel_pred
+            condel_score = severe_impacts.condel_score
+            anno_id = severe_impacts.anno_id
         
     # construct the filter string
     filter = None

@@ -52,6 +52,7 @@ class EffectDetails(object):
         return self.__str__()
 
 
+
 effect_names    = ["CDS", "CODON_CHANGE", 
                    "CODON_CHANGE_PLUS_CODON_DELETION", "CODON_CHANGE_PLUS_CODON_INSERTION", 
                    "CODON_DELETION", "CODON_INSERTION",
@@ -146,3 +147,20 @@ for i, effect_name in enumerate(effect_names):
 eff_pattern   = '(\S+)[(](\S+)[)]'
 eff_search    =  re.compile(eff_pattern)
 
+def gatk_effect_details(info):
+    """Convert GATK prepared snpEff effect details into standard EffectDetails.
+    """
+    name = info.get("SNPEFF_EFFECT", None)
+    if name is not None:
+        effect = effect_map[name]
+        detail_string = "|{impact}|{codon_change}|{aa_change}|{gene}|{biotype}|{coding}|{transcript}|{exon}".format(
+            impact=info.get("SNPEFF_IMPACT", ""),
+            codon_change=info.get("SNPEFF_CODON_CHANGE", ""),
+            aa_change=info.get("SNPEFF_AMINO_ACID_CHANGE", ""),
+            gene=info.get("SNPEFF_GENE_NAME", ""),
+            biotype=info.get("SNPEFF_GENE_BIOTYPE", ""),
+            coding="",
+            transcript=info.get("SNPEFF_TRANSCRIPT", ""),
+            exon=info.get("SNPEFF_EXON_ID", ""))
+        return EffectDetails(name, effect.priority, detail_string, 0)
+    
