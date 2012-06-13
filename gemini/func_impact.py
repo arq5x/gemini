@@ -23,8 +23,11 @@ def interpret_impact(args, var):
             effect_strings_str = var.INFO["EFF"]
             effect_strings = effect_strings_str.split(",")
         except KeyError:
-            sys.stderr.write("WARNING: The input VCF has no snpEFF annotations. \
-                              Variant impact will be set to unknown\n")
+            if var.INFO.has_key("SNPEFF_EFFECT"):
+                impact_all.append(snpEff.gatk_effect_details(var.INFO))
+            else:
+                sys.stderr.write("WARNING: The input VCF has no snpEFF annotations. " \
+                                 "Variant impact will be set to unknown\n")
         
         for effect_string in effect_strings:
             counter += 1
