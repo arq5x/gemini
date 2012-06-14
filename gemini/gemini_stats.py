@@ -232,6 +232,8 @@ def get_gtcounts_by_sample(c, args):
             self.het = 0
             self.hom_alt = 0
             self.unknown = 0
+        def total(self):
+            return self.hom_ref + self.het + self.hom_alt + self.unknown
 
     sample_counts = collections.defaultdict(GenoCounts)
     query = "SELECT * FROM variants"
@@ -252,13 +254,14 @@ def get_gtcounts_by_sample(c, args):
 
     # report.
     print '\t'.join(['sample', 'num_hom_ref', 'num_het', 
-                     'num_hom_alt', 'num_unknown'])
+                     'num_hom_alt', 'num_unknown', 'total'])
     for sample in sorted(sample_counts, key=sample_counts.get, reverse=True):
         print "\t".join(str(s) for s in [sample, 
                                          sample_counts[sample].hom_ref,
                                          sample_counts[sample].het,
                                          sample_counts[sample].hom_alt,
-                                         sample_counts[sample].hom_alt])
+                                         sample_counts[sample].unknown,
+                                         sample_counts[sample].total()])
 
 
 def stats(parser, args):
