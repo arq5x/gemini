@@ -3,9 +3,13 @@ import sys
 import os
 import shutil
 import subprocess
-import gemini
 
-"""
+from gemini.config import read_gemini_config, write_gemini_config
+
+"""Install annotation data and update Gemini configuration with location.
+
+The recommended Gemini install location is /usr/local/share/gemini.
+
     This installation script was inspired by a helpful suggestion from
     Brad Chapman, and is based on his code at:
     https://github.com/chapmanb/bcbb/blob/master/nextgen/tests/test_automated_analysis.py
@@ -40,27 +44,17 @@ def install_annotation_files(anno_root_dir):
     """
     # create the full gemini data path based on
     # the root dir the user provided
-    anno_dir = anno_root_dir + "/gemini/data"
+    if anno_root_dir.endswith(("gemini", "gemini/")):
+        anno_dir = os.path.join(anno_root_dir, "data")
+    else:
+        anno_dir = os.path.join(anno_root_dir, "gemini", "data")
+    if not os.path.exists(anno_dir):
+        os.makedirs(anno_dir)
 
-    # update the gemini configuration file
-    # with the data directory so that we can 
-    # retrieve annotation files at runtime.
-    gemini_installation_path = gemini.__path__[0]
-    gemini_config_file = os.path.join(gemini_installation_path, 'data/gemini.conf')
-    need_to_add = True
-    with open(gemini_config_file) as in_handle:
-        for line in in_handle:
-            if line.startswith(anno_dir):
-                need_to_add = False
-                break
-    if need_to_add:
-        gemini_conf = open(gemini_config_file, 'a')
-        gemini_conf.write(anno_dir + '\n')
-        gemini_conf.close()
+    cur_config = read_gemini_config(allow_missing=True)
+    cur_config["annotation_dir"] = anno_dir
+    write_gemini_config(cur_config)
 
-    if not os.path.exists(anno_root_dir + "/gemini"):
-        os.mkdir(anno_root_dir + "/gemini")
-        os.mkdir(anno_root_dir + "/gemini/data")
     # download and install each of the annotation files
     for dl in anno_files:
         url = "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)

@@ -10,9 +10,9 @@ If you are okay living dangerously and potentially being disappointed, you can i
 One of the more appealing features in ``gemini`` is that it automatically annotates variants in a VCF file with several
 genome annotations (see below for more details).  However, you must first install these data files on your system. 
 It's easy enough --- you just need to run the following script and tell it in which what full path you'd like to install
-the necessary data files.  
+the necessary data files. The recommended path is in ``/usr/local/share``:
 
-    gemini/install-data.py /path/to/gemini/data/
+    gemini/install-data.py /usr/local/share/gemini
 
 
 Overview
