@@ -4,15 +4,7 @@ import os
 import sys
 import collections
 
-# determine where the user installed the gemini annotation suite.
-gemini_installation_path = os.path.split(__file__)[0]
-gemini_config_file = os.path.join(gemini_installation_path, 'data/gemini.conf')
-gemini_conf = open(gemini_config_file, 'r')
-config_lines = gemini_conf.readlines()
-if len(config_lines) > 0:
-    anno_dirname = config_lines[0].rstrip()
-else:
-    sys.exit('Cannot determine where gemini annotation files are located.  Exiting.')
+from gemini.config import read_gemini_config
     
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
@@ -25,7 +17,9 @@ def load_annos():
     
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
-    """    
+    """
+    config = read_gemini_config()
+    anno_dirname = config["annotation_dir"]
     anno_files   = {
                     'cytoband'  : os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
                     'dbsnp'     : os.path.join(anno_dirname, 'dbsnp.135.vcf.gz'),
