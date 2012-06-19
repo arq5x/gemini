@@ -38,7 +38,7 @@ def refine_sql(query, sample_to_idx):
     # build a list of the select columns while converting 
     # the genotype columns (GT_*) to their appropriate numpy indices
     for col in tokens.select:
-        if not col.startswith("GT_"):
+        if not col.startswith("GT"):
             select_columns.append(col)
         else:
             select_columns.append(correct_genotype_col(col))
@@ -122,7 +122,7 @@ def apply_refined_query(c, tokens, select_cols, main_where, gts_where):
     gts_select_req = False
     if (gts_where != ""):
         gts_where_req = True
-    if (any("gt_" in s for s in select_cols)):
+    if (any("gt" in s for s in select_cols)):
         gts_select_req = True
 
     for row in c:
