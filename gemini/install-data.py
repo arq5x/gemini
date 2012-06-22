@@ -38,6 +38,8 @@ anno_files = \
 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz.tbi',
 'genetic_map_HapMapII_GRCh37.gz',
 'genetic_map_HapMapII_GRCh37.gz.tbi']
+# Annotation files for be merged into main repository
+tmp_anno_files = ['GRCh37-gms-mappability.vcf.gz', 'GRC_patch_regions.bed.gz']
 
 def install_annotation_files(anno_root_dir):
     """Download required annotation files.
@@ -59,6 +61,10 @@ def install_annotation_files(anno_root_dir):
     for dl in anno_files:
         url = "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)
         _download_to_dir(url, anno_dir)
+    for dl in tmp_anno_files:
+        for ext in ["", ".tbi"]:
+            url = "https://s3.amazonaws.com/chapmanb/gemini/{fname}{ext}".format(fname=dl, ext=ext)
+            _download_to_dir(url, anno_dir)
  
 def _download_to_dir(url, dirname):
     """

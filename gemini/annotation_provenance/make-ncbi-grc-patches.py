@@ -38,7 +38,7 @@ def grc_regions_from_url(url):
                 chrom = int(parts[5])
             except ValueError:
                 chrom = parts[5]
-            yield GrcRegion(chrom, int(parts[11]), int(parts[12]),
+            yield GrcRegion(chrom, int(parts[11]) - 1, int(parts[12]),
                             "grc_%s" % ("fix" if parts[2].endswith("PATCH") else "novel"))
         
 

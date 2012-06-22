@@ -107,6 +107,10 @@ def create_tables(cursor):
                                                             aaf_1kg_afr float,                          \
                                                             aaf_1kg_eur float,                          \
                                                             aaf_1kg_all float,                          \
+                                                            grc text default NULL,                     \
+                                                            gms_illumina float,                          \
+                                                            gms_solid float,                          \
+                                                            gms_iontorrent float,                          \
                                                             PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (variant_id integer,                         \
@@ -155,7 +159,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?)', \
+                                                     ?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
