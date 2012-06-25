@@ -31,7 +31,9 @@ def load_annos():
                     'dgv'       : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
                     'esp'       : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
                     '1000g'     : os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
-                    'recomb'    : os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz')
+                    'recomb'    : os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz'),
+                    'gms'       : os.path.join(anno_dirname, 'GRCh37-gms-mappability.vcf.gz'),
+                    'grc'       : os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
                    }
 
     for anno in anno_files:
@@ -218,3 +220,47 @@ def get_recomb_info(var):
             tot_rate += float(hit.name)
 
     return float(tot_rate) / float(count) if count > 0 else None
+
+def _get_chr_as_grch37(var):
+    return var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+
+def _get_single_vcf_hit(var, hit_iter):
+    if hit_iter is not None:
+        hits = list(hit_iter)
+        if len(hits) == 1:
+            return hits[0]
+
+def _get_vcf_info_attrs(hit):
+    info_map = {}
+    for info in hit.info.split(";"):      
+        if info.find("=") > 0:
+            (key, value) = info.split("=", 1)
+            info_map[key] = value
+    return info_map
+
+def get_gms(var):
+    """Return Genome Mappability Scores for multiple technologies.
+    """
+    techs = ["illumina", "solid", "iontorrent"]
+    GmsTechs = collections.namedtuple("GmsTechs", techs)
+    chrom = _get_chr_as_grch37(var)
+    hit = _get_single_vcf_hit(var,
+                              annos["gms"].fetch(chrom, var.start,
+                                                 var.end, parser=pysam.asVCF()))
+    attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
+    return apply(GmsTechs,
+                 [attr_map.get("GMS_{0}".format(x), None) for x in techs])
+
+def get_grc(var):
+    """Return GRC patched genome regions.
+    """
+    chrom = _get_chr_as_grch37(var)
+    regions = set()
+    try:
+        hit_iter = annos['grc'].fetch(chrom, var.start, var.end, parser=pysam.asBed())
+    # Recover if the BED annotation file doesn't have a chromosome
+    except ValueError:
+        hit_iter = []
+    for hit in hit_iter:
+        regions.add(hit.name)
+    return ",".join(sorted(list(regions))) if len(regions) > 0 else None

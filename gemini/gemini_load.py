@@ -60,6 +60,8 @@ def prepare_variation(args, var, v_id):
     esp          = annotations.get_esp_info(var)
     thousandG    = annotations.get_1000G_info(var)
     recomb_rate  = annotations.get_recomb_info(var)
+    gms          = annotations.get_gms(var)
+    grc          = annotations.get_grc(var)
 
     # impact is a list of impacts for this variant
     impacts = None
@@ -148,7 +150,7 @@ def prepare_variation(args, var, v_id):
                infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
                infotag.get_allele_count(var), infotag.get_allele_bal(var), esp.found, esp.aaf_EA, esp.aaf_AA,
                esp.aaf_ALL, esp.exome_chip, thousandG.found, thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR, 
-               thousandG.aaf_EUR, thousandG.aaf_ALL]
+               thousandG.aaf_EUR, thousandG.aaf_ALL, grc, gms.illumina, gms.solid, gms.iontorrent]
     return variant, variant_impacts
     
 
