@@ -65,6 +65,18 @@ haplotype_score   FLOAT         Consistency of the site with two segregating hap
 qual_depth        FLOAT         Variant confidence or quality by depth
 allele_count      INTEGER       Allele counts in genotypes
 allele_bal        FLOAT         Allele balance for hets
+grc               STRING        | Association with patch and fix regions from the Genome Reference Consortium:
+                                | http://www.ncbi.nlm.nih.gov/projects/genome/assembly/grc/human/
+                                | Identifies potential problem regions associated with variant calls.
+                                | Built with `annotation_provenance/make-ncbi-grc-patches.py`
+gms_illumina      FLOAT         | Genome Mappability Scores (GMS) for Illumina error models
+                                | Provides low GMS scores (< 25.0 in any technology) from:
+                                | http://sourceforge.net/apps/mediawiki/gma-bio/index.php?title=Download_GMS
+                                | #Download_GMS_by_Chromosome_and_Sequencing_Technology
+                                | Input VCF for annotations prepared with:
+                                | https://github.com/chapmanb/bcbio.variation/blob/master/src/bcbio/variation/utils/gms.clj
+gms_solid         FLOAT         Genome Mappability Scores with SOLiD error models
+gms_iontorrent    FLOAT         Genome Mappability Scores with IonTorrent error models
 ================  ========      ====================================================================================
 
 |
