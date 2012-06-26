@@ -146,6 +146,13 @@ def create_tables(cursor):
     cursor.execute('''create table if not exists sample_genotypes   (sample_id integer,        \
                                                                      gt_types BLOB,            \
                                                                      PRIMARY KEY(sample_id ASC))''')
+                                                                     
+    cursor.execute('''create table if not exists sample_genotype_counts   (sample_id integer,        \
+                                                                           num_hom_ref integer,            \
+                                                                           num_het integer,            \
+                                                                           num_hom_alt integer,            \
+                                                                           num_unknown integer,            \
+                                                                           PRIMARY KEY(sample_id ASC))''')
 
 def insert_variation(cursor, buffer):
     """

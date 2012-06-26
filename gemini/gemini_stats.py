@@ -196,25 +196,22 @@ def get_mds(c, args):
 def get_variants_by_sample(c, args):
     """
     Report the number of variants observed for each sample
+    where the sample had a non-ref genotype
     """
     idx_to_sample = util.map_indicies_to_samples(c)
-    
-    query = "SELECT * FROM variants"
+
+    # report.
+    print '\t'.join(['sample', 'num_hom_ref', 'num_het', 
+                     'num_hom_alt', 'num_unknown', 'total'])
+
+    query = "SELECT sample_id, \
+             (num_hom_ref + num_het + num_hom_alt) as total \
+             FROM sample_genotype_counts"
     c.execute(query)
-    
-    # TO DO: counting variants per sample would be much faster
-    #        if we stored a sample_variants table.
-    sample_counts = collections.defaultdict(int)
     for row in c:
-        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
-        for idx, gt_type in enumerate(gt_types):
-            if gt_type > 0: 
-                sample_counts[idx_to_sample[idx]] += 1
-    
-    # report the samples in DESC'ing order of the number of variants observed.
-    print '\t'.join(['sample', 'num_variants'])
-    for sample in sorted(sample_counts, key=sample_counts.get, reverse=True):
-        print sample + "\t" + str(sample_counts[sample])
+        sample = idx_to_sample[row['sample_id']]
+        print "\t".join(str(s) for s in [sample,
+                                         row['total']])
 
 
 def get_gtcounts_by_sample(c, args):
@@ -223,45 +220,24 @@ def get_gtcounts_by_sample(c, args):
     observed for each sample.
     """
     idx_to_sample = util.map_indicies_to_samples(c)
-    
-    # light struct for tracking the count of each genotype type foreach sample
-    class GenoCounts(object):
-        """struct for counting the occ. of each gt type."""
-        def __init__(self):
-            self.hom_ref = 0
-            self.het = 0
-            self.hom_alt = 0
-            self.unknown = 0
-        def total(self):
-            return self.hom_ref + self.het + self.hom_alt + self.unknown
-
-    sample_counts = collections.defaultdict(GenoCounts)
-    query = "SELECT * FROM variants"
-    c.execute(query)
-    # count the number of each genotype type obs. for each sample.
-    for row in c:
-        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
-        for idx, gt_type in enumerate(gt_types):
-            sample = idx_to_sample[idx]
-            if gt_type == 0: 
-                sample_counts[sample].hom_ref += 1
-            elif gt_type == 1: 
-                sample_counts[sample].het += 1
-            elif gt_type == 2: 
-                sample_counts[sample].hom_alt += 1
-            elif gt_type == -1: 
-                sample_counts[sample].unknown += 1
 
     # report.
     print '\t'.join(['sample', 'num_hom_ref', 'num_het', 
                      'num_hom_alt', 'num_unknown', 'total'])
-    for sample in sorted(sample_counts, key=sample_counts.get, reverse=True):
+
+    query = "SELECT *, \
+             (num_hom_ref + num_het + num_hom_alt + num_unknown) as total \
+             FROM sample_genotype_counts"
+    c.execute(query)
+    # count the number of each genotype type obs. for each sample.
+    for row in c:
+        sample = idx_to_sample[row['sample_id']]
         print "\t".join(str(s) for s in [sample, 
-                                         sample_counts[sample].hom_ref,
-                                         sample_counts[sample].het,
-                                         sample_counts[sample].hom_alt,
-                                         sample_counts[sample].unknown,
-                                         sample_counts[sample].total()])
+                                         row['num_hom_ref'],
+                                         row['num_het'],
+                                         row['num_hom_alt'],
+                                         row['num_unknown'],
+                                         row['total']])
 
 
 def stats(parser, args):
