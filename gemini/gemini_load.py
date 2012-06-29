@@ -66,7 +66,7 @@ class GeminiLoader(object):
             buffer_count += 1
             # buffer full - time to insert into DB
             if buffer_count >= self.buffer_size:
-                sys.stderr.write(str(v_id) + " variants processed.\n")
+                sys.stderr.write(str(self.v_id) + " variants processed.\n")
                 database.insert_variation(self.c, self.var_buffer)
                 database.insert_variation_impacts(self.c, self.var_impacts_buffer)
                 # binary.genotypes.append(var_buffer)
