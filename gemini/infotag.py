@@ -90,5 +90,9 @@ def get_allele_bal(var):
     Returns allele balance for hets,
     or None if it isn't present in the VCF.
     """
-    return var.INFO.get('AB')
+    ab =  var.INFO.get('AB')
+    if ab is not None:
+        return ab[0]
+    else:
+        return None
 
