@@ -41,13 +41,33 @@ def load_annos():
 
 DbSnpInfo = collections.namedtuple("DbSnpInfo", "rs_ids in_omim clin_sig")
 
+def _get_hits(var, chrom, annotation, parser_type):
+    """Retrieve BED information, recovering if BED annotation file does have a chromosome.
+    """
+    if parser_type == "bed":
+        parser = pysam.asBed()
+    elif parser_type == "vcf":
+        parser = pysam.asVCF()
+    else:
+        raise ValueError("Unexpected parser type: %s" % parser)
+    try:
+       hit_iter = annos[annotation].fetch(chrom, var.start, var.end, parser=parser)
+    except ValueError:
+        hit_iter = []
+    return hit_iter
+
+def _get_chr_as_grch37(var):
+    if var.CHROM in ["chrM"]:
+        return "MT"
+    return var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+
 def get_cpg_island_info(var):
     """
     Returns a boolean indicating whether or not the
     variant overlaps a CpG island 
     """
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-    for hit in annos['cpg_island'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+    for hit in _get_hits(var, chrom, "cpg_island", "bed"):
         return True
     return False
 
@@ -59,8 +79,7 @@ def get_cyto_info(var):
     """
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
     cyto_band = ''
-    for hit in annos['cytoband'].fetch(chrom, var.start, var.end, 
-                                       parser=pysam.asBed()): 
+    for hit in _get_hits(var, chrom, "cytoband", "bed"):
         if len(cyto_band) > 0:
             cyto_band += "," + chrom + hit.name
         else: 
@@ -72,7 +91,7 @@ def get_dbsnp_info(var):
     """
     Returns a suite of annotations from dbSNP
     """
-    chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+    chrom = _get_chr_as_grch37(var)
     rs_ids  = []
     clin_sigs = []
     in_omim = 0
@@ -102,14 +121,14 @@ def get_esp_info(var):
     """
     ESPInfo = collections.namedtuple("ESPInfo", "found aaf_EA aaf_AA aaf_ALL exome_chip")
      
-    chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+    chrom = _get_chr_as_grch37(var)
     aaf_EA = aaf_AA = aaf_ALL = None
     maf = fetched = con = []
     exome_chip = False
     found = False
     info_map = {}
     if chrom not in ['Y']:
-        for hit in annos['esp'].fetch(chrom, var.start, var.end, parser=pysam.asVCF()):
+        for hit in _get_hits(var, chrom, "esp", "vcf"):
             fetched.append(hit)
             # We need a single ESP entry for a variant
             if fetched != None and len(fetched) == 1 and hit.alt == var.ALT[0] and hit.ref == var.REF:
@@ -144,11 +163,11 @@ def get_1000G_info(var):
     ThousandGInfo = collections.namedtuple("ThousandGInfo", 
                                            "found aaf_ALL aaf_AMR aaf_ASN aaf_AFR aaf_EUR")
 
-    chrom = var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+    chrom = _get_chr_as_grch37(var)
     fetched = []
     info_map = {}
     found = False
-    for hit in annos['1000g'].fetch(chrom, var.start, var.end, parser=pysam.asVCF()):
+    for hit in _get_hits(var, chrom, "1000g", "vcf"):
         fetched.append(hit)
         # We need a single 1000G entry for a variant
         if fetched != None and len(fetched) == 1 and hit.alt == var.ALT[0] and hit.ref == var.REF:
@@ -170,7 +189,7 @@ def get_rmsk_info(var):
     """
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
     rmsk_hits = []
-    for hit in annos['rmsk'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+    for hit in _get_hits(var, chrom, "rmsk", "bed"):
         rmsk_hits.append(hit.name)
     return ",".join(rmsk_hits) if len(rmsk_hits) > 0 else None
 
@@ -181,7 +200,7 @@ def get_segdup_info(var):
     variant overlaps a known segmental duplication. 
     """
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-    for hit in annos['segdup'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+    for hit in _get_hits(var, chrom, "segdup", "bed"):
         return True
     return False
     
@@ -200,7 +219,7 @@ def get_conservation_info(var):
     gemini/annotation_provenance/make-29way-conservation.sh
     """
     chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-    for hit in annos['conserved'].fetch(chrom, var.start, var.end, parser=pysam.asBed()):
+    for hit in _get_hits(var, chrom, "conserved", "bed"):
         return True
     return False
 
@@ -214,15 +233,11 @@ def get_recomb_info(var):
     if chrom not in ['chrY']:
         # recomb rate file is in bedgraph format.
         # pysam will store the rate in the "name" field
-        for hit in annos['recomb'].fetch(chrom, var.start, var.end, 
-                                           parser=pysam.asBed()): 
+        for hit in _get_hits(var, chrom, "recomb", "bed"):
             count += 1
             tot_rate += float(hit.name)
 
     return float(tot_rate) / float(count) if count > 0 else None
-
-def _get_chr_as_grch37(var):
-    return var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
 
 def _get_single_vcf_hit(var, hit_iter):
     if hit_iter is not None:
@@ -256,11 +271,6 @@ def get_grc(var):
     """
     chrom = _get_chr_as_grch37(var)
     regions = set()
-    try:
-        hit_iter = annos['grc'].fetch(chrom, var.start, var.end, parser=pysam.asBed())
-    # Recover if the BED annotation file doesn't have a chromosome
-    except ValueError:
-        hit_iter = []
-    for hit in hit_iter:
+    for hit in _get_hits(var, chrom, "grc", "bed"):
         regions.add(hit.name)
     return ",".join(sorted(list(regions))) if len(regions) > 0 else None
