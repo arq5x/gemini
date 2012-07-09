@@ -153,6 +153,7 @@ class GeminiLoader(object):
         recomb_rate  = annotations.get_recomb_info(var)
         gms          = annotations.get_gms(var)
         grc          = annotations.get_grc(var)
+        encode_tfbs  = annotations.get_encode_tfbs(var)
 
         # impact is a list of impacts for this variant
         impacts = None
@@ -244,7 +245,7 @@ class GeminiLoader(object):
                    infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
                    infotag.get_allele_count(var), infotag.get_allele_bal(var), esp.found, esp.aaf_EA, esp.aaf_AA,
                    esp.aaf_ALL, esp.exome_chip, thousandG.found, thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR, 
-                   thousandG.aaf_EUR, thousandG.aaf_ALL, grc, gms.illumina, gms.solid, gms.iontorrent]
+                   thousandG.aaf_EUR, thousandG.aaf_ALL, grc, gms.illumina, gms.solid, gms.iontorrent, encode_tfbs]
         return variant, variant_impacts
 
     def _prepare_samples(self):

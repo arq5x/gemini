@@ -21,19 +21,20 @@ def load_annos():
     config = read_gemini_config()
     anno_dirname = config["annotation_dir"]
     anno_files   = {
-                    'cytoband'  : os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-                    'dbsnp'     : os.path.join(anno_dirname, 'dbsnp.135.vcf.gz'),
-                    'gwas'      : os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
-                    'rmsk'      : os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
-                    'segdup'    : os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
-                    'conserved' : os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
-                    'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
-                    'dgv'       : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
-                    'esp'       : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
-                    '1000g'     : os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
-                    'recomb'    : os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz'),
-                    'gms'       : os.path.join(anno_dirname, 'GRCh37-gms-mappability.vcf.gz'),
-                    'grc'       : os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+                    'cytoband'     : os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
+                    'dbsnp'        : os.path.join(anno_dirname, 'dbsnp.135.vcf.gz'),
+                    'gwas'         : os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
+                    'rmsk'         : os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
+                    'segdup'       : os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
+                    'conserved'    : os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
+                    'cpg_island'   : os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
+                    'dgv'          : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
+                    'esp'          : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
+                    '1000g'        : os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
+                    'recomb'       : os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz'),
+                    'gms'          : os.path.join(anno_dirname, 'GRCh37-gms-mappability.vcf.gz'),
+                    'grc'          : os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+                    'encode_tfbs'  : os.path.join(anno_dirname, 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz'),
                    }
 
     for anno in anno_files:
@@ -48,6 +49,8 @@ def _get_hits(var, chrom, annotation, parser_type):
         parser = pysam.asBed()
     elif parser_type == "vcf":
         parser = pysam.asVCF()
+    elif parser_type == "tuple":
+        parser = pysam.asTuple()
     else:
         raise ValueError("Unexpected parser type: %s" % parser)
     try:
@@ -60,13 +63,16 @@ def _get_chr_as_grch37(var):
     if var.CHROM in ["chrM"]:
         return "MT"
     return var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+    
+def _get_chr_as_ucsc(var):
+    return var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
 
 def get_cpg_island_info(var):
     """
     Returns a boolean indicating whether or not the
     variant overlaps a CpG island 
     """
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    chrom = _get_chr_as_ucsc(var)
     for hit in _get_hits(var, chrom, "cpg_island", "bed"):
         return True
     return False
@@ -77,7 +83,7 @@ def get_cyto_info(var):
     Returns a comma-separated list of the chromosomal
     cytobands that a variant overlaps.
     """
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    chrom = _get_chr_as_ucsc(var)
     cyto_band = ''
     for hit in _get_hits(var, chrom, "cytoband", "bed"):
         if len(cyto_band) > 0:
@@ -187,7 +193,7 @@ def get_rmsk_info(var):
     Returns a comma-separated list of annotated repeats
     that overlap a variant.  Derived from the UCSC rmsk track 
     """
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    chrom = _get_chr_as_ucsc(var)
     rmsk_hits = []
     for hit in _get_hits(var, chrom, "rmsk", "bed"):
         rmsk_hits.append(hit.name)
@@ -218,7 +224,7 @@ def get_conservation_info(var):
     # Script to convert for gemini:
     gemini/annotation_provenance/make-29way-conservation.sh
     """
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    chrom = _get_chr_as_ucsc(var)
     for hit in _get_hits(var, chrom, "conserved", "bed"):
         return True
     return False
@@ -227,7 +233,7 @@ def get_recomb_info(var):
     """
     Returns the mean recombination rate at the site.
     """
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+    chrom = _get_chr_as_ucsc(var)
     count = 0
     tot_rate = 0.0
     if chrom not in ['chrY']:
@@ -274,3 +280,24 @@ def get_grc(var):
     for hit in _get_hits(var, chrom, "grc", "bed"):
         regions.add(hit.name)
     return ",".join(sorted(list(regions))) if len(regions) > 0 else None
+
+def get_encode_tfbs(var):
+    """
+    Returns a comma-separated list of transcription factors that were
+    observed to bind DNA in this region.  Each hit in the list is constructed
+    as TF_MAXSCORE_CELLCOUNT, where:
+      TF is the transcription factor name
+      MAXSCORE is the highest signal strength observed in any of the cell lines
+      CELLCOUNT is the number of cells tested that had nonzero signals 
+
+    NOTE: the annotation file is in BED format, but pysam doesn't
+    tolerate BED files with more than 12 fields, so we just use the base
+    tuple parser and grab the name column (4th column)
+    """
+    chrom = _get_chr_as_ucsc(var)
+    encode_tfbs_hits = []
+
+    for hit in _get_hits(var, chrom, "encode_tfbs", "tuple"):
+        encode_tfbs_hits.append(hit[3])
+    return ",".join(encode_tfbs_hits) if len(encode_tfbs_hits) > 0 else None
+    

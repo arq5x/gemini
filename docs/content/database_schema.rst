@@ -77,6 +77,17 @@ gms_illumina      FLOAT         | Genome Mappability Scores (GMS) for Illumina e
                                 | https://github.com/chapmanb/bcbio.variation/blob/master/src/bcbio/variation/utils/gms.clj
 gms_solid         FLOAT         Genome Mappability Scores with SOLiD error models
 gms_iontorrent    FLOAT         Genome Mappability Scores with IonTorrent error models
+encode_tfbs       STRING        | Comma-separated list of transcription factors that were
+                                | observed by ENCODE to bind DNA in this region.  Each hit in the list is constructed
+                                | as TF_MAXSCORE_CELLCOUNT, where:
+                                |   *TF* is the transcription factor name
+                                |   *MAXSCORE* is the highest signal strength observed in any of the cell lines
+                                |   *CELLCOUNT* is the number of cells tested that had nonzero signals.
+                                | Provenance: wgEncodeRegTfbsClusteredV2 UCSC table
+
+NOTE: the annotation file is in BED format, but pysam doesn't
+tolerate BED files with more than 12 fields, so we just use the base
+tuple parser and grab the name column (4th column)
 ================  ========      ====================================================================================
 
 |

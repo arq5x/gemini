@@ -35,7 +35,7 @@ def refine_sql(query, sample_to_idx):
     # adjust any of the gt_* columns to use sample offsets, not names
     select_columns = []
     
-    # build a list of the select columns while converting 
+    # build a list of the select columns while converting
     # the genotype columns (GT_*) to their appropriate numpy indices
     for col in tokens.select:
         if not col.startswith("GT"):
