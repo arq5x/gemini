@@ -84,10 +84,6 @@ encode_tfbs       STRING        | Comma-separated list of transcription factors 
                                 |   *MAXSCORE* is the highest signal strength observed in any of the cell lines
                                 |   *CELLCOUNT* is the number of cells tested that had nonzero signals.
                                 | Provenance: wgEncodeRegTfbsClusteredV2 UCSC table
-
-NOTE: the annotation file is in BED format, but pysam doesn't
-tolerate BED files with more than 12 fields, so we just use the base
-tuple parser and grab the name column (4th column)
 ================  ========      ====================================================================================
 
 |
