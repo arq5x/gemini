@@ -37,7 +37,10 @@ anno_files = \
 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz', 
 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz.tbi',
 'genetic_map_HapMapII_GRCh37.gz',
-'genetic_map_HapMapII_GRCh37.gz.tbi']
+'genetic_map_HapMapII_GRCh37.gz.tbi',
+'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz',
+'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz.tbi'
+]
 # Annotation files for be merged into main repository
 tmp_anno_files = ['GRCh37-gms-mappability.vcf.gz', 'GRC_patch_regions.bed.gz']
 
