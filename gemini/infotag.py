@@ -51,7 +51,14 @@ def get_num_of_alleles(var):
     return the total number of alleles in called genotypes,
     or None if it isn't present in the VCF.
     """
-    return var.INFO.get('AN')
+    an = var.INFO.get('AN')
+    if an is not None:
+        if isinstance(an, (list, tuple)):
+            return an[0]
+        else:
+            return an
+    else:
+        return None
 
 def get_frac_dels(var):
     """
@@ -90,5 +97,9 @@ def get_allele_bal(var):
     Returns allele balance for hets,
     or None if it isn't present in the VCF.
     """
-    return var.INFO.get('AB')
+    ab =  var.INFO.get('AB')
+    if ab is not None:
+        return ab[0]
+    else:
+        return None
 
