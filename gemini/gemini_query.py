@@ -90,19 +90,22 @@ def refine_sql(query, sample_to_idx):
            " ".join(gtypes_where))
 
 
-def apply_query(c, query):
+def apply_query(c, args):
     """
     Execute a vanilla query. That is, not gt* columns
     are in either the select or where clauses.
     """
-    c.execute(query)
+    c.execute(args.query)
     # (select *) a list of all of the non-gt* columns in the table
     all_cols = [str(tuple[0]) for tuple in c.description if not tuple[0].startswith("gt")]
+
+    if args.use_header:
+        print args.separator.join(col for col in all_cols)
     for row in c:
-        print "\t".join(str(row[col]) for col in all_cols)
+        print args.separator.join(str(row[col]) for col in all_cols)
 
 
-def apply_refined_query(c, tokens, select_cols, main_where, gts_where):
+def apply_refined_query(c, tokens, select_cols, main_where, gts_where, args):
     """
     Execute a query that contains gt* columns in either the
     select or the where.
@@ -125,6 +128,14 @@ def apply_refined_query(c, tokens, select_cols, main_where, gts_where):
     if (any("gt" in s for s in select_cols)):
         gts_select_req = True
 
+        
+    # print out the header
+    if args.use_header:
+        if "*" in select_cols:
+            print args.separator.join(col for col in all_cols)
+        else: 
+            print args.separator.join(col for col in select_cols)
+            
     for row in c:
         gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
         gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
@@ -136,19 +147,19 @@ def apply_refined_query(c, tokens, select_cols, main_where, gts_where):
         if gts_where == "" or (gts_where != "" and eval(gts_where)):
             # select *
             if '*' in select_cols:
-                print "\t".join(str(row[col]) for col in all_cols),
+                print args.separator.join(str(row[col]) for col in all_cols),
             # select chrom, is_lof
             elif not gts_select_req:
-                print "\t".join(str(row[col]) for col in select_cols),
+                print args.separator.join(str(row[col]) for col in select_cols),
             # select chrom, gt_types.HG00331, gt_types.HG00332
             else:
                 for col in select_cols:
                     if col == "*": continue
                     if not col.startswith("gt"):
-                        print str(row[col]) + "\t",
+                        print str(row[col]) + args.separator
                     else:
                         # e.g., eval gt_types[141] and print result (0,1,2,etc.)
-                        print str(eval(col.strip())) + "\t",
+                        print str(eval(col.strip())) + args.separator
             print
 
 
@@ -173,11 +184,11 @@ def get_query(args, c):
     query_pieces = args.query.split()
     if not any(s.startswith("gt") for s in query_pieces) and \
        not any("gt" in s for s in query_pieces):
-       apply_query(c, args.query)
+       apply_query(c, args)
     else:
         (tokens, select_cols, main_where, gts_where) = \
             refine_sql(args.query, sample_to_idx)
-        apply_refined_query(c, tokens, select_cols, main_where, gts_where)
+        apply_refined_query(c, tokens, select_cols, main_where, gts_where, args)
 
 
 def query(parser, args):
