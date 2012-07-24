@@ -5,7 +5,6 @@
 #CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift|condel
 #non_synonymous_codon|gaT/gaG|D/E|ENSG00000116254|CHD5|ENST00000378006|18/25|benign(0.011)|tolerated(0.3)|neutral(0.029)
 #nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6|||
-
 #############
 
 import re
