@@ -57,6 +57,7 @@ def interpret_impact(args, var):
                     counter += 1
                     impact_info = vep.effect_map[impact_string]
                     impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, counter)
+                    print "uma"
                     impact_all.append(impact_details)
             # we expect VEP to produce a valid impact label for each_string[0]
             elif "&" not in each_string[0]:
