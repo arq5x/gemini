@@ -30,7 +30,6 @@ class EffectDetails(object):
         self.consequence = effect_dict[self.effect_name]
         if len(fields) > 9:
             self.warnings = fields[9]
-        
         self.exonic = 0 if self.exon is None else 1
         self.is_lof = 0 if self.effect_severity != "HIGH" else 1
         # Exons that are coding (excludes UTR's)
