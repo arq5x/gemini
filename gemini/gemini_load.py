@@ -58,7 +58,6 @@ class GeminiLoader(object):
             # add each of the impact for this variant (1 per gene/transcript)
             for var_impact in variant_impacts:
                 self.var_impacts_buffer.append(var_impact)
-                print var_impact[2]
             # only infer genotypes if requested
             if not self.args.noload_genotypes and not self.args.no_genotypes:
                 pass
