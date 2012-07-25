@@ -178,7 +178,6 @@ class GeminiLoader(object):
                 condel_pred = severe_impacts.condel_pred
                 condel_score = severe_impacts.condel_score
                 anno_id = severe_impacts.anno_id
-        
         # construct the filter string
         filter = None
         if var.FILTER is not None and var.FILTER != ".":
@@ -219,7 +218,7 @@ class GeminiLoader(object):
                 if impact.exonic == True: is_exonic = True
                 if impact.coding == True: is_coding = True
                 if impact.is_lof == True: is_lof    = True
-                
+
             
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
