@@ -21,7 +21,8 @@ class EffectDetails(object):
         self.codon_change = fields[1] if fields[1] != '' else None
         self.aa_change = fields[2] if fields[2] != '' else None
         self.ensembl_gene = fields[3] if fields[3] != '' else None
-        self.gene = fields[4] if fields[4] != '' else None
+        self.hgnc = fields[4] if fields[4] != '' else None
+        self.gene = self.hgnc if fields[4] != '' else self.ensembl_gene
         self.transcript = fields[5] if fields[5] != '' else None
         self.exon = fields[6] if fields[6] != '' else None
         self.polyphen =  fields[7] if fields[7] != '' else None
