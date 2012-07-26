@@ -58,6 +58,7 @@ class GeminiLoader(object):
             # add each of the impact for this variant (1 per gene/transcript)
             for var_impact in variant_impacts:
                 self.var_impacts_buffer.append(var_impact)
+            
             # only infer genotypes if requested
             if not self.args.noload_genotypes and not self.args.no_genotypes:
                 pass
@@ -178,6 +179,7 @@ class GeminiLoader(object):
                 condel_pred = severe_impacts.condel_pred
                 condel_score = severe_impacts.condel_score
                 anno_id = severe_impacts.anno_id
+        
         # construct the filter string
         filter = None
         if var.FILTER is not None and var.FILTER != ".":
