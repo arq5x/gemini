@@ -224,6 +224,7 @@ def main():
                               help='Allow other het. individuals when screening candidates.', default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
     
+    # $ gemini pathway
 
 
     #######################################################
