@@ -9,7 +9,7 @@ import gemini_load, gemini_query,\
        gemini_annotate, gemini_windower
 
 import tool_compound_hets
-
+import tool_path
 
 def examples(parser, args):
     
@@ -224,9 +224,27 @@ def main():
                               help='Allow other het. individuals when screening candidates.', default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
     
-    # $ gemini pathway
-
-
+    # $ gemini pathways
+    parser_pathway = subparsers.add_parser('pathways', help='Map genes to pathways')
+    parser_pathway.add_argument('db', metavar='db', help='The name of the database to be created')
+    parser_pathway.add_argument('-v', dest='version', default=None, metavar='STRING', 
+                               help="version of ensembl genes to use:\n"
+                               " v66 for Ensembl genes 66 and \n"
+                               " v67 for Ensembl genes 67 \n"
+                               " v68 for Ensembl genes 68 \n"
+                               )
+    parser_pathway.set_defaults(func=tool_path.allquery)
+    
+    # $ gemini lof_pathways
+    parser_pathway = subparsers.add_parser('lof_pathways', help='Map lof genes to pathways')
+    parser_pathway.add_argument('db', metavar='db', help='The name of the database to be created')
+    parser_pathway.add_argument('-v', dest='version', default=None, metavar='STRING', 
+                               help="version of ensembl genes to use:\n"
+                               " v66 for Ensembl genes 66 and \n"
+                               " v67 for Ensembl genes 67 \n"
+                               " v68 for Ensembl genes 68 \n"
+                               )
+    parser_pathway.set_defaults(func=tool_path.lofquery)
     #######################################################
     # parse the args and call the selected function
     #######################################################
