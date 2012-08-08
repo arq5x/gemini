@@ -1,0 +1,17 @@
+The new version of KEGG API, REST protocol released with KEGG release 63.0, july 1st 2012
+
+All files have been retrieved from KEGG REST urls's as on June 2nd 2012:
+
+example:
+ 
+http://rest.kegg.jp/conv/hsa/uniprot
+for the 'all_kegg_hsa_to_uniprot' file
+
+http://rest.kegg.jp/list/pathway/hsa
+for getting all human pathways ('pathways')
+
+http://rest.kegg.jp/link/hsa/pathway
+kegg hsa to pathway map ('kegg_hsa_to_path')
+
+http://rest.kegg.jp/list/hsa/
+kegg hsa to gene names ('kegg_hsa_to_gene')

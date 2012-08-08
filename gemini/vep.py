@@ -5,7 +5,6 @@
 #CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift|condel
 #non_synonymous_codon|gaT/gaG|D/E|ENSG00000116254|CHD5|ENST00000378006|18/25|benign(0.011)|tolerated(0.3)|neutral(0.029)
 #nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6|||
-
 #############
 
 import re
@@ -28,11 +27,11 @@ class EffectDetails(object):
         self.polyphen =  fields[7] if fields[7] != '' else None
         self.sift = fields[8] if fields[8] != '' else None
         self.condel = fields[9] if fields[9] != '' else None
+        self.aa_length = None
         self.warnings = None
         self.consequence = effect_dict[self.effect_name]
         if len(fields) > 9:
             self.warnings = fields[9]
-        
         self.exonic = 0 if self.exon is None else 1
         self.is_lof = 0 if self.effect_severity != "HIGH" else 1
         # Exons that are coding (excludes UTR's)
@@ -43,7 +42,6 @@ class EffectDetails(object):
                 self.coding = 0 
             else:
                 self.coding = 1
-
         # parse Polyphen predictions
         if self.polyphen is not None:
             self.polyphen_b = self.polyphen.split("(")
@@ -75,7 +73,7 @@ class EffectDetails(object):
     def __str__(self):
 
         return "\t".join([self.consequence, self.effect_severity,
-                          self.codon_change, self.aa_change,
+                          self.codon_change, self.aa_change, self.aa_length,
                           self.ensembl_gene, self.gene, self.transcript,
                           self.exon, self.exonic, self.anno_id, self.polyphen_pred,
                           self.polyphen_score, self.sift_pred, self.sift_score,
