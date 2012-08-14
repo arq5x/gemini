@@ -34,10 +34,7 @@ def load_annos():
                     'recomb'       : os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz'),
                     'gms'          : os.path.join(anno_dirname, 'GRCh37-gms-mappability.vcf.gz'),
                     'grc'          : os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
-                    'encode_tfbs'  : os.path.join(anno_dirname, 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz'),
-                    'keggpath_66'  : os.path.join(anno_dirname, 'kegg_pathways_ensembl66'),
-                    'keggpath_67'  : os.path.join(anno_dirname, 'kegg_pathways_ensembl67'),
-                    'keggpath_68'  : os.path.join(anno_dirname, 'kegg_pathways_ensembl68'),
+                    'encode_tfbs'  : os.path.join(anno_dirname, 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz')
                    }
 
     for anno in anno_files:
