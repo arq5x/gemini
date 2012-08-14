@@ -111,9 +111,9 @@ intNum = Combine( Optional(arithSign) + Word( nums ) +
 
 columnRval = realNum | intNum | quotedString | result_column # need to add support for alg expressions
 ident = Word( alphas, alphanums + "_$" + ".$" ).setName("identifier")
-columnName = Upcase( delimitedList( ident, ".", combine=True ) )
+columnName = delimitedList( ident, ".", combine=True ).setParseAction( upcaseTokens )
 fromToken = Keyword("from", caseless=True)
-tableName = Upcase( delimitedList( ident, ".", combine=True ) )
+tableName = delimitedList( ident, ".", combine=True ).setParseAction( upcaseTokens )
 tableNameList = Group( delimitedList( tableName ) )
 whereCondition = Group(
     ( columnName + binop + columnRval ) |
