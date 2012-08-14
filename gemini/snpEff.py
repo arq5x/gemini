@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#############################################
+# consequence as per snpeff v3:
+# Effect ( Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon
+# NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|aCg/aTg|T143M|459|XKR3|protein_coding|CODING|ENST00000331428|exon_22_17280661_17280914
+
+#############################################
 
 import re
 from collections import namedtuple
@@ -13,11 +19,12 @@ class EffectDetails(object):
         self.impact = fields[1] if fields[1] != '' else None
         self.codon_change = fields[2] if fields[2] != '' else None
         self.aa_change = fields[3] if fields[3] != '' else None
-        self.gene = fields[4] if fields[4] != '' else None
-        self.biotype = fields[5] if fields[5] != '' else None
-        self.coding = fields[6] if fields[6] != '' else None
-        self.transcript = fields[7] if fields[7] != '' else None
-        self.exon = fields[8] if fields[8] != '' else None
+        self.aa_length = fields[4] if fields[4] != '' else None
+        self.gene = fields[5] if fields[5] != '' else None
+        self.biotype = fields[6] if fields[6] != '' else None
+        self.coding = fields[7] if fields[7] != '' else None
+        self.transcript = fields[8] if fields[8] != '' else None
+        self.exon = fields[9] if fields[9] != '' else None
         self.warnings = None
         if len(fields) > 8: self.warnings = fields[8]
         self.exonic = 0 if self.exon is None else 1
@@ -28,7 +35,7 @@ class EffectDetails(object):
         self.sift_score = None
         self.condel_pred  = None
         self.condel_score = None
-        
+
         # Exons that are coding (excludes UTR's)
         if self.exonic == 0:
             self.coding = 0 
@@ -44,7 +51,7 @@ class EffectDetails(object):
     def __str__(self):
         return "\t".join([self.consequence, self.effect_severity,
                           self.impact, self.codon_change,
-                          self.aa_change, self.gene,
+                          self.aa_change, self.aa_length, self.gene,
                           str(self.biotype), str(self.exonic),
                           str(self.coding), self.transcript,
                           self.exon, self.anno_id])
