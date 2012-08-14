@@ -9,7 +9,7 @@ import gemini_load, gemini_query,\
        gemini_annotate, gemini_windower
 
 import tool_compound_hets
-import tool_path
+import tool_pathways
 
 def examples(parser, args):
     
@@ -233,7 +233,7 @@ def main():
                                " v67 for Ensembl genes 67 \n"
                                " v68 for Ensembl genes 68 \n"
                                )
-    parser_pathway.set_defaults(func=tool_path.allquery)
+    parser_pathway.set_defaults(func=tool_pathways.allquery)
     
     # $ gemini lof_pathways
     parser_pathway = subparsers.add_parser('lof_pathways', help='Map lof genes to pathways')
@@ -244,7 +244,7 @@ def main():
                                " v67 for Ensembl genes 67 \n"
                                " v68 for Ensembl genes 68 \n"
                                )
-    parser_pathway.set_defaults(func=tool_path.lofquery)
+    parser_pathway.set_defaults(func=tool_pathways.lofquery)
     #######################################################
     # parse the args and call the selected function
     #######################################################

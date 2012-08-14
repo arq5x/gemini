@@ -39,7 +39,10 @@ anno_files = \
 'genetic_map_HapMapII_GRCh37.gz',
 'genetic_map_HapMapII_GRCh37.gz.tbi',
 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz',
-'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz.tbi'
+'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz.tbi',
+'kegg_pathways_ensembl66',
+'kegg_pathways_ensembl67',
+'kegg_pathways_ensembl68'
 ]
 # Annotation files for be merged into main repository
 tmp_anno_files = ['GRCh37-gms-mappability.vcf.gz', 'GRC_patch_regions.bed.gz']
