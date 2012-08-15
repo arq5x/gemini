@@ -9,8 +9,9 @@ from gemini.config import read_gemini_config
 config = read_gemini_config()
 path_dirname = config["annotation_dir"]
 
-def get_pathways(args):     
-        
+
+def get_pathways(args):
+
     if args.version == None or args.version == 'v66':
         path_file = os.path.join(path_dirname, 'kegg_pathways_ensembl66') 
     elif args.version == 'v67':
@@ -33,21 +34,26 @@ def get_pathways(args):
             ensid = fields[3]
             ens_transcript = fields[4]
             hsa = fields[5]
-            path = fields[6]
+            path = fields[6] if fields[6] != 'None' else None
             # build gene/transcript -> pathway mappings using
             # all three gene naming conventions
             agn_paths[(agn, ens_transcript)].append(path)
             hgnc_paths[(hgnc, ens_transcript)].append(path)
             ensembl_paths[(ensid, ens_transcript)].append(path)
-            
+
         return agn_paths, hgnc_paths, ensembl_paths
 
-def _print_pathways(gene, transcript, pathways):
+
+def _print_pathways(gene, transcript, pathways, allow_none=True):
+    # get distinct pathways
+    pathways = set(pathways)
+    if None in pathways:
+        # remove "None" if a valid pathway exists.
+        if len(pathways) > 1 or allow_none is False:
+           pathways.remove(None)
+
     for pathway in pathways:
-        if pathway is not None:
-            print "\t".join([gene, transcript, pathway])
-        else:
-            print "\t".join([gene, transcript, 'None'])
+        print "\t".join([gene, transcript, (pathway or 'None')])
 
 def get_all_pathways(c, args):
     
@@ -83,11 +89,14 @@ def get_lof_pathways(c, args):
         trans = str(row['transcript'])
     
         if (gene, trans) in agn_paths:
-            _print_pathways(gene, trans, agn_paths[(gene, trans)])
+            _print_pathways(gene, trans, agn_paths[(gene, trans)], 
+                            allow_none=False)
         elif (gene, trans) in hgnc_paths:
-            _print_pathways(gene, trans, hgnc_paths[(gene, trans)])
+            _print_pathways(gene, trans, hgnc_paths[(gene, trans)],
+                            allow_none=False)
         elif (gene, trans) in ensembl_paths:
-            _print_pathways(gene, trans, ensembl_paths[(gene, trans)])   
+            _print_pathways(gene, trans, ensembl_paths[(gene, trans)],
+                            allow_none=False)   
 
 
 def allquery(parser, args):
