@@ -42,7 +42,8 @@ anno_files = \
 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz.tbi',
 'kegg_pathways_ensembl66',
 'kegg_pathways_ensembl67',
-'kegg_pathways_ensembl68'
+'kegg_pathways_ensembl68',
+'hprd_interaction_graph'
 ]
 # Annotation files for be merged into main repository
 tmp_anno_files = ['GRCh37-gms-mappability.vcf.gz', 'GRC_patch_regions.bed.gz']
