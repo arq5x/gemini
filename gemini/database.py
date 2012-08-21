@@ -78,6 +78,7 @@ def create_tables(cursor):
                                                             codon_change text,                          \
                                                             aa_change text,                             \
                                                             aa_length text,                             \
+                                                            biotype text,                               \
                                                             most_severe_impact text default NULL,       \
                                                             impact_severity text,                       \
                                                             polyphen_pred text,                         \
@@ -126,6 +127,7 @@ def create_tables(cursor):
                                                                    codon_change text,                          \
                                                                    aa_change text,                             \
                                                                    aa_length text,                             \
+                                                                   biotype text,                               \
                                                                    impact text,                                \
                                                                    impact_severity text,                       \
                                                                    polyphen_pred text,                         \
@@ -169,7 +171,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
@@ -180,7 +182,7 @@ def insert_variation_impacts(cursor, buffer):
     """
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into variant_impacts values (?,?,?,?,?,?,?,?,?,?, \
-                                                            ?,?,?,?,?,?,?,?,?)', \
+                                                            ?,?,?,?,?,?,?,?,?,?)', \
                                                             buffer)
     cursor.execute("END")
 
