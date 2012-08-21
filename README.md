@@ -84,7 +84,7 @@ Basic workflow
 ==============
 
 **Import a VCF file into the ``gemini`` framework.**
-We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools may be supported soon).  In the process of loading the VCF into the database framework, many other annotations are calculated for each variant and stored for subsequent querying/analysis.
+We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools may be supported soon).  In the process of loading the VCF into the database framework, many other annotations are calculated for each variant and stored for subsequent querying/analysis. **Note**: If using snpEff, ee currently require VCFs to be annotated with version 3.0 or later.
     
     gemini load -v my.snpEff.vcf -t snpEff my.db
     
@@ -174,6 +174,33 @@ annotation file for each given variant.
 	chr22	16504479	16504480	1	rs123,rs456
 	chr22	16504488	16504489	2	None
 	chr22	16504490	16504491	3	rs789
+
+
+Extracting KEGG pathways for variants/genes/individuals
+=======================================================
+
+``gemini`` catalogs KEGG pathway information and using the 
+``pathways`` tool, one can extract pathway information for each
+sample that has variants affecting a given gene.  The only requirement
+is that we know what version of Ensembl genes were using by snpEff or VEP.
+Currently, we expect version 66, 67, or 68.  
+
+    gemini pathways -v 66 chr22.low.exome.snpeff.100samples.vcf.db
+
+We can also focus solely on loss-of-function mutations with the ``--lof``
+argument:
+
+    gemini pathways --lof -v 66 chr22.low.exome.snpeff.100samples.vcf.db | head
+    chrom	start	end	ref	alt	highest_impact	sample	genotype	gene	transcript	pathway
+    chr22	18912676	18912677	C	T	stop_gain	HG00312	C|T	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	18912676	18912677	C	T	stop_gain	HG01069	C|T	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	18912676	18912677	C	T	stop_gain	NA12275	C|T	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	18912676	18912677	C	T	stop_gain	NA18535	C|T	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	18912676	18912677	C	T	stop_gain	NA19324	T|C	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	18912676	18912677	C	T	stop_gain	NA19327	T|C	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	18912676	18912677	C	T	stop_gain	NA19655	C|T	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	18912676	18912677	C	T	stop_gain	NA20341	C|T	PRODH	ENST00000357068	hsa01100:Metabolic_pathways,hsa00330:Arginine_and_proline_metabolism
+    chr22	19258043	19258044	A	<DEL>	exon_deleted	NA18999	A|<DEL>	CLTCL1	ENST00000505027	hsa04721:Synaptic_vesicle_cycle,hsa04961:Endocrine_and_other_factor_regulated_calcium_reabsorption,hsa05016:Huntington's_disease,hsa05100:Bacterial_invasion_of_epithelial_cells,hsa04142:Lysosome,hsa04144:Endocytosis
 
 
 Extracting variants from specific regions or genes
