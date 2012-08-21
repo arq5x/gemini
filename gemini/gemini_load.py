@@ -158,7 +158,7 @@ class GeminiLoader(object):
         # impact is a list of impacts for this variant
         impacts = None
         severe_impacts = None
-        affected_gene = transcript = exon = codon_change = aa_change = aa_length = consequence = effect_severity = None
+        affected_gene = transcript = exon = codon_change = aa_change = aa_length = biotype = consequence = effect_severity = None
         polyphen_pred = polyphen_score = sift_pred = sift_score = condel_pred = condel_score = anno_id = None
     
         if self.args.anno_type is not None:
@@ -171,6 +171,7 @@ class GeminiLoader(object):
                 codon_change = severe_impacts.codon_change
                 aa_change = severe_impacts.aa_change
                 aa_length = severe_impacts.aa_length
+                biotype = severe_impacts.biotype
                 consequence = severe_impacts.consequence
                 effect_severity = severe_impacts.effect_severity
                 polyphen_pred = severe_impacts.polyphen_pred
@@ -212,7 +213,7 @@ class GeminiLoader(object):
                 var_impact = [self.v_id, (idx+1), impact.gene, 
                               impact.transcript, impact.exonic, impact.coding,
                               impact.is_lof, impact.exon, impact.codon_change, impact.aa_change,
-                              impact.aa_length, impact.consequence, impact.effect_severity,
+                              impact.aa_length, impact.biotype, impact.consequence, impact.effect_severity,
                               impact.polyphen_pred, impact.polyphen_score,
                               impact.sift_pred, impact.sift_score,
                               impact.condel_pred, impact.condel_score]
@@ -238,7 +239,7 @@ class GeminiLoader(object):
                    hwe_p_value, inbreeding_coeff, pi_hat,
                    recomb_rate, gene, affected_gene, transcript,    
                    is_exonic, is_coding, is_lof, exon, codon_change,
-                   aa_change, aa_length, consequence, effect_severity,
+                   aa_change, aa_length, biotype, consequence, effect_severity,
                    polyphen_pred, polyphen_score, sift_pred, 
                    sift_score, condel_pred, condel_score,
                    infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
