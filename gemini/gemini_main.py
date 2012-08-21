@@ -225,26 +225,21 @@ def main():
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
     
     # $ gemini pathways
-    parser_pathway = subparsers.add_parser('pathways', help='Map genes to pathways')
-    parser_pathway.add_argument('db', metavar='db', help='The name of the database to be created')
+    parser_pathway = subparsers.add_parser('pathways', help='Map genes and variants to KEGG pathways')
+    parser_pathway.add_argument('db', metavar='db', help='The name of the database to be queried')
     parser_pathway.add_argument('-v', dest='version', default=None, metavar='STRING', 
                                help="version of ensembl genes to use:\n"
-                               " v66 for Ensembl genes 66 and \n"
-                               " v67 for Ensembl genes 67 \n"
-                               " v68 for Ensembl genes 68 \n"
+                               " 66 for Ensembl genes 66 and \n"
+                               " 67 for Ensembl genes 67 \n"
+                               " 68 for Ensembl genes 68 \n"
                                )
-    parser_pathway.set_defaults(func=tool_pathways.allquery)
+    parser_pathway.add_argument('--lof', 
+                                   dest='lof', 
+                                   action='store_true',
+                                   help='Report pathways for indivs/genes/sites woth LoF variants', 
+                                   default=False)
+    parser_pathway.set_defaults(func=tool_pathways.pathways)
     
-    # $ gemini lof_pathways
-    parser_pathway = subparsers.add_parser('lof_pathways', help='Map lof genes to pathways')
-    parser_pathway.add_argument('db', metavar='db', help='The name of the database to be created')
-    parser_pathway.add_argument('-v', dest='version', default=None, metavar='STRING', 
-                               help="version of ensembl genes to use:\n"
-                               " v66 for Ensembl genes 66 and \n"
-                               " v67 for Ensembl genes 67 \n"
-                               " v68 for Ensembl genes 68 \n"
-                               )
-    parser_pathway.set_defaults(func=tool_pathways.lofquery)
     #######################################################
     # parse the args and call the selected function
     #######################################################
