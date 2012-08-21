@@ -115,7 +115,7 @@ class GeminiLoader(object):
                 # e.g., make still be something like "3.0a"
                 self.args.raw_version = toks[1]
                 # e.g., 3.0a -> 3
-                self.args.maj_version = int(raw_version.split('.')[0])
+                self.args.maj_version = int(self.args.raw_version.split('.')[0])
         elif self.args.anno_type == "VEP":
             pass
 
