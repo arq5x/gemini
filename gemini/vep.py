@@ -28,6 +28,7 @@ class EffectDetails(object):
         self.sift = fields[8] if fields[8] != '' else None
         self.condel = fields[9] if fields[9] != '' else None
         self.aa_length = None
+        self.biotype = None
         self.warnings = None
         self.consequence = effect_dict[self.effect_name]
         if len(fields) > 9:
@@ -72,8 +73,8 @@ class EffectDetails(object):
 
     def __str__(self):
 
-        return "\t".join([self.consequence, self.effect_severity,
-                          self.codon_change, self.aa_change, self.aa_length,
+        return "\t".join([self.consequence, self.effect_severity, self.codon_change,
+                          self.aa_change, self.aa_length, self.biotype,
                           self.ensembl_gene, self.gene, self.transcript,
                           self.exon, self.exonic, self.anno_id, self.polyphen_pred,
                           self.polyphen_score, self.sift_pred, self.sift_score,
