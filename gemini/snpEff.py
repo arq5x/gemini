@@ -11,7 +11,7 @@ from collections import namedtuple
 from collections import defaultdict
 
 class EffectDetails(object):
-    def __init__(self, name, severity, detail_string, counter):
+    def __init__(self, name, severity, detail_string, counter, snp_eff_version):
         fields = detail_string.split("|")
         self.effect_name = name
         self.anno_id = counter
@@ -19,14 +19,28 @@ class EffectDetails(object):
         self.impact = fields[1] if fields[1] != '' else None
         self.codon_change = fields[2] if fields[2] != '' else None
         self.aa_change = fields[3] if fields[3] != '' else None
-        self.aa_length = fields[4] if fields[4] != '' else None
-        self.gene = fields[5] if fields[5] != '' else None
-        self.biotype = fields[6] if fields[6] != '' else None
-        self.coding = fields[7] if fields[7] != '' else None
-        self.transcript = fields[8] if fields[8] != '' else None
-        self.exon = fields[9] if fields[9] != '' else None
-        self.warnings = None
-        if len(fields) > 8: self.warnings = fields[8]
+        
+        #snpEff >= v3.0 includes aa_length
+        if snp_eff_version is not None and snp_eff_version >= 3.0: 
+            self.aa_length = fields[4] if fields[4] != '' else None
+            self.gene = fields[5] if fields[5] != '' else None
+            self.biotype = fields[6] if fields[6] != '' else None
+            self.coding = fields[7] if fields[7] != '' else None
+            self.transcript = fields[8] if fields[8] != '' else None
+            self.exon = fields[9] if fields[9] != '' else None
+            self.warnings = None
+            if len(fields) > 9: self.warnings = fields[9]
+            
+        else:
+            self.aa_length = None
+            self.gene = fields[4] if fields[4] != '' else None
+            self.biotype = fields[5] if fields[5] != '' else None
+            self.coding = fields[6] if fields[6] != '' else None
+            self.transcript = fields[7] if fields[7] != '' else None
+            self.exon = fields[8] if fields[8] != '' else None
+            self.warnings = None
+            if len(fields) > 8: self.warnings = fields[8]
+
         self.exonic = 0 if self.exon is None else 1
         self.is_lof = 0 if self.effect_severity != "HIGH" else 1
         self.polyphen_pred = None

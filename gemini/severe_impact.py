@@ -42,7 +42,11 @@ def interpret_severe_impact(args, var):
                 #update the impact stored only if a higher severity transcript is encountered
                 if impact_info.priority_code < max_severity:
                     impact_type = impact_info
-                    impact_details = snpEff.EffectDetails(impact_string, impact_info.priority, impact_detail, count)
+                    impact_details = snpEff.EffectDetails(impact_string, 
+                                                          impact_info.priority, 
+                                                          impact_detail, 
+                                                          count,
+                                                          args.version)
                     max_severity = impact_info.priority_code # store the current "winning" severity for the next iteration.
             
     elif args.anno_type == "VEP":

@@ -40,6 +40,8 @@ class GeminiLoader(object):
         self.buffer_size = buffer_size
         # initialize genotype counts for each sample
         self._init_sample_gt_counts()
+        
+        self._get_anno_version()
 
     def populate_from_vcf(self):
         """
@@ -97,6 +99,23 @@ class GeminiLoader(object):
         else:
             return vcf.VCFReader(open(self.args.vcf), 'rb')
             
+    def _get_anno_version(self):
+        """
+        Extract the snpEff or VEP version used
+        to annotate the VCF
+        """
+        # default to unknown version
+        self.args.version = None
+
+        if self.args.anno_type == "snpEff":
+            version_string = self.vcf_reader.metadata['SnpEffVersion']
+            # e.g., "SnpEff 3.0a (build 2012-07-08), by Pablo Cingolani"
+            if version_string.startswith('\"SnpEff'):
+                toks = version_string.split(' ')
+                self.args.version = float(toks[1])
+        elif self.args.anno_type == "VEP":
+            pass
+
     def _create_db(self):
         """
         private method to open a new DB

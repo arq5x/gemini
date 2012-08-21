@@ -36,8 +36,13 @@ def interpret_impact(args, var):
                 impact_string  = piece[0] # the predicted inpact, which is outside the ()
                 impact_detail  = piece[1] # all the other information, which is inside the ()
                 impact_info    = snpEff.effect_map[impact_string]
-                impact_details = snpEff.EffectDetails(impact_string, impact_info.priority, impact_detail, counter)
+                impact_details = snpEff.EffectDetails(impact_string, 
+                                                      impact_info.priority, 
+                                                      impact_detail, 
+                                                      counter,
+                                                      args.version)
                 impact_all.append(impact_details)
+
     elif args.anno_type == "VEP":
         try:
             effect_strings_str = var.INFO["CSQ"]
