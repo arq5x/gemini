@@ -10,6 +10,7 @@ import gemini_load, gemini_query,\
 
 import tool_compound_hets
 import tool_pathways
+import tool_lof_sieve
 
 def examples(parser, args):
     
@@ -239,6 +240,11 @@ def main():
                                    help='Report pathways for indivs/genes/sites woth LoF variants', 
                                    default=False)
     parser_pathway.set_defaults(func=tool_pathways.pathways)
+    
+    # $ gemini lof_sieve
+    parser_lof_sieve = subparsers.add_parser('lof_sieve', help='Prioritize LoF mutations')
+    parser_lof_sieve.add_argument('db', metavar='db', help='The name of the database to be queried')
+    parser_lof_sieve.set_defaults(func=tool_pathways.pathways)
     
     #######################################################
     # parse the args and call the selected function
