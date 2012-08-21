@@ -22,7 +22,7 @@ def get_ind_lof(c, args):
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
                              v.most_severe_impact, v.aa_change, v.aa_length, \
                              v.gt_types, v.gts, i.gene, \
-                             i.transcript \
+                             i.transcript,  i.biotype\
              FROM variants v, variant_impacts i \
              WHERE v.variant_id = i.variant_id \
              AND i.is_lof='1' \
@@ -34,7 +34,7 @@ def get_ind_lof(c, args):
     print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
                      'highest_impact', 'aa_change', 'var_trans_pos', 
                      'trans_aa_length', 'var_trans_pct', \
-                     'sample', 'genotype', 'gene', 'transcript'])
+                     'sample', 'genotype', 'gene', 'transcript', 'trans_type'])
 
     for r in c:
         gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
@@ -43,10 +43,12 @@ def get_ind_lof(c, args):
         trans    = str(r['transcript'])
         
         aa_change = str(r['aa_change'])
+        aa_length = str(r['aa_length'])
         transcript_pos = transcript_pct = None
         if aa_change != 'None':
             transcript_pos = re.findall('\S(\d+)\S', aa_change)[0]
-            transcript_pct = float(transcript_pos) / float(r['aa_length'])
+            if aa_length != 'None':
+                transcript_pct = float(transcript_pos) / float(aa_length)
 
         for idx, type in enumerate(gt_types):
             if type > 0:
@@ -58,7 +60,7 @@ def get_ind_lof(c, args):
                                  r['aa_length'] or 'None', \
                                  str(transcript_pct) or 'None', \
                                  idx_to_sample[idx], \
-                                 gts[idx], gene, trans])
+                                 gts[idx], gene, trans, r['biotype']])
 
 
 def lof_sieve(parser, args):
