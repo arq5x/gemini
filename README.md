@@ -256,5 +256,4 @@ Add a table that stores a vector of genotypes for each sample.  This will facili
 popgen metrics.
 
 Add GERP score.
-Add KEGG
 Add COSMIC
