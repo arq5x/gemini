@@ -216,14 +216,14 @@ in the amino acid sequence. In addition, it also reports the predicted
 function of the transcript so that one can segregate candidate LoF
 variants that affect protein_coding transcripts from processed RNA, etc.
 
-gemini lof_sieve chr22.low.exome.snpeff.100samples.vcf.db
-chrom	start	end	ref	alt	highest_impact	aa_change	var_trans_pos	trans_aa_length	var_trans_pct	sample	genotype	gene	transcript	trans_type
-chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19327	C|T	CCT8L2	ENST00000359963	protein_coding
-chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19375	T|C	CCT8L2	ENST00000359963	protein_coding
-chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19431	T|C	CCT8L2	ENST00000359963	protein_coding
-chr22	17129539	17129540	C	T	splice_donor	None	None	None	None	NA18964	T|C	TPTEP1	ENST00000383140	lincRNA
-chr22	17129539	17129540	C	T	splice_donor	None	None	None	None	NA19675	T|C	TPTEP1	ENST00000383140	lincRNA
-chr22	17140745	17140746	A	G	splice_donor	None	None	None	None	NA19223	A|G	ANKRD62P1	ENST00000456726	lincRNA
+    gemini lof_sieve chr22.low.exome.snpeff.100samples.vcf.db
+    chrom	start	end	ref	alt	highest_impact	aa_change	var_trans_pos	trans_aa_length	var_trans_pct	sample	genotype	gene	transcript	trans_type
+    chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19327	C|T	CCT8L2	ENST00000359963	protein_coding
+    chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19375	T|C	CCT8L2	ENST00000359963	protein_coding
+    chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19431	T|C	CCT8L2	ENST00000359963	protein_coding
+    chr22	17129539	17129540	C	T	splice_donor	None	None	None	None	NA18964	T|C	TPTEP1	ENST00000383140	lincRNA
+    chr22	17129539	17129540	C	T	splice_donor	None	None	None	None	NA19675	T|C	TPTEP1	ENST00000383140	lincRNA
+    chr22	17140745	17140746	A	G	splice_donor	None	None	None	None	NA19223	A|G	ANKRD62P1	ENST00000456726	lincRNA
 
 
 Extracting variants from specific regions or genes
