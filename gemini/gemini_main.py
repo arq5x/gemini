@@ -244,7 +244,7 @@ def main():
     # $ gemini lof_sieve
     parser_lof_sieve = subparsers.add_parser('lof_sieve', help='Prioritize LoF mutations')
     parser_lof_sieve.add_argument('db', metavar='db', help='The name of the database to be queried')
-    parser_lof_sieve.set_defaults(func=tool_pathways.pathways)
+    parser_lof_sieve.set_defaults(func=tool_lof_sieve.lof_sieve)
     
     #######################################################
     # parse the args and call the selected function
