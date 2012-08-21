@@ -26,7 +26,7 @@ yields one billion genotypes) datasets.
 Have a look at this [poster](http://dl.dropbox.com/u/515640/posters_and_slides/Quinlan-Gemini-Poster.pdf) to get a high-level sense of what ``gemini`` is trying to accomplish.
 
 The first thing we have to do is load an existing VCF file into the gemini framework.  We expect you to have
-annotated the functional consequence of each variant in your VCF using either VEP or snpEff.  Logically,
+annotated the functional consequence of each variant in your VCF using either VEP or snpEff (>= v3.0).  Logically,
 the loading step is done with the ``gemini load`` command.  Below are two examples based on a VCF file that
 we ingeniously name my.vcf.  The first example assumes that the VCF has been pre-annotated with VEP and the second
 assumes snpEff.
