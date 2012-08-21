@@ -112,7 +112,10 @@ class GeminiLoader(object):
             # e.g., "SnpEff 3.0a (build 2012-07-08), by Pablo Cingolani"
             if version_string.startswith('\"SnpEff'):
                 toks = version_string.split(' ')
-                self.args.version = float(toks[1])
+                # e.g., make still be something like "3.0a"
+                self.args.raw_version = toks[1]
+                # e.g., 3.0a -> 3
+                self.args.maj_version = int(alpha_version.split('.')[0])
         elif self.args.anno_type == "VEP":
             pass
 

@@ -40,7 +40,7 @@ def interpret_impact(args, var):
                                                       impact_info.priority, 
                                                       impact_detail, 
                                                       counter,
-                                                      args.version)
+                                                      args.maj_version)
                 impact_all.append(impact_details)
 
     elif args.anno_type == "VEP":

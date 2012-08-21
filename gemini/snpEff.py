@@ -21,7 +21,7 @@ class EffectDetails(object):
         self.aa_change = fields[3] if fields[3] != '' else None
         
         #snpEff >= v3.0 includes aa_length
-        if snp_eff_version is not None and snp_eff_version >= 3.0: 
+        if snp_eff_version is not None and snp_eff_version >= 3: 
             self.aa_length = fields[4] if fields[4] != '' else None
             self.gene = fields[5] if fields[5] != '' else None
             self.biotype = fields[6] if fields[6] != '' else None

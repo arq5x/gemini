@@ -46,7 +46,7 @@ def interpret_severe_impact(args, var):
                                                           impact_info.priority, 
                                                           impact_detail, 
                                                           count,
-                                                          args.version)
+                                                          args.maj_version)
                     max_severity = impact_info.priority_code # store the current "winning" severity for the next iteration.
             
     elif args.anno_type == "VEP":
