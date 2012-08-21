@@ -204,6 +204,28 @@ argument:
     chr22	19258043	19258044	A	<DEL>	exon_deleted	NA18999	A|<DEL>	CLTCL1	ENST00000505027	hsa04721:Synaptic_vesicle_cycle,hsa04961:Endocrine_and_other_factor_regulated_calcium_reabsorption,hsa05016:Huntington's_disease,hsa05100:Bacterial_invasion_of_epithelial_cells,hsa04142:Lysosome,hsa04144:Endocytosis
 
 
+Filtering candidate LoF variants by transcript position or transcript type.
+===========================================================================
+Not all candidate LoF variants are created equal.  For example, a nonsense 
+(stop gain) variant impacting the first 5% of a polypeptide is far more
+likely to be deleterious than one affecting the last 5%. (For an empirical
+analysis of this in the human genome, see Fig 1C in [MacArthur et al, 2012](http://www.sciencemag.org/content/335/6070/823)). Assuming you've
+annotated your VCF with snpEff v3.0+, the ``lof_sieve`` tool
+reports the fractional position (e.g. 0.05 for the first 5%) of the mutation
+in the amino acid sequence. In addition, it also reports the predicted
+function of the transcript so that one can segregate candidate LoF
+variants that affect protein_coding transcripts from processed RNA, etc.
+
+gemini lof_sieve chr22.low.exome.snpeff.100samples.vcf.db
+chrom	start	end	ref	alt	highest_impact	aa_change	var_trans_pos	trans_aa_length	var_trans_pct	sample	genotype	gene	transcript	trans_type
+chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19327	C|T	CCT8L2	ENST00000359963	protein_coding
+chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19375	T|C	CCT8L2	ENST00000359963	protein_coding
+chr22	17072346	17072347	C	T	stop_gain	W365*	365	557	0.655296229803	NA19431	T|C	CCT8L2	ENST00000359963	protein_coding
+chr22	17129539	17129540	C	T	splice_donor	None	None	None	None	NA18964	T|C	TPTEP1	ENST00000383140	lincRNA
+chr22	17129539	17129540	C	T	splice_donor	None	None	None	None	NA19675	T|C	TPTEP1	ENST00000383140	lincRNA
+chr22	17140745	17140746	A	G	splice_donor	None	None	None	None	NA19223	A|G	ANKRD62P1	ENST00000456726	lincRNA
+
+
 Extracting variants from specific regions or genes
 ==================================================
 

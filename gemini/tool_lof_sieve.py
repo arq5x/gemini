@@ -44,7 +44,8 @@ def get_ind_lof(c, args):
         
         aa_change = str(r['aa_change'])
         aa_length = str(r['aa_length'])
-        transcript_pos = transcript_pct = None
+        transcript_pos = None
+        transcript_pct = None
         if aa_change != 'None':
             transcript_pos = re.findall('\S(\d+)\S', aa_change)[0]
             if aa_length != 'None':
