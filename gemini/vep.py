@@ -2,8 +2,8 @@
 
 #############
 
-#CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift|condel
-#non_synonymous_codon|gaT/gaG|D/E|ENSG00000116254|CHD5|ENST00000378006|18/25|benign(0.011)|tolerated(0.3)|neutral(0.029)
+#CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift
+#non_synonymous_codon|gaT/gaG|D/E|ENSG00000116254|CHD5|ENST00000378006|18/25|benign(0.011)|tolerated(0.3)
 #nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6|||
 #############
 
@@ -26,7 +26,6 @@ class EffectDetails(object):
         self.exon = fields[6] if fields[6] != '' else None
         self.polyphen =  fields[7] if fields[7] != '' else None
         self.sift = fields[8] if fields[8] != '' else None
-        self.condel = fields[9] if fields[9] != '' else None
         self.aa_length = None
         self.biotype = None
         self.warnings = None
@@ -61,15 +60,6 @@ class EffectDetails(object):
         else:
             self.sift_pred = None
             self.sift_score = None
-        # parse CONDEL predictions
-        if self.condel is not None:
-                self.condel_b = self.condel.split("(")
-                self.condel_pred = self.condel_b[0]
-                self.condel2 = self.condel_b[1].split(")")
-                self.condel_score = self.condel2[0]
-        else:
-            self.condel_pred  = None
-            self.condel_score = None
 
     def __str__(self):
 
@@ -78,7 +68,7 @@ class EffectDetails(object):
                           self.ensembl_gene, self.gene, self.transcript,
                           self.exon, self.exonic, self.anno_id, self.polyphen_pred,
                           self.polyphen_score, self.sift_pred, self.sift_score,
-                          self.condel_pred, self.condel_score, self.coding, self.is_lof])
+                          self.coding, self.is_lof])
     def __repr__(self):
         return self.__str__()
 
