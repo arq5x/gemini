@@ -159,7 +159,7 @@ class GeminiLoader(object):
         impacts = None
         severe_impacts = None
         affected_gene = transcript = exon = codon_change = aa_change = aa_length = biotype = consequence = effect_severity = None
-        polyphen_pred = polyphen_score = sift_pred = sift_score = condel_pred = condel_score = anno_id = None
+        polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
     
         if self.args.anno_type is not None:
             impacts = func_impact.interpret_impact(self.args, var)
@@ -178,8 +178,6 @@ class GeminiLoader(object):
                 polyphen_score = severe_impacts.polyphen_score
                 sift_pred = severe_impacts.sift_pred
                 sift_score = severe_impacts.sift_score
-                condel_pred = severe_impacts.condel_pred
-                condel_score = severe_impacts.condel_score
                 anno_id = severe_impacts.anno_id
         
         # construct the filter string
@@ -215,8 +213,7 @@ class GeminiLoader(object):
                               impact.is_lof, impact.exon, impact.codon_change, impact.aa_change,
                               impact.aa_length, impact.biotype, impact.consequence, impact.effect_severity,
                               impact.polyphen_pred, impact.polyphen_score,
-                              impact.sift_pred, impact.sift_score,
-                              impact.condel_pred, impact.condel_score]
+                              impact.sift_pred, impact.sift_score]
                 variant_impacts.append(var_impact)
                 gene = impact.gene
                 if impact.exonic == True: is_exonic = True
@@ -240,8 +237,7 @@ class GeminiLoader(object):
                    recomb_rate, gene, affected_gene, transcript,    
                    is_exonic, is_coding, is_lof, exon, codon_change,
                    aa_change, aa_length, biotype, consequence, effect_severity,
-                   polyphen_pred, polyphen_score, sift_pred, 
-                   sift_score, condel_pred, condel_score,
+                   polyphen_pred, polyphen_score, sift_pred, sift_score,
                    infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
                    infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
                    infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),

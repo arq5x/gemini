@@ -85,8 +85,6 @@ def create_tables(cursor):
                                                             polyphen_score float,                       \
                                                             sift_pred text,                             \
                                                             sift_score float,                           \
-                                                            condel_pred text,                           \
-                                                            condel_score float,                         \
                                                             depth integer default NULL,                 \
                                                             strand_bias float default NULL,             \
                                                             rms_map_qual float default NULL,            \
@@ -134,8 +132,6 @@ def create_tables(cursor):
                                                                    polyphen_score float,                       \
                                                                    sift_pred text,                             \
                                                                    sift_score float,                           \
-                                                                   condel_pred text,                           \
-                                                                   condel_score float,                         \
                                                                    PRIMARY KEY(variant_id ASC, anno_id ASC))''')
 
     cursor.execute('''create table if not exists samples   (sample_id integer,                 \
@@ -171,7 +167,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
@@ -182,7 +178,7 @@ def insert_variation_impacts(cursor, buffer):
     """
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into variant_impacts values (?,?,?,?,?,?,?,?,?,?, \
-                                                            ?,?,?,?,?,?,?,?,?,?)', \
+                                                            ?,?,?,?,?,?,?,?)', \
                                                             buffer)
     cursor.execute("END")
 
