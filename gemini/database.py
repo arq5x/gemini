@@ -40,6 +40,7 @@ def create_tables(cursor):
                                                             start integer,                              \
                                                             end integer,                                \
                                                             variant_id integer,                         \
+                                                            anno_id integer,                            \
                                                             ref text,                                   \
                                                             alt text,                                   \
                                                             qual float,                                 \
@@ -167,7 +168,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     

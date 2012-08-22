@@ -158,6 +158,8 @@ class GeminiLoader(object):
         # impact is a list of impacts for this variant
         impacts = None
         severe_impacts = None
+        # impact terms initialized to None for handling unannotated vcf's
+        # anno_id in variants is for the transcript with the most severe impact term
         affected_gene = transcript = exon = codon_change = aa_change = aa_length = biotype = consequence = effect_severity = None
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
     
@@ -178,7 +180,7 @@ class GeminiLoader(object):
                 polyphen_score = severe_impacts.polyphen_score
                 sift_pred = severe_impacts.sift_pred
                 sift_score = severe_impacts.sift_score
-                anno_id = severe_impacts.anno_id
+                anno_id = severe_impacts.anno_id 
         
         # construct the filter string
         filter = None
@@ -225,7 +227,7 @@ class GeminiLoader(object):
         # 1 row per variant to VARIANTS table
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end, 
-                   self.v_id, var.REF, ','.join(var.ALT), 
+                   self.v_id, anno_id, var.REF, ','.join(var.ALT), 
                    var.QUAL, filter, var.var_type, 
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), call_rate, in_dbsnp,
