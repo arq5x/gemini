@@ -48,16 +48,24 @@ The variant consequence columns in the variant table are populated either by `sn
 
 By default the following columns in the variant table would be set to null:
 
+* anno_id
 * gene
-* transcript
-* exonic
-* exon
-* coding
+* affected_gene
+* affected_transcript
+* affected_exon
+* is_exonic
+* is_lof
+* is_coding
 * codon_change
 * aa_change
-* impact
+* aa_length
+* biotype
+* most_severe_impact
 * impact_severity
-* is_lof
+* polyphen_pred
+* polyphen_score
+* sift_pred
+* sift_score
 
 Impacts
 .......
@@ -75,27 +83,30 @@ frame_shift                                         FRAME_SHIFT                 
 start_loss                                          START_LOST                             null                                                      HIGH
 exon_deleted                                        EXON_DELETED                           null                                                      HIGH
 non_synonymous_start                                NON_SYNONYMOUS_START                   null                                                      HIGH
-non_synonymous_coding                               NON_SYNONYMOUS_CODING                  non_synonymous_codon                                      MED
-inframe_codon_gain                                  CODON_INSERTION                        inframe_codon_gain                                        MED
-inframe_codon_loss                                  CODON_DELETION                         inframe_codon_loss                                        MED
+non_syn_coding                                      NON_SYNONYMOUS_CODING                  missense_variant                                          MED
+inframe_codon_gain                                  CODON_INSERTION                        inframe_insertion                                         MED
+inframe_codon_loss                                  CODON_DELETION                         inframe_deletion                                          MED
 inframe_codon_change                                CODON_CHANGE                           null                                                      MED
 codon_change_del                                    CODON_CHANGE_PLUS_CODON_DELETION       null                                                      MED
 codon_change_ins                                    CODON_CHANGE_PLUS_CODON_INSERTION      null                                                      MED
 UTR_5_del                                           UTR_5_DELETED                          null                                                      MED
 UTR_3_del                                           UTR_3_DELETED                          null                                                      MED
-complex_change_transcript                           null                                   complex_change_in_transcript                              MED
 other_splice_variant                                null                                   splice_region_variant                                     MED
 mature_miRNA                                        null                                   mature_miRNA_variant                                      MED
 regulatory_region                                   null                                   regulatory_region_variant                                 MED
 TF_binding_site                                     null                                   TF_binding_site_variant                                   MED
+regulatory_region_ablation                          null                                   regulatory_region_ablation                                MED
+regulatory_region_amplification                     null                                   regulatory_region_amplification                           MED
+TFBS_ablation                                       null                                   TFBS_ablation                                             MED
+TFBS_amplification                                  null                                   TFBS_amplification                                        MED                                         
 synonymous_stop                                     SYNONYMOUS_STOP                        stop_retained_variant                                     LOW
-synonymous_coding                                   SYNONYMOUS_CODING                      synonymous_codon                                          LOW
+synonymous_coding                                   SYNONYMOUS_CODING                      synonymous_variant                                        LOW
 UTR_5_prime                                         UTR_5_PRIME                            5_prime_UTR_variant                                       LOW
 UTR_3_prime                                         UTR_3_PRIME                            3_prime_UTR_variant                                       LOW
 intron                                              INTRON                                 intron_variant                                            LOW
 CDS                                                 CDS                                    coding_sequence_variant                                   LOW
-upstream                                            UPSTREAM                               2KB_upstream_variant, 5KB_upstream_variant                LOW              
-downstream                                          DOWNSTREAM                             500B_downstream_variant,5KB_downstream_variant            LOW
+upstream                                            UPSTREAM                               upstream_gene_variant					                 LOW              
+downstream                                          DOWNSTREAM                             downstream_gene_variant                                   LOW
 intergenic                                          INTERGENIC, INTERGENIC_CONSERVED       intergenic_variant                                        LOW
 intragenic                                          INTRAGENIC                             null                                                      LOW
 gene                                                GENE                                   null                                                      LOW
@@ -106,7 +117,12 @@ synonymous_start                                    SYNONYMOUS_START            
 intron_conserved                                    INTRON_CONSERVED                       null                                                      LOW
 nc_transcript                                       null                                   nc_transcript_variant                                     LOW
 NMD_transcript                                      null                                   NMD_transcript_variant                                    LOW
-transcript_codon_change                             null                                   initiator_codon_change                                    LOW
+transcript_codon_change                             null                                   initiator_codon_variant                                   LOW
 incomplete_terminal_codon                           null                                   incomplete_terminal_codon_variant                         LOW
+nc_exon                                             null                                   non_coding_exon_variant                                   LOW
+transcript_ablation                                 null                                   transcript_ablation                                       LOW
+transcript_amplification                            null                                   transcript_amplification                                  LOW
+feature elongation                                  null                                   feature elongation                                        LOW
+feature truncation                                  null                                   feature truncation                                        LOW
 =============================================       ===================================    =====================================================     ================
 *Note: "null" refers to the absence of the corresponding term in the alternate database* 

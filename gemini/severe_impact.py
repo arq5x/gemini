@@ -66,23 +66,26 @@ def interpret_severe_impact(args, var):
                 # impact_strings will be [nc_transcript_variant, intron_variant]
                 for impact_string in impact_strings:
                     count += 1
-                    impact_info = vep.effect_map[impact_string]
-                    #update the impact stored only if a higher severity transcript is encountered
-                    if impact_info.priority_code < max_severity:
-                        impact_type = impact_info
-                        impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, count)
-                        max_severity = impact_info.priority_code # store the current "winning" severity for the next iteration.
-                    
+                    try:
+                        impact_info = vep.effect_map[impact_string]
+                        #update the impact stored only if a higher severity transcript is encountered
+                        if impact_info.priority_code < max_severity:
+                            impact_type = impact_info
+                            impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, count)
+                            max_severity = impact_info.priority_code # store the current "winning" severity for the next iteration.        
+                    except KeyError:
+                        pass;           
                         
             # we expect VEP to produce a valid impact label for each_string[0]
             elif "&" not in each_string[0]:
                 count += 1
                 impact_string = each_string[0]
                 impact_info = vep.effect_map.get(impact_string)
-                if impact_info.priority_code < max_severity:
+                if impact_info is None:
+                    pass;
+                elif impact_info.priority_code < max_severity:
                     impact_type = impact_info
                     impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, count)
-                    #print impact_details.transcript, impact_details.consequence
                     max_severity = impact_info.priority_code # initialize the max_severity to the former value of priority code
 
     else:

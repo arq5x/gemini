@@ -60,15 +60,21 @@ def interpret_impact(args, var):
                 # impact_strings will be [nc_transcript_variant, intron_variant]
                 for impact_string in impact_strings:
                     counter += 1
-                    impact_info = vep.effect_map[impact_string]
-                    impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, counter)
+                    try:
+                        impact_info = vep.effect_map[impact_string]
+                        impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, counter)
+                    except KeyError:
+                        impact_details = vep.EffectDetails(impact_string, None, effect_string, counter)
                     impact_all.append(impact_details)
             # we expect VEP to produce a valid impact label for each_string[0]
             elif "&" not in each_string[0]:
                 counter += 1
                 impact_string = each_string[0]
                 impact_info = vep.effect_map.get(impact_string)
-                impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, counter)
+                try:
+                    impact_details = vep.EffectDetails(impact_string, impact_info.priority, effect_string, counter)
+                except AttributeError:
+                    impact_details = vep.EffectDetails(impact_string, None, effect_string, counter)
                 impact_all.append(impact_details)
     else:
         #should not get here, as the valid -t options should be handled

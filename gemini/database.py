@@ -59,7 +59,7 @@ def create_tables(cursor):
                                                             rmsk text default NULL,                     \
                                                             in_cpg_island bool,                         \
                                                             in_segdup bool,                             \
-                                                            is_conserved,                               \
+                                                            is_conserved bool,                          \
                                                             num_hom_ref integer,                        \
                                                             num_het integer,                            \
                                                             num_hom_alt integer,                        \
@@ -69,18 +69,17 @@ def create_tables(cursor):
                                                             inbreeding_coeff float,                     \
                                                             pi float,                                   \
                                                             recomb_rate float,                          \
-                                                            gene text default NULL,                     \
-                                                            affected_gene text,                         \
-                                                            affected_transcript text,                   \
+                                                            gene text,                                  \
+                                                            transcript text,                            \
                                                             is_exonic bool,                             \
                                                             is_coding bool,                             \
                                                             is_lof bool,                                \
-                                                            affected_exon text,                         \
+                                                            exon text,                                  \
                                                             codon_change text,                          \
                                                             aa_change text,                             \
                                                             aa_length text,                             \
                                                             biotype text,                               \
-                                                            most_severe_impact text default NULL,       \
+                                                            impact text default NULL,                   \
                                                             impact_severity text,                       \
                                                             polyphen_pred text,                         \
                                                             polyphen_score float,                       \
@@ -168,7 +167,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
