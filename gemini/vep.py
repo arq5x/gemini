@@ -29,7 +29,7 @@ class EffectDetails(object):
         self.aa_length = None
         self.biotype = None
         self.warnings = None
-        self.consequence = effect_dict[self.effect_name]
+        self.consequence = effect_dict[self.effect_name] if self.effect_severity != None else self.effect_name
         if len(fields) > 9:
             self.warnings = fields[9]
         self.exonic = 0 if self.exon is None else 1
@@ -76,71 +76,81 @@ class EffectDetails(object):
 
 effect_names    = ["splice_acceptor_variant", "splice_donor_variant", 
                    "stop_gained", "stop_lost", 
-                   "complex_change_in_transcript", "frameshift_variant",
-                   "initiator_codon_change", "inframe_codon_loss",
-                   "inframe_codon_gain","non_synonymous_codon",
+                   "non_coding_exon_variant", "frameshift_variant",
+                   "initiator_codon_variant", "inframe_deletion",
+                   "inframe_insertion","missense_variant",
                    "splice_region_variant", "incomplete_terminal_codon_variant",
-                   "stop_retained_variant", "synonymous_codon",
+                   "stop_retained_variant", "synonymous_variant",
                    "coding_sequence_variant", "mature_miRNA_variant",
                    "5_prime_UTR_variant", "3_prime_UTR_variant",
                    "intron_variant", "NMD_transcript_variant",
-                   "nc_transcript_variant", "2KB_upstream_variant",
-                   "5KB_upstream_variant", "500B_downstream_variant",
-                   "5KB_downstream_variant", "regulatory_region_variant",
+                   "nc_transcript_variant", "upstream_gene_variant",
+                   "downstream_gene_variant", "regulatory_region_variant",
                    "TF_binding_site_variant", "intergenic_variant",
-                   "entirely_within_Gene", "deletion", 
-                   "entirely_within_Transcript", "partial_overlap"]
+                   "regulatory_region_ablation", "regulatory_region_amplification", 
+                   "transcript_ablation", "transcript_amplification",
+                    "TFBS_ablation", "TFBS_amplification",
+                    "feature_elongation", "feature_truncation"]
                    
 
 effect_dict = defaultdict()
-effect_dict = {'splice_acceptor_variant': 'splice_acceptor', 'splice_donor_variant': 'splice_donor', 'stop_gained': 'stop_gain', 
-              'stop_lost': 'stop_loss', 'complex_change_in_transcript': 'complex_change-transcript', 'frameshift_variant': 'frame_shift', 
-              'initiator_codon_change': 'transcript_codon_change', 'inframe_codon_loss': 'inframe_codon_loss', 'inframe_codon_gain': 'inframe_codon_gain',
-              'non_synonymous_codon': 'non_syn_coding', 'splice_region_variant': 'other_splice_variant', 'incomplete_terminal_codon_variant': 'incomplete_terminal_codon',
-              'stop_retained_variant': 'synonymous_stop', 'synonymous_codon': 'synonymous_coding', 'coding_sequence_variant': 'CDS',
-              'mature_miRNA_variant': 'mature_miRNA', '5_prime_UTR_variant': 'UTR_5_prime', '3_prime_UTR_variant': 'UTR_3_prime', 
-              'intron_variant': 'intron', 'NMD_transcript_variant': 'NMD_transcript', 'nc_transcript_variant': 'nc_transcript',
-              '2KB_upstream_variant': 'upstream', '5KB_upstream_variant': 'upstream', '500B_downstream_variant': 'downstream', 
-              '5KB_downstream_variant': 'downstream', 'regulatory_region_variant': 'regulatory_region', 'TF_binding_site_variant': 'TF_binding_site',
-              'intergenic_variant': 'intergenic', 'entirely_within_Gene': 'entirely_within_Gene', 'deletion': 'deletion',
-              'entirely_within_Transcript': 'entirely_within_Transcript', 'partial_overlap': 'partial_overlap' };
+effect_dict = {'splice_acceptor_variant': 'splice_acceptor', 'splice_donor_variant': 'splice_donor', 
+               'stop_gained': 'stop_gain', 'stop_lost': 'stop_loss', 
+               'non_coding_exon_variant': 'nc_exon', 'frameshift_variant': 'frame_shift', 
+               'initiator_codon_variant': 'transcript_codon_change', 'inframe_deletion': 'inframe_codon_loss', 
+               'inframe_insertion': 'inframe_codon_gain', 'missense_variant': 'non_syn_coding', 
+               'splice_region_variant': 'other_splice_variant', 'incomplete_terminal_codon_variant': 'incomplete_terminal_codon',
+               'stop_retained_variant': 'synonymous_stop', 'synonymous_variant': 'synonymous_coding', 
+               'coding_sequence_variant': 'CDS', 'mature_miRNA_variant': 'mature_miRNA', 
+               '5_prime_UTR_variant': 'UTR_5_prime', '3_prime_UTR_variant': 'UTR_3_prime', 
+               'intron_variant': 'intron', 'NMD_transcript_variant': 'NMD_transcript', 
+               'nc_transcript_variant': 'nc_transcript', 'upstream_gene_variant': 'upstream', 
+               'downstream_gene_variant': 'downstream', 'regulatory_region_variant': 'regulatory_region', 
+               'TF_binding_site_variant': 'TF_binding_site', 'intergenic_variant': 'intergenic', 
+               'regulatory_region_ablation': 'regulatory_region_ablation', 'regulatory_region_amplification': 'regulatory_region_amplification',
+               'transcript_ablation': 'transcript_ablation', 'transcript_amplification': 'transcript_amplification',
+               'TFBS_ablation': 'TFBS_ablation', 'TFBS_amplification': 'TFBS_amplification',
+               'feature_elongation': 'feature_elongation', 'feature_truncation': 'feature_truncation'};
 
 effect_desc     = ["The variant hits the splice acceptor site (2 basepair region at 3' end of an intron)", "The variant hits the splice donor site (2 basepair region at 5'end of an intron)",
                    "Variant causes a STOP codon", "Variant causes stop codon to be mutated into a non-stop codon", 
-                   "Variant causes an Indel spanning a exon/intron or coding/UTR border", "Insertion or deletion causes a frame shift in coding sequence", 
-                   "Variant causes atleast one base change in the first codon of a transcript", "The variant causes an inframe deletion of a codon",
-                   "The variant causes an inframe insertion of a new codon", "The variant causes a different amino acid in the coding sequence",
+                   "Variant causes a change in the non coding exon sequence", "Insertion or deletion causes a frame shift in coding sequence", 
+                   "Variant causes atleast one base change in the first codon of a transcript", "An inframe non-syn variant that deletes bases from the coding sequence",
+                   "An inframe non-syn variant that inserts bases in the coding sequence", "The variant causes a different amino acid in the coding sequence",
                    "Variant causes a change within the region of a splice site (1-3bps into an exon or 3-8bps into an intron)", "The variant hits the incomplete codon of a transcript whose end co-ordinate is not known",
                    "The variant causes stop codon to be mutated into another stop codon", "The variant causes no amino acid change in coding sequence",
                    "Variant hits coding sequence with indeterminate effect", "The variant hits a microRNA",
                    "Variant hits the 5 prime untranslated region", "Variant hits the 3 prime untranslated region",
                    "Variant hits an intron", "A variant hits a transcript that is predicted to undergo nonsense mediated decay",
-                   "Variant hits a gene that does not code for a protein", "The variant hits upstream of a gene (within 2KB 5' of a gene)",
-                   "Variant hits upstream of a gene (within 5KB 5' of a gene)", "The variant hits downstream of a gene (within half kb of the end of gene)", 
-                   "The variant hits downstream of a gene (within 5KB of the end of gene)", "Variant hits the regulatory region annotated by Ensembl(e.g promoter)", 
+                   "Variant hits a gene that does not code for a protein", "The variant hits upstream of a gene (5' of a gene)",
+                   "The variant hits downstream of a gene (3' of a gene)", "Variant hits the regulatory region annotated by Ensembl(e.g promoter)", 
                    "Variant falls in a transcription factor binding motif within an Ensembl regulatory region", "The variant is located in the intergenic region, between genes",
-                   "SV within gene", "SV- a deletion", "SV within transcript", "SV - partial overlap"]
+                   "SV causes ablation of a regulatory region", "SV results in an amplification of a regulatory region", 
+                   "SV causes an ablation/deletion of a transcript feature", "SV causes an amplification of a transcript feature",
+                   "SV results in a deletion of the TFBS", "SV results in an amplification of a region containing TFBS",
+                   "SV causes an extension of a genomic feature wrt reference", "SV causes a reduction of a genomic feature compared to reference"]
 
 effect_priorities = ["HIGH", "HIGH",
-                   "HIGH", "HIGH",
-                   "MED", "HIGH",
-                   "HIGH", "MED",
-                   "MED", "MED",
-                   "MED", "LOW",
-                   "LOW", "LOW",
-                   "LOW", "MED", 
-                   "LOW", "LOW",
-                   "LOW", "LOW",
-                   "LOW", "LOW",
-                   "LOW", "LOW",
-                   "LOW", "MED",
-                   "MED", "LOW",
-                   "LOW", "LOW",
-                   "MED", "LOW"]
+                     "HIGH", "HIGH",
+                     "LOW", "HIGH",
+                     "HIGH", "MED",
+                     "MED", "MED",
+                     "MED", "LOW",
+                     "LOW", "LOW",
+                     "LOW", "MED", 
+                     "LOW", "LOW",
+                     "LOW", "LOW",
+                     "LOW", "LOW",
+                     "LOW", "MED",
+                     "MED", "LOW",
+                     "MED", "MED",
+                     "LOW", "LOW",
+                     "MED", "MED",
+                     "LOW", "LOW"]
 
 effect_priority_codes = [1, 1,
                         1, 1,
-                        2, 1,
+                        3, 1,
                         1, 2,
                         2, 2,
                         2, 3,
@@ -149,13 +159,14 @@ effect_priority_codes = [1, 1,
                         3, 3,
                         3, 3,
                         3, 3,
-                        3, 3,
                         3, 2,
                         2, 3,
+                        2, 2,
                         3, 3,
-                        2, 3]
+                        2, 2,
+                        1, 1]
 
-effect_ids = range(1,33)
+effect_ids = range(1,35)
 
 effect_map = {}
 EffectInfo = namedtuple('EffectInfo', ['id', 'priority', 'priority_code', 'desc'])

@@ -182,14 +182,14 @@ class GeminiLoader(object):
         severe_impacts = None
         # impact terms initialized to None for handling unannotated vcf's
         # anno_id in variants is for the transcript with the most severe impact term
-        affected_gene = transcript = exon = codon_change = aa_change = aa_length = biotype = consequence = effect_severity = None
+        gene = transcript = exon = codon_change = aa_change = aa_length = biotype = consequence = effect_severity = None
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
     
         if self.args.anno_type is not None:
             impacts = func_impact.interpret_impact(self.args, var)
             severe_impacts = severe_impact.interpret_severe_impact(self.args, var)
             if severe_impacts:
-                affected_gene = severe_impacts.gene
+                gene = severe_impacts.gene
                 transcript = severe_impacts.transcript
                 exon = severe_impacts.exon
                 codon_change = severe_impacts.codon_change
@@ -228,7 +228,6 @@ class GeminiLoader(object):
         is_exonic = False
         is_coding = False
         is_lof    = False
-        gene      = None
     
         if impacts is not None:
             for idx, impact in enumerate(impacts):
@@ -239,7 +238,6 @@ class GeminiLoader(object):
                               impact.polyphen_pred, impact.polyphen_score,
                               impact.sift_pred, impact.sift_score]
                 variant_impacts.append(var_impact)
-                gene = impact.gene
                 if impact.exonic == True: is_exonic = True
                 if impact.coding == True: is_coding = True
                 if impact.is_lof == True: is_lof    = True
@@ -258,7 +256,7 @@ class GeminiLoader(object):
                    in_segdup, is_conserved, hom_ref, het,
                    hom_alt, unknown, aaf,
                    hwe_p_value, inbreeding_coeff, pi_hat,
-                   recomb_rate, gene, affected_gene, transcript,    
+                   recomb_rate, gene, transcript,    
                    is_exonic, is_coding, is_lof, exon, codon_change,
                    aa_change, aa_length, biotype, consequence, effect_severity,
                    polyphen_pred, polyphen_score, sift_pred, sift_score,

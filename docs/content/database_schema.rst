@@ -12,6 +12,7 @@ chrom             STRING        The chromosome on which the variant resides
 start             INTEGER       The 0-based start position. 
 end               INTEGER       The 1-based end position.
 variant_id        INTEGER       PRIMARY_KEY
+anno_id           INTEGER       Variant transcript number for the most severely affected transcript
 ref               STRING        Reference allele
 alt               STRING        Alternate alele for the variant
 qual              INTEGER       Quality score for the assertion made in ALT
@@ -44,16 +45,34 @@ in_cpg_island     BOOL          | Does the variant overlap a CpG island?.
                                 | Based on UCSC: Regulation > CpG Islands > cpgIslandExt 
 in_segdup         BOOL          | Does the variant overlap a segmental duplication?.
                                 | Based on UCSC: Variation&Repeats > Segmental Dups > genomicSuperDups track
+is_conserved      BOOL          | Does the variant overlap a conserved region?
+                                | Based on the 29-way mammalian conservation study
 num_hom_ref       INTEGER       The total number of of homozygotes for the reference (``ref``) allele
 num_het           INTEGER       The total number of heterozygotes observed.
 num_hom_alt       INTEGER       The total number of homozygotes for the reference (``alt``) allele
 num_unknown       INTEGER       The total number of of unknown genotypes
 aaf               FLOAT         The observed allele frequency for the alternate allele
 hwe               FLOAT         The Chi-square probability of deviation from HWE (assumes random mating)
+inbreeding_coeff  FLOAT         The inbreeding co-efficient that expresses the likelihood of effects due to inbreeding
 pi                FLOAT         The computed nucleotide diversity (pi) for the site
+recomb_rate       FLOAT         | Returns the mean recombination rate at the variant site
+                                | Based on HapMapII_GRCh37 genetic map
+gene              STRING        Corresponding gene name of the highly affected transcript
+transcript        STRING        The variant transcript that was most severely affected
 is_exonic         BOOL          Does the variant affect an exon for >= 1transcript?
 is_coding         BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
 is_lof            BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
+exon              STRING        Exon information for the severely affected transcript
+codon_change      STRING        What is the codon change?
+aa_change         STRING        What is the amino acid change (for an snp)?
+aa_length         STRING        The length of CDS in terms of number of amino acids
+biotype           STRING        The 'type' of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.)
+impact            STRING        The consequence of the most severely affected transcript
+impact_severity   STRING        Severity of the highest order observed for the variant
+polyphen_pred     STRING        Polyphen predictions for the snps (only with VEP) for the severely affected transcript
+polyphen_score    FLOAT         Polyphen scores for the severely affected transcript
+sift_pred         STRING        SIFT predictions for the snp's (VEP only) for the most severely affected transcript
+sift_score        FLOAT         SIFT scores for the predictions
 depth             INTEGER       The number of aligned sequence reads that led to this variant call
 strand_bias       FLOAT         Strand bias at the variant position
 rms_map_qual      FLOAT         RMS mapping quality, a measure of variance of quality scores
@@ -65,6 +84,17 @@ haplotype_score   FLOAT         Consistency of the site with two segregating hap
 qual_depth        FLOAT         Variant confidence or quality by depth
 allele_count      INTEGER       Allele counts in genotypes
 allele_bal        FLOAT         Allele balance for hets
+in_esp            BOOL          Presence/absence of the variant in the ESP project data
+aaf_esp_ea        FLOAT         Minor Allele Frequency of the variant for European Americans in the ESP project
+aaf_esp_aa        FLOAT         Minor Allele Frequency of the variant for African Americans in the ESP project
+aaf_esp_all       FLOAT         Minor Allele Frequency of the variant w.r.t both groups in the ESP project
+exome_chip        BOOL          Whether an SNP is on the Illumina HumanExome Chip
+in_1kg            BOOL          Presence/absence of the variant in the 1000 genome project data
+aaf_1kg_amr       FLOAT         Allele Frequency of the variant for samples in AMR based on AC/AN (1000g project)
+aaf_1kg_asn       FLOAT         Allele frequency of the variant for samples in ASN based on AC/AN (1000g project)
+aaf_1kg_afr       FLOAT         Allele frequency of the variant for samples in AFR based on AC/AN (1000g project)
+aaf_1kg_eur       FLOAT         Allele Frequency of the variant for samples in EUR based on AC/AN (1000g project)
+aaf_1kg_all       FLOAT         Global allele frequency (based on AC/AN) (1000g project) 
 grc               STRING        | Association with patch and fix regions from the Genome Reference Consortium:
                                 | http://www.ncbi.nlm.nih.gov/projects/genome/assembly/grc/human/
                                 | Identifies potential problem regions associated with variant calls.
@@ -103,6 +133,8 @@ is_lof            BOOL          Based on the value of the impact col, is the var
 exon              STRING        Exon information for the variants that are exonic
 codon_change      STRING        What is the codon change?
 aa_change         STRING        What is the amino acid change?
+aa_length         STRING        The length of CDS in terms of number of amino acids
+biotype           STRING        The type of transcript (e.g.protein-coding, pseudogene, rRNA etc.)
 impact            STRING        Impacts due to variation (ref.impact category)
 impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
 polyphen_pred     STRING        | Impact of the SNP as given by PolyPhen (VEP only) 
@@ -111,9 +143,6 @@ polyphen_scores   FLOAT         Polyphen score reflecting severity (higher the i
 sift_pred         STRING        | Impact of the SNP as given by SIFT (VEP only)
                                 | neutral, deleterious
 sift_scores       FLOAT         SIFT prob. scores reflecting severity (Higher the impact, *lower* the score)
-condel_pred       STRING        | Impact of the SNP as given by Condel (VEP only) 
-                                | neutral, deleterious
-condel_scores     FLOAT         Higher the impact, *higher* the score
 ================  ========      ===============================================================================
 
 |
@@ -141,39 +170,55 @@ Details of the ``impact`` and ``impact_severity`` columns
 ================  =======================================
 impact severity   impacts
 ================  =======================================
-HIGH              - EXON_DELETED
-                  - FRAME_SHIFT
-                  - SPLICE_SITE_ACCEPTOR
-                  - SPLICE_SITE_DONOR
-                  - START_LOST
-                  - STOP_GAINED
-                  - STOP_LOST
-                  - NON_SYNONYMOUS_START
-MED               - CODON_CHANGE
-                  - CODON_CHANGE_PLUS_CODON_DELETION
-                  - CODON_CHANGE_PLUS_CODON_INSERTION
-                  - CODON_DELETION
-                  - CODON_INSERTION
-                  - NON_SYNONYMOUS_CODING
-                  - UTR_3_DELETED
-                  - UTR_5_DELETED
-LOW               - CDS
-                  - DOWNSTREAM
-                  - EXON
-                  - GENE
-                  - INTERGENIC
-                  - INTERGENIC_CONSERVED
-                  - INTRAGENIC
-                  - INTRON
-                  - INTRON_CONSERVED
-                  - START_GAINED
-                  - SYNONYMOUS_CODING
-                  - SYNONYMOUS_START
-                  - SYNONYMOUS_STOP
-                  - TRANSCRIPT
-                  - UPSTREAM
-                  - UTR_3_PRIME
-                  - UTR_5_PRIME
+HIGH              - exon_deleted
+                  - frame_shift
+                  - splice_acceptor
+                  - splice_donor
+                  - start_loss
+                  - stop_gain
+                  - stop_loss
+                  - non_synonymous_start
+MED               - non_syn_coding
+                  - inframe_codon_gain
+                  - inframe_codon_loss
+                  - inframe_codon_change
+                  - codon_change_del
+                  - codon_change_ins
+                  - UTR_5_del
+                  - UTR_3_del
+                  - other_splice_variant
+                  - mature_miRNA
+                  - regulatory_region
+                  - TF_binding_site
+                  - regulatory_region_ablation
+                  - regulatory_region_amplification
+                  - TFBS_ablation
+                  - TFBS_amplification 
+LOW               - synonymous_stop
+                  - synonymous_coding
+                  - UTR_5_prime
+                  - UTR_3_prime
+                  - intron
+                  - CDS
+                  - upstream
+                  - downstream
+                  - intergenic
+                  - intragenic
+                  - gene
+                  - transcript
+                  - exon
+                  - start_gain
+                  - synonymous_start
+                  - intron_conserved
+                  - nc_transcript
+                  - NMD_transcript
+                  - transcript_codon_change
+                  - incomplete_terminal_codon
+                  - nc_exon
+                  - transcript_ablation
+                  - transcript_amplification
+                  - feature elongation
+                  - feature truncation   
 ================  =======================================
 
 
