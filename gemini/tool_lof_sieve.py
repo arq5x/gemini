@@ -20,7 +20,7 @@ def get_ind_lof(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
-                             v.most_severe_impact, v.aa_change, v.aa_length, \
+                             v.impact, v.aa_change, v.aa_length, \
                              v.gt_types, v.gts, i.gene, \
                              i.transcript,  i.biotype\
              FROM variants v, variant_impacts i \
@@ -55,7 +55,7 @@ def get_ind_lof(c, args):
             if type > 0:
                 print "\t".join([r['chrom'], str(r['start']), \
                                  str(r['end']), r['ref'], r['alt'], \
-                                 r['most_severe_impact'], \
+                                 r['impact'], \
                                  r['aa_change'] or 'None', \
                                  transcript_pos or 'None', \
                                  r['aa_length'] or 'None', \

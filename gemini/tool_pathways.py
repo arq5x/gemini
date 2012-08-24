@@ -88,7 +88,7 @@ def _report_variant_pathways(c, args, idx_to_sample):
         for idx, type in enumerate(gt_types):
             if type > 0 and len(pathways) > 0:
                 print "\t".join([r['chrom'], str(r['start']), str(r['end']), \
-                                 r['ref'], r['alt'], r['most_severe_impact'], \
+                                 r['ref'], r['alt'], r['impact'], \
                                  idx_to_sample[idx], gts[idx], gene, trans, \
                                  pathlist])
     
@@ -96,8 +96,8 @@ def get_ind_pathways(c, args):
 
     idx_to_sample = util.map_indicies_to_samples(c)
 
-    query = "SELECT DISTINCT v.chrom, v.start, v.end, v.ref, v.alt, \
-                             v.most_severe_impact, v.gt_types, v.gts, i.gene, \
+    query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
+                             v.impact, v.gt_types, v.gts, i.gene, \
                              i.transcript \
              FROM variants v, variant_impacts i \
              WHERE v.variant_id = i.variant_id"
@@ -116,8 +116,8 @@ def get_ind_lof_pathways(c, args):
 
     idx_to_sample = util.map_indicies_to_samples(c)
 
-    query = "SELECT DISTINCT v.chrom, v.start, v.end, v.ref, v.alt, \
-                             v.most_severe_impact, v.gt_types, v.gts, i.gene, \
+    query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
+                             v.impact, v.gt_types, v.gts, i.gene, \
                              i.transcript \
              FROM variants v, variant_impacts i \
              WHERE v.variant_id = i.variant_id \
