@@ -55,6 +55,7 @@ def _get_hits(var, chrom, annotation, parser_type):
         raise ValueError("Unexpected parser type: %s" % parser)
     try:
        hit_iter = annos[annotation].fetch(chrom, var.start, var.end, parser=parser)
+    # catch invalid region errors raised by ctabix
     except ValueError:
         hit_iter = []
     return hit_iter
@@ -77,7 +78,6 @@ def get_cpg_island_info(var):
         return True
     return False
 
-
 def get_cyto_info(var):
     """
     Returns a comma-separated list of the chromosomal
@@ -92,7 +92,6 @@ def get_cyto_info(var):
             cyto_band += chrom + hit.name
     return cyto_band if len(cyto_band) > 0 else None
 
-
 def get_dbsnp_info(var):
     """
     Returns a suite of annotations from dbSNP
@@ -101,7 +100,7 @@ def get_dbsnp_info(var):
     rs_ids  = []
     clin_sigs = []
     in_omim = 0
-    for hit in annos['dbsnp'].fetch(chrom, var.start, var.end, parser=pysam.asVCF()):
+    for hit in _get_hits(var, chrom, "dbsnp", "vcf"):
         rs_ids.append(hit.id)
         # load each VCF INFO key/value pair into a DICT
         info_map = {}
@@ -265,9 +264,7 @@ def get_gms(var):
     techs = ["illumina", "solid", "iontorrent"]
     GmsTechs = collections.namedtuple("GmsTechs", techs)
     chrom = _get_chr_as_grch37(var)
-    hit = _get_single_vcf_hit(var,
-                              annos["gms"].fetch(chrom, var.start,
-                                                 var.end, parser=pysam.asVCF()))
+    hit = _get_single_vcf_hit(var, _get_hits(var, chrom, "gms", "vcf"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
     return apply(GmsTechs,
                  [attr_map.get("GMS_{0}".format(x), None) for x in techs])
