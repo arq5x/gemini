@@ -47,8 +47,6 @@ class EffectDetails(object):
         self.polyphen_score = None
         self.sift_pred = None
         self.sift_score = None
-        self.condel_pred  = None
-        self.condel_score = None
 
         # Exons that are coding (excludes UTR's)
         if self.exonic == 0:

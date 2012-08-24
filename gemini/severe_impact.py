@@ -10,9 +10,9 @@ def interpret_severe_impact(args, var):
     1    NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|Aca/Gca|T/A|OR4F5|protein_coding|CODING|ENST00000534990|exon_1_69037_69829)
     
     VEP examples
-    CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift|condel
-    non_synonymous_codon|gaT/gaG|D/E|ENSG00000116254|CHD5|ENST00000378006|18/25|benign(0.011)|tolerated(0.3)|neutral(0.029)
-    nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6|||
+    CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift
+    non_synonymous_codon|gaT/gaG|D/E|ENSG00000116254|CHD5|ENST00000378006|18/25|benign(0.011)|tolerated(0.3)
+    nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6||
     """
     
     effect_strings_str = ""
