@@ -97,7 +97,7 @@ def get_ind_pathways(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
-                             v.impact, v.gt_types, v.gts, i.gene, \
+                             i.impact, v.gt_types, v.gts, i.gene, \
                              i.transcript \
              FROM variants v, variant_impacts i \
              WHERE v.variant_id = i.variant_id"
@@ -117,7 +117,7 @@ def get_ind_lof_pathways(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
-                             v.impact, v.gt_types, v.gts, i.gene, \
+                             i.impact, v.gt_types, v.gts, i.gene, \
                              i.transcript \
              FROM variants v, variant_impacts i \
              WHERE v.variant_id = i.variant_id \
