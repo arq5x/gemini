@@ -9,7 +9,7 @@ import collections
 from copy import copy
 
 import gemini_utils as util
-
+from gemini_constants import *
 
 class Site(object):
     def __init__(self, row):
@@ -60,7 +60,7 @@ def get_compound_hets(c, args):
         if site.num_hets > 1 and not args.allow_other_hets: continue
         
         for idx, gt_type in enumerate(gt_types):
-            if gt_type == 1:
+            if gt_type == GT_HET:
                 sample = idx_to_sample[idx]
                 sample_site = copy(site)
                 sample_site.phased = gt_phases[idx]

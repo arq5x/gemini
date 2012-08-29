@@ -8,6 +8,8 @@ import zlib
 import collections
 
 import gemini_utils as util
+from gemini_constants import *
+
 
 def get_tstv(c, args):
     """
@@ -147,9 +149,9 @@ def get_mds(c, args):
         # at this point, gt_types is a numpy array
         # idx:  0 1 2 3 4 5 6 .. #samples
         # type [0 1 2 1 2 0 0 ..         ]
-        for idx, type in enumerate(gt_types):
+        for idx, gt_type in enumerate(gt_types):
             sample = idx_to_sample[idx]
-            genotypes[sample].append(type)
+            genotypes[sample].append(gt_type)
 
     mds = collections.defaultdict(float)
     deno = collections.defaultdict(float)
@@ -163,7 +165,8 @@ def get_mds(c, args):
         x = np.array(genotypes[sample])
         genotypes[sample] = x
         masks[sample] = \
-        np.ma.masked_where(genotypes[sample]>=0, genotypes[sample]).mask
+        np.ma.masked_where(genotypes[sample] != GT_UNKNOWN, \
+            genotypes[sample]).mask
 
     # compute the euclidean distance for each s1/s2 combination
     # using numpy's vectorized sum() and square() operations.

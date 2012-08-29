@@ -9,6 +9,7 @@ import zlib
 from collections import defaultdict
 from gemini.config import read_gemini_config
 import gemini_utils as util
+from gemini_constants import *
 
 config = read_gemini_config()
 path_dirname = config["annotation_dir"]
@@ -85,8 +86,9 @@ def _report_variant_pathways(c, args, idx_to_sample):
             pathways = _get_pathways(gene, trans, ensembl_paths[(gene, trans)],
                             allow_none=False)
         pathlist = ",".join(pathways)
-        for idx, type in enumerate(gt_types):
-            if type > 0 and len(pathways) > 0:
+        for idx, gt_type in enumerate(gt_types):
+            if (gt_type == GT_HET or gt_type == GT_HOM_ALT) and \
+                len(pathways) > 0:
                 print "\t".join([r['chrom'], str(r['start']), str(r['end']), \
                                  r['ref'], r['alt'], r['impact'], \
                                  idx_to_sample[idx], gts[idx], gene, trans, \
