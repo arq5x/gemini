@@ -47,7 +47,7 @@ def get_gene(c, args):
     """
     query = "SELECT * \
     FROM variants v \
-    WHERE v.gene = " + args.gene + \
+    WHERE v.gene = " + "'" + args.gene + "' " \
     "ORDER BY chrom, start"
     c.execute(query)
 
@@ -58,9 +58,10 @@ def get_gene(c, args):
 
     if args.use_header:
         print args.separator.join(col for col in col_names)
-        for row in c:
-            print args.separator.join(str(row[i]) if row[i] is not None else "." \
-            for i in non_gt_idxs)
+
+    for row in c:
+        print args.separator.join(str(row[i]) if row[i] is not None else "." \
+        for i in non_gt_idxs)
 
 
 def region(parser, args):
