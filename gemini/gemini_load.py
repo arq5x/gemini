@@ -28,7 +28,7 @@ class GeminiLoader(object):
     Object for creating and populating a gemini
     database and auxillary data files.
     """
-    def __init__(self, args, buffer_size = 10000):
+    def __init__(self, args, buffer_size = 100):
         self.args = args
 
         # create the gemini database
@@ -70,7 +70,8 @@ class GeminiLoader(object):
             if buffer_count >= self.buffer_size:
                 sys.stderr.write(str(self.v_id) + " variants processed.\n")
                 database.insert_variation(self.c, self.var_buffer)
-                database.insert_variation_impacts(self.c, self.var_impacts_buffer)
+                database.insert_variation_impacts(self.c, \
+                                                  self.var_impacts_buffer)
                 # binary.genotypes.append(var_buffer)
                 # reset for the next batch
                 self.var_buffer = []
@@ -155,7 +156,8 @@ class GeminiLoader(object):
             unknown = var.num_unknown
             call_rate = var.call_rate
             aaf = var.aaf
-            hwe_p_value, inbreeding_coeff = popgen.get_hwe_likelihood(hom_ref, het, hom_alt, aaf)
+            hwe_p_value, inbreeding_coeff = \
+                popgen.get_hwe_likelihood(hom_ref, het, hom_alt, aaf)
             pi_hat = var.nucl_diversity
         else:
             aaf = extract_aaf(var)
@@ -181,13 +183,15 @@ class GeminiLoader(object):
         impacts = None
         severe_impacts = None
         # impact terms initialized to None for handling unannotated vcf's
-        # anno_id in variants is for the transcript with the most severe impact term
-        gene = transcript = exon = codon_change = aa_change = aa_length = biotype = consequence = effect_severity = None
+        # anno_id in variants is for the trans. with the most severe impact term
+        gene = transcript = exon = codon_change = aa_change = aa_length = \
+        biotype = consequence = effect_severity = None
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
     
         if self.args.anno_type is not None:
             impacts = func_impact.interpret_impact(self.args, var)
-            severe_impacts = severe_impact.interpret_severe_impact(self.args, var)
+            severe_impacts = \
+                severe_impact.interpret_severe_impact(self.args, var)
             if severe_impacts:
                 gene = severe_impacts.gene
                 transcript = severe_impacts.transcript
@@ -233,16 +237,17 @@ class GeminiLoader(object):
             for idx, impact in enumerate(impacts):
                 var_impact = [self.v_id, (idx+1), impact.gene, 
                               impact.transcript, impact.exonic, impact.coding,
-                              impact.is_lof, impact.exon, impact.codon_change, impact.aa_change,
-                              impact.aa_length, impact.biotype, impact.consequence, impact.effect_severity,
-                              impact.polyphen_pred, impact.polyphen_score,
-                              impact.sift_pred, impact.sift_score]
+                              impact.is_lof, impact.exon, impact.codon_change, 
+                              impact.aa_change, impact.aa_length, 
+                              impact.biotype, impact.consequence, 
+                              impact.effect_severity, impact.polyphen_pred, 
+                              impact.polyphen_score, impact.sift_pred, 
+                              impact.sift_score]
                 variant_impacts.append(var_impact)
                 if impact.exonic == True: is_exonic = True
                 if impact.coding == True: is_coding = True
                 if impact.is_lof == True: is_lof    = True
-
-            
+    
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
@@ -260,12 +265,22 @@ class GeminiLoader(object):
                    is_exonic, is_coding, is_lof, exon, codon_change,
                    aa_change, aa_length, biotype, consequence, effect_severity,
                    polyphen_pred, polyphen_score, sift_pred, sift_score,
-                   infotag.get_depth(var), infotag.get_strand_bias(var), infotag.get_rms_map_qual(var),
-                   infotag.get_homopol_run(var), infotag.get_map_qual_zero(var), infotag.get_num_of_alleles(var),
-                   infotag.get_frac_dels(var), infotag.get_haplotype_score(var), infotag.get_quality_by_depth(var),
-                   infotag.get_allele_count(var), infotag.get_allele_bal(var), esp.found, esp.aaf_EA, esp.aaf_AA,
-                   esp.aaf_ALL, esp.exome_chip, thousandG.found, thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR, 
-                   thousandG.aaf_EUR, thousandG.aaf_ALL, grc, gms.illumina, gms.solid, gms.iontorrent, encode_tfbs]
+                   infotag.get_ancestral_allele(var), infotag.get_rms_bq(var),
+                   infotag.get_cigar(var),
+                   infotag.get_depth(var), infotag.get_strand_bias(var), 
+                   infotag.get_rms_map_qual(var), infotag.get_homopol_run(var), 
+                   infotag.get_map_qual_zero(var), 
+                   infotag.get_num_of_alleles(var),
+                   infotag.get_frac_dels(var), infotag.get_haplotype_score(var), 
+                   infotag.get_quality_by_depth(var),
+                   infotag.get_allele_count(var), infotag.get_allele_bal(var),
+                   infotag.in_hm2(var), infotag.in_hm3(var), 
+                   infotag.is_somatic(var),
+                   esp.found, esp.aaf_EA, 
+                   esp.aaf_AA, esp.aaf_ALL, esp.exome_chip, thousandG.found, 
+                   thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR, 
+                   thousandG.aaf_EUR, thousandG.aaf_ALL, grc, 
+                   gms.illumina, gms.solid, gms.iontorrent, encode_tfbs]
         return variant, variant_impacts
 
     def _prepare_samples(self):
@@ -292,7 +307,8 @@ class GeminiLoader(object):
             if self.ped_hash.has_key(sample):
                 ped = self.ped_hash[sample] 
                 sample_list = [i, sample, ped.family, ped.paternal,
-                               ped.maternal, ped.sex, ped.phenotype, ped.ethnicity]
+                               ped.maternal, ped.sex, ped.phenotype, 
+                               ped.ethnicity]
             else:
                 sample_list = [i, sample, None, None, None, None, None, None]
             database.insert_sample(self.c, sample_list)

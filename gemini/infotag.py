@@ -10,7 +10,48 @@ def extract_aaf(var):
     Extract the AAF directly from the INFO field.
     """
     return var.INFO.get('AF')
+    
+def get_ancestral_allele(var):
+    """
+    Return the reported ancestral allele if there is one
+    """
+    anc_allele = var.INFO.get('AA')
+    if anc_allele is None or '.':
+        return None
+    else:
+        return anc_allele
+        
+def get_rms_bq(var):
+    """
+    Return the RMS base quality at this position
+    """
+    return var.INFO.get('BQ')
 
+def get_cigar(var):
+    """
+    Return the cigar string describing how to align an 
+    alternate allele to the reference allele
+    """
+    return var.INFO.get('CIGAR')
+    
+def in_hm2(var):
+    """
+    Return whether the variant was part of HapMap2
+    """
+    return var.INFO.get('H2')
+
+def in_hm3(var):
+    """
+    Return whether the variant was part of HapMap3
+    """
+    return var.INFO.get('H3')
+
+def is_somatic(var):
+    """
+    Return whether the variant is somatically acquired
+    """
+    return var.INFO.get('SOMATIC')
+    
 def get_depth(var):
     """
     Return the depth of aligned sequences for a given variant,

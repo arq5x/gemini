@@ -73,6 +73,9 @@ polyphen_pred     STRING        Polyphen predictions for the snps (only with VEP
 polyphen_score    FLOAT         Polyphen scores for the severely affected transcript
 sift_pred         STRING        SIFT predictions for the snp's (VEP only) for the most severely affected transcript
 sift_score        FLOAT         SIFT scores for the predictions
+anc_allele        STRING        The reported ancestral allele if there is one.
+rms_bq            FLOAT         The RMS base quality at this position.
+cigar             STRING        CIGAR string describing how to align an alternate allele to the reference allele.
 depth             INTEGER       The number of aligned sequence reads that led to this variant call
 strand_bias       FLOAT         Strand bias at the variant position
 rms_map_qual      FLOAT         RMS mapping quality, a measure of variance of quality scores
@@ -84,6 +87,9 @@ haplotype_score   FLOAT         Consistency of the site with two segregating hap
 qual_depth        FLOAT         Variant confidence or quality by depth
 allele_count      INTEGER       Allele counts in genotypes
 allele_bal        FLOAT         Allele balance for hets
+in_hm2            BOOL          Whether the variant was part of HapMap2.
+in_hm3            BOOL          Whether the variant was part of HapMap3.
+is_somatic        BOOL          Whether the variant is somatically acquired.
 in_esp            BOOL          Presence/absence of the variant in the ESP project data
 aaf_esp_ea        FLOAT         Minor Allele Frequency of the variant for European Americans in the ESP project
 aaf_esp_aa        FLOAT         Minor Allele Frequency of the variant for African Americans in the ESP project
