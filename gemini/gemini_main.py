@@ -223,6 +223,8 @@ def main():
     parser_comp_hets.add_argument('db', metavar='db',  help='The name of the database to be created.')
     parser_comp_hets.add_argument('--allow-other-hets', dest='allow_other_hets', action='store_true',
                               help='Allow other het. individuals when screening candidates.', default=False)
+    parser_comp_hets.add_argument('--only_lof', dest='only_lof', action='store_true',
+                              help='Only consider variants that are loss of function', default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
     
     # $ gemini pathways
