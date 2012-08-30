@@ -230,7 +230,7 @@ Identifying potential compund heterozygotes
 ===========================================================================
 Many recessive disorders are caused by compound heterozygotes. Unlike canonical
 recessive sites where the same recessive allele is inherited from both parents
-at the _same_ site in the gene that is, compund heterozygotes occur when
+at the _same_ site in the gene, compund heterozygotes occur when
 the individual's phenotype is caused by two heterogeneous recessive alleles at 
 _different_ sites in a particular gene. 
 
