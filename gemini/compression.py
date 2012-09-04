@@ -7,6 +7,6 @@ def pack_blob(obj):
 def zdumps(obj):
     return zlib.compress(cPickle.dumps(obj,cPickle.HIGHEST_PROTOCOL),9)
 
-def zloads(zstr):
-    return cPickle.loads(zlib.decompress(zstr))
+def zloads(obj):
+    return cPickle.loads(zlib.decompress(obj))
 

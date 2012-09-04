@@ -223,4 +223,3 @@ def close_and_commit(cursor, connection):
 def empty_tables(cursor):
     cursor.execute('''delete * from variation''')
     cursor.execute('''delete * from samples''')
-
