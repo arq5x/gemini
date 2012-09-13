@@ -20,6 +20,7 @@ def interpret_severe_impact(args, var):
     impact_details = None
     max_severity = 9 # initialize to a value greater than the largest value in impact info priority code
     count = 0 # initialize counter for anno_id
+    
     if args.anno_type == "snpEff":
         try:
             effect_strings_str = var.INFO["EFF"]
@@ -47,8 +48,27 @@ def interpret_severe_impact(args, var):
                                                           impact_detail, 
                                                           count,
                                                           args.maj_version)
+                    biotype = impact_details.biotype
+                    priority = impact_info.priority_code
                     max_severity = impact_info.priority_code # store the current "winning" severity for the next iteration.
-            
+                else:
+                    pass
+                    
+                if (biotype == "protein_coding") and (priority == max_severity):
+                    pass
+                elif (biotype != "protein_coding") and (priority == max_severity):
+                    impact_type = impact_info
+                    impact_details = snpEff.EffectDetails(impact_string, 
+                                                          impact_info.priority, 
+                                                          impact_detail, 
+                                                          count,
+                                                          args.maj_version)
+                    biotype = impact_details.biotype
+                    priority = impact_info.priority_code
+                    max_severity = impact_info.priority_code # store the current "winning" severity for the next iteration. 
+
+                        
+                        
     elif args.anno_type == "VEP":
         try:
             effect_strings_str = var.INFO["CSQ"]
