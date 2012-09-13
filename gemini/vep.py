@@ -164,7 +164,7 @@ effect_priority_codes = [1, 1,
                         2, 2,
                         3, 3,
                         2, 2,
-                        1, 1]
+                        3, 3]
 
 effect_ids = range(1,35)
 
