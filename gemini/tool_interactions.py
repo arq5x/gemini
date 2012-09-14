@@ -192,7 +192,7 @@ def sample_lof_interactions(c, args, idx_to_sample):
     
 def sample_variants(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
-    query = "SELECT DISTINCT variant_id, gt_types, gts, gene, impact, biotype \
+    query = "SELECT variant_id, gt_types, gts, gene, impact, biotype \
              FROM variants"
     c.execute(query)
     print "\t".join(['sample','gene','order_of_interaction', \
@@ -202,7 +202,7 @@ def sample_variants(c, args):
     
 def sample_lof_variants(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
-    query = "SELECT DISTINCT chrom, start, end, \
+    query = "SELECT chrom, start, end, \
                              gt_types, gts, gene \
              FROM variants \
              WHERE is_lof='1'"
@@ -213,7 +213,7 @@ def sample_lof_variants(c, args):
     
 def variants(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
-    query = "SELECT DISTINCT variant_id, gt_types, gts, gene, impact, biotype \
+    query = "SELECT variant_id, gt_types, gts, gene, impact, biotype \
              FROM variants"
     c.execute(query)
     print "\t".join(['sample','lof_gene','order_of_interaction', \
