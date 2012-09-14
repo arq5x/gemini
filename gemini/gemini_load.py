@@ -165,19 +165,20 @@ class GeminiLoader(object):
         ############################################################
         # collect annotations from gemini's custom annotation files
         ############################################################
-        cyto_band    = annotations.get_cyto_info(var)
-        dbsnp_info   = annotations.get_dbsnp_info(var)
-        in_dbsnp     = 0 if dbsnp_info.rs_ids is None else 1
-        rmsk_hits    = annotations.get_rmsk_info(var)
-        in_cpg       = annotations.get_cpg_island_info(var)
-        in_segdup    = annotations.get_segdup_info(var)
-        is_conserved = annotations.get_conservation_info(var)
-        esp          = annotations.get_esp_info(var)
-        thousandG    = annotations.get_1000G_info(var)
-        recomb_rate  = annotations.get_recomb_info(var)
-        gms          = annotations.get_gms(var)
-        grc          = annotations.get_grc(var)
-        encode_tfbs  = annotations.get_encode_tfbs(var)
+        cyto_band         = annotations.get_cyto_info(var)
+        dbsnp_info        = annotations.get_dbsnp_info(var)
+        in_dbsnp          = 0 if dbsnp_info.rs_ids is None else 1
+        rmsk_hits         = annotations.get_rmsk_info(var)
+        in_cpg            = annotations.get_cpg_island_info(var)
+        in_segdup         = annotations.get_segdup_info(var)
+        is_conserved      = annotations.get_conservation_info(var)
+        esp               = annotations.get_esp_info(var)
+        thousandG         = annotations.get_1000G_info(var)
+        recomb_rate       = annotations.get_recomb_info(var)
+        gms               = annotations.get_gms(var)
+        grc               = annotations.get_grc(var)
+        encode_tfbs       = annotations.get_encode_tfbs(var)
+        encode_cons_seg   = annotations.get_encode_consensus_segs(var)
 
         # impact is a list of impacts for this variant
         impacts = None
@@ -271,7 +272,8 @@ class GeminiLoader(object):
                    infotag.get_rms_map_qual(var), infotag.get_homopol_run(var), 
                    infotag.get_map_qual_zero(var), 
                    infotag.get_num_of_alleles(var),
-                   infotag.get_frac_dels(var), infotag.get_haplotype_score(var), 
+                   infotag.get_frac_dels(var), 
+                   infotag.get_haplotype_score(var), 
                    infotag.get_quality_by_depth(var),
                    infotag.get_allele_count(var), infotag.get_allele_bal(var),
                    infotag.in_hm2(var), infotag.in_hm3(var), 
@@ -280,7 +282,14 @@ class GeminiLoader(object):
                    esp.aaf_AA, esp.aaf_ALL, esp.exome_chip, thousandG.found, 
                    thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR, 
                    thousandG.aaf_EUR, thousandG.aaf_ALL, grc, 
-                   gms.illumina, gms.solid, gms.iontorrent, encode_tfbs]
+                   gms.illumina, gms.solid, gms.iontorrent, 
+                   encode_tfbs,
+                   encode_cons_seg.gm12878,
+                   encode_cons_seg.h1hesc,
+                   encode_cons_seg.helas3,
+                   encode_cons_seg.hepg2,
+                   encode_cons_seg.huvec,
+                   encode_cons_seg.k562]
         return variant, variant_impacts
 
     def _prepare_samples(self):

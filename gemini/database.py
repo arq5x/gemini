@@ -124,6 +124,12 @@ def create_tables(cursor):
                     gms_solid float,                            \
                     gms_iontorrent float,                       \
                     encode_tfbs,                                \
+                    encode_consseg_gm12878 text,                \
+                    encode_consseg_h1hesc text,                 \
+                    encode_consseg_helas3 text,                 \
+                    encode_consseg_hepg2 text,                  \
+                    encode_consseg_huvec text,                  \
+                    encode_consseg_k562 text,                   \
                     PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (   \
@@ -184,7 +190,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?)', \
+                                                     ?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     

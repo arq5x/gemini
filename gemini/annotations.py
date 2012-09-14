@@ -5,9 +5,36 @@ import sys
 import collections
 
 from gemini.config import read_gemini_config
-    
+
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
+
+# namedtuples for data returned from specific annotations
+DbSnpInfo = collections.namedtuple("DbSnpInfo", 
+                                   "rs_ids \
+                                   in_omim \
+                                   clin_sig")
+ESPInfo = collections.namedtuple("ESPInfo", 
+                                  "found \
+                                  aaf_EA \
+                                  aaf_AA \
+                                  aaf_ALL \
+                                  exome_chip")
+ENCODESegInfo = collections.namedtuple("ENCODESegInfo", 
+                                        "gm12878 \
+                                         h1hesc \
+                                         helas3 \
+                                         hepg2 \
+                                         huvec \
+                                         k562")
+ThousandGInfo = collections.namedtuple("ThousandGInfo", 
+                                       "found \
+                                        aaf_ALL \
+                                        aaf_AMR \
+                                        aaf_ASN \
+                                        aaf_AFR \
+                                        aaf_EUR")
+
 def load_annos():
     """
     Populate a dictionary of Tabixfile handles for
@@ -21,26 +48,55 @@ def load_annos():
     config = read_gemini_config()
     anno_dirname = config["annotation_dir"]
     anno_files   = {
-                    'cytoband'     : os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-                    'dbsnp'        : os.path.join(anno_dirname, 'dbsnp.135.vcf.gz'),
-                    'gwas'         : os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
-                    'rmsk'         : os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
-                    'segdup'       : os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
-                    'conserved'    : os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
-                    'cpg_island'   : os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
-                    'dgv'          : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
-                    'esp'          : os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
-                    '1000g'        : os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
-                    'recomb'       : os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz'),
-                    'gms'          : os.path.join(anno_dirname, 'GRCh37-gms-mappability.vcf.gz'),
-                    'grc'          : os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
-                    'encode_tfbs'  : os.path.join(anno_dirname, 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz')
+                    'cytoband'     : \
+                    os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
+                    
+                    'dbsnp'        : \
+                    os.path.join(anno_dirname, 'dbsnp.135.vcf.gz'),
+                    
+                    'gwas'         : \
+                    os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
+                    
+                    'rmsk'         : \
+                    os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
+                    
+                    'segdup'       : \
+                    os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
+                    
+                    'conserved'    : \
+                    os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
+                    'cpg_island'   : \
+                    os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
+                    
+                    'dgv'          : \
+                    os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
+                    
+                    'esp'          : \
+                    os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
+                    
+                    '1000g'        : \
+                    os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
+                    
+                    'recomb'       : \
+                    os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz'),
+                    
+                    'gms'          : \
+                    os.path.join(anno_dirname, 'GRCh37-gms-mappability.vcf.gz'),
+                    
+                    'grc'          : \
+                    os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+                    
+                    'encode_tfbs'  : \
+                    os.path.join(anno_dirname, 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz'),
+                    
+                    'encode_consensus_segs'  : \
+                    os.path.join(anno_dirname, \
+                    'encode.6celltypes.chromseg.bedg.gz')
                    }
 
     for anno in anno_files:
         annos[anno] = pysam.Tabixfile(anno_files[anno])
 
-DbSnpInfo = collections.namedtuple("DbSnpInfo", "rs_ids in_omim clin_sig")
 
 def _get_hits(var, chrom, annotation, parser_type):
     """Retrieve BED information, recovering if BED annotation file does have a chromosome.
@@ -54,7 +110,8 @@ def _get_hits(var, chrom, annotation, parser_type):
     else:
         raise ValueError("Unexpected parser type: %s" % parser)
     try:
-       hit_iter = annos[annotation].fetch(chrom, var.start, var.end, parser=parser)
+       hit_iter = annos[annotation].fetch(chrom, var.start, 
+                                          var.end, parser=parser)
     # catch invalid region errors raised by ctabix
     except ValueError:
         hit_iter = []
@@ -124,8 +181,6 @@ def get_esp_info(var):
     """
     Returns a suite of annotations from the ESP project
     """
-    ESPInfo = collections.namedtuple("ESPInfo", "found aaf_EA aaf_AA aaf_ALL exome_chip")
-     
     chrom = _get_chr_as_grch37(var)
     aaf_EA = aaf_AA = aaf_ALL = None
     maf = fetched = con = []
@@ -136,7 +191,8 @@ def get_esp_info(var):
         for hit in _get_hits(var, chrom, "esp", "vcf"):
             fetched.append(hit)
             # We need a single ESP entry for a variant
-            if fetched != None and len(fetched) == 1 and hit.alt == var.ALT[0] and hit.ref == var.REF:
+            if fetched != None and len(fetched) == 1 and \
+               hit.alt == var.ALT[0] and hit.ref == var.REF:
                 found = True    
                 # loads each VCF INFO key/value pair into a DICT
                 for info in hit.info.split(";"):      
@@ -149,15 +205,18 @@ def get_esp_info(var):
                 # get the % minor allele frequencies      
                 if info_map.get('MAF') is not None:
                     lines = info_map['MAF'].split(",")
-                    # divide by 100 because ESP reports allele frequencies as percentages.
+                    # divide by 100 because ESP reports allele 
+                    # frequencies as percentages.
                     aaf_EA = float(lines[0]) / 100.0
                     aaf_AA = float(lines[0]) / 100.0
                     aaf_ALL = float(lines[0]) / 100.0
                     
                 #Is the SNP on an human exome chip?
-                if info_map.get('EXOME_CHIP') is not None and info_map['EXOME_CHIP'] == "no":
+                if info_map.get('EXOME_CHIP') is not None and \
+                   info_map['EXOME_CHIP'] == "no":
                     exome_chip = 0
-                elif info_map.get('EXOME_CHIP') is not None and info_map['EXOME_CHIP'] == "yes":
+                elif info_map.get('EXOME_CHIP') is not None and \
+                     info_map['EXOME_CHIP'] == "yes":
                     exome_chip = 1        
     return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)  
         
@@ -165,9 +224,6 @@ def get_1000G_info(var):
     """
     Returns a suite of annotations from the 1000 Genomes project
     """
-    ThousandGInfo = collections.namedtuple("ThousandGInfo", 
-                                           "found aaf_ALL aaf_AMR aaf_ASN aaf_AFR aaf_EUR")
-
     chrom = _get_chr_as_grch37(var)
     fetched = []
     info_map = {}
@@ -175,7 +231,8 @@ def get_1000G_info(var):
     for hit in _get_hits(var, chrom, "1000g", "vcf"):
         fetched.append(hit)
         # We need a single 1000G entry for a variant
-        if fetched != None and len(fetched) == 1 and hit.alt == var.ALT[0] and hit.ref == var.REF:
+        if fetched != None and len(fetched) == 1 and \
+           hit.alt == var.ALT[0] and hit.ref == var.REF:
             # loads each VCF INFO key/value pair into a DICT
             found = True
             for info in hit.info.split(";"):      
@@ -297,4 +354,25 @@ def get_encode_tfbs(var):
     for hit in _get_hits(var, chrom, "encode_tfbs", "tuple"):
         encode_tfbs_hits.append(hit[3])
     return ",".join(encode_tfbs_hits) if len(encode_tfbs_hits) > 0 else None
+
+def get_encode_consensus_segs(var):
+    """
+    Queries a meta-BEDGRAPH of consensus ENCODE segmentations for 6 cell types:
+    gm12878, h1hesc, helas3, hepg2, huvec, k562
     
+    Returns a 6-tuple of the predicted chromatin state of each cell type for the
+    region overlapping the variant.
+    
+    CTCF: CTCF-enriched element
+    E:    Predicted enhancer
+    PF:   Predicted promoter flanking region
+    R:    Predicted repressed or low-activity region
+    TSS:  Predicted promoter region including TSS
+    T:    Predicted transcribed region
+    WE:   Predicted weak enhancer or open chromatin cis-regulatory element
+    """
+    chrom = _get_chr_as_ucsc(var)
+    for hit in _get_hits(var, chrom, "encode_consensus_segs", "tuple"):
+        return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
+    
+    return ENCODESegInfo(None, None, None, None, None, None)
