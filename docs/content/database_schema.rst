@@ -58,7 +58,7 @@ pi                FLOAT         The computed nucleotide diversity (pi) for the s
 recomb_rate       FLOAT         | Returns the mean recombination rate at the variant site
                                 | Based on HapMapII_GRCh37 genetic map
 gene              STRING        Corresponding gene name of the highly affected transcript
-transcript        STRING        The variant transcript that was most severely affected
+transcript        STRING        The variant transcript that was most severely affected (for two equally affected transcripts, either the first one is selected (VEP) or protein_coding biotype considered (snpEff)
 is_exonic         BOOL          Does the variant affect an exon for >= 1transcript?
 is_coding         BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
 is_lof            BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
@@ -67,7 +67,7 @@ codon_change      STRING        What is the codon change?
 aa_change         STRING        What is the amino acid change (for an snp)?
 aa_length         STRING        The length of CDS in terms of number of amino acids
 biotype           STRING        The 'type' of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.)
-impact            STRING        The consequence of the most severely affected transcript
+impact            STRING        The consequence of the most severely affected transcript 
 impact_severity   STRING        Severity of the highest order observed for the variant
 polyphen_pred     STRING        Polyphen predictions for the snps (only with VEP) for the severely affected transcript
 polyphen_score    FLOAT         Polyphen scores for the severely affected transcript
