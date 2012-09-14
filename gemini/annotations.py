@@ -91,7 +91,15 @@ def load_annos():
                     
                     'encode_consensus_segs'  : \
                     os.path.join(anno_dirname, \
-                    'encode.6celltypes.chromseg.bedg.gz')
+                    'encode.6celltypes.consensus.bedg.gz'),
+
+                    'encode_segway_segs'  : \
+                    os.path.join(anno_dirname, \
+                    'encode.6celltypes.segway.bedg.gz'),
+
+                    'encode_chromhmm_segs'  : \
+                    os.path.join(anno_dirname, \
+                    'encode.6celltypes.chromhmm.bedg.gz')
                    }
 
     for anno in anno_files:
@@ -373,6 +381,34 @@ def get_encode_consensus_segs(var):
     """
     chrom = _get_chr_as_ucsc(var)
     for hit in _get_hits(var, chrom, "encode_consensus_segs", "tuple"):
+        return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
+    
+    return ENCODESegInfo(None, None, None, None, None, None)
+
+def get_encode_segway_segs(var):
+    """
+    Queries a meta-BEDGRAPH of SegWay ENCODE segmentations for 6 cell types:
+    gm12878, h1hesc, helas3, hepg2, huvec, k562
+    
+    Returns a 6-tuple of the predicted chromatin state of each cell type for the
+    region overlapping the variant.
+    """
+    chrom = _get_chr_as_ucsc(var)
+    for hit in _get_hits(var, chrom, "encode_segway_segs", "tuple"):
+        return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
+    
+    return ENCODESegInfo(None, None, None, None, None, None)
+    
+def get_encode_chromhmm_segs(var):
+    """
+    Queries a meta-BEDGRAPH of SegWay ENCODE segmentations for 6 cell types:
+    gm12878, h1hesc, helas3, hepg2, huvec, k562
+    
+    Returns a 6-tuple of the predicted chromatin state of each cell type for the
+    region overlapping the variant.
+    """
+    chrom = _get_chr_as_ucsc(var)
+    for hit in _get_hits(var, chrom, "encode_chromhmm_segs", "tuple"):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
     
     return ENCODESegInfo(None, None, None, None, None, None)

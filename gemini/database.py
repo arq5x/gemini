@@ -124,12 +124,24 @@ def create_tables(cursor):
                     gms_solid float,                            \
                     gms_iontorrent float,                       \
                     encode_tfbs,                                \
-                    encode_consseg_gm12878 text,                \
-                    encode_consseg_h1hesc text,                 \
-                    encode_consseg_helas3 text,                 \
-                    encode_consseg_hepg2 text,                  \
-                    encode_consseg_huvec text,                  \
-                    encode_consseg_k562 text,                   \
+                    encode_consensus_gm12878 text,              \
+                    encode_consensus_h1hesc text,               \
+                    encode_consensus_helas3 text,               \
+                    encode_consensus_hepg2 text,                \
+                    encode_consensus_huvec text,                \
+                    encode_consensus_k562 text,                 \
+                    encode_segway_gm12878 text,                 \
+                    encode_segway_h1hesc text,                  \
+                    encode_segway_helas3 text,                  \
+                    encode_segway_hepg2 text,                   \
+                    encode_segway_huvec text,                   \
+                    encode_segway_k562 text,                    \
+                    encode_chromhmm_gm12878 text,               \
+                    encode_chromhmm_h1hesc text,                \
+                    encode_chromhmm_helas3 text,                \
+                    encode_chromhmm_hepg2 text,                 \
+                    encode_chromhmm_huvec text,                 \
+                    encode_chromhmm_k562 text,                  \
                     PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (   \
@@ -190,7 +202,8 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?,?,?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
