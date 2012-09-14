@@ -11,6 +11,7 @@ import gemini_load, gemini_query,\
 import tool_compound_hets
 import tool_pathways
 import tool_lof_sieve
+import tool_interactions
 
 def examples(parser, args):
     
@@ -247,6 +248,30 @@ def main():
     parser_lof_sieve = subparsers.add_parser('lof_sieve', help='Prioritize LoF mutations')
     parser_lof_sieve.add_argument('db', metavar='db', help='The name of the database to be queried')
     parser_lof_sieve.set_defaults(func=tool_lof_sieve.lof_sieve)
+    
+    # $ gemini interactions
+    parser_interaction = subparsers.add_parser('interactions', help='Find interaction partners for a gene in sample variants(default mode)')
+    parser_interaction.add_argument('db', metavar='db', help='The name of the database to be queried')
+    parser_interaction.add_argument('-g', dest='gene', help='Gene to be used as a root in BFS/shortest_path')
+    parser_interaction.add_argument('-r', dest='radius', type=int, help="Set filter for BFS:\n"
+                                         "valid numbers starting from 0")
+    parser_interaction.add_argument('--var', dest='var_mode', 
+                                    help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',
+                                    action='store_true',
+                                    default=False)                                
+    
+    parser_interaction.set_defaults(func=tool_interactions.genequery)
+    
+    # gemini lof_interactions
+    parser_interaction = subparsers.add_parser('lof_interactions', help='Find interaction partners for a lof gene in sample variants(default mode)')
+    parser_interaction.add_argument('db', metavar='db', help='The name of the database to be queried')
+    parser_interaction.add_argument('-r', dest='radius', type=int, help="set filter for BFS:\n")
+    parser_interaction.add_argument('--var', dest='var_mode', 
+                                    help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',
+                                    action='store_true',
+                                    default=False)
+    
+    parser_interaction.set_defaults(func=tool_interactions.lofgenequery)
     
     #######################################################
     # parse the args and call the selected function
