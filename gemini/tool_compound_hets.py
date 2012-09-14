@@ -32,7 +32,8 @@ class Site(object):
     def __repr__(self):
         return ','.join([self.chrom, str(self.start), str(self.end),
                          self.ref, self.alt, self.gt,
-                         self.impact, self.exon, str(self.aaf), 
+                         self.impact or "None", 
+                         self.exon or "None", str(self.aaf), 
                          str(self.in_dbsnp)])
         
     def __eq__(self, other):
