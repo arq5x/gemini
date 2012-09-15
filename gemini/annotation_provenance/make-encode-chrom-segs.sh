@@ -88,4 +88,4 @@ bedtools unionbedg -i gm12878.ChromHMM.bb.bedg.gz \
 
 tabix -p bed encode.6celltypes.consensus.bedg.gz
 tabix -p bed encode.6celltypes.segway.bedg.gz
-tabix -p bed encode.6celltypes.ChromHMM.bedg.gz
+tabix -p bed encode.6celltypes.chromhmm.bedg.gz
