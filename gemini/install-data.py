@@ -46,14 +46,15 @@ anno_files = \
 'encode.6celltypes.segway.bedg.gz.tbi',
 'encode.6celltypes.chromhmm.bedg.gz',
 'encode.6celltypes.chromhmm.bedg.gz.tbi',
+'GRCh37-gms-mappability.vcf.gz',
+'GRCh37-gms-mappability.vcf.gz.tbi',
+'GRC_patch_regions.bed.gz',
+'GRC_patch_regions.bed.gz.tbi',
 'kegg_pathways_ensembl66',
 'kegg_pathways_ensembl67',
 'kegg_pathways_ensembl68',
 'hprd_interaction_graph'
 ]
-
-# Annotation files for be merged into main repository
-tmp_anno_files = ['GRCh37-gms-mappability.vcf.gz', 'GRC_patch_regions.bed.gz']
 
 def install_annotation_files(anno_root_dir):
     """Download required annotation files.
@@ -73,12 +74,9 @@ def install_annotation_files(anno_root_dir):
 
     # download and install each of the annotation files
     for dl in anno_files:
-        url = "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)
+        url =        "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)
         _download_to_dir(url, anno_dir)
-    for dl in tmp_anno_files:
-        for ext in ["", ".tbi"]:
-            url = "https://s3.amazonaws.com/chapmanb/gemini/{fname}{ext}".format(fname=dl, ext=ext)
-            _download_to_dir(url, anno_dir)
+
  
 def _download_to_dir(url, dirname):
     """
