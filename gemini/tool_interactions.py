@@ -65,19 +65,20 @@ def sample_gene_interactions(c, args, idx_to_sample):
     get_variant_genes(c, args, idx_to_sample)
     #file handle for fetching the hprd graph
     file_graph = os.path.join(path_dirname, 'hprd_interaction_graph')
-    #load the graph using cPickle
+    #load the graph using cPickle and close file handle
     gr = graph()
-    gr = cPickle.load(open(file_graph, 'rb'))
+    f = open(file_graph, 'rb')
+    gr = cPickle.load(f)
+    f.close()
     k = []
     variants = []
     #calculate nodes from the graph
     hprd_genes = gr.nodes()
     if args.gene == None or args.gene not in hprd_genes:
-        sys.stderr.write("gene name either not provided or not represented \
-                          in the p-p interaction file\n")
+        sys.stderr.write("gene name not given else not represented in the p-p interaction file\n")
     elif args.gene in hprd_genes:
         x, y = \
-             breadth_first_search(gr,root=args.gene,filter=radius(args.radius))
+            breadth_first_search(gr,root=args.gene,filter=radius(args.radius))
         gst = digraph()
         gst.add_spanning_tree(x)
         dot = write(gst)
@@ -96,11 +97,11 @@ def sample_gene_interactions(c, args, idx_to_sample):
                         for key, value in sd.iteritems():
                             if value == x and key == each[0]:
                                 print "\t".join([str(sample),str(args.gene), \
-                                           str(x), \
-                                           str(key), \
-                                           str(each[1]), \
-                                           str(each[2]), \
-                                           str(each[3])])        
+                                          str(x), \
+                                          str(key), \
+                                          str(each[1]), \
+                                          str(each[2]), \
+                                          str(each[3])])        
         elif (not args.var_mode):
             for sample in sam.iterkeys():
                 for each in sam[str(sample)]:
@@ -110,11 +111,11 @@ def sample_gene_interactions(c, args, idx_to_sample):
                         if value == x and key in set(variants):
                             k.append(key)
                     if k:
-                        print "\t".join([str(sample), \
-                                   str(x)+"_order:", 
-                                   ",".join(k)])
+                        print "\t".join([str(sample), str(args.gene), \
+                                 str(x)+"_order:", 
+                                 ",".join(k)])
                     else:
-                        print "\t".join([str(sample), str(x)+"_order:", "none"])
+                        print "\t".join([str(sample), str(args.gene), str(x)+"_order:", "none"])
                     #initialize keys for next iteration
                     k = []
                 
@@ -124,9 +125,11 @@ def sample_lof_interactions(c, args, idx_to_sample):
     get_variant_genes(c, args, idx_to_sample)
     #file handle for fetching the hprd graph
     file_graph = os.path.join(path_dirname, 'hprd_interaction_graph')
-    #load the graph using cPickle
+    #load the graph using cPickle and close file handle
     gr = graph()
-    gr = cPickle.load(open(file_graph, 'rb'))
+    f = open(file_graph, 'rb')
+    gr = cPickle.load(f)
+    f.close()
     #calculate nodes from the graph
     hprd_genes = gr.nodes()
     #initialize keys
@@ -142,7 +145,7 @@ def sample_lof_interactions(c, args, idx_to_sample):
             for gene in lofvariants:
                 if gene in hprd_genes:
                     x, y = \
-                        breadth_first_search(gr,root=args.gene,\
+                        breadth_first_search(gr,root=gene,\
                         filter=radius(args.radius))
 
                     gst = digraph()
@@ -195,8 +198,13 @@ def sample_variants(c, args):
     query = "SELECT variant_id, gt_types, gts, gene, impact, biotype \
              FROM variants"
     c.execute(query)
-    print "\t".join(['sample','gene','order_of_interaction', \
+    
+    if args.var_mode:
+        print "\t".join(['sample','gene','order_of_interaction', \
                      'interacting_gene', 'var_id','impact','biotype'])
+    elif (not args.var_mode):
+        print "\t".join(['sample','gene','order_of_interaction', \
+                     'interacting_gene'])
     sample_gene_interactions(c, args, idx_to_sample)
     
     
@@ -213,11 +221,18 @@ def sample_lof_variants(c, args):
     
 def variants(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
-    query = "SELECT variant_id, gt_types, gts, gene, impact, biotype \
+    query = "SELECT variant_id, gt_types, gts, gene, \
+             impact, biotype \
              FROM variants"
     c.execute(query)
-    print "\t".join(['sample','lof_gene','order_of_interaction', \
+    
+    if args.var_mode:
+        print "\t".join(['sample','lof_gene','order_of_interaction', \
                     'interacting_gene', 'var_id','impact','biotype'])
+    elif (not args.var_mode):
+        print "\t".join(['sample','lof_gene','order_of_interaction', \
+                    'interacting_gene'])
+    
     get_variant_genes(c, args, idx_to_sample)
     
 def genequery(parser, args):
