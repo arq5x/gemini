@@ -140,7 +140,10 @@ def get_allele_bal(var):
     """
     ab =  var.INFO.get('AB')
     if ab is not None:
-        return ab[0]
+        if isinstance(ab, (list, tuple)):
+            return ab[0]
+        else:
+            return ab
     else:
         return None
 
