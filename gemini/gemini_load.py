@@ -218,6 +218,8 @@ class GeminiLoader(object):
                 filter = ";".join(var.FILTER)
             else:
                 filter = var.FILTER
+        elif var.FILTER is None:
+            filter = "PASS"
 
         # build up numpy arrays for the genotype information.
         # these arrays will be pickled-to-binary, compressed,
