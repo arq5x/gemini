@@ -5,6 +5,18 @@
     from the VCF INFO field.
 """
 
+def _safe_single_attr(x):
+    """Handle cleaning of attributes after extraction:
+      - '.'s to indicate None
+      - tuples where we expect a single value
+    """
+    if x is None or ".":
+        return None
+    elif isinstance(x, (list, tuple)):
+        return x[0]
+    else:
+        return x
+
 def extract_aaf(var):
     """
     Extract the AAF directly from the INFO field.
@@ -15,11 +27,7 @@ def get_ancestral_allele(var):
     """
     Return the reported ancestral allele if there is one
     """
-    anc_allele = var.INFO.get('AA')
-    if anc_allele is None or '.':
-        return None
-    else:
-        return anc_allele
+    anc_allele = _safe_single_attr(var.INFO.get('AA'))
         
 def get_rms_bq(var):
     """
@@ -57,7 +65,7 @@ def get_depth(var):
     Return the depth of aligned sequences for a given variant,
     or None if it isn't present in the VCF.
     """
-    return var.INFO.get('DP')
+    return _safe_single_attr(var.INFO.get('DP'))
 
 def get_strand_bias(var):
     """
@@ -92,14 +100,7 @@ def get_num_of_alleles(var):
     return the total number of alleles in called genotypes,
     or None if it isn't present in the VCF.
     """
-    an = var.INFO.get('AN')
-    if an is not None:
-        if isinstance(an, (list, tuple)):
-            return an[0]
-        else:
-            return an
-    else:
-        return None
+    an = _safe_single_attr(var.INFO.get('AN'))
 
 def get_frac_dels(var):
     """
@@ -127,20 +128,11 @@ def get_allele_count(var):
     Returns allele counts in genotypes,
     or None if it isn't present in the VCF.
     """
-    allele_counts = var.INFO.get('AC')
-    if allele_counts is not None:
-        return allele_counts[0]
-    else:
-        return None
+    allele_counts = _safe_single_attr(var.INFO.get('AC'))
 
 def get_allele_bal(var):
     """
     Returns allele balance for hets,
     or None if it isn't present in the VCF.
     """
-    ab =  var.INFO.get('AB')
-    if ab is not None:
-        return ab[0]
-    else:
-        return None
-
+    ab =  _safe_single_attr(var.INFO.get('AB'))
