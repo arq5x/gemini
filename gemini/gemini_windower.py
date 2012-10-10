@@ -9,16 +9,13 @@ import gemini_utils as util
 
 import pybedtools as pbt
 
-job = os.getpid()
-f = ".".join(['.temp', str(job)])
-
-def get_window_data(c, analysis_type):
+def get_window_data(c, analysis_type, temp_file):
     """
     Create a temp file of the requested statistic for each variant.
     
     Execute a query against the variants table
     that extracts the requested column for each variant.
-    save the results to '.temp.jobid', which will be loaded
+    save the results to '.temp.pid', which will be loaded
     into a pybedtools BedTool for use with the bedtools map 
     function.  This will compute the requested statistic
     for each variant in the variants table
@@ -26,7 +23,7 @@ def get_window_data(c, analysis_type):
     if analysis_type == "hwe": column = 'hwe'
     elif analysis_type == "nucl_div": column = 'pi'
     
-    t = open(f, 'w')
+    t = open(temp_file, 'w')
     query = "SELECT chrom,start,end," + \
              column + \
              " FROM variants ORDER BY chrom,start"
@@ -38,12 +35,12 @@ def get_window_data(c, analysis_type):
                                         int(row['end']),
                                         float(row[column])))
     t.close()
-    # Tell bedtools map that the statistuc is in the fourth column.
+    # Tell bedtools map that the statistic is in the fourth column.
     # Parameterized for future mods,
     return 4
 
 
-def make_windows(c, args):
+def make_windows(c, args, temp_file):
     """
     Compute the requested statistic for the user-defined windows.
     """    
@@ -53,18 +50,18 @@ def make_windows(c, args):
                                   w=args.window_size, 
                                   s=args.step_size)
     
-    # create a temp file ('.temp.jobid') storing the requested stat 
+    # create a temp file ('.temp.pid') storing the requested stat 
     # for each variant. Load this into a pybedtools BedTool
-    op_col = get_window_data(c, args.analysis_type)
-    window_data = pbt.BedTool(str(f))
-    
+    op_col = get_window_data(c, args.analysis_type, temp_file)
+    window_data = pbt.BedTool(temp_file)
+
     # Use bedtools map to summarize and report
     # the requested statistic for each window
     windowed_analysis = windows.map(window_data, o=args.op_type, c=op_col)
     for window in windowed_analysis:
         print window,
     # cleanup
-    os.remove(str(f))
+    os.remove(temp_file)
        
 def windower(parser, args):
 
@@ -74,4 +71,6 @@ def windower(parser, args):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         # on y va
-        make_windows(c, args)
+        pid = os.getpid()
+        temp_file = ".".join(['.temp', str(pid)])
+        make_windows(c, args, temp_file)

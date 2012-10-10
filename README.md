@@ -12,7 +12,7 @@ genome annotations (see below for more details).  However, you must first instal
 It's easy enough --- you just need to run the following script and tell it in which what full path you'd like to install
 the necessary data files. The recommended path is in ``/usr/local/share``:
 
-    gemini/install-data.py /usr/local/share/gemini
+    gemini/install-data.py /usr/local/share/
 
 
 Overview

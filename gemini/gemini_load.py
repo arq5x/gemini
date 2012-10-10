@@ -28,7 +28,7 @@ class GeminiLoader(object):
     Object for creating and populating a gemini
     database and auxillary data files.
     """
-    def __init__(self, args, buffer_size = 100):
+    def __init__(self, args, buffer_size = 10000):
         self.args = args
 
         # create the gemini database
