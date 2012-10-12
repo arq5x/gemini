@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import pysam
+import sqlite3
 import os
 import sys
 import collections
+
 
 from gemini.config import read_gemini_config
 
@@ -136,10 +138,19 @@ def _get_chr_as_grch37(chrom):
 def _get_chr_as_ucsc(chrom):
     return chrom if chrom.startswith("chr") else "chr" + chrom
 
+def guess_contig_naming(anno):
+    """Guess which contig naming scheme a given annotation file uses.
+    """
+    chr_names = [x for x in anno.contigs if x.startswith("chr")]
+    if len(chr_names) > 0:
+        return "ucsc"
+    else:
+        return "grch37"
+
 def _get_var_coords(var, naming):
     """Retrieve variant coordinates from multiple input objects.
     """
-    if isinstance(var, dict):
+    if isinstance(var, dict) or isinstance(var, sqlite3.Row):
         chrom = var["chrom"]
         start = int(var["start"])
         end = int(var["end"])

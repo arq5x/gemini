@@ -10,6 +10,7 @@ import pysam
 import time
 
 import gemini_constants
+from gemini.annotations import annotations_in_region, guess_contig_naming
 
 def add_requested_column(col_name, update_cursor):
     """
@@ -36,10 +37,11 @@ def annotate_variants_bool(args, select_cursor, update_cursor):
     # For each, use Tabix to detect overlaps with the user-defined
     # annotation file.  Update the variant row with T/F if overlaps found.
     annos = pysam.Tabixfile(args.anno_file)
+    naming = guess_contig_naming(annos)
     select_cursor.execute("SELECT chrom, start, end, variant_id FROM variants")
     for row in select_cursor:
         has_hit = False
-        for hit in annos.fetch(str(row['chrom']), int(row['start']), int(row['end'])):
+        for hit in annotations_in_region(row, annos, naming=naming):
             has_hit = True
             break
         if has_hit:
@@ -63,10 +65,11 @@ def annotate_variants_count(args, select_cursor, update_cursor):
     # For each, use Tabix to count overlaps with the user-defined
     # annotation file.  Update the variant row with the count.
     annos = pysam.Tabixfile(args.anno_file)
+    naming = guess_contig_naming(annos)
     select_cursor.execute("SELECT chrom, start, end, variant_id FROM variants")
     for row in select_cursor:
         count = 0
-        for hit in annos.fetch(str(row['chrom']), int(row['start']), int(row['end'])):
+        for hit in annotations_in_region(row, annos, naming=naming):
             count += 1
         update_qry = "UPDATE variants SET " + args.col_name + " = " + str(count) + \
                      " WHERE variant_id = " + str(row['variant_id'])
@@ -84,11 +87,11 @@ def annotate_variants_list(args, select_cursor, update_cursor):
     # For each, use Tabix to count overlaps with the user-defined
     # annotation file.  Update the variant row with the count.
     annos = pysam.Tabixfile(args.anno_file)
+    naming = guess_contig_naming(annos)
     select_cursor.execute("SELECT chrom, start, end, variant_id FROM variants")
     for row in select_cursor:
         hit_list = []
-        for hit in annos.fetch(str(row['chrom']), int(row['start']), int(row['end']),
-                               parser=pysam.asTuple()):
+        for hit in annotations_in_region(row, annos, "tuple", naming=naming):
             try:
                 hit_list.append(hit[int(args.col_extract) - 1])
             except IndexError:
