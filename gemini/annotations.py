@@ -105,8 +105,9 @@ def load_annos():
     for anno in anno_files:
         annos[anno] = pysam.Tabixfile(anno_files[anno])
 
+# ## Standard access to Tabix indexed files
 
-def _get_hits(var, chrom, annotation, parser_type):
+def _get_hits(coords, annotation, parser_type):
     """Retrieve BED information, recovering if BED annotation file does have a chromosome.
     """
     if parser_type == "bed":
@@ -115,31 +116,65 @@ def _get_hits(var, chrom, annotation, parser_type):
         parser = pysam.asVCF()
     elif parser_type == "tuple":
         parser = pysam.asTuple()
+    elif parser_type is None:
+        parser = None
     else:
         raise ValueError("Unexpected parser type: %s" % parser)
+    chrom, start, end = coords
     try:
-       hit_iter = annos[annotation].fetch(chrom, var.start, 
-                                          var.end, parser=parser)
+       hit_iter = annotation.fetch(chrom, start, end, parser=parser)
     # catch invalid region errors raised by ctabix
     except ValueError:
         hit_iter = []
     return hit_iter
 
-def _get_chr_as_grch37(var):
-    if var.CHROM in ["chrM"]:
+def _get_chr_as_grch37(chrom):
+    if chrom in ["chrM"]:
         return "MT"
-    return var.CHROM if not var.CHROM.startswith("chr") else var.CHROM[3:]
+    return chrom if not chrom.startswith("chr") else chrom[3:]
     
-def _get_chr_as_ucsc(var):
-    return var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+def _get_chr_as_ucsc(chrom):
+    return chrom if chrom.startswith("chr") else "chr" + chrom
+
+def _get_var_coords(var, naming):
+    """Retrieve variant coordinates from multiple input objects.
+    """
+    if isinstance(var, dict):
+        chrom = var["chrom"]
+        start = int(var["start"])
+        end = int(var["end"])
+    else:
+        chrom = var.CHROM
+        start = var.start
+        end = var.end
+    if naming == "ucsc":
+        chrom = _get_chr_as_ucsc(chrom)
+    elif naming == "grch37":
+        chrom = _get_chr_as_grch37(chrom)
+    return chrom, start, end
+
+def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
+    """Iterator of annotations found in a genomic region.
+
+    - var: PyVCF object or database query with chromosome, start and end.
+    - anno: pysam Tabix annotation file or string to reference
+            a standard annotation
+    - parser_type: string specifying the filetype of the tabix file
+    - naming: chromosome naming scheme used, ucsc or grch37
+    """
+    coords = _get_var_coords(var, naming)
+    if isinstance(anno, basestring):
+        anno = annos[anno]
+    return _get_hits(coords, anno, parser_type)
+
+# ## Track-specific annotations
 
 def get_cpg_island_info(var):
     """
     Returns a boolean indicating whether or not the
     variant overlaps a CpG island 
     """
-    chrom = _get_chr_as_ucsc(var)
-    for hit in _get_hits(var, chrom, "cpg_island", "bed"):
+    for hit in annotations_in_region(var, "cpg_island", "bed"):
         return True
     return False
 
@@ -148,24 +183,22 @@ def get_cyto_info(var):
     Returns a comma-separated list of the chromosomal
     cytobands that a variant overlaps.
     """
-    chrom = _get_chr_as_ucsc(var)
     cyto_band = ''
-    for hit in _get_hits(var, chrom, "cytoband", "bed"):
+    for hit in annotations_in_region(var, "cytoband", "bed"):
         if len(cyto_band) > 0:
-            cyto_band += "," + chrom + hit.name
+            cyto_band += "," + hit.contig + hit.name
         else: 
-            cyto_band += chrom + hit.name
+            cyto_band += hit.contig + hit.name
     return cyto_band if len(cyto_band) > 0 else None
 
 def get_dbsnp_info(var):
     """
     Returns a suite of annotations from dbSNP
     """
-    chrom = _get_chr_as_grch37(var)
     rs_ids  = []
     clin_sigs = []
     in_omim = 0
-    for hit in _get_hits(var, chrom, "dbsnp", "vcf"):
+    for hit in annotations_in_region(var, "dbsnp", "vcf", "grch37"):
         rs_ids.append(hit.id)
         # load each VCF INFO key/value pair into a DICT
         info_map = {}
@@ -189,14 +222,13 @@ def get_esp_info(var):
     """
     Returns a suite of annotations from the ESP project
     """
-    chrom = _get_chr_as_grch37(var)
     aaf_EA = aaf_AA = aaf_ALL = None
     maf = fetched = con = []
     exome_chip = False
     found = False
     info_map = {}
-    if chrom not in ['Y']:
-        for hit in _get_hits(var, chrom, "esp", "vcf"):
+    for hit in annotations_in_region(var, "esp", "vcf", "grch37"):
+        if hit.contig not in ['Y']:
             fetched.append(hit)
             # We need a single ESP entry for a variant
             if fetched != None and len(fetched) == 1 and \
@@ -232,11 +264,10 @@ def get_1000G_info(var):
     """
     Returns a suite of annotations from the 1000 Genomes project
     """
-    chrom = _get_chr_as_grch37(var)
     fetched = []
     info_map = {}
     found = False
-    for hit in _get_hits(var, chrom, "1000g", "vcf"):
+    for hit in annotations_in_region(var, "1000g", "vcf", "grch37"):
         fetched.append(hit)
         # We need a single 1000G entry for a variant
         if fetched != None and len(fetched) == 1 and \
@@ -257,9 +288,8 @@ def get_rmsk_info(var):
     Returns a comma-separated list of annotated repeats
     that overlap a variant.  Derived from the UCSC rmsk track 
     """
-    chrom = _get_chr_as_ucsc(var)
     rmsk_hits = []
-    for hit in _get_hits(var, chrom, "rmsk", "bed"):
+    for hit in annotations_in_region(var, "rmsk", "bed"):
         rmsk_hits.append(hit.name)
     return ",".join(rmsk_hits) if len(rmsk_hits) > 0 else None
 
@@ -269,8 +299,7 @@ def get_segdup_info(var):
     Returns a boolean indicating whether or not the
     variant overlaps a known segmental duplication. 
     """
-    chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-    for hit in _get_hits(var, chrom, "segdup", "bed"):
+    for hit in annotations_in_region(var, "segdup", "bed"):
         return True
     return False
     
@@ -288,8 +317,7 @@ def get_conservation_info(var):
     # Script to convert for gemini:
     gemini/annotation_provenance/make-29way-conservation.sh
     """
-    chrom = _get_chr_as_ucsc(var)
-    for hit in _get_hits(var, chrom, "conserved", "bed"):
+    for hit in annotations_in_region(var, "conserved", "bed"):
         return True
     return False
 
@@ -297,19 +325,18 @@ def get_recomb_info(var):
     """
     Returns the mean recombination rate at the site.
     """
-    chrom = _get_chr_as_ucsc(var)
     count = 0
     tot_rate = 0.0
-    if chrom not in ['chrY']:
+    for hit in annotations_in_region(var, "recomb", "bed"):
+        if hit.contig not in ['chrY']:
         # recomb rate file is in bedgraph format.
         # pysam will store the rate in the "name" field
-        for hit in _get_hits(var, chrom, "recomb", "bed"):
             count += 1
             tot_rate += float(hit.name)
 
     return float(tot_rate) / float(count) if count > 0 else None
 
-def _get_single_vcf_hit(var, hit_iter):
+def _get_single_vcf_hit(hit_iter):
     if hit_iter is not None:
         hits = list(hit_iter)
         if len(hits) == 1:
@@ -328,8 +355,7 @@ def get_gms(var):
     """
     techs = ["illumina", "solid", "iontorrent"]
     GmsTechs = collections.namedtuple("GmsTechs", techs)
-    chrom = _get_chr_as_grch37(var)
-    hit = _get_single_vcf_hit(var, _get_hits(var, chrom, "gms", "vcf"))
+    hit = _get_single_vcf_hit(annotations_in_region(var, "gms", "vcf", "grch37"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
     return apply(GmsTechs,
                  [attr_map.get("GMS_{0}".format(x), None) for x in techs])
@@ -337,9 +363,8 @@ def get_gms(var):
 def get_grc(var):
     """Return GRC patched genome regions.
     """
-    chrom = _get_chr_as_grch37(var)
     regions = set()
-    for hit in _get_hits(var, chrom, "grc", "bed"):
+    for hit in annotations_in_region(var, "grc", "bed", "grch37"):
         regions.add(hit.name)
     return ",".join(sorted(list(regions))) if len(regions) > 0 else None
 
@@ -356,10 +381,9 @@ def get_encode_tfbs(var):
     tolerate BED files with more than 12 fields, so we just use the base
     tuple parser and grab the name column (4th column)
     """
-    chrom = _get_chr_as_ucsc(var)
     encode_tfbs_hits = []
 
-    for hit in _get_hits(var, chrom, "encode_tfbs", "tuple"):
+    for hit in annotations_in_region(var, "encode_tfbs", "tuple"):
         encode_tfbs_hits.append(hit[3])
     return ",".join(encode_tfbs_hits) if len(encode_tfbs_hits) > 0 else None
 
@@ -379,8 +403,7 @@ def get_encode_consensus_segs(var):
     T:    Predicted transcribed region
     WE:   Predicted weak enhancer or open chromatin cis-regulatory element
     """
-    chrom = _get_chr_as_ucsc(var)
-    for hit in _get_hits(var, chrom, "encode_consensus_segs", "tuple"):
+    for hit in annotations_in_region(var, "encode_consensus_segs", "tuple"):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
     
     return ENCODESegInfo(None, None, None, None, None, None)
@@ -393,8 +416,7 @@ def get_encode_segway_segs(var):
     Returns a 6-tuple of the predicted chromatin state of each cell type for the
     region overlapping the variant.
     """
-    chrom = _get_chr_as_ucsc(var)
-    for hit in _get_hits(var, chrom, "encode_segway_segs", "tuple"):
+    for hit in annotations_in_region(var, "encode_segway_segs", "tuple"):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
     
     return ENCODESegInfo(None, None, None, None, None, None)
@@ -407,8 +429,7 @@ def get_encode_chromhmm_segs(var):
     Returns a 6-tuple of the predicted chromatin state of each cell type for the
     region overlapping the variant.
     """
-    chrom = _get_chr_as_ucsc(var)
-    for hit in _get_hits(var, chrom, "encode_chromhmm_segs", "tuple"):
+    for hit in annotations_in_region(var, "encode_chromhmm_segs", "tuple"):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
     
     return ENCODESegInfo(None, None, None, None, None, None)
