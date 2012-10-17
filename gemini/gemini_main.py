@@ -193,6 +193,8 @@ def main():
                                   help='How the data for the new column (-c) should be stored.',
                                   default="append", 
                                   choices = ['boolean', 'count', 'list'])
+    parser_get.add_argument('-e', dest='col_extract',
+                                  help='Column to extract information from for list annotations.')
     parser_get.set_defaults(func=gemini_annotate.annotate)
 
 
