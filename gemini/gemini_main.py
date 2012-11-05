@@ -12,7 +12,6 @@ import tool_compound_hets
 import tool_pathways
 import tool_lof_sieve
 import tool_interactions
-import tool_autosomal_recessive
 
 def examples(parser, args):
     
@@ -230,14 +229,7 @@ def main():
     parser_comp_hets.add_argument('--only_lof', dest='only_lof', action='store_true',
                               help='Only consider variants that are loss of function', default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
-    
 
-    # $ gemini auto_rec
-    parser_auto_rec = subparsers.add_parser('auto_rec', help='Identify autosomal recessive candidates')
-    parser_auto_rec.add_argument('db', metavar='db',  help='The name of the database to be queried.')
-    parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
-    
-    
     
     # $ gemini pathways
     parser_pathway = subparsers.add_parser('pathways', help='Map genes and variants to KEGG pathways')
