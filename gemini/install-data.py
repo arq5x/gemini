@@ -17,44 +17,31 @@ The recommended Gemini install location is /usr/local/share/gemini.
 
 anno_files = \
 ['dbsnp.135.vcf.gz', 
-'dbsnp.135.vcf.gz.tbi',
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz', 
-'29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz.tbi',
 'hg19.CpG.bed.gz', 
-'hg19.CpG.bed.gz.tbi',
 'hg19.cytoband.bed.gz', 
-'hg19.cytoband.bed.gz.tbi',
 'hg19.dgv.bed.gz', 
-'hg19.dgv.bed.gz.tbi',
 'hg19.gwas.bed.gz', 
-'hg19.gwas.bed.gz.tbi',
 'hg19.rmsk.bed.gz', 
-'hg19.rmsk.bed.gz.tbi',
 'hg19.segdup.bed.gz', 
-'hg19.segdup.bed.gz.tbi',
 'ESP5400.all.snps.vcf.gz', 
-'ESP5400.all.snps.vcf.gz.tbi',
 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz', 
-'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz.tbi',
 'genetic_map_HapMapII_GRCh37.gz',
-'genetic_map_HapMapII_GRCh37.gz.tbi',
 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz',
-'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz.tbi',
 'encode.6celltypes.consensus.bedg.gz',
-'encode.6celltypes.consensus.bedg.gz.tbi',
 'encode.6celltypes.segway.bedg.gz',
-'encode.6celltypes.segway.bedg.gz.tbi',
 'encode.6celltypes.chromhmm.bedg.gz',
-'encode.6celltypes.chromhmm.bedg.gz.tbi',
 'GRCh37-gms-mappability.vcf.gz',
-'GRCh37-gms-mappability.vcf.gz.tbi',
 'GRC_patch_regions.bed.gz',
-'GRC_patch_regions.bed.gz.tbi',
 'kegg_pathways_ensembl66',
 'kegg_pathways_ensembl67',
 'kegg_pathways_ensembl68',
 'hprd_interaction_graph'
 ]
+
+anno_versions = {
+    "GRCh37-gms-mappability.vcf.gz": 2,
+    "hg19.rmsk.bed.gz": 2}
 
 def install_annotation_files(anno_root_dir):
     """Download required annotation files.
@@ -69,23 +56,30 @@ def install_annotation_files(anno_root_dir):
         os.makedirs(anno_dir)
 
     cur_config = read_gemini_config(allow_missing=True)
-    cur_config["annotation_dir"] = anno_dir
-    write_gemini_config(cur_config)
 
     # download and install each of the annotation files
-    for dl in anno_files:
-        url =        "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)
-        _download_to_dir(url, anno_dir)
+    for orig in anno_files:
+        if orig.endswith(".gz"):
+            dls = [orig, "%s.tbi" % orig]
+        else:
+            dls = [orig]
+        for dl in dls:
+            url = "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)
+            _download_to_dir(url, anno_dir, anno_versions.get(orig, 1),
+                             cur_config.get("versions", {}).get(orig, 1))
 
+    cur_config["annotation_dir"] = anno_dir
+    cur_config["versions"] = anno_versions
+    write_gemini_config(cur_config)
  
-def _download_to_dir(url, dirname):
+def _download_to_dir(url, dirname, version, cur_version):
     """
     Grab an annotation file and place in /usr/share/gemini/data
     """
     print "* downloading " + url + " to " + dirname + "\n"
     stub = os.path.basename(url)
     dest = os.path.join(dirname, stub)
-    if not os.path.exists(dest):
+    if not os.path.exists(dest) or version > cur_version:
         # download data file to pwd
         cmd = ["curl", "-OL", url]
         subprocess.check_call(cmd)

@@ -347,10 +347,10 @@ def get_recomb_info(var):
 
     return float(tot_rate) / float(count) if count > 0 else None
 
-def _get_single_vcf_hit(hit_iter):
+def _get_first_vcf_hit(hit_iter):
     if hit_iter is not None:
         hits = list(hit_iter)
-        if len(hits) == 1:
+        if len(hits) > 0:
             return hits[0]
 
 def _get_vcf_info_attrs(hit):
@@ -366,7 +366,7 @@ def get_gms(var):
     """
     techs = ["illumina", "solid", "iontorrent"]
     GmsTechs = collections.namedtuple("GmsTechs", techs)
-    hit = _get_single_vcf_hit(annotations_in_region(var, "gms", "vcf", "grch37"))
+    hit = _get_first_vcf_hit(annotations_in_region(var, "gms", "vcf", "grch37"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
     return apply(GmsTechs,
                  [attr_map.get("GMS_{0}".format(x), None) for x in techs])
