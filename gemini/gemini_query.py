@@ -156,10 +156,10 @@ def apply_refined_query(c, tokens, select_cols, main_where, gts_where, args):
                 for col in select_cols:
                     if col == "*": continue
                     if not col.startswith("gt"):
-                        print str(row[col]) + args.separator
+                        print str(row[col]) + args.separator,
                     else:
                         # e.g., eval gt_types[141] and print result (0,1,2,etc.)
-                        print str(eval(col.strip())) + args.separator
+                        print str(eval(col.strip())) + args.separator,
             print
 
 
