@@ -92,7 +92,7 @@ def main():
                             help='The name of the database to be queried.')
     parser_query.add_argument('-q', dest='query', metavar='QUERY_STR',
                             help='The query to be issued to the database')
-    parser_query.add_argument('--gt_filter', dest='gt_filter', metavar='STRING',
+    parser_query.add_argument('--gt-filter', dest='gt_filter', metavar='STRING',
                             help='Restrictions to apply to genotype values')
     parser_query.add_argument('-f', dest='queryfile', metavar='QUERY_FILE', 
                             help='A text file containing the query to be issued.')
