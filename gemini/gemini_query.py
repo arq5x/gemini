@@ -15,89 +15,114 @@ import gemini_utils as util
 import sql_extended as sql
 
 # REGEX to trap the special gt_* columns
-gt_sel_re = re.compile("GT(\S*)\.(\S+)")
+gt_sel_re = re.compile("gt(\S*)\.(\S+)")
 
-def flatten(l):
+def _flatten(l):
     return [item for sublist in l for item in sublist]
 
-def refine_sql(query, sample_to_idx):
-    def correct_genotype_col(raw_col):
-        if raw_col == "*":
-           return raw_col.lower()
-        match = gt_sel_re.findall(raw_col)[0]
-        return "gt" + match[0].lower() + "[" + \
-                str(sample_to_idx[match[1]]).lower() + "]"
+def _correct_genotype_col(raw_col, sample_to_idx):
+    """
+    Convert a _named_ genotype index to a _numerical_
+    genotype index so that the appropriate value can be
+    extracted for the sample from the genotype numpy arrays.
     
-    # used to identify strings that are where condition constructs
-    where_keywords = ['where', 'and', 'or', 'not']
+    These lookups will be eval()'ed on the resuting rows to
+    extract the appropriate information.
     
-    # use pyparsing in sql.py module to parse raw SQL statement
-    tokens = sql.parse_sql(query)
-    # adjust any of the gt_* columns to use sample offsets, not names
+    For example, convert gt_types.1478PC0011 to gt_types[11]
+    """
+    if raw_col == "*":
+       return raw_col.lower()
+    (column, sample) = raw_col.split('.')
+    corrected = column.lower() + "[" + \
+            str(sample_to_idx[sample]).lower() + "]"
+    return corrected
+
+
+def _split_select(query, sample_to_idx):
+    """
+    Build a list of _all_ columns in the SELECT statement
+    and segregated the non-genotype specific SELECT columns.
+    
+    This is used to control how to report the results, as the
+    genotype-specific columns need to be eval()'ed whereas others
+    do not.
+    
+    For example: "SELECT chrom, start, end, gt_types.1478PC0011"
+    will populate the lists as follows:
+    
+    select_columns = ['chrom', 'start', 'end']
+    all_columns = ['chrom', 'start', 'end', 'gt_types[11]']
+    """
     select_columns = []
-    
-    # build a list of the select columns while converting
-    # the genotype columns (GT_*) to their appropriate numpy indices
-    for col in tokens.select:
-        if not col.startswith("GT"):
-            select_columns.append(col)
-        else:
-            select_columns.append(correct_genotype_col(col))
+    all_columns_new = []
+    all_columns_orig = []
 
-    # Separate the where clause for the main SQL statement
-    # from the conditions placed on the gt* columns.  The
-    # latter must be applied post hoc to the rows returned 
-    # from the former, as SQL where conditions cannot be applied to BLOBs
-    main_where = []
-    gtypes_where = []
-    last_keyword = None
-    is_first_where = True
-    # tokens.where[0] b/c pyparsing grammar excessively nests results
-    for where_piece in tokens.where:
-        # and | or | in
-        if where_piece in where_keywords:
-            last_keyword = where_piece
+    # iterate through all of the select columns andclear
+    # distinguish the genotype-specific columns from the base columns
+    from_loc = query.find("from")
+    if from_loc < 1:
+         sys.exit("Malformed query.")
+
+    raw_select_clause = query[0:from_loc].rstrip()
+    rest_of_query = query[from_loc:len(query)]
+
+    for token in raw_select_clause.replace(',','').split():
+        if token == "SELECT" or token == "select":
             continue
-
-        # at this point, we know we are dealing with an actual condition, so
-        # we flatten the pieces of the condition in cases of 
-        # nested boolean logic
-        # add the condition as normal if not a gt* field
-        if not any("GT" in s for s in where_piece):
-            if not is_first_where:
-                main_where.append(last_keyword)
-                is_first_where = False
-            for piece in where_piece:
-                main_where.append(piece)
-        # gt* fields must be converted from referring to sample name
-        # to instead referring to sample offsets in the relevant col. BLOB
+        if not token.startswith("GT") and not token.startswith("gt"):
+            select_columns.append(token)
+            all_columns_new.append(token)
+            all_columns_orig.append(token)
         else:
-            if not is_first_where:
-                gtypes_where.append(last_keyword)
-                is_first_where = False
-            for piece in where_piece:
-                # SQL allows "=" for equality, Python eval needs "=="
-                if piece == "=": 
-                    gtypes_where.append("==")
-                elif piece.startswith("GT"):
-                    gtypes_where.append(correct_genotype_col(piece))
-                else:
-                    gtypes_where.append(piece)
+            new_col = _correct_genotype_col(token, sample_to_idx)
+            all_columns_new.append(new_col)
+            all_columns_orig.append(token)
 
-    # hand off the select columns and the two different
-    # where conditions.
-    return(tokens, select_columns,
-           " ".join(main_where),
-           " ".join(gtypes_where))
+    print all_columns_new, all_columns_orig
+    return select_columns, all_columns_new, all_columns_orig
 
 
-def apply_query(c, args):
+def add_gt_cols_to_query(query):
+    """
+    We have to modify the raw query to select the genotype
+    columns in order to support the genotype filters.  That is,
+    if the user wants to limit the rows returned based upon, for example,
+    "gts.joe == 1", then we need to select the full gts BLOB column in
+    order to enforce that limit.  The user wouldn't have selected gts as a
+    columns, so therefore, we have to modify the select statement to add
+    it.
+    
+    In essence, when a gneotype filter has been requested, we always add
+    the gts, gt_types and gt_phases columns.
+    """
+    from_loc = query.find("from")
+    if from_loc > 1:
+        raw_select_clause = query[0:from_loc].rstrip()
+        rest_of_query = query[from_loc:len(query)]
+        
+        # remove any GT columns
+        select_clause_list = []
+        for token in raw_select_clause.split():
+            if not token.startswith("gt") and not token.startswith("GT"):
+                select_clause_list.append(token)
+
+        # add the genotype columns to the query
+        select_clause = " ".join(select_clause_list) + \
+                             " gts, gt_types, gt_phases "
+        query = select_clause + rest_of_query
+        # extract the original select columns
+        return query
+    else:
+       sys.exit("Malformed query.")
+
+
+def apply_basic_query(c, args):
     """
     Execute a vanilla query. That is, not gt* columns
     are in either the select or where clauses.
     """
     c.execute(args.query)
-    # (select *) a list of all of the non-gt* columns in the table
     all_cols = [str(tuple[0]) for tuple in c.description \
                                     if not tuple[0].startswith("gt")]
 
@@ -107,62 +132,49 @@ def apply_query(c, args):
         print args.separator.join(str(row[col]) for col in all_cols)
 
 
-def apply_refined_query(c, tokens, select_cols, main_where, gts_where, args):
+def apply_query_w_genotype_select(c, args):
     """
-    Execute a query that contains gt* columns in either the
-    select or the where.
+    Execute a query that contains gt* columns in only in the SELECT.
     """
-    # construct and execute the main query
-    query = "select * from variants"
-    if len(main_where) > 0:
-        query += " where " + main_where
-    # TO DO : handle GROOUP BY, HAVING, ORDER BY, LIMIT
-
+    # construct a mapping of sample names to list indices
+    sample_to_idx = util.map_samples_to_indicies(c)
+    
+    (select_cols, all_cols_new, all_cols_orig) = \
+                                    _split_select(args.query, sample_to_idx)
+    
+    query = add_gt_cols_to_query(args.query.lower())
     c.execute(query)
-    # (select *) a list of all of the non-gt* columns in the table
-    all_cols = [str(tuple[0]) for tuple in c.description if not tuple[0].startswith("gt")]
+    
+    # what are the columns that were actually selected by the user.
+    all_query_cols = [str(tuple[0]) for tuple in c.description \
+                              if not tuple[0].startswith("gt")]
 
-    # track whether gt_* columns are involved in the SELECT, WHERE or both
-    gts_where_req = False
-    gts_select_req = False
-    if (gts_where != ""):
-        gts_where_req = True
-    if (any("gt" in s for s in select_cols)):
-        gts_select_req = True
+    if "*" in select_cols:
+        select_cols.remove("*")
+        all_cols_orig.remove("*")
+        all_cols_new.remove("*")
+        select_cols += all_query_cols
 
-        
-    # print out the header
     if args.use_header:
-        if "*" in select_cols:
-            print args.separator.join(col for col in all_cols)
-        else: 
-            print args.separator.join(col for col in select_cols)
-            
+        print args.separator.join(col for col in all_query_cols),
+        print args.separator.join(col for col in \
+                            set(all_cols_orig) - set(select_cols))
+
+    report_cols = all_query_cols + list(set(all_cols_new) - set(select_cols))
     for row in c:
         gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
         gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
         gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
         
-        # only report this row if =:
-        #    a) there was no where clause for gt_* cols
-        # or b) there was a gt_* clause and this row passed
-        if gts_where == "" or (gts_where != "" and eval(gts_where)):
-            # select *
-            if '*' in select_cols:
-                print args.separator.join(str(row[col]) for col in all_cols),
-            # select chrom, is_lof
-            elif not gts_select_req:
-                print args.separator.join(str(row[col]) for col in select_cols),
-            # select chrom, gt_types.HG00331, gt_types.HG00332
+        for col in report_cols:
+            if col == "*": continue
+            if not col.startswith("gt") and not col.startswith("GT"):
+                print str(row[col]) + args.separator,
             else:
-                for col in select_cols:
-                    if col == "*": continue
-                    if not col.startswith("gt"):
-                        print str(row[col]) + args.separator,
-                    else:
-                        # e.g., eval gt_types[141] and print result (0,1,2,etc.)
-                        print str(eval(col.strip())) + args.separator,
-            print
+                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
+                print str(eval(col.strip())) + args.separator,
+        print
+
 
 
 def get_query_file(args):
@@ -186,11 +198,86 @@ def get_query(args, c):
     query_pieces = args.query.split()
     if not any(s.startswith("gt") for s in query_pieces) and \
        not any("gt" in s for s in query_pieces):
-       apply_query(c, args)
+        apply_basic_query(c, args)
     else:
-        (tokens, select_cols, main_where, gts_where) = \
-            refine_sql(args.query, sample_to_idx)
-        apply_refined_query(c, tokens, select_cols, main_where, gts_where, args)
+        apply_query_w_genotype_select(c, args)
+
+
+def filter_query(args, c):
+    """
+    Execute a base SQL query while applying filters on the returned 
+    rows based on filters applied to the genotype-specific columns.
+    
+    For example:
+    --gt_filter "(gt_types.1478PC0011 == 1 or gt_types.1478PC0012 == 1)
+    """
+
+    def correct_genotype_filter(gt_filter, sample_to_idx):
+        """
+        This converts a "raw" genotype filter supplied by the user
+        to a filter than can be eval()'ed.  Specifically, we must
+        convery a _named_ genotype index to a _numerical_
+        genotype index so that the appropriate value can be
+        extracted for the sample from the genotype numpy arrays.
+        
+        For example, converts:
+        --gt-filter "(gt_types.1478PC0011 == 1)"
+        to
+        (gt_types[11] == 1)
+        """
+        corrected_gt_filter = []
+        tokens = re.split(r'[\s+]+', gt_filter)
+        for token in tokens:
+            if token.find("gt") >= 0 or token.find("GT") >= 0:
+                corrected = _correct_genotype_col(token, sample_to_idx)
+                corrected_gt_filter.append(corrected)
+            else:
+                corrected_gt_filter.append(token)
+        return " ".join(corrected_gt_filter)
+
+
+    # construct a mapping of sample names to list indices
+    sample_to_idx = util.map_samples_to_indicies(c)
+    
+    gt_filter = correct_genotype_filter(args.gt_filter, sample_to_idx)
+    (select_cols, all_cols_new, all_cols_orig) = \
+                                    _split_select(args.query, sample_to_idx)
+
+    query = add_gt_cols_to_query(args.query.lower())
+
+    c.execute(query)
+    
+    # what are the columns that were actually selected by the user.
+    all_query_cols = [str(tuple[0]) for tuple in c.description \
+                              if not tuple[0].startswith("gt")]
+
+    if "*" in select_cols:
+        select_cols.remove("*")
+        all_cols_orig.remove("*")
+        all_cols_new.remove("*")
+        select_cols += all_query_cols
+        
+    if args.use_header:
+        print args.separator.join(col for col in all_query_cols),
+        print args.separator.join(col for col in \
+                            set(all_cols_orig) - set(select_cols))
+
+    report_cols = all_query_cols + list(set(all_cols_new) - set(select_cols))
+    for row in c:
+        gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
+        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
+        gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
+        if not eval(gt_filter):
+            continue
+        
+        for col in report_cols:
+            if col == "*": continue
+            if not col.startswith("gt") and not col.startswith("GT"):
+                print str(row[col]) + args.separator,
+            else:
+                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
+                print str(eval(col.strip())) + args.separator,
+        print
 
 
 def query(parser, args):
@@ -205,7 +292,10 @@ def query(parser, args):
         c = conn.cursor()
         
         if args.query is not None:
-            get_query(args, c)
+            if args.gt_filter is None:
+                get_query(args, c)
+            else:
+                filter_query(args, c)
         elif args.queryfile is not None:
             get_query_file(args)
 
