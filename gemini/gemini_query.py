@@ -25,10 +25,11 @@ def refine_sql(query, sample_to_idx):
         if raw_col == "*":
            return raw_col.lower()
         match = gt_sel_re.findall(raw_col)[0]
-        return "gt" + match[0].lower() + "[" + str(sample_to_idx[match[1]]).lower() + "]"
+        return "gt" + match[0].lower() + "[" + \
+                str(sample_to_idx[match[1]]).lower() + "]"
     
     # used to identify strings that are where condition constructs
-    where_keywords = ['where', 'and', 'or']
+    where_keywords = ['where', 'and', 'or', 'not']
     
     # use pyparsing in sql.py module to parse raw SQL statement
     tokens = sql.parse_sql(query)
@@ -68,7 +69,7 @@ def refine_sql(query, sample_to_idx):
                 is_first_where = False
             for piece in where_piece:
                 main_where.append(piece)
-        # gt* fileds must be converted from referring to sample name
+        # gt* fields must be converted from referring to sample name
         # to instead referring to sample offsets in the relevant col. BLOB
         else:
             if not is_first_where:
@@ -97,7 +98,8 @@ def apply_query(c, args):
     """
     c.execute(args.query)
     # (select *) a list of all of the non-gt* columns in the table
-    all_cols = [str(tuple[0]) for tuple in c.description if not tuple[0].startswith("gt")]
+    all_cols = [str(tuple[0]) for tuple in c.description \
+                                    if not tuple[0].startswith("gt")]
 
     if args.use_header:
         print args.separator.join(col for col in all_cols)
