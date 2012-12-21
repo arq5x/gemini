@@ -10,7 +10,7 @@ def _safe_single_attr(x):
       - '.'s to indicate None
       - tuples where we expect a single value
     """
-    if x is None or ".":
+    if x is None or x is ".":
         return None
     elif isinstance(x, (list, tuple)):
         return x[0]
