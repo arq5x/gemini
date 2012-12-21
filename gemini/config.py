@@ -40,11 +40,12 @@ def _find_best_config_file(dirs=None):
     dnames = CONFIG_DIRS if dirs is None else dirs + CONFIG_DIRS
     dnames.reverse()
     for dname in dnames:
-        if os.access(dname, os.W_OK) or os.access(os.path.dirname(dname), os.W_OK):
+        if os.access(dname, os.W_OK) or \
+        os.access(os.path.dirname(dname), os.W_OK):
             return os.path.join(dname, CONFIG_FILE)
+    
     raise ValueError("Gemini configuration: "
-                     "Could not find writeable directory: {0}".format(
-            dnames))
+                     "Could not find writeable directory: {0}".format(dnames))
 
 def write_gemini_config(new_config, dirs=None):
     try:

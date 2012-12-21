@@ -275,7 +275,7 @@ def filter_query(args, c):
             if not col.startswith("gt") and not col.startswith("GT"):
                 print str(row[col]) + args.separator,
             else:
-                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
+                # e.g., eval('gt_types[141]') and print result (0,1,2,etc.)
                 print str(eval(col.strip())) + args.separator,
         print
 

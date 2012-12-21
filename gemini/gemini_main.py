@@ -9,6 +9,7 @@ import gemini_load, gemini_query,\
        gemini_annotate, gemini_windower
 
 import tool_compound_hets
+import tool_autosomal_recessive
 import tool_pathways
 import tool_lof_sieve
 import tool_interactions
@@ -268,7 +269,8 @@ def main():
     parser_interaction.set_defaults(func=tool_interactions.genequery)
     
     # gemini lof_interactions
-    parser_interaction = subparsers.add_parser('lof_interactions', help='Find interaction partners for a lof gene in sample variants(default mode)')
+    parser_interaction = subparsers.add_parser('lof_interactions', 
+            help='Find interaction partners for a lof gene in sample variants(default mode)')
     parser_interaction.add_argument('db', metavar='db', help='The name of the database to be queried')
     parser_interaction.add_argument('-r', dest='radius', type=int, help="set filter for BFS:\n")
     parser_interaction.add_argument('--var', dest='var_mode', 
@@ -277,6 +279,17 @@ def main():
                                     default=False)
     
     parser_interaction.set_defaults(func=tool_interactions.lofgenequery)
+
+
+    # $ gemini auto_recessive
+    parser_auto_rec = \
+        subparsers.add_parser('autosomal_recessive', 
+                              help='Identify variants meeting an autosomal \
+                              recessive inheritance model')
+    parser_auto_rec.add_argument('db', metavar='db',
+                              help='The name of the database to be created.')
+    parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
+    
     
     #######################################################
     # parse the args and call the selected function
