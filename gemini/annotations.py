@@ -74,10 +74,12 @@ def load_annos():
                     os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
                     
                     'esp'          : \
-                    os.path.join(anno_dirname, 'ESP5400.all.snps.vcf.gz'),
+                    os.path.join(anno_dirname,
+                     'ESP6500SI.all.snps_indels.vcf.gz'),
                     
                     '1000g'        : \
-                    os.path.join(anno_dirname, 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
+                    os.path.join(anno_dirname,
+         'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz'),
                     
                     'recomb'       : \
                     os.path.join(anno_dirname, 'genetic_map_HapMapII_GRCh37.gz'),

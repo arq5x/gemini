@@ -24,7 +24,7 @@ anno_files = \
 'hg19.gwas.bed.gz', 
 'hg19.rmsk.bed.gz', 
 'hg19.segdup.bed.gz', 
-'ESP5400.all.snps.vcf.gz', 
+'ESP6500SI.all.snps_indels.vcf.gz', 
 'ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.vcf.gz', 
 'genetic_map_HapMapII_GRCh37.gz',
 'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz',
