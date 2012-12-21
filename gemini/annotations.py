@@ -54,7 +54,7 @@ def load_annos():
                     os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
                     
                     'dbsnp'        : \
-                    os.path.join(anno_dirname, 'dbsnp.135.vcf.gz'),
+                    os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
                     
                     'gwas'         : \
                     os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
