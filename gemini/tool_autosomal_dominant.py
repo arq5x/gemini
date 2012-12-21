@@ -13,11 +13,12 @@ import gemini_utils as util
 from gemini_constants import *
 import gemini_subjects as subjects
 
-def get_auto_recessive_candidates(c, families):
+def get_auto_dominant_candidates(c, families):
     """
-    Report candidate variants that meet an autosomal recessive
+    Report candidate variants that meet an autosomal dominant
     inheritance model.
-    """    
+    """
+    
     for family in families:
         
         query = "SELECT chrom, start, end, ref, alt, gene, \
@@ -29,7 +30,7 @@ def get_auto_recessive_candidates(c, families):
         all_query_cols = [str(tuple[0]) for tuple in c.description \
                                             if not tuple[0].startswith("gt")]
                                   
-        family_genotype_mask  = family.get_auto_recessive_filter()
+        family_genotype_mask  = family.get_auto_dominant_filter()
         family_sample_columns = family.get_subject_columns()
         family_sample_labels = family.get_subject_labels()
         
@@ -40,9 +41,10 @@ def get_auto_recessive_candidates(c, families):
         print '\t'.join(col for col in all_query_cols),
         print '\t'.join(col for col in family_sample_labels)
         
-        # report the resulting auto_rec variants for this familiy
+        # report the resulting auto_dom variants for this familiy
+        
         for row in c:
-                        
+            
             # unpack the genotype arrays so that we can interrogate
             # the genotypes present in each family member to conforming
             # to the genetic model being tested
@@ -52,7 +54,7 @@ def get_auto_recessive_candidates(c, families):
             # does the variant meet the inheritance model for this family?
             if not eval(family_genotype_mask):
                 continue
-        
+            
             # first report all of the non-genotype columns
             for col in all_query_cols:
                 if col == 'gt_types' or col == 'gts':
@@ -73,7 +75,7 @@ def run(parser, args):
         c = conn.cursor()
 
         families = subjects.get_families(c)
-        get_auto_recessive_candidates(c, families)
+        get_auto_dominant_candidates(c, families)
 
 
 

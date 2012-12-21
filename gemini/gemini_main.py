@@ -10,6 +10,7 @@ import gemini_load, gemini_query,\
 
 import tool_compound_hets
 import tool_autosomal_recessive
+import tool_autosomal_dominant
 import tool_pathways
 import tool_lof_sieve
 import tool_interactions
@@ -281,7 +282,7 @@ def main():
     parser_interaction.set_defaults(func=tool_interactions.lofgenequery)
 
 
-    # $ gemini auto_recessive
+    # $ gemini autosomal_recessive
     parser_auto_rec = \
         subparsers.add_parser('autosomal_recessive', 
                               help='Identify variants meeting an autosomal \
@@ -290,6 +291,14 @@ def main():
                               help='The name of the database to be created.')
     parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
     
+    # $ gemini autosomal_dominant
+    parser_auto_dom = \
+        subparsers.add_parser('autosomal_dominant', 
+                              help='Identify variants meeting an autosomal \
+                              dominant inheritance model')
+    parser_auto_dom.add_argument('db', metavar='db',
+                              help='The name of the database to be created.')
+    parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
     
     #######################################################
     # parse the args and call the selected function
