@@ -235,9 +235,9 @@ class GeminiLoader(object):
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
         variant_impacts = []
-        is_exonic = False
-        is_coding = False
-        is_lof    = False
+        is_exonic = 0
+        is_coding = 0
+        is_lof    = 0
     
         if impacts is not None:
             for idx, impact in enumerate(impacts):
@@ -250,9 +250,9 @@ class GeminiLoader(object):
                               impact.polyphen_score, impact.sift_pred, 
                               impact.sift_score]
                 variant_impacts.append(var_impact)
-                if impact.exonic == True: is_exonic = True
-                if impact.coding == True: is_coding = True
-                if impact.is_lof == True: is_lof    = True
+                if impact.exonic == 1: is_exonic = 1
+                if impact.coding == 1: is_coding = 1
+                if impact.is_lof == 1: is_lof    = 1
     
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
