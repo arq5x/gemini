@@ -28,9 +28,8 @@ class EffectDetails(object):
             self.coding = fields[7] if fields[7] != '' else None
             self.transcript = fields[8] if fields[8] != '' else None
             self.exon = fields[9] if fields[9] != '' else None
-            self.warnings = None
+            self.warnings = None 
             if len(fields) > 9: self.warnings = fields[9]
-            
         else:
             self.aa_length = None
             self.gene = fields[4] if fields[4] != '' else None
@@ -56,6 +55,7 @@ class EffectDetails(object):
                 self.coding = 0 
             else:
                 self.coding = 1
+                
         self.consequence = effect_dict[self.effect_name]
         
         
