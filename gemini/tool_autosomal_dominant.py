@@ -30,16 +30,16 @@ def get_auto_dominant_candidates(c, families):
         all_query_cols = [str(tuple[0]) for tuple in c.description \
                                             if not tuple[0].startswith("gt")]
                                   
-        family_genotype_mask  = family.get_auto_dominant_filter()
-        family_sample_columns = family.get_subject_columns()
-        family_sample_labels = family.get_subject_labels()
+        family_genotype_mask        = family.get_de_novo_filter()
+        family_sample_gt_columns    = family.get_subject_genotype_columns()
+        family_sample_gt_labels     = family.get_subject_genotype_labels()
         
         # print a header
         print "=========================="
         print "FAMILY:", family.family_id
         print "=========================="
         print '\t'.join(col for col in all_query_cols),
-        print '\t'.join(col for col in family_sample_labels)
+        print '\t'.join(col for col in family_sample_gt_labels)
         
         # report the resulting auto_dom variants for this familiy
         
@@ -61,7 +61,7 @@ def get_auto_dominant_candidates(c, families):
                     continue
                 print str(row[col]) + '\t',
             # now report all of the genotype columns
-            for col in family_sample_columns:
+            for col in family_sample_gt_columns:
                 print str(eval(col)) + '\t',
             print
 
