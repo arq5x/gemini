@@ -138,6 +138,141 @@ Combine ``gemini`` with ``bedtools`` to compute nucleotide diversity estimates a
 
     gemini query -q "select chrom, start, end, pi from variants order by chrom, start, end" my.db | \
     bedtools map -a hg19.windows.bed -b - -c 4 -o mean
+	
+
+Queries selecting and filtering upon individual genotypes
+===========================================================
+The above examples illustrate *ad hoc* queries that do not request or filter
+upon the genotypes of individual samples.  Since ``gemini`` stores the genotype
+information for each variant in compressed arrays that are stored as BLOBs
+in the database, standard SQL queries cannot directly access individual 
+genotypes. However, we have enhanced the SQL syntax to supports such queries
+with.  For example, to retrieve the alleles for a given sample's (in this case,
+sample 1094PC0009), one would add `gts.1094PC0009` to the select statement.  
+
+Here is an example of selecting the genotype alleles for four 
+different samples (note the examples below use the test.snpEff.vcf.db
+file that is created in the ./test directory when you run the 
+`sh master-test.sh` command as described above)::
+
+    gemini query -q "select chrom, start, end, ref, alt, gene, \
+	                 gts.1094PC0005, \
+					 gts.1094PC0009, \                                                
+                     gts.1094PC0012, \
+					 gts.1094PC0013 \
+                 from variants" test.snpEff.vcf.db
+    chr1	30547	30548	T	G	FAM138A	./.	./.	./.	./.
+    chr1	30859	30860	G	C	FAM138A	G/G	G/G	G/G	G/G
+    chr1	30866	30869	CCT	C	FAM138A	CCT/CCT	CCT/CCT	CCT/C	CCT/CCT
+    chr1	30894	30895	T	C	FAM138A	T/C	T/C	T/T	T/T
+    chr1	30922	30923	G	T	FAM138A	./.	./.	./.	./.
+    chr1	69269	69270	A	G	OR4F5	./.	./.	G/G	G/G
+    chr1	69427	69428	T	G	OR4F5	T/T	T/T	T/T	T/T
+    chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
+    chr1	69760	69761	A	T	OR4F5	A/A	A/T	A/A	A/A
+    chr1	69870	69871	G	A	OR4F5	./.	G/G	G/G	G/G
+	
+You can also add a header so that you can keep track of who's who::
+
+    gemini query -q "select chrom, start, end, ref, alt, gene,
+                     gts.1094PC0005, \
+    				 gts.1094PC0009, \
+                     gts.1094PC0012, \
+    				 gts.1094PC0013 \
+                 from variants" \
+				 --header \
+				 test.snpEff.vcf.db
+    chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
+	chr1	30547	30548	T	G	FAM138A	./.	./.	./.	./.
+    chr1	30859	30860	G	C	FAM138A	G/G	G/G	G/G	G/G
+    chr1	30866	30869	CCT	C	FAM138A	CCT/CCT	CCT/CCT	CCT/C	CCT/CCT
+    chr1	30894	30895	T	C	FAM138A	T/C	T/C	T/T	T/T
+    chr1	30922	30923	G	T	FAM138A	./.	./.	./.	./.
+    chr1	69269	69270	A	G	OR4F5	./.	./.	G/G	G/G
+    chr1	69427	69428	T	G	OR4F5	T/T	T/T	T/T	T/T
+    chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
+    chr1	69760	69761	A	T	OR4F5	A/A	A/T	A/A	A/A
+    chr1	69870	69871	G	A	OR4F5	./.	G/G	G/G	G/G
+	
+Let's now get the genotype and the depth of aligned sequence observed for a
+sample so that we can assess the confidence in the genotype::
+
+	gemini query -q "select chrom, start, end, ref, alt, gene,
+    				 gts.1094PC0005, \
+					 gt_depths.1094PC0005, \
+             	 from variants" test.snpEff.vcf.db
+	chr1	30547	30548	T	G	FAM138A	./.	-1
+	chr1	30859	30860	G	C	FAM138A	G/G	7
+	chr1	30866	30869	CCT	C	FAM138A	CCT/CCT	8
+	chr1	30894	30895	T	C	FAM138A	T/C	8
+	chr1	30922	30923	G	T	FAM138A	./.	-1
+	chr1	69269	69270	A	G	OR4F5	./.	-1
+	chr1	69427	69428	T	G	OR4F5	T/T	2
+	chr1	69510	69511	A	G	OR4F5	./.	-1
+	chr1	69760	69761	A	T	OR4F5	A/A	1
+	chr1	69870	69871	G	A	OR4F5	./.	-1
+
+Now, we often want to focus only on variants where a given sample has a
+specific genotype (e.g., looking for homozygous variants in family trios).  
+Unfortunately, we can directly do this in the SQL query, but the `gemini query`
+tool has an option called `gt-filter` that allows one to specify filters to 
+apply to the returned rows.  The rules followed in the `gt-filter` option
+follow Python syntax.  As an example, let's only return rows where sample
+1094PC0012 is heterozygous.  In order to do this, we apply a filter to the
+`gt_types` columns for this individual::
+
+	gemini query -q "select chrom, start, end, ref, alt, gene,
+    				 gts.1094PC0005, \
+				 	 gts.1094PC0009, \
+                 	 gts.1094PC0012, \
+				 	 gts.1094PC0013 \
+             	     from variants" \
+			 	  --gt-filter "gt_types.1094PC0012 == HET" \
+				  --header \
+			 test.snpEff.vcf.db
+	chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
+	chr1	30866	30869	CCT	C	FAM138A	CCT/CCT	CCT/CCT	CCT/C	CCT/CCT
+	chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
+
+Now let's be a bit less restrictive and return variants where either sample
+1094PC0012 is heterozygous or sample 1094PC0005 is homozygous for the reference
+allele::
+
+	gemini query -q "select chrom, start, end, ref, alt, gene,
+					gts.1094PC0005, \
+			 	 	gts.1094PC0009, \
+             	 	gts.1094PC0012, \
+			 	 	gts.1094PC0013 \
+         	    	from variants" \
+		 	  	 --gt-filter "gt_types.1094PC0012 == HET or \
+				              gt_types.1094PC0005 == HOM_REF" \
+			     --header \
+		 test.snpEff.vcf.db
+	chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
+	chr1	30859	30860	G	C	FAM138A	G/G	G/G	G/G	G/G
+	chr1	30866	30869	CCT	C	FAM138A	CCT/CCT	CCT/CCT	CCT/C	CCT/CCT
+	chr1	69427	69428	T	G	OR4F5	T/T	T/T	T/T	T/T
+	chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
+	chr1	69760	69761	A	T	OR4F5	A/A	A/T	A/A	A/A
+	
+I changed my mind, let's restrict the above to those variants where sample
+1094PC0012 must also be heterozygous::
+
+	gemini query -q "select chrom, start, end, ref, alt, gene,
+					gts.1094PC0005, \
+		 	 		gts.1094PC0009, \
+         	 		gts.1094PC0012, \
+		 	 		gts.1094PC0013 \
+     	    		from variants" \
+	 	  	 	  --gt-filter "(gt_types.1094PC0012 == HET or \
+			                   gt_types.1094PC0005 == HOM_REF) \
+							   and \
+							   (gt_types.1094PC0013 == HET)" \
+		          --header \
+	 test.snpEff.vcf.db
+	 chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
+	 chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
+
 
 Adding your own, custom annotations to the ``gemini`` framework
 ===========================================================
@@ -299,12 +434,6 @@ Compute the average nucleotide diversity for all variants found in non-overlappi
 Compute the average nucleotide diversity for all variants found in 50Kb windows that overlap by 10kb.
 
 	gemini windower -w 50000 -s 10000 -t nucl_div -o mean my.db
-
-
-
-Working with individual genotypes.
-==================================
-This will take some time to refine and explain.  I am being lazy.  To do.
 
 
 Active areas of improvement
