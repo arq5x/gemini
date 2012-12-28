@@ -19,3 +19,4 @@ sh test-columns.sh
 # Test genotype BLOB functionality
 sh test-genotypes.sh
 
+

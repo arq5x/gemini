@@ -82,7 +82,7 @@ rm obs exp
 ####################################################################
 # 5.  Test accessing individual genotype depths
 ####################################################################
-echo "    genotypes.t04...\c"
+echo "    genotypes.t05...\c"
 echo "chrom	end	ref	alt gt_depths.1094PC0005	gt_depths.1094PC0009	gt_depths.1094PC0012	gt_depths.1094PC0013
 chr1	30548	T	G	-1	-1	-1	-1
 chr1	30860	G	C	7	2	6	4
