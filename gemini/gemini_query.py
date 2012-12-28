@@ -12,7 +12,10 @@ from collections import defaultdict
 
 # gemini imports
 import gemini_utils as util
+from gemini_constants import *
+from gemini_utils import OrderedSet as oset
 import sql_extended as sql
+import compression
 
 # REGEX to trap the special gt_* columns
 gt_sel_re = re.compile("gt(\S*)\.(\S+)")
@@ -79,7 +82,6 @@ def _split_select(query, sample_to_idx):
             all_columns_new.append(new_col)
             all_columns_orig.append(token)
 
-    print all_columns_new, all_columns_orig
     return select_columns, all_columns_new, all_columns_orig
 
 
@@ -109,7 +111,7 @@ def add_gt_cols_to_query(query):
 
         # add the genotype columns to the query
         select_clause = " ".join(select_clause_list) + \
-                             " gts, gt_types, gt_phases "
+                             " gts, gt_types, gt_phases, gt_depths "
         query = select_clause + rest_of_query
         # extract the original select columns
         return query
@@ -158,21 +160,25 @@ def apply_query_w_genotype_select(c, args):
     if args.use_header:
         print args.separator.join(col for col in all_query_cols),
         print args.separator.join(col for col in \
-                            set(all_cols_orig) - set(select_cols))
+                            oset(all_cols_orig) - oset(select_cols))
 
-    report_cols = all_query_cols + list(set(all_cols_new) - set(select_cols))
+    report_cols = all_query_cols + list(oset(all_cols_new) - oset(select_cols))
     for row in c:
-        gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
-        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
-        gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
+        gts       = compression.unpack_genotype_blob(row['gts'])
+        gt_types  = compression.unpack_genotype_blob(row['gt_types'])
+        gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
+        gt_depths = compression.unpack_genotype_blob(row['gt_depths'])
         
-        for col in report_cols:
+        for idx, col in enumerate(report_cols):
             if col == "*": continue
             if not col.startswith("gt") and not col.startswith("GT"):
                 print str(row[col]) + args.separator,
             else:
                 # e.g., eval gt_types[141] and print result (0,1,2,etc.)
-                print str(eval(col.strip())) + args.separator,
+                if idx < len(report_cols) - 1:
+                    print str(eval(col.strip())) + args.separator,
+                else:
+                    print str(eval(col.strip())),
         print
 
 
@@ -260,23 +266,28 @@ def filter_query(args, c):
     if args.use_header:
         print args.separator.join(col for col in all_query_cols),
         print args.separator.join(col for col in \
-                            set(all_cols_orig) - set(select_cols))
+                            oset(all_cols_orig) - oset(select_cols))
 
-    report_cols = all_query_cols + list(set(all_cols_new) - set(select_cols))
+    report_cols = all_query_cols + list(oset(all_cols_new) - oset(select_cols))
     for row in c:
-        gts       = np.array(cPickle.loads(zlib.decompress(row['gts'])))
-        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
-        gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
+        gts       = compression.unpack_genotype_blob(row['gts'])
+        gt_types  = compression.unpack_genotype_blob(row['gt_types'])
+        gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
+        gt_depths = compression.unpack_genotype_blob(row['gt_depths'])
+
         if not eval(gt_filter):
             continue
         
-        for col in report_cols:
+        for idx, col in enumerate(report_cols):
             if col == "*": continue
             if not col.startswith("gt") and not col.startswith("GT"):
                 print str(row[col]) + args.separator,
             else:
-                # e.g., eval('gt_types[141]') and print result (0,1,2,etc.)
-                print str(eval(col.strip())) + args.separator,
+                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
+                if idx < len(report_cols) - 1:
+                    print str(eval(col.strip())) + args.separator,
+                else:
+                    print str(eval(col.strip())),
         print
 
 
