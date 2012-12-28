@@ -307,6 +307,11 @@ def main():
                               help='Identify candidate de novo mutations')
     parser_de_novo.add_argument('db', metavar='db',
                               help='The name of the database to be created.')
+    parser_de_novo.add_argument('-d', dest='min_sample_depth', 
+                                      type=int, help="The minimum aligned\
+                                      sequence depth (genotype DP) req'd for\
+                                      each sample",
+                                      default=20)
     parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
     
     #######################################################
