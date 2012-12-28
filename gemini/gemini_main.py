@@ -11,6 +11,7 @@ import gemini_load, gemini_query,\
 import tool_compound_hets
 import tool_autosomal_recessive
 import tool_autosomal_dominant
+import tool_de_novo_mutations
 import tool_pathways
 import tool_lof_sieve
 import tool_interactions
@@ -299,6 +300,14 @@ def main():
     parser_auto_dom.add_argument('db', metavar='db',
                               help='The name of the database to be created.')
     parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
+    
+    # $ gemini de_novo
+    parser_de_novo = \
+        subparsers.add_parser('de_novo', 
+                              help='Identify candidate de novo mutations')
+    parser_de_novo.add_argument('db', metavar='db',
+                              help='The name of the database to be created.')
+    parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
     
     #######################################################
     # parse the args and call the selected function
