@@ -227,6 +227,7 @@ class GeminiLoader(object):
         gt_bases  = np.array(var.gt_bases, np.str)  # 'A/G', './.'
         gt_types  = np.array(var.gt_types, np.int8) # -1, 0, 1, 2
         gt_phases = np.array(var.gt_phases, np.bool) # T F F
+        gt_depths = np.array(var.gt_depths, np.int32) # 10 37 0
         
         # tally the genotypes
         self._update_sample_gt_counts(gt_types)
@@ -260,7 +261,8 @@ class GeminiLoader(object):
                    self.v_id, anno_id, var.REF, ','.join(var.ALT), 
                    var.QUAL, filter, var.var_type, 
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
-                   pack_blob(gt_phases), call_rate, in_dbsnp,
+                   pack_blob(gt_phases), pack_blob(gt_depths), 
+                   call_rate, in_dbsnp,
                    dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
                    cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, hom_ref, het,
