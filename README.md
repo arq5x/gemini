@@ -1,8 +1,27 @@
 gemini - a framework for mining genome variation.
 =================================================
 
-``gemini`` is not yet ready for safe consumption, but stay tuned...we're working hard on it.
+Overview
+========
+The intent of ``gemini`` is to provide a simple, flexible, and powerful
+framework for exploring genetic variation for disease and population genetics.
+We aim to leverage the expressive power of SQL while attempting to overcome 
+the fundamental challenges associated with using databases for very large 
+(e.g. 1,000,000 variants times 1,000 samples yields one billion genotypes) 
+datasets.
 
+Acknowledgements
+================
+
+Caveats and Limitations
+=======================
+``gemini`` is currently in an *alpha* state.  The basic functionality that we
+intend to develop is present, but we may tweak the API and/or restructure 
+the underlying database as needed.
+
+
+Installation
+============
 If you are okay living dangerously and potentially being disappointed, you can install ``gemini`` as follows:
 
     python setup.py install
@@ -14,14 +33,11 @@ the necessary data files. The recommended path is in ``/usr/local/share``:
 
     gemini/install-data.py /usr/local/share/
 
+Lastly, run the test suite to make sure everything is running normally.
 
-Overview
-========
-The intent of ``gemini`` is to provide a simple, flexible, and powerful
-framework for exploring genetic variation for disease and population genetics.
-We aim to leverage the expressive power of SQL while attempting to overcome the fundamental challenges associated with using 
-databases for very large (e.g. 1,000,000 variants times 1,000 samples 
-yields one billion genotypes) datasets.
+	sh master-test.sh
+
+
 
 Have a look at this [poster](http://dl.dropbox.com/u/515640/posters_and_slides/Quinlan-Gemini-Poster.pdf) to get a high-level sense of what ``gemini`` is trying to accomplish.
 
