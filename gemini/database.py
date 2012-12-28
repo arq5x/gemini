@@ -56,6 +56,7 @@ def create_tables(cursor):
                     gts blob,                                   \
                     gt_types blob,                              \
                     gt_phases blob,                             \
+                    gt_depths blob,                             \
                     call_rate float,                            \
                     in_dbsnp bool,                              \
                     rs_ids text default NULL,                   \
@@ -203,7 +204,8 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?)', \
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?)', \
                                                      buffer)
     cursor.execute("END")
     
