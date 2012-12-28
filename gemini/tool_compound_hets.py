@@ -10,6 +10,7 @@ from copy import copy
 
 import gemini_utils as util
 from gemini_constants import *
+import compression
 
 class Site(object):
     def __init__(self, row):
@@ -59,9 +60,9 @@ def get_compound_hets(c, args):
     # step 1. collect all candidate heterozygptes for all
     # genes and samples.  the list will be refined in step 2.
     for row in c:
-        gt_types  = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
-        gt_phases = np.array(cPickle.loads(zlib.decompress(row['gt_phases'])))
-        gt_bases  = np.array(cPickle.loads(zlib.decompress(row['gts'])))
+        gt_types  = compression.unpack_genotype_blob(row['gt_types'])
+        gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
+        gt_bases  = compression.unpack_genotype_blob(row['gts'])
         
         site = Site(row)
         
@@ -73,7 +74,7 @@ def get_compound_hets(c, args):
         
         # track each sample that is heteroyzgous at this site.
         for idx, gt_type in enumerate(gt_types):
-            if gt_type == GT_HET:
+            if gt_type == HET:
                 sample = idx_to_sample[idx]
                 # (testing)
                 # sample = "NA19002"

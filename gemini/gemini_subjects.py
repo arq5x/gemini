@@ -82,9 +82,9 @@ class Family(object):
         Generate an autosomal recessive eval() filter to apply for this family.
         For example:
         
-        '(gt_types[57] == GT_HET and \  # mom
-          gt_types[58] == GT_HET and \  # dad
-          gt_types[11] == GT_HOM_ALT)'  # affected child
+        '(gt_types[57] == HET and \  # mom
+          gt_types[58] == HET and \  # dad
+          gt_types[11] == HOM_ALT)'  # affected child
         """
         
         # identify which samples are the parents in the family.
@@ -92,18 +92,18 @@ class Family(object):
         
         mask = "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                 str(GT_HET)
+                 str(HET)
         mask += " and "
         mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-                 str(GT_HET)
+                 str(HET)
         mask += " and "
         for i, child in enumerate(self.children):
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(GT_HOM_ALT)
+                         str(HOM_ALT)
             else:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
-                         str(GT_HOM_ALT)
+                         str(HOM_ALT)
             
             if i < (len(self.children) - 1):
                 mask += " and "
@@ -117,10 +117,10 @@ class Family(object):
         Generate an autosomal dominant eval() filter to apply for this family.
         For example:
         '(
-          ((bool(gt_types[57] == GT_HET)         # mom
+          ((bool(gt_types[57] == HET)         # mom
             != \ 
-            bool(gt_types[58] == GT_HET)) and \  # dad
-            gt_types[11] == GT_HET               # affected child
+            bool(gt_types[58] == HET)) and \  # dad
+            gt_types[11] == HET               # affected child
         )'
         
         NOTE: the bool(dad) != bool(mom) is an XOR requiring that one and 
@@ -132,18 +132,18 @@ class Family(object):
         
         mask = "((bool("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                 str(GT_HET)
+                 str(HET)
         mask += ") != "
         mask += 'bool(gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-                 str(GT_HET)
+                 str(HET)
         mask += ")) and "
         for i, child in enumerate(self.children):
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(GT_HET)
+                         str(HET)
             else:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(GT_HOM_REF)
+                         str(HOM_REF)
             
             if i < (len(self.children) - 1):
                 mask += " and "
@@ -157,27 +157,27 @@ class Family(object):
         Generate aa de novo mutation eval() filter to apply for this family.
         For example:
         
-        '(gt_types[57] == GT_HOM_REF and \  # mom
-          gt_types[58] == GT_HOM_REF and \  # dad
-          gt_types[11] == GT_HET)'          # affected child
+        '(gt_types[57] == HOM_REF and \  # mom
+          gt_types[58] == HOM_REF and \  # dad
+          gt_types[11] == HET)'          # affected child
         """        
         # identify which samples are the parents in the family.
         self.find_parents()
         
         mask = "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                 str(GT_HOM_REF)
+                 str(HOM_REF)
         mask += " and "
         mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-                 str(GT_HOM_REF)
+                 str(HOM_REF)
         mask += " and "
         for i, child in enumerate(self.children):
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(GT_HET)
+                         str(HET)
             else:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
-                         str(GT_HOM_REF)
+                         str(HOM_REF)
             
             if i < (len(self.children) - 1):
                 mask += " and "

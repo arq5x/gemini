@@ -87,7 +87,7 @@ def _report_variant_pathways(c, args, idx_to_sample):
                             allow_none=False)
         pathlist = ",".join(pathways)
         for idx, gt_type in enumerate(gt_types):
-            if (gt_type == GT_HET or gt_type == GT_HOM_ALT) and \
+            if (gt_type == HET or gt_type == HOM_ALT) and \
                 len(pathways) > 0:
                 print "\t".join([r['chrom'], str(r['start']), str(r['end']), \
                                  r['ref'], r['alt'], r['impact'], \

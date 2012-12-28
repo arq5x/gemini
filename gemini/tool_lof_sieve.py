@@ -54,7 +54,7 @@ def get_ind_lof(c, args):
                 transcript_pct = float(transcript_pos) / float(aa_length)
 
         for idx, gt_type in enumerate(gt_types):
-            if gt_type == GT_HET or gt_type == GT_HOM_ALT:
+            if gt_type == HET or gt_type == HOM_ALT:
                 print "\t".join([r['chrom'], str(r['start']), \
                                  str(r['end']), r['ref'], r['alt'], \
                                  r['impact'], \

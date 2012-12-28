@@ -40,7 +40,7 @@ def get_variant_genes(c, args, idx_to_sample):
         biotype = str(r['biotype'])
         
         for idx, gt_type in enumerate(gt_types):
-            if (gt_type == GT_HET or gt_type == GT_HOM_ALT):
+            if (gt_type == HET or gt_type == HOM_ALT):
                 if gene != "None":
                     (key, value) = (idx_to_sample[idx], \
                                    (gene,var_id,impact,biotype))
@@ -54,7 +54,7 @@ def get_lof_genes(c, args, idx_to_sample):
         gene     = str(r['gene'])
         
         for idx, gt_type in enumerate(gt_types):
-            if (gt_type == GT_HET or gt_type == GT_HOM_ALT):
+            if (gt_type == HET or gt_type == HOM_ALT):
                 if gene != "None":
                     (key, value) = (idx_to_sample[idx], gene)
                     lof[idx_to_sample[idx]].append(gene)
