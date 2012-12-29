@@ -1,0 +1,28 @@
+{% extends "base.j2.html" %}
+
+{% block title %}See all your pics{% endblock %}
+
+{% block head %}{% endblock %}
+
+
+{% block body %}
+
+<div class='row page'>
+		
+    <div class='span8'>
+        <table class='table'>
+            <tbody>
+				{%for row in rows %}
+				  <tr>
+				  {%for col in row %}
+				    <td>{{col}}</td><td>{{col}}</td>
+				  {% endfor %}
+				  </tr>
+				{% endfor %}
+            </tbody>
+        </table>
+    </div> <!-- end of debug-pane -->
+		
+</div><!-- end of page -->
+
+{% endblock %}
