@@ -146,9 +146,10 @@ The above examples illustrate *ad hoc* queries that do not request or filter
 upon the genotypes of individual samples.  Since ``gemini`` stores the genotype
 information for each variant in compressed arrays that are stored as BLOBs
 in the database, standard SQL queries cannot directly access individual 
-genotypes. However, we have enhanced the SQL syntax to supports such queries
-with.  For example, to retrieve the alleles for a given sample's (in this case,
-sample 1094PC0009), one would add `gts.1094PC0009` to the select statement.  
+genotypes. However, we have enhanced the SQL syntax to support such queries
+with C "struct-like" access.  For example, to retrieve the alleles for a given 
+sample's (in this case, sample 1094PC0009), one would add `gts.1094PC0009` 
+to the select statement.  
 
 Here is an example of selecting the genotype alleles for four 
 different samples (note the examples below use the test.snpEff.vcf.db
