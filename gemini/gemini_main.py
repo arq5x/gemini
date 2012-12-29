@@ -6,7 +6,8 @@ import argparse
 import textwrap
 import gemini_load, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
-       gemini_annotate, gemini_windower
+       gemini_annotate, gemini_windower, \
+       gemini_browser
 
 import tool_compound_hets
 import tool_autosomal_recessive
@@ -289,7 +290,7 @@ def main():
                               help='Identify variants meeting an autosomal \
                               recessive inheritance model')
     parser_auto_rec.add_argument('db', metavar='db',
-                              help='The name of the database to be created.')
+                              help='The name of the database to be queried.')
     parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
     
     # $ gemini autosomal_dominant
@@ -298,7 +299,7 @@ def main():
                               help='Identify variants meeting an autosomal \
                               dominant inheritance model')
     parser_auto_dom.add_argument('db', metavar='db',
-                              help='The name of the database to be created.')
+                              help='The name of the database to be queried.')
     parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
     
     # $ gemini de_novo
@@ -306,13 +307,21 @@ def main():
         subparsers.add_parser('de_novo', 
                               help='Identify candidate de novo mutations')
     parser_de_novo.add_argument('db', metavar='db',
-                              help='The name of the database to be created.')
+                              help='The name of the database to be queried.')
     parser_de_novo.add_argument('-d', dest='min_sample_depth', 
                                       type=int, help="The minimum aligned\
                                       sequence depth (genotype DP) req'd for\
                                       each sample",
                                       default=20)
     parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
+    
+    # $ gemini browser
+    parser_browser = \
+        subparsers.add_parser('browser', 
+                              help='Browser interface to gemini')
+    parser_browser.add_argument('db', metavar='db',
+                              help='The name of the database to be queried.')
+    parser_browser.set_defaults(func=gemini_browser.browser_main)
     
     #######################################################
     # parse the args and call the selected function

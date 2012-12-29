@@ -1,0 +1,68 @@
+{% extends "base.j2.html" %}
+
+{% block title %}Gemini query interface{% endblock %}
+
+{% block head %}{% endblock %}
+
+
+{% block body %}
+
+<div class='row page'>
+
+	<p>
+		<h3>Submit a new query to the database:</h3>
+	</p>
+	
+	<!--
+	<form action="/query" method="GET">
+	<input class="span6" type="text" size="100" maxlength="1000" name="query">
+	<input type="submit" name="save" value="save">
+	</form>
+	-->
+	
+	<form class="form">
+	  <div class="control-group">
+	    <label class="control-label" for="query">
+			<strong>Query</strong>
+		    <br>
+		    <em>e.g., select chrom, start, end, ref, alt from variants limit 10</em>
+		</label>
+	    <div class="controls">
+	      <input class="span6" type="text" name="query">
+	    </div>
+	  </div>
+	  <div class="control-group">
+	    <label class="control-label" for="gt-filter">
+			Genotype Filters <em>(e.g., (gts.sample1 == HET and gts.sample2 == HOM_REF))</em>
+		</label>
+	    <div class="controls">
+	      <input class="span6" type="text" name="gt-filter" placeholder="">
+	    </div>
+	  </div>
+	  <div class="control-group">
+	    <div class="controls">
+	      <button type="submit" class="submit" name="submit" value="submit">
+			  Submit query
+		  </button>
+	    </div>
+	  </div>
+	</form>
+	
+	
+    <div class='span8'>
+        <table class='table'>
+            <tbody>
+				{%for row in rows %}
+				  <tr>
+				  {%for col in row %}
+				    <td>{{col}}</td>
+				  {% endfor %}
+				  </tr>
+				{% endfor %}
+            </tbody>
+        </table>
+    </div> <!-- end of debug-pane -->
+		
+</div><!-- end of page -->
+
+{% endblock %}
