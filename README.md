@@ -215,9 +215,9 @@ sample so that we can assess the confidence in the genotype::
 
 Now, we often want to focus only on variants where a given sample has a
 specific genotype (e.g., looking for homozygous variants in family trios).  
-Unfortunately, we can directly do this in the SQL query, but the `gemini query`
-tool has an option called `gt-filter` that allows one to specify filters to 
-apply to the returned rows.  The rules followed in the `gt-filter` option
+Unfortunately, we cannot directly do this in the SQL query, but the `gemini query`
+tool has an option called `--gt-filter` that allows one to specify filters to 
+apply to the returned rows.  The rules followed in the `--gt-filter` option
 follow Python syntax.  As an example, let's only return rows where sample
 1094PC0012 is heterozygous.  In order to do this, we apply a filter to the
 `gt_types` columns for this individual::
