@@ -119,16 +119,16 @@ def add_gt_cols_to_query(query):
        sys.exit("Malformed query.")
 
 
-def apply_basic_query(c, args):
+def apply_basic_query(c, query, use_header):
     """
     Execute a vanilla query. That is, not gt* columns
     are in either the select or where clauses.
     """
-    c.execute(args.query)
+    c.execute(query)
     all_cols = [str(tuple[0]) for tuple in c.description \
                                     if not tuple[0].startswith("gt")]
 
-    if args.use_header:
+    if use_header:
         #print args.separator.join(col for col in all_cols)
         yield [col for col in all_cols]
     for row in c:
@@ -304,7 +304,7 @@ def query(parser, args):
                 query_pieces = args.query.split()
                 if not any(s.startswith("gt") for s in query_pieces) and \
                    not any("gt" in s for s in query_pieces):
-                    row_iter = apply_basic_query(c, args)
+                    row_iter = apply_basic_query(c, args.query, args.use_header)
                 else:
                     row_iter = apply_query_w_genotype_select(c, \
                                                   args.query, args.use_header)

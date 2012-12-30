@@ -2,7 +2,9 @@ import sys
 import os
 import logging
 import sqlite3
-from gemini_query import filter_query, apply_query_w_genotype_select
+from gemini_query import filter_query, \
+                         apply_basic_query, \
+                         apply_query_w_genotype_select
 
 # based upon bottle example here:
 # https://bitbucket.org/timtan/bottlepy-in-real-case
@@ -47,7 +49,7 @@ def query():
         query     = request.GET.get('query', '').strip()
         gt_filter = request.GET.get('gt-filter', '').strip()
         header    = request.GET.get('header')
-        
+
         if len(query) == 0:
             return template('query.j2')
 
@@ -59,7 +61,12 @@ def query():
         if query and gt_filter:
             row_iter = filter_query(c, query, gt_filter, header)
         else:
-            row_iter = apply_query_w_genotype_select(c, query, True )
+            query_pieces = query.split()
+            if not any(s.startswith("gt") for s in query_pieces) and \
+               not any("gt" in s for s in query_pieces):
+                row_iter = apply_basic_query(c, query, header)
+            else:
+                row_iter = apply_query_w_genotype_select(c, query, header)
 
         return template('query.j2', rows=row_iter, query=query)
 
