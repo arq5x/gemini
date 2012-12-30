@@ -129,12 +129,14 @@ def apply_basic_query(c, args):
                                     if not tuple[0].startswith("gt")]
 
     if args.use_header:
-        print args.separator.join(col for col in all_cols)
+        #print args.separator.join(col for col in all_cols)
+        yield [col for col in all_cols]
     for row in c:
-        print args.separator.join(str(row[col]) for col in all_cols)
+        yield [str(row[col]) for col in all_cols]
+        #print args.separator.join(str(row[col]) for col in all_cols)
 
 
-def apply_query_w_genotype_select(c, args):
+def apply_query_w_genotype_select(c, query, use_header):
     """
     Execute a query that contains gt* columns in only in the SELECT.
     """
@@ -142,9 +144,9 @@ def apply_query_w_genotype_select(c, args):
     sample_to_idx = util.map_samples_to_indicies(c)
     
     (select_cols, all_cols_new, all_cols_orig) = \
-                                    _split_select(args.query, sample_to_idx)
+                                    _split_select(query, sample_to_idx)
     
-    query = add_gt_cols_to_query(args.query.lower())
+    query = add_gt_cols_to_query(query.lower())
     c.execute(query)
     
     # what are the columns that were actually selected by the user.
@@ -157,10 +159,10 @@ def apply_query_w_genotype_select(c, args):
         all_cols_new.remove("*")
         select_cols += all_query_cols
 
-    if args.use_header:
-        print args.separator.join(col for col in all_query_cols),
-        print args.separator.join(col for col in \
-                            oset(all_cols_orig) - oset(select_cols))
+    if use_header:
+        header = [col for col in all_query_cols] + \
+                 [col for col in oset(all_cols_orig) - oset(select_cols)]
+        yield header
 
     report_cols = all_query_cols + list(oset(all_cols_new) - oset(select_cols))
     for row in c:
@@ -168,19 +170,15 @@ def apply_query_w_genotype_select(c, args):
         gt_types  = compression.unpack_genotype_blob(row['gt_types'])
         gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
         gt_depths = compression.unpack_genotype_blob(row['gt_depths'])
-        
+
+        fields = []
         for idx, col in enumerate(report_cols):
             if col == "*": continue
             if not col.startswith("gt") and not col.startswith("GT"):
-                print str(row[col]) + args.separator,
+                fields.append(row[col])
             else:
-                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
-                if idx < len(report_cols) - 1:
-                    print str(eval(col.strip())) + args.separator,
-                else:
-                    print str(eval(col.strip())),
-        print
-
+                fields.append(eval(col.strip()))
+        yield fields
 
 
 def get_query_file(args):
@@ -206,10 +204,10 @@ def get_query(args, c):
        not any("gt" in s for s in query_pieces):
         apply_basic_query(c, args)
     else:
-        apply_query_w_genotype_select(c, args)
+        apply_query_w_genotype_select(c, args.query, args.use_header)
 
 
-def filter_query(args, c):
+def filter_query(c, query, gt_filter, use_header):
     """
     Execute a base SQL query while applying filters on the returned 
     rows based on filters applied to the genotype-specific columns.
@@ -245,12 +243,12 @@ def filter_query(args, c):
     # construct a mapping of sample names to list indices
     sample_to_idx = util.map_samples_to_indicies(c)
     
-    gt_filter = correct_genotype_filter(args.gt_filter, sample_to_idx)
+    gt_filter = correct_genotype_filter(gt_filter, sample_to_idx)
     (select_cols, all_cols_new, all_cols_orig) = \
-                                    _split_select(args.query, sample_to_idx)
+                                    _split_select(query, sample_to_idx)
 
-    query = add_gt_cols_to_query(args.query.lower())
-
+    query = add_gt_cols_to_query(query.lower())
+    
     c.execute(query)
     
     # what are the columns that were actually selected by the user.
@@ -263,10 +261,10 @@ def filter_query(args, c):
         all_cols_new.remove("*")
         select_cols += all_query_cols
         
-    if args.use_header:
-        print args.separator.join(col for col in all_query_cols),
-        print args.separator.join(col for col in \
-                            oset(all_cols_orig) - oset(select_cols))
+    if use_header:
+        header = [col for col in all_query_cols] + \
+                 [col for col in oset(all_cols_orig) - oset(select_cols)]
+        yield header
 
     report_cols = all_query_cols + list(oset(all_cols_new) - oset(select_cols))
     for row in c:
@@ -278,17 +276,14 @@ def filter_query(args, c):
         if not eval(gt_filter):
             continue
         
+        fields = []
         for idx, col in enumerate(report_cols):
             if col == "*": continue
             if not col.startswith("gt") and not col.startswith("GT"):
-                print str(row[col]) + args.separator,
+                fields.append(row[col])
             else:
-                # e.g., eval gt_types[141] and print result (0,1,2,etc.)
-                if idx < len(report_cols) - 1:
-                    print str(eval(col.strip())) + args.separator,
-                else:
-                    print str(eval(col.strip())),
-        print
+                fields.append(eval(col.strip()))
+        yield fields
 
 
 def query(parser, args):
@@ -302,11 +297,24 @@ def query(parser, args):
         conn.row_factory = sqlite3.Row # allow us to refer to columns by name
         c = conn.cursor()
         
+        row_iter = None
         if args.query is not None:
             if args.gt_filter is None:
-                get_query(args, c)
+                
+                query_pieces = args.query.split()
+                if not any(s.startswith("gt") for s in query_pieces) and \
+                   not any("gt" in s for s in query_pieces):
+                    row_iter = apply_basic_query(c, args)
+                else:
+                    row_iter = apply_query_w_genotype_select(c, \
+                                                  args.query, args.use_header)
             else:
-                filter_query(args, c)
+                row_iter = filter_query(c, args.query, \
+                                        args.gt_filter, args.use_header)
+                                    
+            for row in row_iter:
+                print args.separator.join(row)
+                
         elif args.queryfile is not None:
             get_query_file(args)
 

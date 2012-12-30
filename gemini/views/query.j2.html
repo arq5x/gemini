@@ -25,7 +25,7 @@
 	    <label class="control-label" for="query">
 			<strong>Query</strong>
 		    <br>
-		    <em>e.g., select chrom, start, end, ref, alt from variants limit 10</em>
+		    <em>e.g., select chrom, start, end, ref, alt, gts.sample1 from variants limit 10</em>
 		</label>
 	    <div class="controls">
 	      <input class="span6" type="text" name="query">
@@ -33,15 +33,22 @@
 	  </div>
 	  <div class="control-group">
 	    <label class="control-label" for="gt-filter">
-			Genotype Filters <em>(e.g., (gts.sample1 == HET and gts.sample2 == HOM_REF))</em>
+			<strong>Genotype Filters</strong>
+			<br>
+			<em>(e.g., (gt_types.sample1 == HET and gt_types.sample2 == HOM_REF))</em>
 		</label>
 	    <div class="controls">
 	      <input class="span6" type="text" name="gt-filter" placeholder="">
 	    </div>
 	  </div>
 	  <div class="control-group">
+      	<label class="checkbox">
+       		<input type="checkbox" value="header" id="header"> Add a header?
+      	</label>
+  	  </div>
+	  <div class="control-group">
 	    <div class="controls">
-	      <button type="submit" class="submit" name="submit" value="submit">
+	      <button type="submit" class="btn btn-primary" name="submit" value="submit">
 			  Submit query
 		  </button>
 	    </div>

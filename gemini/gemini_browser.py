@@ -2,15 +2,15 @@ import sys
 import os
 import logging
 import sqlite3
-import gemini_query
+from gemini_query import filter_query, apply_query_w_genotype_select
 
 # based upon bottle example here:
 # https://bitbucket.org/timtan/bottlepy-in-real-case
 
 # -- determine where I launch python and config lib path
-base_dir = os.path.dirname(__file__)
-third_party_path = os.path.abspath(os.path.join(base_dir, 'third_party' ))
-sys.path.insert(0, third_party_path)
+#base_dir = os.path.dirname(__file__)
+#third_party_path = os.path.abspath(os.path.join(base_dir, 'third_party' ))
+#sys.path.insert(0, third_party_path)
 
 # -- common bottle importation
 from bottle import TEMPLATE_PATH, Bottle, run, static_file, debug, request
@@ -18,6 +18,7 @@ from bottle import jinja2_view as view, jinja2_template as template
 debug(True)
 
 
+base_dir = os.path.dirname(__file__)
 TEMPLATE_PATH.append(os.path.abspath(os.path.join(base_dir, 'views' )))
 
 # -- the instance app is important
@@ -43,15 +44,24 @@ def query():
 
     if request.GET.get('submit','').strip():
 
-        query = request.GET.get('query', '').strip()
-        conn = sqlite3.connect(database)
-        c = conn.cursor()
-        c.execute(query)
+        query     = request.GET.get('query', '').strip()
+        gt_filter = request.GET.get('gt-filter', '').strip()
+        header    = request.GET.get('header')
         
-        result = c.fetchall()
-        c.close()
+        if len(query) == 0:
+            return template('query.j2')
 
-        return template('query.j2', rows=result, query=query)
+        conn = sqlite3.connect(database)
+        conn.isolation_level = None
+        conn.row_factory = sqlite3.Row # allow us to refer to columns by name
+        c = conn.cursor()
+        
+        if query and gt_filter:
+            row_iter = filter_query(c, query, gt_filter, header)
+        else:
+            row_iter = apply_query_w_genotype_select(c, query, True )
+
+        return template('query.j2', rows=row_iter, query=query)
 
     else:
         return template('query.j2')
