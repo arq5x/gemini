@@ -13,11 +13,14 @@ import gemini_utils as util
 from gemini_constants import *
 import gemini_subjects as subjects
 
-def get_auto_recessive_candidates(c, families):
+def get_auto_recessive_candidates(c):
     """
     Report candidate variants that meet an autosomal recessive
     inheritance model.
-    """    
+    """
+    
+    families = subjects.get_families(c)
+    
     for family in families:
         
         query = "SELECT chrom, start, end, ref, alt, gene, \
@@ -29,39 +32,50 @@ def get_auto_recessive_candidates(c, families):
         all_query_cols = [str(tuple[0]) for tuple in c.description \
                                             if not tuple[0].startswith("gt")]
                                   
-        family_genotype_mask        = family.get_de_novo_filter()
+        family_genotype_mask        = family.get_auto_recessive_filter()
         family_sample_gt_columns    = family.get_subject_genotype_columns()
         family_sample_gt_labels     = family.get_subject_genotype_labels()
         
-        # print a header
-        print "=========================="
-        print "FAMILY:", family.family_id
-        print "=========================="
-        print '\t'.join(col for col in all_query_cols),
-        print '\t'.join(col for col in family_sample_gt_labels)
-        
-        # report the resulting auto_rec variants for this familiy
+        # skip this family if it cannot meet an autosomal_recessive model.
+        if family_genotype_mask is None:
+            continue
+
+        # yield a header
+        header = []
+        header.append("family_id")
+        for col in all_query_cols:
+            header.append(col)
+        for col in family_sample_gt_labels:
+            header.append(col)
+        yield header
+
+        # yield the resulting auto_rec variants for this familiy
         for row in c:
-                        
+
             # unpack the genotype arrays so that we can interrogate
             # the genotypes present in each family member to conforming
             # to the genetic model being tested
             gt_types  = compression.unpack_genotype_blob(row['gt_types'])
             gts       = compression.unpack_genotype_blob(row['gts'])
-    
-            # does the variant meet the inheritance model for this family?
+
+            # skip if the variant doesn't meet a recessive model 
+            # for this family
             if not eval(family_genotype_mask):
                 continue
-        
+
+            result = []
             # first report all of the non-genotype columns
+            result.append(str(family.family_id))
             for col in all_query_cols:
                 if col == 'gt_types' or col == 'gts':
                     continue
-                print str(row[col]) + '\t',
+                result.append(str(row[col]))
+
             # now report all of the genotype columns
             for col in family_sample_gt_columns:
-                print str(eval(col)) + '\t',
-            print
+                result.append(str(eval(col)))
+
+            yield result
 
 
 def run(parser, args):
@@ -72,8 +86,8 @@ def run(parser, args):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
-        families = subjects.get_families(c)
-        get_auto_recessive_candidates(c, families)
+        for result in get_auto_recessive_candidates(c):
+            print '\t'.join(result)
 
 
 

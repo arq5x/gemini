@@ -90,6 +90,11 @@ class Family(object):
         # identify which samples are the parents in the family.
         self.find_parents()
         
+        # if either parent is affected, this family cannot satisfy
+        # a recessive model, as the parents should be carriers.
+        if self.father.affected == True or self.mother.affected == True:
+            return None
+        
         mask = "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
                  str(HET)

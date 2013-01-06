@@ -13,13 +13,16 @@ import gemini_utils as util
 from gemini_constants import *
 import gemini_subjects as subjects
 
-def get_de_novo_candidates(c, args, families):
+def get_de_novo_candidates(c, min_sample_depth = 30):
     """
     Report candidate variants that meet appear to be de novo
     mutations in the child. We cannot distinguisj mutations that 
     occured in the parental germline from those that occurred
     early in development in the child post-conception.
     """
+
+    families = subjects.get_families(c)
+    
     for family in families:
         
         query = "SELECT chrom, start, end, ref, alt, gene, \
@@ -38,13 +41,24 @@ def get_de_novo_candidates(c, args, families):
         family_sample_gt_labels     = family.get_subject_genotype_labels()
         family_sample_dp_labels     = family.get_subject_depth_labels()
         
-        # print a header
-        print "=========================="
-        print "FAMILY:", family.family_id
-        print "=========================="
-        print '\t'.join(col for col in all_query_cols),
-        print '\t'.join(col for col in family_sample_gt_labels),
-        print '\t'.join(col for col in family_sample_dp_labels)
+        
+        # produce a header
+        #print "=========================="
+        #print "FAMILY:", family.family_id
+        #print "=========================="
+        header = []
+        header.append("family_id")
+        for col in all_query_cols:
+            header.append(col)
+        for col in family_sample_gt_labels:
+            header.append(col)
+        for col in family_sample_dp_labels:
+            header.append(col)
+        yield header
+        #print '\t'.join(col for col in all_query_cols),
+        #print '\t'.join(col for col in family_sample_gt_labels),
+        #print '\t'.join(col for col in family_sample_dp_labels)
+        #
         
         # report the resulting de_novo variants for this familiy
         for row in c:
@@ -66,26 +80,29 @@ def get_de_novo_candidates(c, args, families):
             insufficient_depth = False
             for col in family_sample_depth_columns:
                 depth = int(eval(col))
-                if depth < args.min_sample_depth:
+                if depth < min_sample_depth:
                     insufficient_depth = True
                     break
             if insufficient_depth:
                 continue
 
+            result = []
             # first report all of the non-genotype columns
+            result.append(str(family.family_id))
             for col in all_query_cols:
                 if col == 'gt_types' or col == 'gts':
                     continue
-                print str(row[col]) + '\t',
+                result.append(str(row[col]))
 
             # now report all of the genotype columns
             for col in family_sample_gt_columns:
-                print str(eval(col)) + '\t',
+                result.append(str(eval(col)))
 
             # now report all of the depth columns
             for col in family_sample_depth_columns:
-                print str(eval(col)) + '\t',
-            print
+                result.append(str(eval(col)))
+
+            yield result
 
 
 def run(parser, args):
@@ -96,8 +113,8 @@ def run(parser, args):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
-        families = subjects.get_families(c)
-        get_de_novo_candidates(c, args, families)
+        for result in get_de_novo_candidates(c, args.min_sample_depth):
+            print '\t'.join(result)
 
 
 
