@@ -40,12 +40,7 @@ def get_de_novo_candidates(c, min_sample_depth = 30):
         family_sample_depth_columns = family.get_subject_depth_columns()
         family_sample_gt_labels     = family.get_subject_genotype_labels()
         family_sample_dp_labels     = family.get_subject_depth_labels()
-        
-        
-        # produce a header
-        #print "=========================="
-        #print "FAMILY:", family.family_id
-        #print "=========================="
+
         header = []
         header.append("family_id")
         for col in all_query_cols:
@@ -55,10 +50,6 @@ def get_de_novo_candidates(c, min_sample_depth = 30):
         for col in family_sample_dp_labels:
             header.append(col)
         yield header
-        #print '\t'.join(col for col in all_query_cols),
-        #print '\t'.join(col for col in family_sample_gt_labels),
-        #print '\t'.join(col for col in family_sample_dp_labels)
-        #
         
         # report the resulting de_novo variants for this familiy
         for row in c:
