@@ -7,6 +7,7 @@ import re
 import cPickle
 import numpy as np
 import zlib
+import string
 from pyparsing import ParseResults
 from collections import defaultdict
 
@@ -37,8 +38,7 @@ def _correct_genotype_col(raw_col, sample_to_idx):
     if raw_col == "*":
        return raw_col.lower()
     (column, sample) = raw_col.split('.')
-    corrected = column.lower() + "[" + \
-            str(sample_to_idx[sample]).lower() + "]"
+    corrected = column.lower() + "[" + str(sample_to_idx[sample]).lower() + "]"
     return corrected
 
 
@@ -60,6 +60,7 @@ def _split_select(query, sample_to_idx):
     select_columns = []
     all_columns_new = []
     all_columns_orig = []
+    gt_col_map = {}
 
     # iterate through all of the select columns andclear
     # distinguish the genotype-specific columns from the base columns
@@ -81,8 +82,9 @@ def _split_select(query, sample_to_idx):
             new_col = _correct_genotype_col(token, sample_to_idx)
             all_columns_new.append(new_col)
             all_columns_orig.append(token)
+            gt_col_map[token] = new_col
 
-    return select_columns, all_columns_new, all_columns_orig
+    return select_columns, all_columns_new, all_columns_orig, gt_col_map
 
 
 def add_gt_cols_to_query(query):
@@ -110,11 +112,17 @@ def add_gt_cols_to_query(query):
                 select_clause_list.append(token)
 
         # add the genotype columns to the query
-        select_clause = " ".join(select_clause_list) + \
-                             " gts, gt_types, gt_phases, gt_depths "
-        query = select_clause + rest_of_query
+        if select_clause_list[len(select_clause_list)-1].endswith(",") or \
+           select_clause_list[0].strip().lower() == "select":
+            select_clause = " ".join(select_clause_list) + \
+                                 " gts, gt_types, gt_phases, gt_depths "
+        else:
+            select_clause = " ".join(select_clause_list) + \
+                                 ", gts, gt_types, gt_phases, gt_depths "
+        query =select_clause + rest_of_query
         # extract the original select columns
         return query
+        
     else:
        sys.exit("Malformed query.")
 
@@ -129,11 +137,9 @@ def apply_basic_query(c, query, use_header):
                                     if not tuple[0].startswith("gt")]
 
     if use_header:
-        #print args.separator.join(col for col in all_cols)
         yield [col for col in all_cols]
     for row in c:
         yield [str(row[col]) for col in all_cols]
-        #print args.separator.join(str(row[col]) for col in all_cols)
 
 
 def apply_query_w_genotype_select(c, query, use_header):
@@ -143,7 +149,7 @@ def apply_query_w_genotype_select(c, query, use_header):
     # construct a mapping of sample names to list indices
     sample_to_idx = util.map_samples_to_indicies(c)
     
-    (select_cols, all_cols_new, all_cols_orig) = \
+    (select_cols, all_cols_new, all_cols_orig, gt_col_map) = \
                                     _split_select(query, sample_to_idx)
     
     query = add_gt_cols_to_query(query.lower())
@@ -155,7 +161,7 @@ def apply_query_w_genotype_select(c, query, use_header):
 
     if "*" in select_cols:
         select_cols.remove("*")
-        all_cols_orig.remove("*")
+        #all_cols_orig.remove("*")
         all_cols_new.remove("*")
         select_cols += all_query_cols
 
@@ -244,7 +250,7 @@ def filter_query(c, query, gt_filter, use_header):
     sample_to_idx = util.map_samples_to_indicies(c)
     
     gt_filter = correct_genotype_filter(gt_filter, sample_to_idx)
-    (select_cols, all_cols_new, all_cols_orig) = \
+    (select_cols, all_cols_new, all_cols_orig, gt_col_map) = \
                                     _split_select(query, sample_to_idx)
 
     query = add_gt_cols_to_query(query.lower())
@@ -313,7 +319,7 @@ def query(parser, args):
                                         args.gt_filter, args.use_header)
                                     
             for row in row_iter:
-                print args.separator.join(row)
+                print args.separator.join([str(c) for c in row])
                 
         elif args.queryfile is not None:
             get_query_file(args)
