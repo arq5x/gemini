@@ -174,6 +174,10 @@ def auto_dom():
         return template('auto_dom.j2', dbfile=database)
 
 
+@app.route('/db_schema', method='GET')
+def db_schema():
+    return template('db_schema.j2')
+
 def browser_main(parser, args):
     global database 
     
