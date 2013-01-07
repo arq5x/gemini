@@ -1,6 +1,6 @@
 {% extends "base.j2.html" %}
 
-{% block title %}Gemini query interface{% endblock %}
+{% block title %}de novo mutations{% endblock %}
 
 {% block head %}{% endblock %}
 
@@ -24,7 +24,7 @@
 		<div class="row">
 			<div class="span3">
 				<p>
-					<h3>Gemini database:</h3>
+					<h3>Identify <em>de novo</em> mutations in:</h3>
 					<em>{{dbfile}}</em>
 				</p>
 			</div>
@@ -35,46 +35,22 @@
 		<hr>
 		<div class="control-group">
 			<label class="control-label" for="query">
-				<strong>Query</strong>
-				<br>
-				<em>e.g., select chrom, start, end, ref, alt, gts.sample1 from variants limit 10</em>
+				<strong>Minimum sequence depth required (def. = 30):</strong>
 			</label>
 			<div class="controls">
-				<input class="span6" type="text" name="query", value="{{query}}">
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="gt-filter">
-				<strong>Genotype Filters</strong>
-				<br>
-				<em>(e.g., (gt_types.sample1 == HET and gt_types.sample2 == HOM_REF))</em>
-			</label>
-			<div class="controls">
-				<input class="span6" type="text" name="gt-filter" placeholder="">
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="checkbox">
-				<input type="checkbox" value="True" name = "header" id="header"> Add a header?
-			</label>
+				<input class="span6" type="text" name="min-depth">
+            </div>
 		</div>
 		<div class="control-group">
 			<div class="controls">
 				<button type="submit" class="btn btn-large btn-primary" name="submit" value="submit">
 					Submit
 				</button>
-				<button type="submit" class="btn btn-large btn-success" name="save" value="save">
-					Save as text file
-				</button>
-				{%if tmp_file%}
-				<a href="/static/{{tmp_file}}" class="btn btn-large">
-					Click for results
-				</a>
-				{% endif %}
 			</div> <!-- end of debug-pane -->
 		</div>
 	</div>
 </form>
+	
 	
 <div class="span12 table-wrapper">
 	<table class='table table-striped table-hover table-condensed'>
@@ -89,6 +65,7 @@
 		</tbody>
 	</table>
 </div> <!-- end of debug-pane -->
+
 	
 
 		

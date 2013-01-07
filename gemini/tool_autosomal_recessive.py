@@ -21,6 +21,7 @@ def get_auto_recessive_candidates(c):
     
     families = subjects.get_families(c)
     
+    print families
     for family in families:
         
         query = "SELECT chrom, start, end, ref, alt, gene, \
@@ -35,7 +36,7 @@ def get_auto_recessive_candidates(c):
         family_genotype_mask        = family.get_auto_recessive_filter()
         family_sample_gt_columns    = family.get_subject_genotype_columns()
         family_sample_gt_labels     = family.get_subject_genotype_labels()
-        
+
         # skip this family if it cannot meet an autosomal_recessive model.
         if family_genotype_mask is None:
             continue

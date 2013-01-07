@@ -7,7 +7,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="/static/third_party/jquery/jquery-1.7.1.min.js"><\/script>')</script>
 
-    <script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
     <script>window.jQuery || document.write('<script src="/static/third_party/jquery-ui/jquery-ui.min.js"><\/script>')</script>
 
 
@@ -16,7 +16,8 @@
     <script src="/static/third_party/bootstrap/js/bootstrap.min.js"></script>
     <link href="/static/third_party/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link href="/static/third_party/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
-
+	<link href="/static/css/gemini.css" rel="stylesheet" />
+	
     <title>{% block title %}{% endblock %}</title>
     <style>
         body {
@@ -38,10 +39,26 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </a>
+				
                 <a class="brand" href="#">gemini browser</a>
-                <div class="nav-collapse">
+                
+				<div class="nav-collapse">
                     <ul class="nav">
-                        <li class="active"><a href="#">Home</a></li>
+                        <li class="active"><a href="query">Query</a></li>
+						
+						<ul class="nav">
+						  <li class="dropdown">
+						    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+						      Tools
+						      <b class="caret"></b>
+						    </a>
+						    <ul class="dropdown-menu">
+						      <li><a href="de_novo">de novo mutations</a></li>
+                              <li><a href="auto_rec">autosomal recessive mutations</a></li>
+                              <li><a href="auto_dom">autosomal dominant mutations</a></li>
+						    </ul>
+						  </li>
+						</ul>
                         <li><a href="#about">About</a></li>
                         <li><a href="#contact">Contact</a></li>
                     </ul>

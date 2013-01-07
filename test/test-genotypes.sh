@@ -63,7 +63,7 @@ rm obs exp
 # 4. Test a more complex genotype filter
 ####################################################################
 echo "    genotypes.t04...\c"
-echo "chrom	end	ref	alt gt_types.1094PC0005	gt_types.1094PC0009	gt_types.1094PC0012	gt_types.1094PC0013
+echo "chrom	end	ref	alt	gt_types.1094PC0005	gt_types.1094PC0009	gt_types.1094PC0012	gt_types.1094PC0013
 chr1	30869	CCT	C	0	0	1	0
 chr1	30895	T	C	1	1	0	0
 chr1	69511	A	G	2	2	1	1" > exp
@@ -83,7 +83,7 @@ rm obs exp
 # 5.  Test accessing individual genotype depths
 ####################################################################
 echo "    genotypes.t05...\c"
-echo "chrom	end	ref	alt gt_depths.1094PC0005	gt_depths.1094PC0009	gt_depths.1094PC0012	gt_depths.1094PC0013
+echo "chrom	end	ref	alt	gt_depths.1094PC0005	gt_depths.1094PC0009	gt_depths.1094PC0012	gt_depths.1094PC0013
 chr1	30548	T	G	-1	-1	-1	-1
 chr1	30860	G	C	7	2	6	4
 chr1	30869	CCT	C	8	3	6	5
