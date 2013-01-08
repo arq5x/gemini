@@ -3,14 +3,8 @@ Installation
 ############
 
 
-------------
-Requirements
-------------
-
-1. `Numpy <http://numpy.scipy.org/>`_
-2. `pysam <http://code.google.com/p/pysam/>`_
-
-
+Software installation
+=====================
 To install you should download the latest source code from GitHub, either by going to::
 
     http://github.com/arq5x/gemini
@@ -24,9 +18,24 @@ Once you have the source code, run::
     $ cd gemini
     $ sudo python setup.py install
 
-to install it. If you don't have permission to install it in the default directory, you can simply build the source in-place and use the package from the git repository::
+to install it. If you don't have permission to install it in the default 
+directory, you can simply build the source in-place and use the package 
+from the git repository::
 
     $  python setup.py build_ext --inplace
+
+
+Installing annotation files
+===========================
+One of the more appealing features in ``gemini`` is that it automatically 
+annotates variants in a VCF file with several genome annotations.  However, 
+you must first install these data files on your system. It's easy enough --- 
+you just need to run the following script and tell it in which what full path 
+you'd like to install the necessary data files. The recommended path is 
+``/usr/local/share``, but you can install the data files wherever you want.
+
+    gemini/install-data.py /usr/local/share/
+
 
 
 ---------------------------

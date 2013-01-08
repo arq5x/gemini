@@ -6,13 +6,16 @@ import argparse
 import textwrap
 import gemini_load, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
-       gemini_annotate, gemini_windower
+       gemini_annotate, gemini_windower, \
+       gemini_browser
 
 import tool_compound_hets
+import tool_autosomal_recessive
+import tool_autosomal_dominant
+import tool_de_novo_mutations
 import tool_pathways
 import tool_lof_sieve
 import tool_interactions
-import tool_autosomal_recessive
 
 def examples(parser, args):
     
@@ -93,6 +96,8 @@ def main():
                             help='The name of the database to be queried.')
     parser_query.add_argument('-q', dest='query', metavar='QUERY_STR',
                             help='The query to be issued to the database')
+    parser_query.add_argument('--gt-filter', dest='gt_filter', metavar='STRING',
+                            help='Restrictions to apply to genotype values')
     parser_query.add_argument('-f', dest='queryfile', metavar='QUERY_FILE', 
                             help='A text file containing the query to be issued.')
     parser_query.add_argument('--header', dest='use_header', action='store_true',
@@ -230,14 +235,7 @@ def main():
     parser_comp_hets.add_argument('--only_lof', dest='only_lof', action='store_true',
                               help='Only consider variants that are loss of function', default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
-    
 
-    # $ gemini auto_rec
-    parser_auto_rec = subparsers.add_parser('auto_rec', help='Identify autosomal recessive candidates')
-    parser_auto_rec.add_argument('db', metavar='db',  help='The name of the database to be queried.')
-    parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
-    
-    
     
     # $ gemini pathways
     parser_pathway = subparsers.add_parser('pathways', help='Map genes and variants to KEGG pathways')
@@ -274,7 +272,8 @@ def main():
     parser_interaction.set_defaults(func=tool_interactions.genequery)
     
     # gemini lof_interactions
-    parser_interaction = subparsers.add_parser('lof_interactions', help='Find interaction partners for a lof gene in sample variants(default mode)')
+    parser_interaction = subparsers.add_parser('lof_interactions', 
+            help='Find interaction partners for a lof gene in sample variants(default mode)')
     parser_interaction.add_argument('db', metavar='db', help='The name of the database to be queried')
     parser_interaction.add_argument('-r', dest='radius', type=int, help="set filter for BFS:\n")
     parser_interaction.add_argument('--var', dest='var_mode', 
@@ -283,6 +282,46 @@ def main():
                                     default=False)
     
     parser_interaction.set_defaults(func=tool_interactions.lofgenequery)
+
+
+    # $ gemini autosomal_recessive
+    parser_auto_rec = \
+        subparsers.add_parser('autosomal_recessive', 
+                              help='Identify variants meeting an autosomal \
+                              recessive inheritance model')
+    parser_auto_rec.add_argument('db', metavar='db',
+                              help='The name of the database to be queried.')
+    parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
+    
+    # $ gemini autosomal_dominant
+    parser_auto_dom = \
+        subparsers.add_parser('autosomal_dominant', 
+                              help='Identify variants meeting an autosomal \
+                              dominant inheritance model')
+    parser_auto_dom.add_argument('db', metavar='db',
+                              help='The name of the database to be queried.')
+    parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
+    
+    # $ gemini de_novo
+    parser_de_novo = \
+        subparsers.add_parser('de_novo', 
+                              help='Identify candidate de novo mutations')
+    parser_de_novo.add_argument('db', metavar='db',
+                              help='The name of the database to be queried.')
+    parser_de_novo.add_argument('-d', dest='min_sample_depth', 
+                                      type=int, help="The minimum aligned\
+                                      sequence depth (genotype DP) req'd for\
+                                      each sample",
+                                      default=20)
+    parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
+    
+    # $ gemini browser
+    parser_browser = \
+        subparsers.add_parser('browser', 
+                              help='Browser interface to gemini')
+    parser_browser.add_argument('db', metavar='db',
+                              help='The name of the database to be queried.')
+    parser_browser.set_defaults(func=gemini_browser.browser_main)
     
     #######################################################
     # parse the args and call the selected function

@@ -189,6 +189,7 @@ class GeminiLoader(object):
         # anno_id in variants is for the trans. with the most severe impact term
         gene = transcript = exon = codon_change = aa_change = aa_length = \
         biotype = consequence = effect_severity = None
+        is_coding = is_exonic = is_lof = 0
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
     
         if self.args.anno_type is not None:
@@ -209,7 +210,10 @@ class GeminiLoader(object):
                 polyphen_score = severe_impacts.polyphen_score
                 sift_pred = severe_impacts.sift_pred
                 sift_score = severe_impacts.sift_score
-                anno_id = severe_impacts.anno_id 
+                anno_id = severe_impacts.anno_id
+                is_exonic = severe_impacts.is_exonic
+                is_coding = severe_impacts.is_coding
+                is_lof    = severe_impacts.is_lof
         
         # construct the filter string
         filter = None
@@ -227,6 +231,7 @@ class GeminiLoader(object):
         gt_bases  = np.array(var.gt_bases, np.str)  # 'A/G', './.'
         gt_types  = np.array(var.gt_types, np.int8) # -1, 0, 1, 2
         gt_phases = np.array(var.gt_phases, np.bool) # T F F
+        gt_depths = np.array(var.gt_depths, np.int32) # 10 37 0
         
         # tally the genotypes
         self._update_sample_gt_counts(gt_types)
@@ -234,25 +239,20 @@ class GeminiLoader(object):
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
         variant_impacts = []
-        is_exonic = False
-        is_coding = False
-        is_lof    = False
     
         if impacts is not None:
             for idx, impact in enumerate(impacts):
                 var_impact = [self.v_id, (idx+1), impact.gene, 
-                              impact.transcript, impact.exonic, impact.coding,
-                              impact.is_lof, impact.exon, impact.codon_change, 
+                              impact.transcript, impact.is_exonic,
+                              impact.is_coding, impact.is_lof, 
+                              impact.exon, impact.codon_change, 
                               impact.aa_change, impact.aa_length, 
                               impact.biotype, impact.consequence, 
                               impact.effect_severity, impact.polyphen_pred, 
                               impact.polyphen_score, impact.sift_pred, 
                               impact.sift_score]
                 variant_impacts.append(var_impact)
-                if impact.exonic == True: is_exonic = True
-                if impact.coding == True: is_coding = True
-                if impact.is_lof == True: is_lof    = True
-    
+
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
@@ -260,7 +260,8 @@ class GeminiLoader(object):
                    self.v_id, anno_id, var.REF, ','.join(var.ALT), 
                    var.QUAL, filter, var.var_type, 
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
-                   pack_blob(gt_phases), call_rate, in_dbsnp,
+                   pack_blob(gt_phases), pack_blob(gt_depths), 
+                   call_rate, in_dbsnp,
                    dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
                    cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, hom_ref, het,

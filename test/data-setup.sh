@@ -1,0 +1,1 @@
+gemini load -v test.snpEff.vcf -t snpEff test.snpEff.vcf.db

@@ -165,7 +165,7 @@ def get_mds(c, args):
         x = np.array(genotypes[sample])
         genotypes[sample] = x
         masks[sample] = \
-        np.ma.masked_where(genotypes[sample] != GT_UNKNOWN, \
+        np.ma.masked_where(genotypes[sample] != UNKNOWN, \
             genotypes[sample]).mask
 
     # compute the euclidean distance for each s1/s2 combination
