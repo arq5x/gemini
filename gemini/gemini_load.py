@@ -232,14 +232,13 @@ class GeminiLoader(object):
         gt_types  = np.array(var.gt_types, np.int8) # -1, 0, 1, 2
         gt_phases = np.array(var.gt_phases, np.bool) # T F F
         gt_depths = np.array(var.gt_depths, np.int32) # 10 37 0
-        
+
         # tally the genotypes
         self._update_sample_gt_counts(gt_types)
-        
+
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
         variant_impacts = []
-    
         if impacts is not None:
             for idx, impact in enumerate(impacts):
                 var_impact = [self.v_id, (idx+1), impact.gene, 
