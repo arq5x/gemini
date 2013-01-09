@@ -95,8 +95,8 @@ def sample_gene_interactions(c, args, idx_to_sample):
         st, sd = shortest_path(gst, args.gene)
         
         if args.var_mode:
-            for sample in sam.iterkeys():
-                var = sam[str(sample)]
+            for sample in samples.iterkeys():
+                var = samples[str(sample)]
                 # for each level return interacting genes if they are 
                 # variants in the sample. 
                 # 0th order would be returned if the user chosen 
@@ -119,8 +119,8 @@ def sample_gene_interactions(c, args, idx_to_sample):
                                           str(each[9]), \
                                           str(each[10])])
         elif (not args.var_mode):
-            for sample in sam.iterkeys():
-                for each in sam[str(sample)]:
+            for sample in samples.iterkeys():
+                for each in samples[str(sample)]:
                     variants.append(each[0])
                 for x in range(0, (args.radius+1)):
                     for key, value in sd.iteritems():
@@ -155,7 +155,7 @@ def sample_lof_interactions(c, args, idx_to_sample):
     if (not args.var_mode):
         for sample in lof.iterkeys():
             lofvariants = list(set(lof[str(sample)]))
-            for each in sam[str(sample)]:
+            for each in samples[str(sample)]:
                 variants.append(each[0])
                 
             for gene in lofvariants:
@@ -188,7 +188,7 @@ def sample_lof_interactions(c, args, idx_to_sample):
     elif args.var_mode:
         for sample in lof.iterkeys():
             lofvariants = list(set(lof[str(sample)]))
-            var = sam[str(sample)]    
+            var = samples[str(sample)]    
             for gene in lofvariants:
                 if gene in hprd_genes:
                     x, y = \
