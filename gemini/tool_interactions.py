@@ -26,21 +26,21 @@ from collections import defaultdict
 
 config = read_gemini_config()
 path_dirname = config["annotation_dir"]
-out     = open("file.dot", 'w')
+out = open("file.dot", 'w')
 samples = defaultdict(list)
-lof     = defaultdict(list)
+lof = defaultdict(list)
 
 def get_variant_genes(c, args, idx_to_sample):
     for r in c:
         gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
         gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))
-        var_id   = str(r['variant_id'])
-        chrom    = str(r['chrom'])
-        start    = str(r['start'])
-        end      = str(r['end'])
+        var_id = str(r['variant_id'])
+        chrom = str(r['chrom'])
+        start = str(r['start'])
+        end = str(r['end'])   
         gene     = str(r['gene'])
-        impact   = str(r['impact'])
-        biotype  = str(r['biotype'])
+        impact = str(r['impact'])
+        biotype = str(r['biotype'])
         in_dbsnp = str(r['in_dbsnp'])
         clin_sigs = str(r['clin_sigs'])
         aaf_1kg_all = str(r['aaf_1kg_all'])
@@ -50,9 +50,9 @@ def get_variant_genes(c, args, idx_to_sample):
             if (gt_type == HET or gt_type == HOM_ALT):
                 if gene != "None":
                     (key, value) = (idx_to_sample[idx], \
-                                   (gene,var_id,chrom,start,end,\
-                                    impact,biotype,in_dbsnp,clin_sigs,\
-                                    aaf_1kg_all,aaf_esp_all))
+                                   (gene,var_id,chrom,start,end,impact, \
+                                   biotype,in_dbsnp,clin_sigs,aaf_1kg_all, \
+                                   aaf_esp_all))
                     samples[idx_to_sample[idx]].append(value)
     return samples
     
@@ -84,7 +84,9 @@ def sample_gene_interactions(c, args, idx_to_sample):
     #calculate nodes from the graph
     hprd_genes = gr.nodes()
     if args.gene == None or args.gene not in hprd_genes:
-        sys.stderr.write("gene name not given else not represented in the p-p interaction file\n")
+        sys.stderr.write("Gene name not found or")
+        sys.stderr.write(" gene not in p-p interaction file\n")
+        
     elif args.gene in hprd_genes:
         x, y = \
             breadth_first_search(gr,root=args.gene,filter=radius(args.radius))
@@ -97,7 +99,7 @@ def sample_gene_interactions(c, args, idx_to_sample):
         if args.var_mode:
             for sample in samples.iterkeys():
                 var = samples[str(sample)]
-                # for each level return interacting genes if they are 
+                #for each level return interacting genes if they are 
                 # variants in the sample. 
                 # 0th order would be returned if the user chosen 
                 # gene is a variant in the sample        
@@ -117,7 +119,7 @@ def sample_gene_interactions(c, args, idx_to_sample):
                                           str(each[7]), \
                                           str(each[8]), \
                                           str(each[9]), \
-                                          str(each[10])])
+                                          str(each[10])])        
         elif (not args.var_mode):
             for sample in samples.iterkeys():
                 for each in samples[str(sample)]:
@@ -131,7 +133,8 @@ def sample_gene_interactions(c, args, idx_to_sample):
                                  str(x)+"_order:", 
                                  ",".join(k)])
                     else:
-                        print "\t".join([str(sample), str(args.gene), str(x)+"_order:", "none"])
+                        print "\t".join([str(sample), str(args.gene), \
+                                         str(x)+"_order:", "none"])
                     #initialize keys for next iteration
                     k = []
                 
@@ -207,22 +210,27 @@ def sample_lof_interactions(c, args, idx_to_sample):
                                                str(key), \
                                                str(each[1]), \
                                                str(each[2]), \
-                                               str(each[3])])
+                                               str(each[3]), \
+                                               str(each[4]), \
+                                               str(each[5]), \
+                                               str(each[6]), \
+                                               str(each[7]), \
+                                               str(each[8]), \
+                                               str(each[9]), \
+                                               str(each[10])])
     
 def sample_variants(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
-    query = "SELECT variant_id, gt_types, gts, gene, impact, biotype \
-                    in_dbsnp, clin_sigs, aaf_1kg_all, aaf_esp_all, chrom, \
-                    start, end \
-             FROM variants"
+    query = "SELECT variant_id, gt_types, gts, gene, impact, biotype, \
+           in_dbsnp, clin_sigs, aaf_1kg_all, aaf_esp_all, chrom, start, end  \
+          FROM variants"
     c.execute(query)
     
     if args.var_mode:
         print "\t".join(['sample','gene','order_of_interaction', \
-                     'interacting_gene', 'var_id', 'chrom', \
-                     'start', 'end', 'impact','biotype', \
-                     'in_dbsnp', 'clin_sigs', 'aaf_1kg_all',\
-                     'aaf_esp_all'])
+                         'interacting_gene', 'var_id', 'chrom', 'start', \
+                         'end', 'impact','biotype', 'in_dbsnp', 'clin_sigs', \
+                         'aaf_1kg_all','aaf_esp_all'])
     elif (not args.var_mode):
         print "\t".join(['sample','gene','order_of_interaction', \
                      'interacting_gene'])
@@ -243,17 +251,16 @@ def sample_lof_variants(c, args):
 def variants(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
     query = "SELECT variant_id, gt_types, gts, gene, \
-             impact, biotype, in_dbsnp, clin_sigs, \
-             aaf_1kg_all, aaf_esp_all, chrom, start, end \
+             impact, biotype, in_dbsnp, clin_sigs, aaf_1kg_all, \
+             aaf_esp_all, chrom, start, end \
              FROM variants"
     c.execute(query)
     
     if args.var_mode:
-        print "\t".join(['sample','gene','order_of_interaction', \
-                     'interacting_gene', 'var_id', 'chrom', \
-                     'start', 'end', 'impact','biotype', \
-                     'in_dbsnp', 'clin_sigs', 'aaf_1kg_all',\
-                     'aaf_esp_all'])
+        print "\t".join(['sample','lof_gene','order_of_interaction', \
+                    'interacting_gene', 'var_id', 'chrom', 'start', 'end', \
+                    'impact','biotype','in_dbsnp', 'clin_sigs', \
+                    'aaf_1kg_all','aaf_esp_all'])
     elif (not args.var_mode):
         print "\t".join(['sample','lof_gene','order_of_interaction', \
                     'interacting_gene'])
