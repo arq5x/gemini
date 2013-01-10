@@ -1,8 +1,8 @@
 gemini - a framework for mining genome variation.
 =================================================
 
-{:toc}
 
+:with_toc_data
 
 Overview
 ========
