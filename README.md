@@ -10,14 +10,13 @@ the fundamental challenges associated with using databases for very large
 (e.g. 1,000,000 variants times 1,000 samples yields one billion genotypes) 
 datasets.
 
+
 Acknowledgements
 ================
-
-Caveats and Limitations
-=======================
-``gemini`` is currently in an *alpha* state.  The basic functionality that we
-intend to develop is present, but we may tweak the API and/or restructure 
-the underlying database as needed.
+Gemini is being developed in the Quinlan lab (quinlanlab.org) at the University 
+of Virginia and is led by Uma Paila.  Substantial contributions have also been
+made by Brad Chapman (@chapmanb), Rory Kirchner (@roryk), and Oliver Hofmann
+at the Harvard School of Public Health.
 
 
 Installation
@@ -36,6 +35,35 @@ the necessary data files. The recommended path is in ``/usr/local/share``:
 Lastly, run the test suite to make sure everything is running normally.
 
 	sh master-test.sh
+    
+
+Gemini Browser
+================
+Currently, the majority of gemini's functionality is available via a command-line
+interface.  However, we are developing a browser-based interface for easier exploration
+of gemini databases created with the `gemini load` command.
+
+Ironically, as of now, one must launch said browser from the command line as
+follows (where `my.db` should be replaced with the name of the gemini database
+you would like to explore).
+
+    gemini browser my.db
+
+At this point, the gemini browser is running on port 8088 on your local machine.
+Open a web browser to http://localhost:8088/.  You should see something like:
+
+    .. image:: https://raw.github.com/arq5x/gemini/master/img/browser-query.png
+
+
+
+Caveats and Limitations
+=======================
+``gemini`` is currently in an *alpha* state.  The basic functionality that we
+intend to develop is present, but we may tweak the API and/or restructure 
+the underlying database as needed.
+
+
+
 
 
 
@@ -94,8 +122,6 @@ including: ENCODE regulatory and histone modification tracks, conservation, GWAS
 - RepeatMasker annotations
 - Overlap with CpG Islands
 - Overlap with segmental duplications
-
-
 
 Basic workflow
 ==============
