@@ -52,7 +52,7 @@ you would like to explore).
 At this point, the gemini browser is running on port 8088 on your local machine.
 Open a web browser to http://localhost:8088/.  You should see something like:
 
-    .. image:: https://raw.github.com/arq5x/gemini/master/img/browser-query.png
+![](https://raw.github.com/arq5x/gemini/master/img/browser-query.png)
 
 
 
