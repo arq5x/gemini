@@ -224,19 +224,30 @@
               <tbody valign="top">
               <tr class="row-even"><td>gts</td>
               <td>BLOB</td>
-              <td>A compressed binary vector of sample genotypes (e.g., &#8220;A/A&#8221;, &#8220;A|G&#8221;, &#8220;G/G&#8221;)</td>
+              <td>A compressed binary vector of sample genotypes 
+                  (e.g., &#8220;A/A&#8221;, &#8220;A|G&#8221;, &#8220;G/G&#8221;)
+                  Access a specific sample's genotype with <code>gts.sample_id</code>
+              </td>
               </tr>
               <tr class="row-odd"><td>gt_types</td>
               <td>BLOB</td>
-              <td>A compressed binary vector of numeric genotype &#8220;types&#8221; (e.g., 0, 1, 2)</td>
+              <td>A compressed binary vector of numeric genotype &#8220;types&#8221; 
+                  (e.g., 0, 1, 2)
+                  Access a specific sample's genotype type with <code>gt_types.sample_id</code>
+              </td>
               </tr>
               <tr class="row-even"><td>gt_phases</td>
               <td>BLOB</td>
-              <td>A compressed binary vector of sample genotype phases (e.g., False, True, False)</td>
+              <td>A compressed binary vector of sample genotype phases 
+                  (e.g., False, True, False)
+                  Access a specific sample's genotype phasing info with <code>gt_phases.sample_id</code>
+              </td>
               </tr>
               <tr class="row-odd"><td>gt_depths</td>
               <td>BLOB</td>
-              <td>A compressed binary vector of the depth of aligned sequence observed for each sample</td>
+              <td>A compressed binary vector of the depth of aligned sequence observed for each sample
+                  Access a specific sample's sequence depth info with <code>gt_depths.sample_id</code>
+              </td>
               </tr>
               </tbody>
           </table>
