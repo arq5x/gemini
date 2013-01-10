@@ -1,9 +1,6 @@
 gemini - a framework for mining genome variation.
 =================================================
 
-
-:with_toc_data
-
 Overview
 ========
 The intent of ``gemini`` is to provide a simple, flexible, and powerful
