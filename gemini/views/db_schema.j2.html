@@ -10,9 +10,13 @@
 <div class="container-fluid">
     <div class="row-fluid">
       <div class="span3">
-        <div class="well sidebar-nav">
+        <div class="well sidebar-nav-fixed">
           <ul class="nav nav-list">
-            <li class="nav-header" style="font-size: 10pt;">variants table</li>
+              
+            <!-- VARIANTS table -->
+            <li class="nav-header" style="font-size: 10pt;">
+                <a href="#variants-table">variants table</a>
+            </li>
 
             <li style="font-size: 10pt;">
                 <a href="#variants-core">Core VCF cols.</a>
@@ -53,6 +57,17 @@
             <li style="font-size: 10pt;">
                 <a href="#variants-encode">ENCODE info. cols.</a>
             </li>
+            
+            <!-- VARIANT_IMPACTS table -->
+            <li class="nav-header" style="font-size: 10pt;">
+                <a href="#variant-impacts-table">variant_impacts table</a>
+            </li>
+            
+            <!-- SAMPLES table -->
+            <li class="nav-header" style="font-size: 10pt;">
+                <a href="#samples-table">samples table</a>
+            </li>
+
 
             
           </ul>
@@ -61,6 +76,7 @@
 
       <div class="span9">
           
+          <a name="variants-table"></a>
           <p>
           <h2>The <em>variants</em> table</h2>
           </p>
@@ -810,6 +826,169 @@
             </tbody>
           </table>
       </div>
+      
+      
+      <a name="variant-impacts-table"></a>
+      <p>
+      <h2>The <em>variant_impacts</em> table</h2>
+      </p>
+          
+      <div class="doc-table-wrapper" name="variants-impacts">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="16%" />
+            <col width="8%" />
+            <col width="77%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">column_name</th>
+            <th class="head">type</th>
+            <th class="head">notes</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>variant_id</td>
+            <td>INTEGER</td>
+            <td>PRIMARY_KEY (Foreign key to <cite>variants</cite> table)</td>
+            </tr>
+            <tr class="row-odd"><td>anno_id</td>
+            <td>INTEGER</td>
+            <td>PRIMARY_KEY (Based on variant transcripts)</td>
+            </tr>
+            <tr class="row-even"><td>gene</td>
+            <td>STRING</td>
+            <td>The gene affected by the variant.</td>
+            </tr>
+            <tr class="row-odd"><td>transcript</td>
+            <td>STRING</td>
+            <td>The transcript affected by the variant.</td>
+            </tr>
+            <tr class="row-even"><td>is_exonic</td>
+            <td>BOOL</td>
+            <td>Does the variant affect an exon for this transcript?</td>
+            </tr>
+            <tr class="row-odd"><td>is_coding</td>
+            <td>BOOL</td>
+            <td>Does the variant fall in a coding region (excludes 3&#8217; &amp; 5&#8217; UTR&#8217;s of exons)?</td>
+            </tr>
+            <tr class="row-even"><td>is_lof</td>
+            <td>BOOL</td>
+            <td>Based on the value of the impact col, is the variant LOF?</td>
+            </tr>
+            <tr class="row-odd"><td>exon</td>
+            <td>STRING</td>
+            <td>Exon information for the variants that are exonic</td>
+            </tr>
+            <tr class="row-even"><td>codon_change</td>
+            <td>STRING</td>
+            <td>What is the codon change?</td>
+            </tr>
+            <tr class="row-odd"><td>aa_change</td>
+            <td>STRING</td>
+            <td>What is the amino acid change?</td>
+            </tr>
+            <tr class="row-even"><td>aa_length</td>
+            <td>STRING</td>
+            <td>The length of CDS in terms of number of amino acids</td>
+            </tr>
+            <tr class="row-odd"><td>biotype</td>
+            <td>STRING</td>
+            <td>The type of transcript (e.g.protein-coding, pseudogene, rRNA etc.)</td>
+            </tr>
+            <tr class="row-even"><td>impact</td>
+            <td>STRING</td>
+            <td>Impacts due to variation (ref.impact category)</td>
+            </tr>
+            <tr class="row-odd"><td>impact_severity</td>
+            <td>STRING</td>
+            <td>Severity of the impact based on the impact column value (ref.impact category)</td>
+            </tr>
+            <tr class="row-even"><td>polyphen_pred</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">Impact of the SNP as given by PolyPhen (VEP only)</div>
+            <div class="line">benign, possibly_damaging, probably_damaging, unknown</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>polyphen_scores</td>
+            <td>FLOAT</td>
+            <td>Polyphen score reflecting severity (higher the impact, <em>higher</em> the score)</td>
+            </tr>
+            <tr class="row-even"><td>sift_pred</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">Impact of the SNP as given by SIFT (VEP only)</div>
+            <div class="line">neutral, deleterious</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>sift_scores</td>
+            <td>FLOAT</td>
+            <td>SIFT prob. scores reflecting severity (Higher the impact, <em>lower</em> the score)</td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      
+      
+      
+      
+      <a name="samples-table"></a>
+      <p>
+      <h2>The <em>samples</em> table</h2>
+      </p>
+          
+      <div class="doc-table-wrapper" name="samples">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="13%" />
+            <col width="10%" />
+            <col width="76%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">column name</th>
+            <th class="head">type</th>
+            <th class="head">notes</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>sample_id</td>
+            <td>INTEGER</td>
+            <td>PRIMARY_KEY</td>
+            </tr>
+            <tr class="row-odd"><td>name</td>
+            <td>STRING</td>
+            <td>Sample names</td>
+            </tr>
+            <tr class="row-even"><td>family_id</td>
+            <td>INTEGER</td>
+            <td>Family ids for the samples [User defined, default: NULL]</td>
+            </tr>
+            <tr class="row-odd"><td>paternal_id</td>
+            <td>INTEGER</td>
+            <td>Paternal id for the samples [User defined, default: NULL]</td>
+            </tr>
+            <tr class="row-even"><td>maternal_id</td>
+            <td>INTEGER</td>
+            <td>Maternal id for the samples [User defined, default: NULL]</td>
+            </tr>
+            <tr class="row-odd"><td>sex</td>
+            <td>STRING</td>
+            <td>Sex of the sample [User defined, default: NULL]</td>
+            </tr>
+            <tr class="row-even"><td>phenotype</td>
+            <td>STRING</td>
+            <td>The associated sample phenotype [User defined, default: NULL]</td>
+            </tr>
+            <tr class="row-odd"><td>ethnicity</td>
+            <td>STRING</td>
+            <td>The ethnic group to which the sample belongs [User defined, default: NULL]</td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      
       
     </div>  <!--span-9 -->
   </div><!-- end of page -->

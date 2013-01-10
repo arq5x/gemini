@@ -5,6 +5,11 @@ Database Schema
 
 The ``variants`` table
 ----------------------
+
+
+Core VCF fields
+...............
+   
 ========================  ========      ==============================================================================================
 column_name               type          notes
 ========================  ========      ==============================================================================================
@@ -17,36 +22,20 @@ ref                       STRING        Reference allele
 alt                       STRING        Alternate alele for the variant
 qual                      INTEGER       Quality score for the assertion made in ALT
 filter                    STRING        A string of filters passed/failed in variant calling
+========================  ========      ==============================================================================================
+
+
+
+Variant and PopGen info
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
 type                      STRING        | The type of variant.
                                         | Any of: [*snp*, *indel*]
 sub_type                  STRING        | The variant sub-type.
                                         | If ``type`` is *snp*:   [*ts*, (transition), *tv* (transversion)]
                                         | If ``type`` is *indel*: [*ins*, (insertion), *del* (deletion)]
-gts                       BLOB          A compressed binary vector of sample genotypes (e.g., "A/A", "A|G", "G/G")
-gt_types                  BLOB          A compressed binary vector of numeric genotype "types" (e.g., 0, 1, 2)
-gt_phases                 BLOB          A compressed binary vector of sample genotype phases (e.g., False, True, False)
 call_rate                 FLOAT         The fraction of samples with a valid genotype
-in_dbsnp                  BOOL          | Is this variant found in dbSnp (build 135)?
-                                        | 0 : Absence of the variant in dbsnp
-                                        | 1 : Presence of the variant in dbsnp
-rs_ids                    STRING        | A comma-separated list of rs ids for variants present in dbsnp
-in_omim                   BOOL          | 0 : Absence of the variant in OMIM database
-                                        | 1 : Presence of the variant in OMIM database
-clins_sigs                STRING        | A comma-separated list of clinical significance scores for each
-                                        | of the rs_ids that the variant overlaps in dbsnp. Per dbSNP:
-                                        | 0 : unknown   1 : untested   2 : non-pathogenic
-                                        | 3 : probable-non-pathogenic  4 : probable-pathogenic
-                                        | 5 : pathogenic  6 : drug-response  7 : histocompatibility
-                                        | 255 : other
-cyto_band                 STRING        Chromosomal cytobands that a variant overlaps
-rmsk                      STRING        | A comma-separated list of RepeatMasker annotations that the variant overlaps.
-                                        | Each hit is of the form: ``name_class_family``
-in_cpg_island             BOOL          | Does the variant overlap a CpG island?.
-                                        | Based on UCSC: Regulation > CpG Islands > cpgIslandExt 
-in_segdup                 BOOL          | Does the variant overlap a segmental duplication?.
-                                        | Based on UCSC: Variation&Repeats > Segmental Dups > genomicSuperDups track
-is_conserved              BOOL          | Does the variant overlap a conserved region?
-                                        | Based on the 29-way mammalian conservation study
 num_hom_ref               INTEGER       The total number of of homozygotes for the reference (``ref``) allele
 num_het                   INTEGER       The total number of heterozygotes observed.
 num_hom_alt               INTEGER       The total number of homozygotes for the reference (``alt``) allele
@@ -55,8 +44,26 @@ aaf                       FLOAT         The observed allele frequency for the al
 hwe                       FLOAT         The Chi-square probability of deviation from HWE (assumes random mating)
 inbreeding_coeff          FLOAT         The inbreeding co-efficient that expresses the likelihood of effects due to inbreeding
 pi                        FLOAT         The computed nucleotide diversity (pi) for the site
-recomb_rate               FLOAT         | Returns the mean recombination rate at the variant site
-                                        | Based on HapMapII_GRCh37 genetic map
+========================  ========      ==============================================================================================
+
+
+
+Genotype information
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
+gts                       BLOB          A compressed binary vector of sample genotypes (e.g., "A/A", "A|G", "G/G")
+gt_types                  BLOB          A compressed binary vector of numeric genotype "types" (e.g., 0, 1, 2)
+gt_phases                 BLOB          A compressed binary vector of sample genotype phases (e.g., False, True, False)
+gt_depths                 BLOB          A compressed binary vector of the depth of aligned sequence observed for each sample
+========================  ========      ==============================================================================================
+
+
+
+Gene information
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
 gene                      STRING        Corresponding gene name of the highly affected transcript
 transcript                STRING        | The variant transcript that was most severely affected
                                         | (for two equally affected transcripts, either the first 
@@ -75,6 +82,14 @@ polyphen_pred             STRING        Polyphen predictions for the snps (only 
 polyphen_score            FLOAT         Polyphen scores for the severely affected transcript
 sift_pred                 STRING        SIFT predictions for the snp's (VEP only) for the most severely affected transcript
 sift_score                FLOAT         SIFT scores for the predictions
+========================  ========      ==============================================================================================
+
+
+
+Optional VCF INFO fields
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
 anc_allele                STRING        The reported ancestral allele if there is one.
 rms_bq                    FLOAT         The RMS base quality at this position.
 cigar                     STRING        CIGAR string describing how to align an alternate allele to the reference allele.
@@ -89,20 +104,75 @@ haplotype_score           FLOAT         Consistency of the site with two segrega
 qual_depth                FLOAT         Variant confidence or quality by depth
 allele_count              INTEGER       Allele counts in genotypes
 allele_bal                FLOAT         Allele balance for hets
+is_somatic                BOOL          Whether the variant is somatically acquired.
+========================  ========      ==============================================================================================
+
+
+
+Population information
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
+in_dbsnp                  BOOL          | Is this variant found in dbSnp (build 135)?
+                                        | 0 : Absence of the variant in dbsnp
+                                        | 1 : Presence of the variant in dbsnp
+rs_ids                    STRING        | A comma-separated list of rs ids for variants present in dbsnp
 in_hm2                    BOOL          Whether the variant was part of HapMap2.
 in_hm3                    BOOL          Whether the variant was part of HapMap3.
-is_somatic                BOOL          Whether the variant is somatically acquired.
 in_esp                    BOOL          Presence/absence of the variant in the ESP project data
+in_1kg                    BOOL          Presence/absence of the variant in the 1000 genome project data
 aaf_esp_ea                FLOAT         Minor Allele Frequency of the variant for European Americans in the ESP project
 aaf_esp_aa                FLOAT         Minor Allele Frequency of the variant for African Americans in the ESP project
 aaf_esp_all               FLOAT         Minor Allele Frequency of the variant w.r.t both groups in the ESP project
-exome_chip                BOOL          Whether an SNP is on the Illumina HumanExome Chip
-in_1kg                    BOOL          Presence/absence of the variant in the 1000 genome project data
 aaf_1kg_amr               FLOAT         Allele Frequency of the variant for samples in AMR based on AC/AN (1000g project)
 aaf_1kg_asn               FLOAT         Allele frequency of the variant for samples in ASN based on AC/AN (1000g project)
 aaf_1kg_afr               FLOAT         Allele frequency of the variant for samples in AFR based on AC/AN (1000g project)
 aaf_1kg_eur               FLOAT         Allele Frequency of the variant for samples in EUR based on AC/AN (1000g project)
 aaf_1kg_all               FLOAT         Global allele frequency (based on AC/AN) (1000g project) 
+========================  ========      ==============================================================================================
+
+
+
+Disease phenotype info.
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
+in_omim                   BOOL          | 0 : Absence of the variant in OMIM database
+                                        | 1 : Presence of the variant in OMIM database
+clins_sigs                STRING        | A comma-separated list of clinical significance scores for each
+                                        | of the rs_ids that the variant overlaps in dbsnp. Per dbSNP:
+                                        | 0 : unknown   1 : untested   2 : non-pathogenic
+                                        | 3 : probable-non-pathogenic  4 : probable-pathogenic
+                                        | 5 : pathogenic  6 : drug-response  7 : histocompatibility
+                                        | 255 : other
+========================  ========      ==============================================================================================
+
+
+
+Genome annotations
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
+exome_chip                BOOL          Whether an SNP is on the Illumina HumanExome Chip
+cyto_band                 STRING        Chromosomal cytobands that a variant overlaps
+rmsk                      STRING        | A comma-separated list of RepeatMasker annotations that the variant overlaps.
+                                        | Each hit is of the form: ``name_class_family``
+in_cpg_island             BOOL          | Does the variant overlap a CpG island?.
+                                        | Based on UCSC: Regulation > CpG Islands > cpgIslandExt 
+in_segdup                 BOOL          | Does the variant overlap a segmental duplication?.
+                                        | Based on UCSC: Variation&Repeats > Segmental Dups > genomicSuperDups track
+is_conserved              BOOL          | Does the variant overlap a conserved region?
+                                        | Based on the 29-way mammalian conservation study
+recomb_rate               FLOAT         | Returns the mean recombination rate at the variant site
+                                        | Based on HapMapII_GRCh37 genetic map
+========================  ========      ==============================================================================================
+
+
+
+Mappability
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
 grc                       STRING        | Association with patch and fix regions from the Genome Reference Consortium:
                                         | http://www.ncbi.nlm.nih.gov/projects/genome/assembly/grc/human/
                                         | Identifies potential problem regions associated with variant calls.
@@ -115,6 +185,14 @@ gms_illumina              FLOAT         | Genome Mappability Scores (GMS) for Il
                                         | https://github.com/chapmanb/bcbio.variation/blob/master/src/bcbio/variation/utils/gms.clj
 gms_solid                 FLOAT         Genome Mappability Scores with SOLiD error models
 gms_iontorrent            FLOAT         Genome Mappability Scores with IonTorrent error models
+========================  ========      ==============================================================================================
+
+
+
+ENCODE information
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
 encode_tfbs               STRING        | Comma-separated list of transcription factors that were
                                         | observed by ENCODE to bind DNA in this region.  Each hit in the list is constructed
                                         | as TF_MAXSCORE_CELLCOUNT, where:
@@ -150,11 +228,11 @@ encode_chromhmm_hepg2     STRING        ENCODE ChromHMM segmentation prediction 
 encode_chromhmm_huvec     STRING        ENCODE ChromHMM segmentation prediction for HuVEC.     
 encode_chromhmm_k562      STRING        ENCODE ChromHMM segmentation prediction for k562.        
 ========================  ========      ==============================================================================================
-=======
+
 |
 
 The ``variant_impacts`` table
-----------------------
+-----------------------------
 ================  ========      ===============================================================================
 column_name       type          notes
 ================  ========      ===============================================================================
