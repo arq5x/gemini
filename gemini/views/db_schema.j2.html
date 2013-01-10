@@ -1,0 +1,807 @@
+{% extends "base.j2.html" %}
+
+{% block title %}Gemini query interface{% endblock %}
+
+{% block head %}{% endblock %}
+
+
+{% block body %}
+
+<div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span3">
+        <div class="well sidebar-nav">
+          <ul class="nav nav-list">
+            <li class="nav-header" style="font-size: 10pt;">variants table</li>
+
+            <li style="font-size: 10pt;">
+                <a href="#variants-core">Core VCF cols.</a>
+            </li>
+            
+            <li style="font-size: 10pt;">
+                <a href="#variants-popgen">Variant / PopGen cols.</a>
+            </li>
+
+            <li style="font-size: 10pt;">
+                <a href="#variants-genotypes">Genotype info cols</a>
+            </li>
+            
+            <li style="font-size: 10pt;">
+                <a href="#variants-gene">Gene information cols.</a>
+            </li>
+            
+            <li style="font-size: 10pt;">
+                <a href="#variants-optional-vcf">Optional VCF cols.</a>
+            </li>
+            
+            <li style="font-size: 10pt;">
+                <a href="#variants-popfreq">Variant frequency cols.</a>
+            </li>
+            
+            <li style="font-size: 10pt;">
+                <a href="#variants-disease">Disease info. cols.</a>
+            </li>
+
+            <li style="font-size: 10pt;">
+                <a href="#variants-genome-anno">Genome anno. cols.</a>
+            </li>
+            
+            <li style="font-size: 10pt;">
+                <a href="#variants-mappability">Mappability cols.</a>
+            </li>
+            
+            <li style="font-size: 10pt;">
+                <a href="#variants-encode">ENCODE info. cols.</a>
+            </li>
+
+            
+          </ul>
+        </div><!--/.well -->
+      </div><!--/span-->
+
+      <div class="span9">
+          
+          <p>
+          <h2>The <em>variants</em> table</h2>
+          </p>
+          
+          <a name="variants-core"></a>
+          <div class="alert alert-info">
+              Core columns
+          </div>
+
+          <div class="doc-table-wrapper" name="variants-core">
+            <table class='table table-striped table-hover table-condensed'>
+                <colgroup>
+                <col width="19%" />
+                <col width="6%" />
+                <col width="75%" />
+                </colgroup>
+                <thead valign="bottom">
+                <tr class="row-odd"><th class="head">column_name</th>
+                <th class="head">type</th>
+                <th class="head">notes</th>
+                </tr>
+                </thead>
+                <tbody valign="top">
+                <tr class="row-even"><td>chrom</td>
+                <td>STRING</td>
+                <td>The chromosome on which the variant resides</td>
+                </tr>
+                <tr class="row-odd"><td>start</td>
+                <td>INTEGER</td>
+                <td>The 0-based start position.</td>
+                </tr>
+                <tr class="row-even"><td>end</td>
+                <td>INTEGER</td>
+                <td>The 1-based end position.</td>
+                </tr>
+                <tr class="row-odd"><td>variant_id</td>
+                <td>INTEGER</td>
+                <td>PRIMARY_KEY</td>
+                </tr>
+                <tr class="row-even"><td>anno_id</td>
+                <td>INTEGER</td>
+                <td>Variant transcript number for the most severely affected transcript</td>
+                </tr>
+                <tr class="row-odd"><td>ref</td>
+                <td>STRING</td>
+                <td>Reference allele</td>
+                </tr>
+                <tr class="row-even"><td>alt</td>
+                <td>STRING</td>
+                <td>Alternate alele for the variant</td>
+                </tr>
+                <tr class="row-odd"><td>qual</td>
+                <td>INTEGER</td>
+                <td>Quality score for the assertion made in ALT</td>
+                </tr>
+                <tr class="row-even"><td>filter</td>
+                <td>STRING</td>
+                <td>A string of filters passed/failed in variant calling</td>
+                </tr>
+                </tbody>
+                </table>
+            </table>
+        </div> <!-- table-wrapper -->
+
+
+        <a name="variants-popgen"></a>
+        <div class="alert alert-info">
+            Variant and PopGen info
+        </div>
+        
+        <div class="doc-table-wrapper" name="variants-popgen">
+          <table class='table table-striped table-hover table-condensed'>
+              <colgroup>
+              <col width="19%" />
+              <col width="6%" />
+              <col width="75%" />
+              </colgroup>
+              <thead valign="bottom">
+              <tr class="row-odd"><th class="head">&nbsp;</th>
+              <th class="head">&nbsp;</th>
+              <th class="head">&nbsp;</th>
+              </tr>
+              </thead>
+              <tbody valign="top">
+              <tr class="row-even"><td>type</td>
+              <td>STRING</td>
+              <td><div class="first last line-block">
+              <div class="line">The type of variant.</div>
+              <div class="line">Any of: [<em>snp</em>, <em>indel</em>]</div>
+              </div>
+              </td>
+              </tr>
+              <tr class="row-odd"><td>sub_type</td>
+              <td>STRING</td>
+              <td><div class="first last line-block">
+              <div class="line">The variant sub-type.</div>
+              <div class="line">If <tt class="docutils literal"><span class="pre">type</span></tt> is <em>snp</em>:   [<em>ts</em>, (transition), <em>tv</em> (transversion)]</div>
+              <div class="line">If <tt class="docutils literal"><span class="pre">type</span></tt> is <em>indel</em>: [<em>ins</em>, (insertion), <em>del</em> (deletion)]</div>
+              </div>
+              </td>
+              </tr>
+              <tr class="row-even"><td>call_rate</td>
+              <td>FLOAT</td>
+              <td>The fraction of samples with a valid genotype</td>
+              </tr>
+              <tr class="row-odd"><td>num_hom_ref</td>
+              <td>INTEGER</td>
+              <td>The total number of of homozygotes for the reference (<tt class="docutils literal"><span class="pre">ref</span></tt>) allele</td>
+              </tr>
+              <tr class="row-even"><td>num_het</td>
+              <td>INTEGER</td>
+              <td>The total number of heterozygotes observed.</td>
+              </tr>
+              <tr class="row-odd"><td>num_hom_alt</td>
+              <td>INTEGER</td>
+              <td>The total number of homozygotes for the reference (<tt class="docutils literal"><span class="pre">alt</span></tt>) allele</td>
+              </tr>
+              <tr class="row-even"><td>num_unknown</td>
+              <td>INTEGER</td>
+              <td>The total number of of unknown genotypes</td>
+              </tr>
+              <tr class="row-odd"><td>aaf</td>
+              <td>FLOAT</td>
+              <td>The observed allele frequency for the alternate allele</td>
+              </tr>
+              <tr class="row-even"><td>hwe</td>
+              <td>FLOAT</td>
+              <td>The Chi-square probability of deviation from HWE (assumes random mating)</td>
+              </tr>
+              <tr class="row-odd"><td>inbreeding_coeff</td>
+              <td>FLOAT</td>
+              <td>The inbreeding co-efficient that expresses the likelihood of effects due to inbreeding</td>
+              </tr>
+              <tr class="row-even"><td>pi</td>
+              <td>FLOAT</td>
+              <td>The computed nucleotide diversity (pi) for the site</td>
+              </tr>
+              </tbody>
+          </table>
+        </div>
+
+        
+        <a name="variants-genotypes"></a>
+        <div class="alert alert-info">
+            Genotype information
+        </div>
+        
+        <div class="doc-table-wrapper" name="variants-genotypes">
+          <table class='table table-striped table-hover table-condensed'>
+              <colgroup>
+              <col width="19%" />
+              <col width="6%" />
+              <col width="75%" />
+              </colgroup>
+              <thead valign="bottom">
+              <tr class="row-odd"><th class="head">&nbsp;</th>
+              <th class="head">&nbsp;</th>
+              <th class="head">&nbsp;</th>
+              </tr>
+              </thead>
+              <tbody valign="top">
+              <tr class="row-even"><td>gts</td>
+              <td>BLOB</td>
+              <td>A compressed binary vector of sample genotypes (e.g., &#8220;A/A&#8221;, &#8220;A|G&#8221;, &#8220;G/G&#8221;)</td>
+              </tr>
+              <tr class="row-odd"><td>gt_types</td>
+              <td>BLOB</td>
+              <td>A compressed binary vector of numeric genotype &#8220;types&#8221; (e.g., 0, 1, 2)</td>
+              </tr>
+              <tr class="row-even"><td>gt_phases</td>
+              <td>BLOB</td>
+              <td>A compressed binary vector of sample genotype phases (e.g., False, True, False)</td>
+              </tr>
+              <tr class="row-odd"><td>gt_depths</td>
+              <td>BLOB</td>
+              <td>A compressed binary vector of the depth of aligned sequence observed for each sample</td>
+              </tr>
+              </tbody>
+          </table>
+      </div> <!-- table-wrapper -->
+      
+      
+      <a name="variants-gene"></a>
+      <div class="alert alert-info">
+          Gene information
+      </div>
+      
+      <div class="doc-table-wrapper" name="variants-gene">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="17%" />
+            <col width="6%" />
+            <col width="77%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>gene</td>
+            <td>STRING</td>
+            <td>Corresponding gene name of the highly affected transcript</td>
+            </tr>
+            <tr class="row-odd"><td>transcript</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">The variant transcript that was most severely affected</div>
+            <div class="line">(for two equally affected transcripts, either the first
+            | one is selected (VEP) or protein_coding biotype considered (snpEff).</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>is_exonic</td>
+            <td>BOOL</td>
+            <td>Does the variant affect an exon for &gt;= 1transcript?</td>
+            </tr>
+            <tr class="row-odd"><td>is_coding</td>
+            <td>BOOL</td>
+            <td>Does the variant fall in a coding region (excl. 3&#8217; &amp; 5&#8217; UTRs) for &gt;= 1 transcript?</td>
+            </tr>
+            <tr class="row-even"><td>is_lof</td>
+            <td>BOOL</td>
+            <td>Based on the value of the impact col, is the variant LOF for &gt;= transcript?</td>
+            </tr>
+            <tr class="row-odd"><td>exon</td>
+            <td>STRING</td>
+            <td>Exon information for the severely affected transcript</td>
+            </tr>
+            <tr class="row-even"><td>codon_change</td>
+            <td>STRING</td>
+            <td>What is the codon change?</td>
+            </tr>
+            <tr class="row-odd"><td>aa_change</td>
+            <td>STRING</td>
+            <td>What is the amino acid change (for an snp)?</td>
+            </tr>
+            <tr class="row-even"><td>aa_length</td>
+            <td>STRING</td>
+            <td>The length of CDS in terms of number of amino acids</td>
+            </tr>
+            <tr class="row-odd"><td>biotype</td>
+            <td>STRING</td>
+            <td>The &#8216;type&#8217; of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.)</td>
+            </tr>
+            <tr class="row-even"><td>impact</td>
+            <td>STRING</td>
+            <td>The consequence of the most severely affected transcript</td>
+            </tr>
+            <tr class="row-odd"><td>impact_severity</td>
+            <td>STRING</td>
+            <td>Severity of the highest order observed for the variant</td>
+            </tr>
+            <tr class="row-even"><td>polyphen_pred</td>
+            <td>STRING</td>
+            <td>Polyphen predictions for the snps (only with VEP) for the severely affected transcript</td>
+            </tr>
+            <tr class="row-odd"><td>polyphen_score</td>
+            <td>FLOAT</td>
+            <td>Polyphen scores for the severely affected transcript</td>
+            </tr>
+            <tr class="row-even"><td>sift_pred</td>
+            <td>STRING</td>
+            <td>SIFT predictions for the snp&#8217;s (VEP only) for the most severely affected transcript</td>
+            </tr>
+            <tr class="row-odd"><td>sift_score</td>
+            <td>FLOAT</td>
+            <td>SIFT scores for the predictions</td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+
+
+      <a name="variants-optional-vcf"></a>
+      <div class="alert alert-info">
+          Optional VCF INFO fields
+      </div>
+      
+      <div class="doc-table-wrapper" name="variants-optional-vcf">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="19%" />
+            <col width="6%" />
+            <col width="75%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>anc_allele</td>
+            <td>STRING</td>
+            <td>The reported ancestral allele if there is one.</td>
+            </tr>
+            <tr class="row-odd"><td>rms_bq</td>
+            <td>FLOAT</td>
+            <td>The RMS base quality at this position.</td>
+            </tr>
+            <tr class="row-even"><td>cigar</td>
+            <td>STRING</td>
+            <td>CIGAR string describing how to align an alternate allele to the reference allele.</td>
+            </tr>
+            <tr class="row-odd"><td>depth</td>
+            <td>INTEGER</td>
+            <td>The number of aligned sequence reads that led to this variant call</td>
+            </tr>
+            <tr class="row-even"><td>strand_bias</td>
+            <td>FLOAT</td>
+            <td>Strand bias at the variant position</td>
+            </tr>
+            <tr class="row-odd"><td>rms_map_qual</td>
+            <td>FLOAT</td>
+            <td>RMS mapping quality, a measure of variance of quality scores</td>
+            </tr>
+            <tr class="row-even"><td>in_hom_run</td>
+            <td>INTEGER</td>
+            <td>Homopolymer runs for the variant allele</td>
+            </tr>
+            <tr class="row-odd"><td>num_mapq_zero</td>
+            <td>INTEGER</td>
+            <td>Total counts of reads with mapping quality equal to zero</td>
+            </tr>
+            <tr class="row-even"><td>num_alleles</td>
+            <td>INTEGER</td>
+            <td>Total number of alleles in called genotypes</td>
+            </tr>
+            <tr class="row-odd"><td>num_reads_w_dels</td>
+            <td>FLOAT</td>
+            <td>Fraction of reads with spanning deletions</td>
+            </tr>
+            <tr class="row-even"><td>haplotype_score</td>
+            <td>FLOAT</td>
+            <td>Consistency of the site with two segregating haplotypes</td>
+            </tr>
+            <tr class="row-odd"><td>qual_depth</td>
+            <td>FLOAT</td>
+            <td>Variant confidence or quality by depth</td>
+            </tr>
+            <tr class="row-even"><td>allele_count</td>
+            <td>INTEGER</td>
+            <td>Allele counts in genotypes</td>
+            </tr>
+            <tr class="row-odd"><td>allele_bal</td>
+            <td>FLOAT</td>
+            <td>Allele balance for hets</td>
+            </tr>
+            <tr class="row-even"><td>is_somatic</td>
+            <td>BOOL</td>
+            <td>Whether the variant is somatically acquired.</td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      
+      
+      <a name="variants-popfreq"></a>
+      <div class="alert alert-info">
+          Population frequency information
+      </div>
+      
+      <div class="doc-table-wrapper" name="variants-popfreq">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="19%" />
+            <col width="6%" />
+            <col width="75%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>in_dbsnp</td>
+            <td>BOOL</td>
+            <td><div class="first last line-block">
+            <div class="line">Is this variant found in dbSnp (build 135)?</div>
+            <div class="line">0 : Absence of the variant in dbsnp</div>
+            <div class="line">1 : Presence of the variant in dbsnp</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>rs_ids</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">A comma-separated list of rs ids for variants present in dbsnp</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>in_hm2</td>
+            <td>BOOL</td>
+            <td>Whether the variant was part of HapMap2.</td>
+            </tr>
+            <tr class="row-odd"><td>in_hm3</td>
+            <td>BOOL</td>
+            <td>Whether the variant was part of HapMap3.</td>
+            </tr>
+            <tr class="row-even"><td>in_esp</td>
+            <td>BOOL</td>
+            <td>Presence/absence of the variant in the ESP project data</td>
+            </tr>
+            <tr class="row-odd"><td>in_1kg</td>
+            <td>BOOL</td>
+            <td>Presence/absence of the variant in the 1000 genome project data</td>
+            </tr>
+            <tr class="row-even"><td>aaf_esp_ea</td>
+            <td>FLOAT</td>
+            <td>Minor Allele Frequency of the variant for European Americans in the ESP project</td>
+            </tr>
+            <tr class="row-odd"><td>aaf_esp_aa</td>
+            <td>FLOAT</td>
+            <td>Minor Allele Frequency of the variant for African Americans in the ESP project</td>
+            </tr>
+            <tr class="row-even"><td>aaf_esp_all</td>
+            <td>FLOAT</td>
+            <td>Minor Allele Frequency of the variant w.r.t both groups in the ESP project</td>
+            </tr>
+            <tr class="row-odd"><td>aaf_1kg_amr</td>
+            <td>FLOAT</td>
+            <td>Allele Frequency of the variant for samples in AMR based on AC/AN (1000g project)</td>
+            </tr>
+            <tr class="row-even"><td>aaf_1kg_asn</td>
+            <td>FLOAT</td>
+            <td>Allele frequency of the variant for samples in ASN based on AC/AN (1000g project)</td>
+            </tr>
+            <tr class="row-odd"><td>aaf_1kg_afr</td>
+            <td>FLOAT</td>
+            <td>Allele frequency of the variant for samples in AFR based on AC/AN (1000g project)</td>
+            </tr>
+            <tr class="row-even"><td>aaf_1kg_eur</td>
+            <td>FLOAT</td>
+            <td>Allele Frequency of the variant for samples in EUR based on AC/AN (1000g project)</td>
+            </tr>
+            <tr class="row-odd"><td>aaf_1kg_all</td>
+            <td>FLOAT</td>
+            <td>Global allele frequency (based on AC/AN) (1000g project)</td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      
+      
+      <a name="variants-disease"></a>
+      <div class="alert alert-info">
+          Disease phenotype info.
+      </div>
+      
+      <div class="doc-table-wrapper" name="variants-disease">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="19%" />
+            <col width="6%" />
+            <col width="75%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>in_omim</td>
+            <td>BOOL</td>
+            <td><div class="first last line-block">
+            <div class="line">0 : Absence of the variant in OMIM database</div>
+            <div class="line">1 : Presence of the variant in OMIM database</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>clins_sigs</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">A comma-separated list of clinical significance scores for each</div>
+            <div class="line">of the rs_ids that the variant overlaps in dbsnp. Per dbSNP:</div>
+            <div class="line">0 : unknown   1 : untested   2 : non-pathogenic</div>
+            <div class="line">3 : probable-non-pathogenic  4 : probable-pathogenic</div>
+            <div class="line">5 : pathogenic  6 : drug-response  7 : histocompatibility</div>
+            <div class="line">255 : other</div>
+            </div>
+            </td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      
+      
+      <a name="variants-genome-anno"></a>
+      <div class="alert alert-info">
+          Genome annotations
+      </div>
+      
+      <div class="doc-table-wrapper" name="variants-genome-anno">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="19%" />
+            <col width="6%" />
+            <col width="75%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>exome_chip</td>
+            <td>BOOL</td>
+            <td>Whether an SNP is on the Illumina HumanExome Chip</td>
+            </tr>
+            <tr class="row-odd"><td>cyto_band</td>
+            <td>STRING</td>
+            <td>Chromosomal cytobands that a variant overlaps</td>
+            </tr>
+            <tr class="row-even"><td>rmsk</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">A comma-separated list of RepeatMasker annotations that the variant overlaps.</div>
+            <div class="line">Each hit is of the form: <tt class="docutils literal"><span class="pre">name_class_family</span></tt></div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>in_cpg_island</td>
+            <td>BOOL</td>
+            <td><div class="first last line-block">
+            <div class="line">Does the variant overlap a CpG island?.</div>
+            <div class="line">Based on UCSC: Regulation &gt; CpG Islands &gt; cpgIslandExt</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>in_segdup</td>
+            <td>BOOL</td>
+            <td><div class="first last line-block">
+            <div class="line">Does the variant overlap a segmental duplication?.</div>
+            <div class="line">Based on UCSC: Variation&amp;Repeats &gt; Segmental Dups &gt; genomicSuperDups track</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>is_conserved</td>
+            <td>BOOL</td>
+            <td><div class="first last line-block">
+            <div class="line">Does the variant overlap a conserved region?</div>
+            <div class="line">Based on the 29-way mammalian conservation study</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>recomb_rate</td>
+            <td>FLOAT</td>
+            <td><div class="first last line-block">
+            <div class="line">Returns the mean recombination rate at the variant site</div>
+            <div class="line">Based on HapMapII_GRCh37 genetic map</div>
+            </div>
+            </td>
+            </tr>
+            </tbody>
+        </table>
+      </div>
+      
+      
+      <a name="variants-mappability"></a>
+      <div class="alert alert-info">
+         Mappability
+      </div>
+      
+      <div class="doc-table-wrapper" name="variants-mappability">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="19%" />
+            <col width="6%" />
+            <col width="75%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>grc</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">Association with patch and fix regions from the Genome Reference Consortium:</div>
+            <div class="line"><a class="reference external" href="http://www.ncbi.nlm.nih.gov/projects/genome/assembly/grc/human/">http://www.ncbi.nlm.nih.gov/projects/genome/assembly/grc/human/</a></div>
+            <div class="line">Identifies potential problem regions associated with variant calls.</div>
+            <div class="line">Built with <cite>annotation_provenance/make-ncbi-grc-patches.py</cite></div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>gms_illumina</td>
+            <td>FLOAT</td>
+            <td><div class="first last line-block">
+            <div class="line">Genome Mappability Scores (GMS) for Illumina error models</div>
+            <div class="line">Provides low GMS scores (&lt; 25.0 in any technology) from:</div>
+            <div class="line"><a class="reference external" href="http://sourceforge.net/apps/mediawiki/gma-bio/index.php?title=Download_GMS">http://sourceforge.net/apps/mediawiki/gma-bio/index.php?title=Download_GMS</a></div>
+            <div class="line">#Download_GMS_by_Chromosome_and_Sequencing_Technology</div>
+            <div class="line">Input VCF for annotations prepared with:</div>
+            <div class="line"><a class="reference external" href="https://github.com/chapmanb/bcbio.variation/blob/master/src/bcbio/variation/utils/gms.clj">https://github.com/chapmanb/bcbio.variation/blob/master/src/bcbio/variation/utils/gms.clj</a></div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>gms_solid</td>
+            <td>FLOAT</td>
+            <td>Genome Mappability Scores with SOLiD error models</td>
+            </tr>
+            <tr class="row-odd"><td>gms_iontorrent</td>
+            <td>FLOAT</td>
+            <td>Genome Mappability Scores with IonTorrent error models</td>
+            </tr>
+            </tbody>
+          </table>
+      </div>
+      
+      
+      <a name="variants-encode"></a>
+      <div class="alert alert-info">
+         ENCODE information
+      </div>
+      
+      <div class="doc-table-wrapper" name="variants-encode">
+        <table class='table table-striped table-hover table-condensed'>
+            <colgroup>
+            <col width="18%" />
+            <col width="6%" />
+            <col width="76%" />
+            </colgroup>
+            <thead valign="bottom">
+            <tr class="row-odd"><th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            <th class="head">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+            <tr class="row-even"><td>encode_tfbs</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">Comma-separated list of transcription factors that were</div>
+            <div class="line">observed by ENCODE to bind DNA in this region.  Each hit in the list is constructed</div>
+            <div class="line">as TF_MAXSCORE_CELLCOUNT, where:</div>
+            <div class="line-block">
+            <div class="line"><em>TF</em> is the transcription factor name</div>
+            <div class="line"><em>MAXSCORE</em> is the highest signal strength observed in any of the cell lines</div>
+            <div class="line"><em>CELLCOUNT</em> is the number of cells tested that had nonzero signals.</div>
+            </div>
+            <div class="line">Provenance: wgEncodeRegTfbsClusteredV2 UCSC table</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>encode_consensus_gm12878</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">ENCODE consensus segmentation prediction for GM12878.</div>
+            <div class="line"><br /></div>
+            <div class="line">CTCF: CTCF-enriched element</div>
+            <div class="line">E:    Predicted enhancer</div>
+            <div class="line">PF:   Predicted promoter flanking region</div>
+            <div class="line">R:    Predicted repressed or low-activity region</div>
+            <div class="line">TSS:  Predicted promoter region including TSS</div>
+            <div class="line">T:    Predicted transcribed region</div>
+            <div class="line">WE:   Predicted weak enhancer or open chromatin cis-regulatory element
+            | unknown: This region of the genome had no functional prediction.</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>encode_consensus_h1hesc</td>
+            <td>STRING</td>
+            <td>ENCODE consensus segmentation prediction for h1HESC.  See encode_consseg_gm12878 for details.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_consensus_helas3</td>
+            <td>STRING</td>
+            <td>ENCODE consensus segmentation prediction for Helas3.  See encode_consseg_gm12878 for details.</td>
+            </tr>
+            <tr class="row-even"><td>encode_consensus_hepg2</td>
+            <td>STRING</td>
+            <td>ENCODE consensus segmentation prediction for HEPG2.   See encode_consseg_gm12878 for details.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_consensus_huvec</td>
+            <td>STRING</td>
+            <td>ENCODE consensus segmentation prediction for HuVEC.   See encode_consseg_gm12878 for details.</td>
+            </tr>
+            <tr class="row-even"><td>encode_consensus_k562</td>
+            <td>STRING</td>
+            <td>ENCODE consensus segmentation prediction for k562.    See encode_consseg_gm12878 for details.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_segway_gm12878</td>
+            <td>STRING</td>
+            <td>ENCODE Segway segmentation prediction for GM12878.</td>
+            </tr>
+            <tr class="row-even"><td>encode_segway_h1hesc</td>
+            <td>STRING</td>
+            <td>ENCODE Segway segmentation prediction for h1HESC.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_segway_helas3</td>
+            <td>STRING</td>
+            <td>ENCODE Segway segmentation prediction for Helas3.</td>
+            </tr>
+            <tr class="row-even"><td>encode_segway_hepg2</td>
+            <td>STRING</td>
+            <td>ENCODE Segway segmentation prediction for HEPG2.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_segway_huvec</td>
+            <td>STRING</td>
+            <td>ENCODE Segway segmentation prediction for HuVEC.</td>
+            </tr>
+            <tr class="row-even"><td>encode_segway_k562</td>
+            <td>STRING</td>
+            <td>ENCODE Segway segmentation prediction for k562.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_chromhmm_gm12878</td>
+            <td>STRING</td>
+            <td>ENCODE ChromHMM segmentation prediction for GM12878.</td>
+            </tr>
+            <tr class="row-even"><td>encode_chromhmm_h1hesc</td>
+            <td>STRING</td>
+            <td>ENCODE ChromHMM segmentation prediction for h1HESC.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_chromhmm_helas3</td>
+            <td>STRING</td>
+            <td>ENCODE ChromHMM segmentation prediction for Helas3.</td>
+            </tr>
+            <tr class="row-even"><td>encode_chromhmm_hepg2</td>
+            <td>STRING</td>
+            <td>ENCODE ChromHMM segmentation prediction for HEPG2.</td>
+            </tr>
+            <tr class="row-odd"><td>encode_chromhmm_huvec</td>
+            <td>STRING</td>
+            <td>ENCODE ChromHMM segmentation prediction for HuVEC.</td>
+            </tr>
+            <tr class="row-even"><td>encode_chromhmm_k562</td>
+            <td>STRING</td>
+            <td>ENCODE ChromHMM segmentation prediction for k562.</td>
+            </tr>
+            </tbody>
+          </table>
+      </div>
+      
+    </div>  <!--span-9 -->
+  </div><!-- end of page -->
+
+{% endblock %}
+
