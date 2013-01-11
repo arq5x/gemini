@@ -115,7 +115,8 @@ def add_gt_cols_to_query(query):
 
         # add the genotype columns to the query
         if select_clause_list[len(select_clause_list)-1].endswith(",") or \
-           select_clause_list[0].strip().lower() == "select":
+               (len(select_clause_list) == 1 and \
+               select_clause_list[0].strip().lower() == "select"):
             select_clause = " ".join(select_clause_list) + \
                                  " gts, gt_types, gt_phases, gt_depths "
         else:
@@ -139,9 +140,11 @@ def apply_basic_query(c, query, use_header):
                                     if not tuple[0].startswith("gt")]
 
     if use_header:
-        yield [col for col in all_cols]
+        h = [col for col in all_cols]
+        yield OrderedDict(itertools.izip(h,h))
+
     for row in c:
-        yield row
+        yield OrderedDict(row)
 
 
 def apply_query_w_genotype_select(c, query, use_header):
@@ -257,6 +260,7 @@ def filter_query(c, query, gt_filter, use_header):
 
     query = add_gt_cols_to_query(query.lower())
     
+    print query
     c.execute(query)
     
     # what are the columns that were actually selected by the user.

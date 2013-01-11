@@ -50,17 +50,17 @@
 				<em>(e.g., (gt_types.sample1 == HET and gt_types.sample2 == HOM_REF))</em>
 			</label>
 			<div class="controls">
-				<input class="span6" type="text" name="gt-filter" placeholder="">
+				<input class="span6" type="text" name="gt_filter" value="{{gt_filter}}">
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="checkbox">
-				<input type="checkbox" value="True" name = "header" id="header"> Add a header?
+				<input type="checkbox" value="{{use_header}}" name = "use_header" id="use_header"> Add a header?
 			</label>
 		</div>
 		<div class="control-group">
 			<label class="checkbox">
-				<input type="checkbox" value="True" name = "igv_links" id="igv_links"> 
+				<input type="checkbox" value="{{igv_links}}" name = "igv_links" id="igv_links"> 
                 Make rows into IGV links (enable port 60151 in IGV)?
                 <br>
                 <strong>Note:</strong><em>  If checked, you must include</em> <code>chrom</code>, 

@@ -78,12 +78,13 @@ def query():
     
     def _get_fields():
         query      = request.GET.get('query', '').strip()
-        gt_filter  = request.GET.get('gt-filter', '').strip()
-        use_header = request.GET.get('header')
-        igv_links = request.GET.get('igv_links')
+        gt_filter  = request.GET.get('gt_filter', '').strip()
+        use_header = request.GET.get('use_header')
+        igv_links  = request.GET.get('igv_links')
         
         row_iter = process_query(query, gt_filter, use_header)
-
+        
+        print use_header 
         return query, gt_filter, use_header, igv_links, row_iter
 
     # user clicked the "submit" button
@@ -100,11 +101,16 @@ def query():
                             rows=row_iter,
                             igv_links=igv_links,
                             igv_links_error=True,
+                            use_header=use_header,
+                            gt_filter=gt_filter,
                             query=query)
         else:
             return template('query.j2', dbfile=database, 
                             rows=row_iter,
-                            igv_links=igv_links, 
+                            igv_links=igv_links,
+                            igv_links_error=False,
+                            use_header=use_header,
+                            gt_filter=gt_filter,
                             query=query)
                                     
     # user clicked the "save to file" button
@@ -126,6 +132,9 @@ def query():
         return template('query.j2', dbfile=database, 
                                     tmp_file=tmp_file,
                                     igv_links=igv_links,
+                                    igv_links_error=True,
+                                    use_header=use_header,
+                                    gt_filter=gt_filter,
                                     query=query)
     # user did nothing.
     else:
@@ -206,6 +215,5 @@ def browser_main(parser, args):
     
     run(app, host='localhost', port=8088, 
              reloader=True, debug=True)
-
 
 
