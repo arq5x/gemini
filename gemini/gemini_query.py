@@ -260,7 +260,6 @@ def filter_query(c, query, gt_filter, use_header):
 
     query = add_gt_cols_to_query(query.lower())
     
-    print query
     c.execute(query)
     
     # what are the columns that were actually selected by the user.
