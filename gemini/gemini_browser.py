@@ -80,25 +80,37 @@ def query():
         query      = request.GET.get('query', '').strip()
         gt_filter  = request.GET.get('gt-filter', '').strip()
         use_header = request.GET.get('header')
+        igv_links = request.GET.get('igv_links')
+        
         row_iter = process_query(query, gt_filter, use_header)
 
-        return query, gt_filter, use_header, row_iter
+        return query, gt_filter, use_header, igv_links, row_iter
 
     # user clicked the "submit" button
     if request.GET.get('submit','').strip():
 
-        (query, gt_filter, use_header, row_iter) = _get_fields()
+        (query, gt_filter, use_header, igv_links, row_iter) = _get_fields()
         
         if len(query) == 0: return template('query.j2', dbfile=database)
-                    
-        return template('query.j2', dbfile=database, 
-                                    rows=row_iter, 
-                                    query=query)
+        
+        if igv_links and ('chrom' not in query.lower() \
+                          or 'start' not in query.lower() \
+                          or 'end' not in query.lower()):
+            return template('query.j2', dbfile=database, 
+                            rows=row_iter,
+                            igv_links=igv_links,
+                            igv_links_error=True,
+                            query=query)
+        else:
+            return template('query.j2', dbfile=database, 
+                            rows=row_iter,
+                            igv_links=igv_links, 
+                            query=query)
                                     
     # user clicked the "save to file" button
     elif request.GET.get('save','').strip():
         
-        (query, gt_filter, use_header, row_iter) = _get_fields()
+        (query, gt_filter, use_header, igv_links, row_iter) = _get_fields()
         
         if len(query) == 0: return template('query.j2', dbfile=database)
 
@@ -112,7 +124,8 @@ def query():
         tmp.close()
         
         return template('query.j2', dbfile=database, 
-                                    tmp_file=tmp_file, 
+                                    tmp_file=tmp_file,
+                                    igv_links=igv_links,
                                     query=query)
     # user did nothing.
     else:

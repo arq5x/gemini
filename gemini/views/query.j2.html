@@ -59,6 +59,15 @@
 			</label>
 		</div>
 		<div class="control-group">
+			<label class="checkbox">
+				<input type="checkbox" value="True" name = "igv_links" id="igv_links"> 
+                Make rows into IGV links (enable port 60151 in IGV)?
+                <br>
+                <strong>Note:</strong><em>  If checked, you must include</em> <code>chrom</code>, 
+                    <code>start</code>, and <code>end</code> in your query.
+			</label>
+		</div>
+		<div class="control-group">
 			<div class="controls">
 				<button type="submit" class="btn btn-large btn-primary" name="submit" value="submit">
 					Submit
@@ -75,20 +84,33 @@
 		</div>
 	</div>
 </form>
-	
+
+
+{% if not igv_links_error %}
 <div class="span12 table-wrapper">
-	<table class='table table-striped table-hover table-condensed'>
-		<tbody>
-			{%for row in rows %}
-			<tr>
-				{%for col in row %}
-				<td>{{col}}</td>
-				{% endfor %}
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+    
+    	<table class='table table-striped table-hover table-condensed' data-provides="rowlink">
+    		<tbody>
+    			{%for row in rows %}
+    			<tr> 
+                    {% if igv_links %}
+                        <td>
+                            <a href="http://localhost:60151/goto?locus={{row['chrom']}}:{{row['start']}}-{{row['end']}}"></a>
+                        </td>
+                        {% endif %}
+    				{%for col in row %}
+    				<td>{{row[col]}}</td>
+    				{% endfor %}
+    			</tr>
+    			{% endfor %}
+    		</tbody>
+    	</table>
 </div> <!-- end of debug-pane -->
+{% else %}
+<div class="alert alert-error span7 offset2" >
+    <strong>Error: </strong>If requesting links to IGV, you must select chrom, start, and end.
+</div>
+{% endif %}
 	
 
 		

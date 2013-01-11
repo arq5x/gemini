@@ -8,8 +8,10 @@ import cPickle
 import numpy as np
 import zlib
 import string
+import itertools
 from pyparsing import ParseResults
 from collections import defaultdict
+from collections import OrderedDict
 
 # gemini imports
 import gemini_utils as util
@@ -139,7 +141,7 @@ def apply_basic_query(c, query, use_header):
     if use_header:
         yield [col for col in all_cols]
     for row in c:
-        yield [str(row[col]) for col in all_cols]
+        yield row
 
 
 def apply_query_w_genotype_select(c, query, use_header):
@@ -164,11 +166,11 @@ def apply_query_w_genotype_select(c, query, use_header):
         #all_cols_orig.remove("*")
         all_cols_new.remove("*")
         select_cols += all_query_cols
-
+        
     if use_header:
-        header = [col for col in all_query_cols] + \
-                 [col for col in oset(all_cols_orig) - oset(select_cols)]
-        yield header
+        h = [col for col in all_query_cols] + \
+            [col for col in oset(all_cols_orig) - oset(select_cols)]
+        yield OrderedDict(itertools.izip(h,h))
 
     report_cols = all_query_cols + list(oset(all_cols_new) - oset(select_cols))
     for row in c:
@@ -177,13 +179,13 @@ def apply_query_w_genotype_select(c, query, use_header):
         gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
         gt_depths = compression.unpack_genotype_blob(row['gt_depths'])
 
-        fields = []
+        fields = OrderedDict()
         for idx, col in enumerate(report_cols):
             if col == "*": continue
             if not col.startswith("gt") and not col.startswith("GT"):
-                fields.append(row[col])
+                fields[col] = row[col]
             else:
-                fields.append(eval(col.strip()))
+                fields[col] = eval(col.strip())
         yield fields
 
 
@@ -266,11 +268,12 @@ def filter_query(c, query, gt_filter, use_header):
         all_cols_orig.remove("*")
         all_cols_new.remove("*")
         select_cols += all_query_cols
-        
+    
     if use_header:
-        header = [col for col in all_query_cols] + \
-                 [col for col in oset(all_cols_orig) - oset(select_cols)]
-        yield header
+        h = [col for col in all_query_cols] + \
+            [col for col in oset(all_cols_orig) - oset(select_cols)]
+        yield OrderedDict(itertools.izip(h,h))
+
 
     report_cols = all_query_cols + list(oset(all_cols_new) - oset(select_cols))
     for row in c:
@@ -282,13 +285,13 @@ def filter_query(c, query, gt_filter, use_header):
         if not eval(gt_filter):
             continue
         
-        fields = []
+        fields = OrderedDict()
         for idx, col in enumerate(report_cols):
             if col == "*": continue
             if not col.startswith("gt") and not col.startswith("GT"):
-                fields.append(row[col])
+                fields[col] = row[col]
             else:
-                fields.append(eval(col.strip()))
+                fields[col] = eval(col.strip())
         yield fields
 
 
@@ -319,7 +322,7 @@ def query(parser, args):
                                         args.gt_filter, args.use_header)
                                     
             for row in row_iter:
-                print args.separator.join([str(c) for c in row])
+                print args.separator.join([str(row[c]) for c in row])
                 
         elif args.queryfile is not None:
             get_query_file(args)
