@@ -54,7 +54,8 @@ class EffectDetails(object):
         # 1. must be protein_coding
         # 2. must be exonic, yet must not be a UTR
         self.is_coding = 0
-        if self.is_exonic and not self.effect_name.startswith("UTR_"):
+        if self.is_exonic and not (self.effect_name == "START_GAINED" or \
+                                    self.effect_name.startswith("UTR_")):
             self.is_coding = 1
         
         # rules for being loss-of-function (lof).
@@ -141,7 +142,8 @@ effect_names    = ["CDS",
                    "UTR_3_PRIME",
                    "UTR_5_DELETED", 
                    "UTR_5_PRIME",
-                   "NON_SYNONYMOUS_START"]
+                   "NON_SYNONYMOUS_START",
+                   "NONE"]
                    
 effect_dict = defaultdict()                 
 effect_dict = {'CDS': 'CDS', 
@@ -177,7 +179,8 @@ effect_dict = {'CDS': 'CDS',
                'UTR_3_PRIME': 'UTR_3_prime',
                'UTR_5_DELETED': 'UTR_5_del', 
                'UTR_5_PRIME': 'UTR_5_prime', 
-               'NON_SYNONYMOUS_START': 'non_synonymous_start'}
+               'NON_SYNONYMOUS_START': 'non_synonymous_start',
+               'NONE': 'None'}
                    
 effect_desc     = ["The variant hits a CDS.", 
                    "One or many codons are changed",
@@ -225,7 +228,8 @@ effect_desc     = ["The variant hits a CDS.",
                     transcript.", 
                    "Variant hits 5'UTR region.",
                    "The variant causes a start codon to be changed into a \
-                    different codon"]
+                    different codon",
+                    "Unknown"]
 
 effect_priorities = ["LOW", 
                      "MED",
@@ -260,7 +264,8 @@ effect_priorities = ["LOW",
                      "LOW", 
                      "MED", 
                      "LOW",
-                     "HIGH"]
+                     "HIGH",
+                     "LOW"]
                    
 effect_priority_codes = [3, 
                          2,
@@ -295,9 +300,10 @@ effect_priority_codes = [3,
                          3, 
                          2,
                          3,
-                         1]
+                         1,
+                         3]
 
-effect_ids = range(1,35)
+effect_ids = range(1,36)
 effect_map = {}
 EffectInfo = namedtuple('EffectInfo', ['id', 'priority', 'priority_code', 'desc'])
 
