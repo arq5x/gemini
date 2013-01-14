@@ -32,16 +32,25 @@ class EffectDetails(object):
         self.consequence = effect_dict[self.effect_name] if self.effect_severity != None else self.effect_name
         if len(fields) > 9:
             self.warnings = fields[9]
-        self.exonic = 0 if self.exon is None else 1
+            
+            
+        # rules for being exonic.
+        # 1. the impact must be in the list of exonic impacts
+        # 2. the exon information != None
+        self.is_exonic = 0
+        if self.effect_name in exonic_impacts and \
+             self.exon is not None:
+            self.is_exonic = 1            
+        
         self.is_lof = 0 if self.effect_severity != "HIGH" else 1
         # Exons that are coding (excludes UTR's)
-        if self.exonic == 0:
-            self.coding = 0 
-        elif self.exonic == 1:
+        if self.is_exonic == 0:
+            self.is_coding = 0 
+        elif self.is_exonic == 1:
             if self.effect_name.startswith("5_prime_UTR") or self.effect_name.startswith("3_prime_UTR"):
-                self.coding = 0 
+                self.is_coding = 0 
             else:
-                self.coding = 1
+                self.is_coding = 1
         # parse Polyphen predictions
         if self.polyphen is not None:
             self.polyphen_b = self.polyphen.split("(")
@@ -66,12 +75,30 @@ class EffectDetails(object):
         return "\t".join([self.consequence, self.effect_severity, self.codon_change,
                           self.aa_change, self.aa_length, self.biotype,
                           self.ensembl_gene, self.gene, self.transcript,
-                          self.exon, self.exonic, self.anno_id, self.polyphen_pred,
+                          self.exon, self.is_exonic, self.anno_id, self.polyphen_pred,
                           self.polyphen_score, self.sift_pred, self.sift_score,
-                          self.coding, self.is_lof])
+                          self.is_coding, self.is_lof])
     def __repr__(self):
         return self.__str__()
 
+
+exonic_impacts  = ["stop_gained", 
+                   "stop_lost", 
+                   "frameshift_variant",
+                   "initiator_codon_variant",
+                   "inframe_deletion",
+                   "inframe_insertion",
+                   "missense_variant",
+                   "incomplete_terminal_codon_variant",
+                   "stop_retained_variant",
+                   "synonymous_variant",
+                   "coding_sequence_variant",
+                   "5_prime_UTR_variant",
+                   "3_prime_UTR_variant", 
+                   "transcript_ablation",
+                   "transcript_amplification", 
+                   "feature_elongation",
+                   "feature_truncation"]
 
 
 effect_names    = ["splice_acceptor_variant", "splice_donor_variant", 
