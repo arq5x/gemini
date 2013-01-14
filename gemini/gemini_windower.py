@@ -31,9 +31,9 @@ def get_window_data(c, analysis_type, temp_file):
     for row in c:
         if row[column] is not None:
             t.write('%s\t%d\t%d\t%f\n' % (str(row['chrom']),
-                                       int(row['start']),
-                                       int(row['end']),
-                                       float(row[column])))
+                                        int(row['start']),
+                                        int(row['end']),
+                                        float(row[column])))
     t.close()
     # Tell bedtools map that the statistic is in the fourth column.
     # Parameterized for future mods,

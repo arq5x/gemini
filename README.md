@@ -66,7 +66,6 @@ the underlying database as needed.
 
 
 
-
 Have a look at this [poster](http://dl.dropbox.com/u/515640/posters_and_slides/Quinlan-Gemini-Poster.pdf) to get a high-level sense of what ``gemini`` is trying to accomplish.
 
 The first thing we have to do is load an existing VCF file into the gemini framework.  We expect you to have
