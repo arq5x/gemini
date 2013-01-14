@@ -64,7 +64,7 @@ def main():
     # create the top-level parser
     #########################################
     parser = argparse.ArgumentParser(prog='gemini')
-    subparsers = parser.add_subparsers(title='[sub-commands]')
+    subparsers = parser.add_subparsers(title='[sub-commands]', dest='command')
 
     # $ gemini examples
     parser_examples = subparsers.add_parser('examples', help='show usage examples')
