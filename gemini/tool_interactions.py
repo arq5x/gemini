@@ -26,11 +26,9 @@ from collections import defaultdict
 
 config = read_gemini_config()
 path_dirname = config["annotation_dir"]
-out = open("file.dot", 'w')
-samples = defaultdict(list)
-lof = defaultdict(list)
 
 def get_variant_genes(c, args, idx_to_sample):
+    samples = defaultdict(list)
     for r in c:
         gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
         gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))
@@ -57,6 +55,7 @@ def get_variant_genes(c, args, idx_to_sample):
     return samples
     
 def get_lof_genes(c, args, idx_to_sample):
+    lof = defaultdict(list)
     for r in c:
         gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
         gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))  
@@ -70,8 +69,9 @@ def get_lof_genes(c, args, idx_to_sample):
     return lof
                 
 def sample_gene_interactions(c, args, idx_to_sample):
+    out = open("file.dot", 'w')
     #fetch variant gene dict for all samples
-    get_variant_genes(c, args, idx_to_sample)
+    samples = get_variant_genes(c, args, idx_to_sample)
     #file handle for fetching the hprd graph
     file_graph = os.path.join(path_dirname, 'hprd_interaction_graph')
     #load the graph using cPickle and close file handle
@@ -139,9 +139,8 @@ def sample_gene_interactions(c, args, idx_to_sample):
                     k = []
                 
             
-def sample_lof_interactions(c, args, idx_to_sample):
-    get_lof_genes(c, args, idx_to_sample)
-    get_variant_genes(c, args, idx_to_sample)
+def sample_lof_interactions(c, args, idx_to_sample, samples):
+    lof = get_lof_genes(c, args, idx_to_sample)
     #file handle for fetching the hprd graph
     file_graph = os.path.join(path_dirname, 'hprd_interaction_graph')
     #load the graph using cPickle and close file handle
@@ -219,53 +218,54 @@ def sample_lof_interactions(c, args, idx_to_sample):
                                                str(each[9]), \
                                                str(each[10])])
     
+
 def sample_variants(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
     query = "SELECT variant_id, gt_types, gts, gene, impact, biotype, \
-           in_dbsnp, clin_sigs, aaf_1kg_all, aaf_esp_all, chrom, start, end  \
-          FROM variants"
+                    in_dbsnp, clin_sigs, aaf_1kg_all, aaf_esp_all, chrom, \
+                    start, end  \
+             FROM variants"
     c.execute(query)
     
-    if args.var_mode:
-        print "\t".join(['sample','gene','order_of_interaction', \
-                         'interacting_gene', 'var_id', 'chrom', 'start', \
-                         'end', 'impact','biotype', 'in_dbsnp', 'clin_sigs', \
-                         'aaf_1kg_all','aaf_esp_all'])
-    elif (not args.var_mode):
-        print "\t".join(['sample','gene','order_of_interaction', \
+    if args.command == 'interactions':
+        #header  
+        if args.var_mode:
+            print "\t".join(['sample','gene','order_of_interaction', \
+                             'interacting_gene', 'var_id', 'chrom', 'start', \
+                             'end', 'impact', 'biotype', 'in_dbsnp', \
+                             'clin_sigs', 'aaf_1kg_all','aaf_esp_all'])
+        
+        if (not args.var_mode):
+            print "\t".join(['sample','gene','order_of_interaction', \
                      'interacting_gene'])
-    sample_gene_interactions(c, args, idx_to_sample)
+        sample_gene_interactions(c, args, idx_to_sample)
+        
+    elif args.command == 'lof_interactions':
+        samples = get_variant_genes(c, args, idx_to_sample)
+        return samples
+  
     
-    
-def sample_lof_variants(c, args):
+def sample_lof_variants(c, args, samples):
     idx_to_sample = util.map_indicies_to_samples(c)
     query = "SELECT chrom, start, end, \
                              gt_types, gts, gene \
              FROM variants \
              WHERE is_lof='1'"
     c.execute(query)
-      
-    sample_lof_interactions(c, args, idx_to_sample) 
-    
-    
-def variants(c, args):
-    idx_to_sample = util.map_indicies_to_samples(c)
-    query = "SELECT variant_id, gt_types, gts, gene, \
-             impact, biotype, in_dbsnp, clin_sigs, aaf_1kg_all, \
-             aaf_esp_all, chrom, start, end \
-             FROM variants"
-    c.execute(query)
-    
+
+    #header
     if args.var_mode:
         print "\t".join(['sample','lof_gene','order_of_interaction', \
-                    'interacting_gene', 'var_id', 'chrom', 'start', 'end', \
-                    'impact','biotype','in_dbsnp', 'clin_sigs', \
+                    'interacting_gene', 'var_id', 'chrom', 'start', \
+                    'end', 'impact','biotype','in_dbsnp', 'clin_sigs', \
                     'aaf_1kg_all','aaf_esp_all'])
+                    
     elif (not args.var_mode):
         print "\t".join(['sample','lof_gene','order_of_interaction', \
-                    'interacting_gene'])
-    
-    get_variant_genes(c, args, idx_to_sample)
+                         'interacting_gene'])
+                         
+    sample_lof_interactions(c, args, idx_to_sample, samples)
+
     
 def genequery(parser, args):
     if os.path.exists(args.db):
@@ -281,5 +281,5 @@ def lofgenequery(parser, args):
         conn.isolation_level = None
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        variants(c, args)
-        sample_lof_variants(c, args)
+        samples = sample_variants(c, args)
+        sample_lof_variants(c, args, samples)
