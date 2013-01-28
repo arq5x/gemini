@@ -86,18 +86,17 @@ rm obs exp
 # 5. Test filter
 ####################################################################
 echo "    columns.t05...\c"
-echo "PASS
+echo "ABFilter
+LowQual;QUALFilter
 PASS
 PASS
 PASS
 PASS
-PASS
-PASS
-PASS
-PASS
+ABFilter;LowQual;QDFilter;QUALFilter;SBFilter
+ABFilter;LowQual;QUALFilter
 PASS" > exp
 gemini query -q "select filter from variants" \
-	   test.snpEff.vcf.db \
+	   test2.snpeff.db \
        > obs
 check obs exp
 rm obs exp
@@ -165,7 +164,99 @@ gemini query -q "select aaf \
 check obs exp
 rm obs exp
 
+#####################################################################
+# 9. Test allele_count
+#####################################################################
+echo "    columns.t09...\c"
+echo "6
+3
+6
+4
+30
+53
+3
+79
+8
+2" > exp
+gemini query -q "select allele_count from variants" test.snpEff.vcf.db \
+    > obs
+    
+check obs exp
+rm obs exp
 
+########################################################################
+# 10. Test num_alleles
+########################################################################
+echo "    columns.t10...\c"
+echo "14
+52
+56
+58
+30
+56
+106
+90
+88
+80" > exp
+gemini query -q "select num_alleles from variants" test.snpEff.vcf.db \
+    > obs
+check obs exp
+rm obs exp
 
+#########################################################################
+# 11. Test qual_depth
+#########################################################################
+echo "    columns.t11...\c"
+echo "16.7
+13.57
+3.81
+3.98
+35.38
+31.61
+18.4
+26.51
+21.39
+20.74" > exp
+gemini query -q "select qual_depth from variants" test.snpEff.vcf.db \
+    > obs
+check obs exp
+rm obs exp
 
+##########################################################################
+# 12. Test rms_map_qual
+###########################################################################
+echo "    columns.t12...\c"
+echo "29.0
+36.25
+36.09
+36.09
+35.61
+31.06
+29.79
+33.24
+32.18
+31.1" > exp
+gemini query -q "select rms_map_qual from variants" test.snpEff.vcf.db \
+    > obs
+check obs exp
+rm obs exp
+
+##############################################################################
+#13. Test num map qual zero
+##############################################################################
+echo "    columns.t13...\c"
+echo "0
+0
+0
+0
+0
+0
+0
+0
+0
+0" > exp
+gemini query -q "select num_mapq_zero from variants" test.snpEff.vcf.db \
+ > obs
+check obs exp
+rm obs exp
 
