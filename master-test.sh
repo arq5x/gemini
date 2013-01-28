@@ -19,4 +19,14 @@ sh test-columns.sh
 # Test genotype BLOB functionality
 sh test-genotypes.sh
 
+# Test population_gen metrics
+sh test-pop.sh
+
+# Test encode annotations
+sh test-encode.sh
+
+# Test EFF string derived elements in INFO column
+sh test-effstring.sh
+
+
 
