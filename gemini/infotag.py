@@ -27,7 +27,7 @@ def get_ancestral_allele(var):
     """
     Return the reported ancestral allele if there is one
     """
-    anc_allele = _safe_single_attr(var.INFO.get('AA'))
+    return _safe_single_attr(var.INFO.get('AA'))
         
 def get_rms_bq(var):
     """
@@ -100,7 +100,7 @@ def get_num_of_alleles(var):
     return the total number of alleles in called genotypes,
     or None if it isn't present in the VCF.
     """
-    an = _safe_single_attr(var.INFO.get('AN'))
+    return _safe_single_attr(var.INFO.get('AN'))
 
 def get_frac_dels(var):
     """
@@ -128,11 +128,11 @@ def get_allele_count(var):
     Returns allele counts in genotypes,
     or None if it isn't present in the VCF.
     """
-    allele_counts = _safe_single_attr(var.INFO.get('AC'))
+    return _safe_single_attr(var.INFO.get('AC'))
 
 def get_allele_bal(var):
     """
     Returns allele balance for hets,
     or None if it isn't present in the VCF.
     """
-    ab =  _safe_single_attr(var.INFO.get('AB'))
+    return _safe_single_attr(var.INFO.get('AB'))
