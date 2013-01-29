@@ -232,8 +232,8 @@ def get_esp_info(var):
                     # divide by 100 because ESP reports allele 
                     # frequencies as percentages.
                     aaf_EA = float(lines[0]) / 100.0
-                    aaf_AA = float(lines[0]) / 100.0
-                    aaf_ALL = float(lines[0]) / 100.0
+                    aaf_AA = float(lines[1]) / 100.0
+                    aaf_ALL = float(lines[2]) / 100.0
                     
                 #Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
