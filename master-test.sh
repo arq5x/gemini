@@ -22,6 +22,12 @@ sh test-genotypes.sh
 # Test population_gen metrics
 sh test-pop.sh
 
+# Test mappability
+sh test-map.sh
+
+# Test genome annotations
+sh test-genome.sh
+
 # Test encode annotations
 sh test-encode.sh
 

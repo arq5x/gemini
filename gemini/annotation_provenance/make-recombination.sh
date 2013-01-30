@@ -2,6 +2,7 @@ wget http://hapmap.ncbi.nlm.nih.gov/downloads/recombination/2011-01_phaseII_B37/
 
 tar -zxvf genetic_map_HapMapII_GRCh37.tar.gz --exclude=README.txt
 
+# The headers are as follows: Chrom	Position(bp)	Rate(cM/Mb)	Map(cM)
 # combine the files and get rid of the headers
 # the awk statement is required to create BED format,
 # as the original file just has a single position.
