@@ -4,18 +4,88 @@ import sqlite3
 import os
 import sys
 import collections
-
+import re
 
 from gemini.config import read_gemini_config
 
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
 
-# namedtuples for data returned from specific annotations
-DbSnpInfo = collections.namedtuple("DbSnpInfo", 
-                                   "rs_ids \
-                                   in_omim \
-                                   clin_sig")
+class ClinVarInfo(object):
+    def __init__(self):
+        self.clinvar_dbsource = None
+        self.clinvar_dbsource_id = None
+        self.clinvar_origin = None
+        self.clinvar_sig = None
+        self.clinvar_dsdb = None
+        self.clinvar_dsdbid = None
+        self.clinvar_disease_name = None
+        self.clinvar_disease_acc = None
+        self.clinvar_in_omim = None
+        self.clinvar_in_locus_spec_db = None
+        self.clinvar_on_diag_assay = None
+    
+        self.origin_code_map = {'0': 'unknown', 
+                                '1': 'germline', 
+                                '2': 'somatic', 
+                                '4': 'inherited', 
+                                '8': 'paternal', 
+                                '16': 'maternal',
+                                '32': 'de-novo', 
+                                '64': 'biparental',
+                                '128': 'uniparental', 
+                                '256': 'not-tested',
+                                '512': 'tested-inconclusive', 
+                                '1073741824': 'other'}
+        
+        self.sig_code_map =    {'0': 'unknown', 
+                                '1': 'untested', 
+                                '2': 'non-pathogenic', 
+                                '3': 'probable-non-pathogenic',
+                                '4': 'probable-pathogenic', 
+                                '5': 'pathogenic', 
+                                '6': 'drug-response',
+                                '7': 'histocompatibility', 
+                                '255': 'other'}
+                                
+    def __repr__(self):
+        return '\t'.join([self.clinvar_dbsource,
+                          self.clinvar_dbsource_id,
+                          self.clinvar_origin,
+                          self.clinvar_sig,
+                          self.clinvar_dsdb,
+                          self.clinvar_dsdbid,
+                          self.clinvar_disease_name,
+                          self.clinvar_disease_acc,
+                          str(self.clinvar_in_omim),
+                          str(self.clinvar_in_locus_spec_db),
+                          str(self.clinvar_on_diag_assay)])
+
+    def lookup_clinvar_origin(self, origin_code):
+        try:
+            return self.origin_code_map[origin_code]
+        except KeyError:
+            return None
+    
+    def lookup_clinvar_significance(self, sig_code):
+        if "|" not in sig_code:
+            try:
+                return self.sig_code_map[sig_code]
+            except KeyError:
+                return None
+        else:
+            sigs = set(sig_code.split('|'))
+            # e.g., 255|255|255
+            if len(sigs) == 1:
+                try:
+                    return self.sig_code_map[sigs.pop()]
+                except KeyError:
+                    return None
+            # e.g., 1|5|255
+            else:
+                return "mixed"
+
+                                   
 ESPInfo = collections.namedtuple("ESPInfo", 
                                   "found \
                                   aaf_EA \
@@ -52,6 +122,7 @@ def load_annos():
     anno_files   = {
         'cytoband'     : os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
         'dbsnp'        : os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
+        'clinvar'      : os.path.join(anno_dirname, 'clinvar_20130118.vcf.gz'),
         'gwas'         : os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
         'rmsk'         : os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
         'segdup'       : os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
@@ -175,13 +246,67 @@ def get_cyto_info(var):
             cyto_band += hit.contig + hit.name
     return cyto_band if len(cyto_band) > 0 else None
 
+
+
+
+
+def get_clinvar_info(var):
+    """
+    Returns a suite of annotations from ClinVar
+    
+    ClinVarInfo named_tuple:
+    --------------------------------------------------------------------------    
+    # clinvar_dbsource         = CLNSRC=OMIM Allelic Variant;
+    # clinvar_dbsource_id      = CLNSRCID=103320.0001;
+    # clinvar_origin           = CLNORIGIN=1
+    # clinvar_sig              = CLNSIG=5
+    # clinvar_dsdb             = CLNDSDB=GeneReviews:NCBI:OMIM:Orphanet;
+    # clinvar_dsdbid           = CLNDSDBID=NBK1168:C1850792:254300:590;
+    # clinvar_disease_name     = CLNDBN=Myasthenia\x2c limb-girdle\x2c familial;
+    # clinvar_disease_acc      = CLNACC=RCV000019902.1
+    # clinvar_in_omim          = OM
+    # clinvar_in_locus_spec_db = LSD
+    # clinvar_on_diag_assay    = CDA
+    """
+    
+    clinvar = ClinVarInfo()
+    
+    # report the first overlapping ClinVar variant Most often, just one).
+    for hit in annotations_in_region(var, "clinvar", "vcf", "grch37"):
+        # load each VCF INFO key/value pair into a DICT
+        info_map = {}
+        for info in hit.info.split(";"):
+            if info.find("=") > 0:
+                (key, value) = info.split("=")
+                info_map[key] = value
+            else:
+                info_map[info] = True
+
+        clinvar.clinvar_dbsource         = info_map['CLNSRC']   or None
+        clinvar.clinvar_dbsource_id      = info_map['CLNSRCID'] or None
+        clinvar.clinvar_origin           = \
+                        clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
+        clinvar.clinvar_sig              = \
+                        clinvar.lookup_clinvar_significance(info_map['CLNSIG'])
+        clinvar.clinvar_dsdb             = info_map['CLNDSDB']   or None
+        clinvar.clinvar_dsdbid           = info_map['CLNDSDBID'] or None
+        # Clinvar represents commas as \x2c.  Make them commas.
+        raw_disease_name = info_map['CLNDBN'] or None
+        clinvar.clinvar_disease_name     = \
+                        raw_disease_name.replace('\\x2c', ',')
+        clinvar.clinvar_disease_acc      = info_map['CLNACC']    or None
+        clinvar.clinvar_in_omim          = 1 if 'OM'  in info_map else 0
+        clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
+        clinvar.clinvar_on_diag_assay    = 1 if 'CDA' in info_map else 0
+
+    return clinvar
+
+
 def get_dbsnp_info(var):
     """
     Returns a suite of annotations from dbSNP
     """
     rs_ids  = []
-    clin_sigs = []
-    in_omim = 0
     for hit in annotations_in_region(var, "dbsnp", "vcf", "grch37"):
         rs_ids.append(hit.id)
         # load each VCF INFO key/value pair into a DICT
@@ -190,16 +315,8 @@ def get_dbsnp_info(var):
             if info.find("=") > 0:
                 (key, value) = info.split("=")
                 info_map[key] = value
-        # is the variant in OMIM?
-        if info_map['SAO'] == 0 and info_map['OM']:
-            in_omim = 1
-        # what is the clinical significance of the variant?
-        if info_map.get('SCS') is not None:
-            clin_sigs.append(info_map['SCS'])
         
-    rs_str = ",".join(rs_ids) if len(rs_ids) > 0 else None
-    clin_sigs_str = ",".join(clin_sigs) if len(clin_sigs) > 0 else None
-    return DbSnpInfo(rs_str, in_omim, clin_sigs_str)
+    return ",".join(rs_ids) if len(rs_ids) > 0 else None
 
 
 def get_esp_info(var):

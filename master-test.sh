@@ -19,6 +19,9 @@ sh test-columns.sh
 # Test genotype BLOB functionality
 sh test-genotypes.sh
 
+# Test ClinVar attributes
+sh test-clinvar.sh
+
 # Test population_gen metrics
 sh test-pop.sh
 

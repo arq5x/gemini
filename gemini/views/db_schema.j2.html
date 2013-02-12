@@ -562,23 +562,68 @@
             </div>
             </td>
             </tr>
-            <tr class="row-odd"><td>clins_sigs</td>
+            <tr class="row-odd"><td>clinvar_sig</td>
             <td>STRING</td>
             <td><div class="first last line-block">
-            <div class="line">A comma-separated list of clinical significance scores for each</div>
-            <div class="line">of the rs_ids that the variant overlaps in dbsnp. Per dbSNP:</div>
-            <div class="line">0 : unknown   1 : untested   2 : non-pathogenic</div>
-            <div class="line">3 : probable-non-pathogenic  4 : probable-pathogenic</div>
-            <div class="line">5 : pathogenic  6 : drug-response  7 : histocompatibility</div>
-            <div class="line">255 : other</div>
+            <div class="line">The clinical significance scores for each</div>
+            <div class="line">of the variant according to ClinVar:</div>
+            <div class="line"><em>unknown</em>, <em>untested</em>, <em>non-pathogenic</em></div>
+            <div class="line"><em>probable-non-pathogenic</em>, <em>probable-pathogenic</em></div>
+            <div class="line"><em>pathogenic</em>, <em>drug-response</em>, <em>histocompatibility</em></div>
+            <div class="line"><em>other</em></div>
             </div>
             </td>
             </tr>
+            <tr class="row-even"><td>clinvar_disease_name</td>
+            <td>STRING</td>
+            <td>The name of the disease to which the variant is relevant</td>
+            </tr>
+            <tr class="row-odd"><td>clinvar_dbsource</td>
+            <td>STRING</td>
+            <td>Variant Clinical Channel IDs</td>
+            </tr>
+            <tr class="row-even"><td>clinvar_dbsource_id</td>
+            <td>STRING</td>
+            <td>The record id in the above database</td>
+            </tr>
+            <tr class="row-odd"><td>clinvar_origin</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">The type of variant.</div>
+            <div class="line">Any of:</div>
+            <div class="line"><em>unknown</em>, <em>germline</em>, <em>somatic</em>,</div>
+            <div class="line"><em>inherited</em>, <em>paternal</em>, <em>maternal</em>,</div>
+            <div class="line"><em>de-novo</em>, <em>biparental</em>, <em>uniparental</em>,</div>
+            <div class="line"><em>not-tested</em>, <em>tested-inconclusive</em>,</div>
+            <div class="line"><em>other</em></div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>clinvar_dsdb</td>
+            <td>STRING</td>
+            <td>Variant disease database name</td>
+            </tr>
+            <tr class="row-odd"><td>clinvar_dsdbid</td>
+            <td>STRING</td>
+            <td>Variant disease database ID</td>
+            </tr>
+            <tr class="row-even"><td>clinvar_disease_acc</td>
+            <td>STRING</td>
+            <td>Variant Accession and Versions</td>
+            </tr>
+            <tr class="row-odd"><td>clinvar_in_locus_spec_db</td>
+            <td>BOOL</td>
+            <td>Submitted from a locus-specific database?</td>
+            </tr>
+            <tr class="row-even"><td>clinvar_on_diag_assay</td>
+            <td>BOOL</td>
+            <td>Variation is interrogated in a clinical diagnostic assay?</td>
+            </tr>
             </tbody>
+
         </table>
       </div>
-      
-      
+
       <a name="variants-genome-anno"></a>
       <div class="alert alert-info">
           Genome annotations

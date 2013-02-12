@@ -166,8 +166,9 @@ class GeminiLoader(object):
         # collect annotations from gemini's custom annotation files
         ############################################################
         cyto_band         = annotations.get_cyto_info(var)
-        dbsnp_info        = annotations.get_dbsnp_info(var)
-        in_dbsnp          = 0 if dbsnp_info.rs_ids is None else 1
+        rs_ids            = annotations.get_dbsnp_info(var)
+        clinvar_info      = annotations.get_clinvar_info(var)
+        in_dbsnp          = 0 if rs_ids is None else 1
         rmsk_hits         = annotations.get_rmsk_info(var)
         in_cpg            = annotations.get_cpg_island_info(var)
         in_segdup         = annotations.get_segdup_info(var)
@@ -261,7 +262,18 @@ class GeminiLoader(object):
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), pack_blob(gt_depths), 
                    call_rate, in_dbsnp,
-                   dbsnp_info.rs_ids, dbsnp_info.in_omim, dbsnp_info.clin_sig,
+                   rs_ids, 
+                   clinvar_info.clinvar_in_omim,
+                   clinvar_info.clinvar_sig,
+                   clinvar_info.clinvar_disease_name,
+                   clinvar_info.clinvar_dbsource,
+                   clinvar_info.clinvar_dbsource_id,
+                   clinvar_info.clinvar_origin,
+                   clinvar_info.clinvar_dsdb,
+                   clinvar_info.clinvar_dsdbid,
+                   clinvar_info.clinvar_disease_acc,
+                   clinvar_info.clinvar_in_locus_spec_db,
+                   clinvar_info.clinvar_on_diag_assay,
                    cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, hom_ref, het,
                    hom_alt, unknown, aaf,

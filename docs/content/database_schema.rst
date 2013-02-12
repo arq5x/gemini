@@ -133,18 +133,33 @@ aaf_1kg_all               FLOAT         Global allele frequency (based on AC/AN)
 
 
 
-Disease phenotype info.
+Disease phenotype info (from ClinVar).
 ........................
 ========================  ========      ==============================================================================================
 ========================  ========      ==============================================================================================
 in_omim                   BOOL          | 0 : Absence of the variant in OMIM database
                                         | 1 : Presence of the variant in OMIM database
-clins_sigs                STRING        | A comma-separated list of clinical significance scores for each
-                                        | of the rs_ids that the variant overlaps in dbsnp. Per dbSNP:
-                                        | 0 : unknown   1 : untested   2 : non-pathogenic
-                                        | 3 : probable-non-pathogenic  4 : probable-pathogenic
-                                        | 5 : pathogenic  6 : drug-response  7 : histocompatibility
-                                        | 255 : other
+clinvar_sig               STRING        | The clinical significance scores for each
+                                        | of the variant according to ClinVar:
+                                        | *unknown*, *untested*, *non-pathogenic*
+                                        | *probable-non-pathogenic*, *probable-pathogenic*
+                                        | *pathogenic*, *drug-response*, *histocompatibility*
+                                        | *other*
+clinvar_disease_name      STRING        The name of the disease to which the variant is relevant
+clinvar_dbsource          STRING        Variant Clinical Channel IDs
+clinvar_dbsource_id       STRING        The record id in the above database
+clinvar_origin            STRING        | The type of variant.
+                                        | Any of:
+                                        | *unknown*, *germline*, *somatic*,
+                                        | *inherited*, *paternal*, *maternal*,
+                                        | *de-novo*, *biparental*, *uniparental*, 
+                                        | *not-tested*, *tested-inconclusive*, 
+                                        | *other*
+clinvar_dsdb              STRING        Variant disease database name
+clinvar_dsdbid            STRING        Variant disease database ID
+clinvar_disease_acc       STRING        Variant Accession and Versions
+clinvar_in_locus_spec_db  BOOL          Submitted from a locus-specific database?
+clinvar_on_diag_assay     BOOL          Variation is interrogated in a clinical diagnostic assay?
 ========================  ========      ==============================================================================================
 
 

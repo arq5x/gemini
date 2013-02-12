@@ -61,7 +61,16 @@ def create_tables(cursor):
                     in_dbsnp bool,                              \
                     rs_ids text default NULL,                   \
                     in_omim bool,                               \
-                    clin_sigs text default NULL,                \
+                    clinvar_sig text default NULL,              \
+                    clinvar_disease_name text default NULL,     \
+                    clinvar_dbsource text default NULL,         \
+                    clinvar_dbsource_id text default NULL,      \
+                    clinvar_origin text default NULL,           \
+                    clinvar_dsdb text default NULL,             \
+                    clinvar_dsdbid text default NULL,           \
+                    clinvar_disease_acc text default NULL,      \
+                    clinvar_in_locus_spec_db bool,              \
+                    clinvar_on_diag_assay bool,                 \
                     cyto_band text default NULL,                \
                     rmsk text default NULL,                     \
                     in_cpg_island bool,                         \
@@ -205,7 +214,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?)', \
+                                                     ?,?,?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
     
