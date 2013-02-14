@@ -179,9 +179,8 @@ class GeminiLoader(object):
         gms               = annotations.get_gms(var)
         grc               = annotations.get_grc(var)
         encode_tfbs       = annotations.get_encode_tfbs(var)
+        encode_dnaseI     = annotations.get_encode_dnase_clusters(var)
         encode_cons_seg   = annotations.get_encode_consensus_segs(var)
-        encode_segway_seg = annotations.get_encode_segway_segs(var)
-        encode_chrhmm_seg = annotations.get_encode_chromhmm_segs(var)
 
         # impact is a list of impacts for this variant
         impacts = None
@@ -300,24 +299,14 @@ class GeminiLoader(object):
                    thousandG.aaf_EUR, thousandG.aaf_ALL, grc, 
                    gms.illumina, gms.solid, gms.iontorrent, 
                    encode_tfbs,
+                   encode_dnaseI.cell_count,
+                   encode_dnaseI.cell_list,
                    encode_cons_seg.gm12878,
                    encode_cons_seg.h1hesc,
                    encode_cons_seg.helas3,
                    encode_cons_seg.hepg2,
                    encode_cons_seg.huvec,
-                   encode_cons_seg.k562,
-                   encode_segway_seg.gm12878,
-                   encode_segway_seg.h1hesc,
-                   encode_segway_seg.helas3,
-                   encode_segway_seg.hepg2,
-                   encode_segway_seg.huvec,
-                   encode_segway_seg.k562,
-                   encode_chrhmm_seg.gm12878,
-                   encode_chrhmm_seg.h1hesc,
-                   encode_chrhmm_seg.helas3,
-                   encode_chrhmm_seg.hepg2,
-                   encode_chrhmm_seg.huvec,
-                   encode_chrhmm_seg.k562]
+                   encode_cons_seg.k562,]
         return variant, variant_impacts
 
     def _prepare_samples(self):

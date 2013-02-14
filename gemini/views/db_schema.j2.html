@@ -774,13 +774,27 @@
             <td><div class="first last line-block">
             <div class="line">Comma-separated list of transcription factors that were</div>
             <div class="line">observed by ENCODE to bind DNA in this region.  Each hit in the list is constructed</div>
-            <div class="line">as TF_MAXSCORE_CELLCOUNT, where:</div>
+            <div class="line">as TF_CELLCOUNT, where:</div>
             <div class="line-block">
             <div class="line"><em>TF</em> is the transcription factor name</div>
-            <div class="line"><em>MAXSCORE</em> is the highest signal strength observed in any of the cell lines</div>
             <div class="line"><em>CELLCOUNT</em> is the number of cells tested that had nonzero signals.</div>
             </div>
             <div class="line">Provenance: wgEncodeRegTfbsClusteredV2 UCSC table</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>encode_dnaseI_cell_count</td>
+            <td>INTEGER</td>
+            <td><div class="first last line-block">
+            <div class="line">Count of cell types that were observed to have DnaseI hypersensitivity.</div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-even"><td>encode_dnaseI_cell_list</td>
+            <td>STRING</td>
+            <td><div class="first last line-block">
+            <div class="line">Comma separated list of cell types that were observed to have DnaseI hypersensitivity.</div>
+            <div class="line">Provenance: Thurman, et al, <em>Nature</em>, 489, pp. 75-82, 5 Sep. 2012</div>
             </div>
             </td>
             </tr>
@@ -820,56 +834,7 @@
             <td>STRING</td>
             <td>ENCODE consensus segmentation prediction for k562.    See encode_consseg_gm12878 for details.</td>
             </tr>
-            <tr class="row-odd"><td>encode_segway_gm12878</td>
-            <td>STRING</td>
-            <td>ENCODE Segway segmentation prediction for GM12878.</td>
-            </tr>
-            <tr class="row-even"><td>encode_segway_h1hesc</td>
-            <td>STRING</td>
-            <td>ENCODE Segway segmentation prediction for h1HESC.</td>
-            </tr>
-            <tr class="row-odd"><td>encode_segway_helas3</td>
-            <td>STRING</td>
-            <td>ENCODE Segway segmentation prediction for Helas3.</td>
-            </tr>
-            <tr class="row-even"><td>encode_segway_hepg2</td>
-            <td>STRING</td>
-            <td>ENCODE Segway segmentation prediction for HEPG2.</td>
-            </tr>
-            <tr class="row-odd"><td>encode_segway_huvec</td>
-            <td>STRING</td>
-            <td>ENCODE Segway segmentation prediction for HuVEC.</td>
-            </tr>
-            <tr class="row-even"><td>encode_segway_k562</td>
-            <td>STRING</td>
-            <td>ENCODE Segway segmentation prediction for k562.</td>
-            </tr>
-            <tr class="row-odd"><td>encode_chromhmm_gm12878</td>
-            <td>STRING</td>
-            <td>ENCODE ChromHMM segmentation prediction for GM12878.</td>
-            </tr>
-            <tr class="row-even"><td>encode_chromhmm_h1hesc</td>
-            <td>STRING</td>
-            <td>ENCODE ChromHMM segmentation prediction for h1HESC.</td>
-            </tr>
-            <tr class="row-odd"><td>encode_chromhmm_helas3</td>
-            <td>STRING</td>
-            <td>ENCODE ChromHMM segmentation prediction for Helas3.</td>
-            </tr>
-            <tr class="row-even"><td>encode_chromhmm_hepg2</td>
-            <td>STRING</td>
-            <td>ENCODE ChromHMM segmentation prediction for HEPG2.</td>
-            </tr>
-            <tr class="row-odd"><td>encode_chromhmm_huvec</td>
-            <td>STRING</td>
-            <td>ENCODE ChromHMM segmentation prediction for HuVEC.</td>
-            </tr>
-            <tr class="row-even"><td>encode_chromhmm_k562</td>
-            <td>STRING</td>
-            <td>ENCODE ChromHMM segmentation prediction for k562.</td>
-            </tr>
-            </tbody>
-          </table>
+            </tbody>          </table>
       </div>
       
       

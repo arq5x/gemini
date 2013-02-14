@@ -210,11 +210,13 @@ ENCODE information
 ========================  ========      ==============================================================================================
 encode_tfbs               STRING        | Comma-separated list of transcription factors that were
                                         | observed by ENCODE to bind DNA in this region.  Each hit in the list is constructed
-                                        | as TF_MAXSCORE_CELLCOUNT, where:
+                                        | as TF_CELLCOUNT, where:
                                         |   *TF* is the transcription factor name
-                                        |   *MAXSCORE* is the highest signal strength observed in any of the cell lines
                                         |   *CELLCOUNT* is the number of cells tested that had nonzero signals.
                                         | Provenance: wgEncodeRegTfbsClusteredV2 UCSC table
+encode_dnaseI_cell_count  INTEGER       | Count of cell types that were observed to have DnaseI hypersensitivity.
+encode_dnaseI_cell_list   STRING        | Comma separated list of cell types that were observed to have DnaseI hypersensitivity.
+                                        | Provenance: Thurman, et al, *Nature*, 489, pp. 75-82, 5 Sep. 2012
 encode_consensus_gm12878  STRING        | ENCODE consensus segmentation prediction for GM12878.
                                         |
                                         | CTCF: CTCF-enriched element
@@ -230,18 +232,6 @@ encode_consensus_helas3   STRING        ENCODE consensus segmentation prediction
 encode_consensus_hepg2    STRING        ENCODE consensus segmentation prediction for HEPG2.   See encode_consseg_gm12878 for details.          
 encode_consensus_huvec    STRING        ENCODE consensus segmentation prediction for HuVEC.   See encode_consseg_gm12878 for details.        
 encode_consensus_k562     STRING        ENCODE consensus segmentation prediction for k562.    See encode_consseg_gm12878 for details.
-encode_segway_gm12878     STRING        ENCODE Segway segmentation prediction for GM12878.
-encode_segway_h1hesc      STRING        ENCODE Segway segmentation prediction for h1HESC.   
-encode_segway_helas3      STRING        ENCODE Segway segmentation prediction for Helas3.     
-encode_segway_hepg2       STRING        ENCODE Segway segmentation prediction for HEPG2.       
-encode_segway_huvec       STRING        ENCODE Segway segmentation prediction for HuVEC.     
-encode_segway_k562        STRING        ENCODE Segway segmentation prediction for k562.      
-encode_chromhmm_gm12878   STRING        ENCODE ChromHMM segmentation prediction for GM12878.
-encode_chromhmm_h1hesc    STRING        ENCODE ChromHMM segmentation prediction for h1HESC.   
-encode_chromhmm_helas3    STRING        ENCODE ChromHMM segmentation prediction for Helas3.     
-encode_chromhmm_hepg2     STRING        ENCODE ChromHMM segmentation prediction for HEPG2.       
-encode_chromhmm_huvec     STRING        ENCODE ChromHMM segmentation prediction for HuVEC.     
-encode_chromhmm_k562      STRING        ENCODE ChromHMM segmentation prediction for k562.        
 ========================  ========      ==============================================================================================
 
 |

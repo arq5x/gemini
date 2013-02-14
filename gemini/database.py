@@ -133,25 +133,15 @@ def create_tables(cursor):
                     gms_illumina float,                         \
                     gms_solid float,                            \
                     gms_iontorrent float,                       \
-                    encode_tfbs,                                \
+                    encode_tfbs text,                           \
+                    encode_dnaseI_cell_count integer,           \
+                    encode_dnaseI_cell_list text,               \
                     encode_consensus_gm12878 text,              \
                     encode_consensus_h1hesc text,               \
                     encode_consensus_helas3 text,               \
                     encode_consensus_hepg2 text,                \
                     encode_consensus_huvec text,                \
                     encode_consensus_k562 text,                 \
-                    encode_segway_gm12878 text,                 \
-                    encode_segway_h1hesc text,                  \
-                    encode_segway_helas3 text,                  \
-                    encode_segway_hepg2 text,                   \
-                    encode_segway_huvec text,                   \
-                    encode_segway_k562 text,                    \
-                    encode_chromhmm_gm12878 text,               \
-                    encode_chromhmm_h1hesc text,                \
-                    encode_chromhmm_helas3 text,                \
-                    encode_chromhmm_hepg2 text,                 \
-                    encode_chromhmm_huvec text,                 \
-                    encode_chromhmm_k562 text,                  \
                     PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (   \
@@ -205,7 +195,6 @@ def insert_variation(cursor, buffer):
     """
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \

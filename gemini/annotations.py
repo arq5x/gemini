@@ -92,6 +92,9 @@ ESPInfo = collections.namedtuple("ESPInfo",
                                   aaf_AA \
                                   aaf_ALL \
                                   exome_chip")
+ENCODEDnaseIClusters = collections.namedtuple("ENCODEDnaseIClusters", 
+                                        "cell_count \
+                                         cell_list")
 ENCODESegInfo = collections.namedtuple("ENCODESegInfo", 
                                         "gm12878 \
                                          h1hesc \
@@ -139,13 +142,11 @@ def load_annos():
                          'GRCh37-gms-mappability.vcf.gz'),
         'grc'          : os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
         'encode_tfbs'          : os.path.join(anno_dirname, \
-                                'wgEncodeRegTfbsClusteredV2.cell_count.bed.gz'),
+                      'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
+        'encode_dnase1'        : os.path.join(anno_dirname, \
+                                'stam.125cells.dnaseI.hg19.bed.gz'),
         'encode_consensus_segs': os.path.join(anno_dirname, \
-                                'encode.6celltypes.consensus.bedg.gz'),
-        'encode_segway_segs'   : os.path.join(anno_dirname, \
-                                'encode.6celltypes.segway.bedg.gz'),
-        'encode_chromhmm_segs' : os.path.join(anno_dirname, \
-                                'encode.6celltypes.chromhmm.bedg.gz')
+                                'encode.6celltypes.consensus.bedg.gz')
     }
 
     for anno in anno_files:
@@ -469,24 +470,42 @@ def get_grc(var):
         regions.add(hit.name)
     return ",".join(sorted(list(regions))) if len(regions) > 0 else None
 
+
 def get_encode_tfbs(var):
     """
     Returns a comma-separated list of transcription factors that were
     observed to bind DNA in this region.  Each hit in the list is constructed
-    as TF_MAXSCORE_CELLCOUNT, where:
+    as TF_CELLCOUNT, where:
       TF is the transcription factor name
-      MAXSCORE is the highest signal strength observed in any of the cell lines
       CELLCOUNT is the number of cells tested that had nonzero signals 
 
     NOTE: the annotation file is in BED format, but pysam doesn't
     tolerate BED files with more than 12 fields, so we just use the base
     tuple parser and grab the name column (4th column)
     """
-    encode_tfbs_hits = []
-
+    tfbs = []
     for hit in annotations_in_region(var, "encode_tfbs", "tuple"):
-        encode_tfbs_hits.append(hit[3])
-    return ",".join(encode_tfbs_hits) if len(encode_tfbs_hits) > 0 else None
+        tfbs.append(hit[3] + "_" + hit[4])
+    if len(tfbs) > 0:
+        return ','.join(tfbs)
+    else:
+        return None
+
+def get_encode_dnase_clusters(var):
+    """
+    If a variant overlaps a DnaseI cluster, return the number of cell types
+    that were found to have DnaseI HS at in the given interval, as well
+    as a comma-separated list of each cell type:
+    
+    Example data:
+    chr1	20042385	20042535	4	50.330600	8988t;K562;Osteobl;hTH1
+    chr1	20043060	20043210	3	12.450500	Gm12891;T47d;hESCT0
+    chr1	20043725	20043875	2	5.948180	Fibrobl;Fibrop
+    chr1	20044125	20044275	3	6.437350	HESC;Ips;hTH1
+    """
+    for hit in annotations_in_region(var, "encode_dnase1", "tuple"):
+        return ENCODEDnaseIClusters(hit[3], hit[5])
+    return ENCODEDnaseIClusters(None, None)
 
 def get_encode_consensus_segs(var):
     """
