@@ -40,8 +40,13 @@ class GeminiLoader(object):
         self.buffer_size = buffer_size
         # initialize genotype counts for each sample
         self._init_sample_gt_counts()
-        
+
         self._get_anno_version()
+
+    def store_resources(self):
+        """Create table of annotation resources used in this gemini database.
+        """
+        database.insert_resources(self.c, annotations.get_resources())
 
     def populate_from_vcf(self):
         """
@@ -60,7 +65,7 @@ class GeminiLoader(object):
             # add each of the impact for this variant (1 per gene/transcript)
             for var_impact in variant_impacts:
                 self.var_impacts_buffer.append(var_impact)
-            
+
             # only infer genotypes if requested
             if not self.args.noload_genotypes and not self.args.no_genotypes:
                 pass
@@ -99,7 +104,7 @@ class GeminiLoader(object):
             return vcf.VCFReader(open(self.args.vcf), 'rb', compressed=True)
         else:
             return vcf.VCFReader(open(self.args.vcf), 'rb')
-            
+
     def _get_anno_version(self):
         """
         Extract the snpEff or VEP version used
@@ -135,7 +140,7 @@ class GeminiLoader(object):
         self.c.execute('PRAGMA journal_mode=MEMORY')
         # create the gemini database tables for the new DB
         database.create_tables(self.c)
-        
+
     def _prepare_variation(self, var):
         """
         private method to collect metrics for
@@ -147,7 +152,7 @@ class GeminiLoader(object):
         pi_hat = None
         inbreeding_coeff = None
         hom_ref = het = hom_alt = unknown = None
-    
+
         # only compute certain metrics if genoypes are available
         if not self.args.no_genotypes:
             hom_ref = var.num_hom_ref
@@ -191,7 +196,7 @@ class GeminiLoader(object):
         biotype = consequence = effect_severity = None
         is_coding = is_exonic = is_lof = 0
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
-    
+
         if self.args.anno_type is not None:
             impacts = func_impact.interpret_impact(self.args, var)
             severe_impacts = \
@@ -214,7 +219,7 @@ class GeminiLoader(object):
                 is_exonic = severe_impacts.is_exonic
                 is_coding = severe_impacts.is_coding
                 is_lof    = severe_impacts.is_lof
-        
+
         # construct the filter string
         filter = None
         if var.FILTER is not None and var.FILTER != ".":
@@ -241,27 +246,27 @@ class GeminiLoader(object):
         variant_impacts = []
         if impacts is not None:
             for idx, impact in enumerate(impacts):
-                var_impact = [self.v_id, (idx+1), impact.gene, 
+                var_impact = [self.v_id, (idx+1), impact.gene,
                               impact.transcript, impact.is_exonic,
-                              impact.is_coding, impact.is_lof, 
-                              impact.exon, impact.codon_change, 
-                              impact.aa_change, impact.aa_length, 
-                              impact.biotype, impact.consequence, 
-                              impact.effect_severity, impact.polyphen_pred, 
-                              impact.polyphen_score, impact.sift_pred, 
+                              impact.is_coding, impact.is_lof,
+                              impact.exon, impact.codon_change,
+                              impact.aa_change, impact.aa_length,
+                              impact.biotype, impact.consequence,
+                              impact.effect_severity, impact.polyphen_pred,
+                              impact.polyphen_score, impact.sift_pred,
                               impact.sift_score]
                 variant_impacts.append(var_impact)
 
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
-        variant = [chrom, var.start, var.end, 
-                   self.v_id, anno_id, var.REF, ','.join(var.ALT), 
-                   var.QUAL, filter, var.var_type, 
+        variant = [chrom, var.start, var.end,
+                   self.v_id, anno_id, var.REF, ','.join(var.ALT),
+                   var.QUAL, filter, var.var_type,
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
-                   pack_blob(gt_phases), pack_blob(gt_depths), 
+                   pack_blob(gt_phases), pack_blob(gt_depths),
                    call_rate, in_dbsnp,
-                   rs_ids, 
+                   rs_ids,
                    clinvar_info.clinvar_in_omim,
                    clinvar_info.clinvar_sig,
                    clinvar_info.clinvar_disease_name,
@@ -277,27 +282,27 @@ class GeminiLoader(object):
                    in_segdup, is_conserved, hom_ref, het,
                    hom_alt, unknown, aaf,
                    hwe_p_value, inbreeding_coeff, pi_hat,
-                   recomb_rate, gene, transcript,    
+                   recomb_rate, gene, transcript,
                    is_exonic, is_coding, is_lof, exon, codon_change,
                    aa_change, aa_length, biotype, consequence, effect_severity,
                    polyphen_pred, polyphen_score, sift_pred, sift_score,
                    infotag.get_ancestral_allele(var), infotag.get_rms_bq(var),
                    infotag.get_cigar(var),
-                   infotag.get_depth(var), infotag.get_strand_bias(var), 
-                   infotag.get_rms_map_qual(var), infotag.get_homopol_run(var), 
-                   infotag.get_map_qual_zero(var), 
+                   infotag.get_depth(var), infotag.get_strand_bias(var),
+                   infotag.get_rms_map_qual(var), infotag.get_homopol_run(var),
+                   infotag.get_map_qual_zero(var),
                    infotag.get_num_of_alleles(var),
-                   infotag.get_frac_dels(var), 
-                   infotag.get_haplotype_score(var), 
+                   infotag.get_frac_dels(var),
+                   infotag.get_haplotype_score(var),
                    infotag.get_quality_by_depth(var),
                    infotag.get_allele_count(var), infotag.get_allele_bal(var),
-                   infotag.in_hm2(var), infotag.in_hm3(var), 
+                   infotag.in_hm2(var), infotag.in_hm3(var),
                    infotag.is_somatic(var),
-                   esp.found, esp.aaf_EA, 
-                   esp.aaf_AA, esp.aaf_ALL, esp.exome_chip, thousandG.found, 
-                   thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR, 
-                   thousandG.aaf_EUR, thousandG.aaf_ALL, grc, 
-                   gms.illumina, gms.solid, gms.iontorrent, 
+                   esp.found, esp.aaf_EA,
+                   esp.aaf_AA, esp.aaf_ALL, esp.exome_chip, thousandG.found,
+                   thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR,
+                   thousandG.aaf_EUR, thousandG.aaf_ALL, grc,
+                   gms.illumina, gms.solid, gms.iontorrent,
                    encode_tfbs,
                    encode_dnaseI.cell_count,
                    encode_dnaseI.cell_list,
@@ -321,7 +326,7 @@ class GeminiLoader(object):
 
         self.ped_hash = {}
         if self.args.ped_file is not None:
-            for line in open(self.args.ped_file, 'r'): 
+            for line in open(self.args.ped_file, 'r'):
                 field = line.strip().split("\t")
                 if len(field) > 1 and not field[0].startswith("#"):
                     ped = pedformat(field)
@@ -331,27 +336,27 @@ class GeminiLoader(object):
         for sample in self.samples:
             i = self.sample_to_id[sample]
             if self.ped_hash.has_key(sample):
-                ped = self.ped_hash[sample] 
+                ped = self.ped_hash[sample]
                 sample_list = [i, sample, ped.family, ped.paternal,
-                               ped.maternal, ped.sex, ped.phenotype, 
+                               ped.maternal, ped.sex, ped.phenotype,
                                ped.ethnicity]
             else:
                 sample_list = [i, sample, None, None, None, None, None, None]
             database.insert_sample(self.c, sample_list)
-    
+
     def _init_sample_gt_counts(self):
         """
         Initialize a 2D array of counts for tabulating
         the count of each genotype type for eaxh sample.
-        
+
         The first dimension is one bucket for each sample.
         The second dimension (size=4) is a count for each gt type.
            Index 0 == # of hom_ref genotypes for the sample
            Index 1 == # of het genotypes for the sample
            Index 2 == # of missing genotypes for the sample
-           Index 3 == # of hom_alt genotypes for the sample       
+           Index 3 == # of hom_alt genotypes for the sample
         """
-        self.sample_gt_counts = np.array(np.zeros( (len(self.samples), 4) ), 
+        self.sample_gt_counts = np.array(np.zeros( (len(self.samples), 4) ),
                                          dtype='uint32')
 
     def _update_sample_gt_counts(self, gt_types):
@@ -368,12 +373,12 @@ class GeminiLoader(object):
         self.c.execute("BEGIN TRANSACTION")
         for idx, gt_counts in enumerate(self.sample_gt_counts):
             self.c.execute("""insert into sample_genotype_counts values \
-                            (?,?,?,?,?)""", 
-                            [idx, 
+                            (?,?,?,?,?)""",
+                            [idx,
                             int(gt_counts[0]),  # hom_ref
                             int(gt_counts[1]),  # het
                             int(gt_counts[3]),  # hom_alt
-                            int(gt_counts[2])]) # missing 
+                            int(gt_counts[2])]) # missing
         self.c.execute("END")
 
 def load(parser, args):
@@ -386,11 +391,11 @@ def load(parser, args):
 
     # collect of the the add'l annotation files
     annotations.load_annos()
-    
+
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
     gemini_loader = GeminiLoader(args)
+    gemini_loader.store_resources()
     gemini_loader.populate_from_vcf()
     gemini_loader.build_indices_and_disconnect()
     gemini_loader.store_sample_gt_counts()
-

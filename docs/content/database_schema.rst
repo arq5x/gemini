@@ -340,4 +340,13 @@ LOW               - synonymous_stop
 ================  =======================================
 
 
+The ``resources`` table
+-----------------------
 
+Establishes provenance of annotation resources used to create a Gemini database.
+
+=============  ==========  ==================================================
+column name    type        notes
+=============  ==========  ==================================================
+name           STRING      Name of the annotation type
+resource       STRING      Filename of the resource, with version information
