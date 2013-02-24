@@ -24,30 +24,30 @@ class ClinVarInfo(object):
         self.clinvar_in_omim = None
         self.clinvar_in_locus_spec_db = None
         self.clinvar_on_diag_assay = None
-    
-        self.origin_code_map = {'0': 'unknown', 
-                                '1': 'germline', 
-                                '2': 'somatic', 
-                                '4': 'inherited', 
-                                '8': 'paternal', 
+
+        self.origin_code_map = {'0': 'unknown',
+                                '1': 'germline',
+                                '2': 'somatic',
+                                '4': 'inherited',
+                                '8': 'paternal',
                                 '16': 'maternal',
-                                '32': 'de-novo', 
+                                '32': 'de-novo',
                                 '64': 'biparental',
-                                '128': 'uniparental', 
+                                '128': 'uniparental',
                                 '256': 'not-tested',
-                                '512': 'tested-inconclusive', 
+                                '512': 'tested-inconclusive',
                                 '1073741824': 'other'}
-        
-        self.sig_code_map =    {'0': 'unknown', 
-                                '1': 'untested', 
-                                '2': 'non-pathogenic', 
+
+        self.sig_code_map =    {'0': 'unknown',
+                                '1': 'untested',
+                                '2': 'non-pathogenic',
                                 '3': 'probable-non-pathogenic',
-                                '4': 'probable-pathogenic', 
-                                '5': 'pathogenic', 
+                                '4': 'probable-pathogenic',
+                                '5': 'pathogenic',
                                 '6': 'drug-response',
-                                '7': 'histocompatibility', 
+                                '7': 'histocompatibility',
                                 '255': 'other'}
-                                
+
     def __repr__(self):
         return '\t'.join([self.clinvar_dbsource,
                           self.clinvar_dbsource_id,
@@ -66,7 +66,7 @@ class ClinVarInfo(object):
             return self.origin_code_map[origin_code]
         except KeyError:
             return None
-    
+
     def lookup_clinvar_significance(self, sig_code):
         if "|" not in sig_code:
             try:
@@ -85,24 +85,24 @@ class ClinVarInfo(object):
             else:
                 return "mixed"
 
-                                   
-ESPInfo = collections.namedtuple("ESPInfo", 
+
+ESPInfo = collections.namedtuple("ESPInfo",
                                   "found \
                                   aaf_EA \
                                   aaf_AA \
                                   aaf_ALL \
                                   exome_chip")
-ENCODEDnaseIClusters = collections.namedtuple("ENCODEDnaseIClusters", 
+ENCODEDnaseIClusters = collections.namedtuple("ENCODEDnaseIClusters",
                                         "cell_count \
                                          cell_list")
-ENCODESegInfo = collections.namedtuple("ENCODESegInfo", 
+ENCODESegInfo = collections.namedtuple("ENCODESegInfo",
                                         "gm12878 \
                                          h1hesc \
                                          helas3 \
                                          hepg2 \
                                          huvec \
                                          k562")
-ThousandGInfo = collections.namedtuple("ThousandGInfo", 
+ThousandGInfo = collections.namedtuple("ThousandGInfo",
                                        "found \
                                         aaf_ALL \
                                         aaf_AMR \
@@ -116,7 +116,7 @@ def load_annos():
     each annotation file.  Other modules can then
     access a given handle and fetch data from it
     as follows:
-    
+
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
     """
@@ -179,7 +179,7 @@ def _get_chr_as_grch37(chrom):
     if chrom in ["chrM"]:
         return "MT"
     return chrom if not chrom.startswith("chr") else chrom[3:]
-    
+
 def _get_chr_as_ucsc(chrom):
     return chrom if chrom.startswith("chr") else "chr" + chrom
 
@@ -228,7 +228,7 @@ def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
 def get_cpg_island_info(var):
     """
     Returns a boolean indicating whether or not the
-    variant overlaps a CpG island 
+    variant overlaps a CpG island
     """
     for hit in annotations_in_region(var, "cpg_island", "bed"):
         return True
@@ -243,7 +243,7 @@ def get_cyto_info(var):
     for hit in annotations_in_region(var, "cytoband", "bed"):
         if len(cyto_band) > 0:
             cyto_band += "," + hit.contig + hit.name
-        else: 
+        else:
             cyto_band += hit.contig + hit.name
     return cyto_band if len(cyto_band) > 0 else None
 
@@ -254,9 +254,9 @@ def get_cyto_info(var):
 def get_clinvar_info(var):
     """
     Returns a suite of annotations from ClinVar
-    
+
     ClinVarInfo named_tuple:
-    --------------------------------------------------------------------------    
+    --------------------------------------------------------------------------
     # clinvar_dbsource         = CLNSRC=OMIM Allelic Variant;
     # clinvar_dbsource_id      = CLNSRCID=103320.0001;
     # clinvar_origin           = CLNORIGIN=1
@@ -269,9 +269,9 @@ def get_clinvar_info(var):
     # clinvar_in_locus_spec_db = LSD
     # clinvar_on_diag_assay    = CDA
     """
-    
+
     clinvar = ClinVarInfo()
-    
+
     # report the first overlapping ClinVar variant Most often, just one).
     for hit in annotations_in_region(var, "clinvar", "vcf", "grch37"):
         # load each VCF INFO key/value pair into a DICT
@@ -316,7 +316,7 @@ def get_dbsnp_info(var):
             if info.find("=") > 0:
                 (key, value) = info.split("=")
                 info_map[key] = value
-        
+
     return ",".join(rs_ids) if len(rs_ids) > 0 else None
 
 
@@ -335,33 +335,33 @@ def get_esp_info(var):
             # We need a single ESP entry for a variant
             if fetched != None and len(fetched) == 1 and \
                hit.alt == var.ALT[0] and hit.ref == var.REF:
-                found = True    
+                found = True
                 # loads each VCF INFO key/value pair into a DICT
-                for info in hit.info.split(";"):      
+                for info in hit.info.split(";"):
                     if info.find("=") > 0:
-                    # splits on first occurence of '='   
+                    # splits on first occurence of '='
                     # useful to handle valuerror: too many values to unpack (e.g (a,b) = split(",", (a,b,c,d)) for cases like
-                    #SA=http://www.ncbi.nlm.nih.gov/sites/varvu?gene=4524&amp%3Brs=1801131|http://omim.org/entry/607093#0004  
+                    #SA=http://www.ncbi.nlm.nih.gov/sites/varvu?gene=4524&amp%3Brs=1801131|http://omim.org/entry/607093#0004
                         (key, value) = info.split("=", 1)
                         info_map[key] = value
-                # get the % minor allele frequencies      
+                # get the % minor allele frequencies
                 if info_map.get('MAF') is not None:
                     lines = info_map['MAF'].split(",")
-                    # divide by 100 because ESP reports allele 
+                    # divide by 100 because ESP reports allele
                     # frequencies as percentages.
                     aaf_EA = float(lines[0]) / 100.0
                     aaf_AA = float(lines[1]) / 100.0
                     aaf_ALL = float(lines[2]) / 100.0
-                    
+
                 #Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
                    info_map['EXOME_CHIP'] == "no":
                     exome_chip = 0
                 elif info_map.get('EXOME_CHIP') is not None and \
                      info_map['EXOME_CHIP'] == "yes":
-                    exome_chip = 1        
-    return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)  
-        
+                    exome_chip = 1
+    return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)
+
 def get_1000G_info(var):
     """
     Returns a suite of annotations from the 1000 Genomes project
@@ -376,19 +376,19 @@ def get_1000G_info(var):
            hit.alt == var.ALT[0] and hit.ref == var.REF:
             # loads each VCF INFO key/value pair into a DICT
             found = True
-            for info in hit.info.split(";"):      
+            for info in hit.info.split(";"):
                 if info.find("=") > 0:
                     (key, value) = info.split("=", 1)
                     info_map[key] = value
 
-    return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'), 
-                         info_map.get('ASN_AF'), info_map.get('AFR_AF'), 
+    return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'),
+                         info_map.get('ASN_AF'), info_map.get('AFR_AF'),
                          info_map.get('EUR_AF'))
-            
+
 def get_rmsk_info(var):
     """
     Returns a comma-separated list of annotated repeats
-    that overlap a variant.  Derived from the UCSC rmsk track 
+    that overlap a variant.  Derived from the UCSC rmsk track
     """
     rmsk_hits = []
     for hit in annotations_in_region(var, "rmsk", "bed"):
@@ -399,23 +399,23 @@ def get_rmsk_info(var):
 def get_segdup_info(var):
     """
     Returns a boolean indicating whether or not the
-    variant overlaps a known segmental duplication. 
+    variant overlaps a known segmental duplication.
     """
     for hit in annotations_in_region(var, "segdup", "bed"):
         return True
     return False
-    
+
 def get_conservation_info(var):
     """
     Returns a boolean indicating whether or not the
     variant overlaps a conserved region as defined
     by the 29-way mammalian conservation study.
     http://www.nature.com/nature/journal/v478/n7370/full/nature10530.html
-    
+
     Data file provenance:
     http://www.broadinstitute.org/ftp/pub/assemblies/mammals/29mammals/ \
     29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.gz
-    
+
     # Script to convert for gemini:
     gemini/annotation_provenance/make-29way-conservation.sh
     """
@@ -446,7 +446,7 @@ def _get_first_vcf_hit(hit_iter):
 
 def _get_vcf_info_attrs(hit):
     info_map = {}
-    for info in hit.info.split(";"):      
+    for info in hit.info.split(";"):
         if info.find("=") > 0:
             (key, value) = info.split("=", 1)
             info_map[key] = value
@@ -477,7 +477,7 @@ def get_encode_tfbs(var):
     observed to bind DNA in this region.  Each hit in the list is constructed
     as TF_CELLCOUNT, where:
       TF is the transcription factor name
-      CELLCOUNT is the number of cells tested that had nonzero signals 
+      CELLCOUNT is the number of cells tested that had nonzero signals
 
     NOTE: the annotation file is in BED format, but pysam doesn't
     tolerate BED files with more than 12 fields, so we just use the base
@@ -496,7 +496,7 @@ def get_encode_dnase_clusters(var):
     If a variant overlaps a DnaseI cluster, return the number of cell types
     that were found to have DnaseI HS at in the given interval, as well
     as a comma-separated list of each cell type:
-    
+
     Example data:
     chr1	20042385	20042535	4	50.330600	8988t;K562;Osteobl;hTH1
     chr1	20043060	20043210	3	12.450500	Gm12891;T47d;hESCT0
@@ -511,10 +511,10 @@ def get_encode_consensus_segs(var):
     """
     Queries a meta-BEDGRAPH of consensus ENCODE segmentations for 6 cell types:
     gm12878, h1hesc, helas3, hepg2, huvec, k562
-    
+
     Returns a 6-tuple of the predicted chromatin state of each cell type for the
     region overlapping the variant.
-    
+
     CTCF: CTCF-enriched element
     E:    Predicted enhancer
     PF:   Predicted promoter flanking region
@@ -525,31 +525,36 @@ def get_encode_consensus_segs(var):
     """
     for hit in annotations_in_region(var, "encode_consensus_segs", "tuple"):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
-    
+
     return ENCODESegInfo(None, None, None, None, None, None)
 
 def get_encode_segway_segs(var):
     """
     Queries a meta-BEDGRAPH of SegWay ENCODE segmentations for 6 cell types:
     gm12878, h1hesc, helas3, hepg2, huvec, k562
-    
+
     Returns a 6-tuple of the predicted chromatin state of each cell type for the
     region overlapping the variant.
     """
     for hit in annotations_in_region(var, "encode_segway_segs", "tuple"):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
-    
+
     return ENCODESegInfo(None, None, None, None, None, None)
-    
+
 def get_encode_chromhmm_segs(var):
     """
     Queries a meta-BEDGRAPH of SegWay ENCODE segmentations for 6 cell types:
     gm12878, h1hesc, helas3, hepg2, huvec, k562
-    
+
     Returns a 6-tuple of the predicted chromatin state of each cell type for the
     region overlapping the variant.
     """
     for hit in annotations_in_region(var, "encode_chromhmm_segs", "tuple"):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
-    
+
     return ENCODESegInfo(None, None, None, None, None, None)
+
+def get_resources():
+    """Retrieve list of annotation resources loaded into gemini.
+    """
+    return [(n, os.path.basename(annos[n].filename)) for n in sorted(annos.keys())]

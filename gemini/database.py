@@ -1,5 +1,5 @@
 #!/usr/bin/env python
- 
+
 import sqlite3
 
 def index_variation(cursor):
@@ -180,7 +180,7 @@ def create_tables(cursor):
                     sample_id integer,                               \
                     gt_types BLOB,                                   \
                     PRIMARY KEY(sample_id ASC))''')
-                                                                     
+
     cursor.execute('''create table if not exists sample_genotype_counts ( \
                      sample_id integer,                                   \
                      num_hom_ref integer,                                 \
@@ -188,6 +188,9 @@ def create_tables(cursor):
                      num_hom_alt integer,                                 \
                      num_unknown integer,                                 \
                      PRIMARY KEY(sample_id ASC))''')
+    cursor.execute('''create table if not exists resources ( \
+                     name text,                              \
+                     resource text)''')
 
 def insert_variation(cursor, buffer):
     """
@@ -206,7 +209,7 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?)', \
                                                      buffer)
     cursor.execute("END")
-    
+
 
 def insert_variation_impacts(cursor, buffer):
     """
@@ -222,7 +225,7 @@ def insert_variation_impacts(cursor, buffer):
 
 def insert_sample(cursor,sample_list):
     """
-    Populate the samples with sample ids, names, and 
+    Populate the samples with sample ids, names, and
     other indicative information.
     """
     cursor.execute("BEGIN TRANSACTION")
@@ -230,6 +233,12 @@ def insert_sample(cursor,sample_list):
                                   (?,?,?,?,?,?,?,?)''', sample_list)
     cursor.execute("END")
 
+def insert_resources(cursor, resources):
+    """Populate table of annotation resources used in this database.
+    """
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.executemany('''insert into resources values (?,?)''', resources)
+    cursor.execute("END")
 
 def close_and_commit(cursor, connection):
     """
