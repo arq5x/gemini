@@ -21,7 +21,7 @@ setup(
         name="gemini",
         version=version,
         install_requires=['numpy>=1.6.0', 
-                          'pyparsing>=1.5.6', 
+                          'pyparsing>=1.5.6,<=1.5.7', 
                           'pysam>=0.6',
                           'cyvcf>=0.1.5', 
                           'PyYAML >= 3.10', 
