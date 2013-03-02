@@ -23,6 +23,7 @@ Installation
 ============
 If you are okay living dangerously and potentially being disappointed, you can install ``gemini`` as follows:
 
+    cd gemini
     python setup.py install
 
 One of the more appealing features in ``gemini`` is that it automatically annotates variants in a VCF file with several
