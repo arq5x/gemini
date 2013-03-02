@@ -64,7 +64,7 @@ RP4-758J18.3.1	upstream	LOW	processed_transcript	0	0	0" > exp
 gemini query -q "select gene, impact, impact_severity, biotype, \
                     is_exonic, is_coding, is_lof from variant_impacts" \
                     --header \
-                    test1.snpEff.db \
+                    test1.snpeff.db \
                     > obs
 check obs exp
 rm obs exp

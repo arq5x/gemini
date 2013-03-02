@@ -24,6 +24,6 @@ gemini query -q "select in_omim,
                         clinvar_dsdbid, 
                         clinvar_disease_acc, 
                         clinvar_in_locus_spec_db, 
-                        clinvar_on_diag_assay from variants" test-clinvar.db > obs
+                        clinvar_on_diag_assay from variants" test.clinvar.db > obs
 check obs exp
 rm obs exp

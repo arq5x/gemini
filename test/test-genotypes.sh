@@ -15,7 +15,7 @@ A/A	A/T	A/A	A/A
 ./.	G/G	G/G	G/G" > exp
 gemini query -q "select gts.1094PC0005, gts.1094PC0009, \
 	                    gts.1094PC0012, gts.1094PC0013 \
-	             from variants" test.snpEff.vcf.db \
+	             from variants" test.snpeff.vcf.db \
        > obs
 check obs exp
 rm obs exp
@@ -37,7 +37,7 @@ echo "2	2	2	2
 2	0	0	0" > exp
 gemini query -q "select gt_types.1094PC0005, gt_types.1094PC0009, \
 	                    gt_types.1094PC0012, gt_types.1094PC0013 \
-	             from variants" test.snpEff.vcf.db \
+	             from variants" test.snpeff.vcf.db \
        > obs
 check obs exp
 rm obs exp
@@ -53,7 +53,7 @@ gemini query -q "select gt_types.1094PC0005, gt_types.1094PC0009, \
 	                    gt_types.1094PC0012, gt_types.1094PC0013 \
 	             from variants" \
 			 --gt-filter "gt_types.1094PC0012 == HET" \
-			 test.snpEff.vcf.db \
+			 test.snpeff.vcf.db \
        > obs
 check obs exp
 rm obs exp
@@ -74,7 +74,7 @@ gemini query -q "select chrom, end, ref, alt, \
 			 --gt-filter "(gt_types.1094PC0012 == HET or \
 						   gt_types.1094PC0005 == HET)" \
 			 --header \
-			 test.snpEff.vcf.db \
+			 test.snpeff.vcf.db \
        > obs
 check obs exp
 rm obs exp
@@ -99,7 +99,7 @@ gemini query -q "select chrom, end, ref, alt, \
 	                    gt_depths.1094PC0012, gt_depths.1094PC0013 \
 	             from variants" \
 			 --header \
-			 test.snpEff.vcf.db \
+			 test.snpeff.vcf.db \
        > obs
 check obs exp
 rm obs exp
