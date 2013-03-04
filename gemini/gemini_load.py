@@ -36,10 +36,18 @@ class GeminiLoader(object):
         # create a reader for the VCF file
         self.vcf_reader = self._get_vcf_reader()
         # load sample information
-        self._prepare_samples()
+        
+        if not self.args.no_genotypes and not self.args.no_load_genotypes:
+            # load the sample info from the VCF file.
+            self._prepare_samples()
+            # initialize genotype counts for each sample
+            self._init_sample_gt_counts()
+            self.num_samples = len(self.samples)
+        else:
+            self.num_samples = 0
+            
         self.buffer_size = buffer_size
-        # initialize genotype counts for each sample
-        self._init_sample_gt_counts()
+
 
         self._get_anno_version()
 
@@ -55,7 +63,6 @@ class GeminiLoader(object):
         self.var_buffer = []
         self.var_impacts_buffer = []
         buffer_count = 0
-        num_samples = len(self.samples)
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
@@ -154,7 +161,7 @@ class GeminiLoader(object):
         hom_ref = het = hom_alt = unknown = None
 
         # only compute certain metrics if genoypes are available
-        if not self.args.no_genotypes:
+        if not self.args.no_genotypes and not self.args.no_load_genotypes:
             hom_ref = var.num_hom_ref
             hom_alt = var.num_hom_alt
             het = var.num_het
@@ -165,7 +172,7 @@ class GeminiLoader(object):
                 popgen.get_hwe_likelihood(hom_ref, het, hom_alt, aaf)
             pi_hat = var.nucl_diversity
         else:
-            aaf = extract_aaf(var)
+            aaf = infotag.extract_aaf(var)
 
         ############################################################
         # collect annotations from gemini's custom annotation files
@@ -233,13 +240,19 @@ class GeminiLoader(object):
         # build up numpy arrays for the genotype information.
         # these arrays will be pickled-to-binary, compressed,
         # and loaded as SqlLite BLOB values (see compression.pack_blob)
-        gt_bases  = np.array(var.gt_bases, np.str)  # 'A/G', './.'
-        gt_types  = np.array(var.gt_types, np.int8) # -1, 0, 1, 2
-        gt_phases = np.array(var.gt_phases, np.bool) # T F F
-        gt_depths = np.array(var.gt_depths, np.int32) # 10 37 0
+        if not self.args.no_genotypes and not self.args.no_load_genotypes:
+            gt_bases  = np.array(var.gt_bases, np.str)  # 'A/G', './.'
+            gt_types  = np.array(var.gt_types, np.int8) # -1, 0, 1, 2
+            gt_phases = np.array(var.gt_phases, np.bool) # T F F
+            gt_depths = np.array(var.gt_depths, np.int32) # 10 37 0
 
-        # tally the genotypes
-        self._update_sample_gt_counts(gt_types)
+            # tally the genotypes
+            self._update_sample_gt_counts(gt_types)
+        else:
+            gt_bases = None
+            gt_types = None
+            gt_phases = None
+            gt_depths = None
 
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
@@ -398,4 +411,6 @@ def load(parser, args):
     gemini_loader.store_resources()
     gemini_loader.populate_from_vcf()
     gemini_loader.build_indices_and_disconnect()
-    gemini_loader.store_sample_gt_counts()
+    
+    if not args.no_genotypes and not args.no_load_genotypes:
+        gemini_loader.store_sample_gt_counts()
