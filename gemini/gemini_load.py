@@ -21,6 +21,7 @@ import annotations
 import func_impact
 import severe_impact
 import popgen
+import gemini_constants
 from compression import pack_blob
 
 class GeminiLoader(object):
@@ -388,10 +389,10 @@ class GeminiLoader(object):
             self.c.execute("""insert into sample_genotype_counts values \
                             (?,?,?,?,?)""",
                             [idx,
-                            int(gt_counts[0]),  # hom_ref
-                            int(gt_counts[1]),  # het
-                            int(gt_counts[3]),  # hom_alt
-                            int(gt_counts[2])]) # missing
+                            int(gt_counts[HOM_REF]),  # hom_ref
+                            int(gt_counts[HET]),  # het
+                            int(gt_counts[UNKNOWN]),  # hom_alt
+                            int(gt_counts[HOM_ALT])]) # missing
         self.c.execute("END")
 
 def load(parser, args):
