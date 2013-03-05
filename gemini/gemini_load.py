@@ -21,7 +21,7 @@ import annotations
 import func_impact
 import severe_impact
 import popgen
-import gemini_constants
+from gemini_constants import *
 from compression import pack_blob
 
 class GeminiLoader(object):
@@ -74,9 +74,6 @@ class GeminiLoader(object):
             for var_impact in variant_impacts:
                 self.var_impacts_buffer.append(var_impact)
 
-            # only infer genotypes if requested
-            if not self.args.noload_genotypes and not self.args.no_genotypes:
-                pass
 
             buffer_count += 1
             # buffer full - time to insert into DB

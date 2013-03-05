@@ -16,6 +16,9 @@ sh data-setup.sh
 # Test basic functionality
 sh test-columns.sh
 
+# Test loading functionality
+sh test-load.sh
+
 # Test genotype BLOB functionality
 sh test-genotypes.sh
 
@@ -37,5 +40,6 @@ sh test-encode.sh
 # Test EFF string derived elements in INFO column
 sh test-effstring.sh
 
-
+# cleanup
+rm ./*.db
 

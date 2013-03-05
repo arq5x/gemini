@@ -83,7 +83,7 @@ def main():
                              )
     parser_load.add_argument('-p', dest='ped_file', 
                             help='Sample information file in PED+ format.', default=None)
-    parser_load.add_argument('--noload-genotypes', dest='noload_genotypes', action='store_true',
+    parser_load.add_argument('--no-load-genotypes', dest='no_load_genotypes', action='store_true',
                             help='Genotypes exist in the file, but should not be stored.', default=False)
     parser_load.add_argument('--no-genotypes', dest='no_genotypes', action='store_true',
                             help='There are no genotypes in the file (e.g. some 1000G VCFs)', default=False)
