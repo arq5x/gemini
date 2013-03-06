@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 import sqlite3
-import numpy as np
-import zlib
-import re
 import os
-import cPickle
 import gemini_utils as util
 
 import pybedtools as pbt
@@ -59,7 +55,7 @@ def make_windows(c, args, temp_file):
     # the requested statistic for each window
     windowed_analysis = windows.map(window_data, o=args.op_type, c=op_col)
     for window in windowed_analysis:
-        print window,
+        print str(window).strip()
     # cleanup
     os.remove(temp_file)
        
