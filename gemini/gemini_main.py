@@ -7,7 +7,7 @@ import textwrap
 import gemini_load, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
        gemini_annotate, gemini_windower, \
-       gemini_browser
+       gemini_browser, gemini_dbinfo
 
 import tool_compound_hets
 import tool_autosomal_recessive
@@ -222,6 +222,15 @@ def main():
 
 
     parser_get.set_defaults(func=gemini_windower.windower)
+    
+    # gemini db_info
+    parser_get = subparsers.add_parser('db_info', 
+                    help='Get the names and types of cols. database tables')
+    parser_get.add_argument('db', metavar='db',  
+                                  help='The name of the database to be updated.')
+
+    parser_get.set_defaults(func=gemini_dbinfo.db_info)
+    
     
     
     #######################################################
