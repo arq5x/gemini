@@ -4,10 +4,10 @@ import os.path
 import sys
 import argparse
 import textwrap
-import gemini_load, gemini_query,\
+import gemini_load, gemini_load_chunk, gemini_query,\
        gemini_region, gemini_stats, gemini_dump, \
        gemini_annotate, gemini_windower, \
-       gemini_browser, gemini_dbinfo
+       gemini_browser, gemini_dbinfo, gemini_merge_chunks
 
 import tool_compound_hets
 import tool_autosomal_recessive
@@ -88,7 +88,39 @@ def main():
     parser_load.add_argument('--no-genotypes', dest='no_genotypes', action='store_true',
                             help='There are no genotypes in the file (e.g. some 1000G VCFs)', default=False)
     parser_load.set_defaults(func=gemini_load.load)
+    
+    
+    # $ gemini load_chunk
+    parser_loadchunk = subparsers.add_parser('load_chunk',  help='load a VCF file in gemini database')
+    parser_loadchunk.add_argument('db', metavar='db',
+                            help='The name of the database to be created.')
+    parser_loadchunk.add_argument('-v', dest='vcf', 
+                            help='The VCF file to be loaded.')
+    parser_loadchunk.add_argument('-t', dest='anno_type', default=None, metavar='STRING',
+                             help="The annotations to be used with the input vcf. Options are:\n"
+                             "  snpEff  - Annotations as reported by snpEff.\n"
+                             "  VEP     - Annotations as reported by VEP.\n"
+                             )
+    parser_loadchunk.add_argument('-o', dest='offset', 
+                            help='The starting number for the variant_ids',
+                            default=None)
+    parser_loadchunk.add_argument('-p', dest='ped_file', 
+                            help='Sample information file in PED+ format.', default=None)
+    parser_loadchunk.add_argument('--no-load-genotypes', dest='no_load_genotypes', action='store_true',
+                            help='Genotypes exist in the file, but should not be stored.', default=False)
+    parser_loadchunk.add_argument('--no-genotypes', dest='no_genotypes', action='store_true',
+                            help='There are no genotypes in the file (e.g. some 1000G VCFs)', default=False)
+    parser_loadchunk.set_defaults(func=gemini_load_chunk.load)
 
+
+    # $ gemini merge_chunks
+    parser_mergechunks = subparsers.add_parser('merge_chunks', help='combine intermediate db files into the final gemini ')
+    parser_mergechunks.add_argument('--db', dest='db',  
+                            help='The name of the final database to be loaded.')
+    parser_mergechunks.add_argument('--chunkdb', nargs='*', dest='chunkdbs', action='append')
+    
+    parser_mergechunks.set_defaults(func=gemini_merge_chunks.merge_chunks)
+    
 
     # $ gemini query
     parser_query = subparsers.add_parser('query',  help='issue ad hoc SQL queries to the DB')
