@@ -18,7 +18,7 @@ echo "bgzipping the VCF"
 bgzip $VCF
 
 echo "making a grabix index of the bgzipped VCF for chunking"
-../grabix/grabix index $VCF".gz"
+grabix index $VCF".gz"
 
 # how many lines are in the file?
 NUM_LINES=$(awk 'NR==2' $VCF".gz.gbi")
