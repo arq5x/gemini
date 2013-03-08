@@ -434,6 +434,7 @@ def merge_chunks(chunks, db):
 
 def load_chunks(grabix_file, args):
     cores = args.cores
+    anno_type = args.anno_type
     submit_command = get_submit_command(args)
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
@@ -458,7 +459,7 @@ def wait_until_loading_finishes(procs):
     [p.wait() for p in procs]
 
 def gemini_load_cmd():
-    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} -t snpEff "
+    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} -t {anno_type} "
             "{vcf}.chunk{chunk_num}.db -o {start}")
 
 def grabix_split_cmd():
