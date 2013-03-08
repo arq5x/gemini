@@ -435,9 +435,16 @@ def merge_chunks(chunks, db):
 
 def load_chunks(grabix_file, args):
     cores = args.cores
+    
+    # specify the PED file if given one
+    ped_file = ""
+    if args.ped_file is not None:
+        ped_file = " -p " + args.ped_file
+
+    # specify the annotation type if given one
     anno_type = ""
     if args.anno_type is not None:
-        anno_type = "-t " + args.anno_type
+        anno_type = " -t " + args.anno_type
 
     submit_command = get_submit_command(args)
     vcf, _ = os.path.splitext(grabix_file)
@@ -448,7 +455,7 @@ def load_chunks(grabix_file, args):
     chunk_num = 1
     print anno_type
     for start, stop in chunk_steps:
-        print "Loading chunk " + str(chunk_num) + "."
+        print "Loading chunk " + str(chunk_num) + "." + ped_file
         grabix_split = grabix_split_cmd().format(**locals())
         subprocess.check_call(grabix_split, shell=True)
         gemini_load = gemini_load_cmd().format(**locals())
@@ -478,8 +485,7 @@ def cleanup_temp_db_files(chunk_dbs):
         os.remove(chunk_db)
 
 def gemini_load_cmd():
-    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} {anno_type} "
-            "{vcf}.chunk{chunk_num}.db -o {start}")
+    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} {anno_type} {ped_file} -o {start} {vcf}.chunk{chunk_num}.db")
 
 def grabix_split_cmd():
     return "grabix grab {grabix_file} {start} {stop} > {vcf}.chunk{chunk_num}"
