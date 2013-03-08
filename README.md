@@ -82,6 +82,17 @@ assumes snpEff.
 
 	# snpEff-annotated VCF
 	$ gemini load -v my.vcf -t snpEff my.db
+	
+Now, the loading step is very computationally intensive and thus can be very slow
+with just a single core.  However, if you have more CPUs in your arsenal,
+you specify more cores.  This provides a roughly linear increase in speed as a 
+function of the number of cores. **NOTE: using multiple cores requires that
+you have both the `bgzip` tool from `tabix` and the `grabix` 
+(https://github.com/arq5x/grabix) tool installed in your PATH.  On our local
+machine, we are able to load a VCF file derived from the exomes of 60 samples
+in about 10 minutes.  With a single core, it takes a few hours.
+
+	gemini load -v my.vcf -t snpEff --cores 20 my.db
 
 As each variant is loaded into the ``gemini`` database framework, it is being compared against several
 annotation files that come installed with the software.  We have developed an annotation framework
