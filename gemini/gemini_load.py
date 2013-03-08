@@ -20,6 +20,7 @@ import popgen
 from gemini_constants import *
 from compression import pack_blob
 import subprocess
+import math
 
 class GeminiLoader(object):
     """
@@ -446,7 +447,7 @@ def load_chunks(grabix_file, args):
         chunks.append(vcf + ".chunk" + str(chunk_num) + ".db")
         chunk_num += 1
     wait_until_loading_finishes(procs)
-    print "Done loading chunks."
+    print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num-1)
     return chunks
 
 
@@ -464,15 +465,17 @@ def get_chunk_steps(grabix_file, cores):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
     chunk_size = int(num_lines / cores)
-    print "Breaking {0} into {1} chunks.".format(grabix_file,
-                                                 int(num_lines/chunk_size))
+    chunk_num = int(math.ceil(float(num_lines) / float(chunk_size)))
+    print "Breaking {0} into {1} chunks.".format(grabix_file, chunk_num)
     start = range(1, num_lines, chunk_size)
     stop = range(chunk_size, num_lines, chunk_size) + [num_lines]
     return zip(start, stop)
 
 def get_num_lines(index_file):
     with open(index_file) as index_handle:
+        index_handle.next()
         num_lines = int(index_handle.next().strip())
+    print "Loading %d variants." % (num_lines)
     return num_lines
 
 def grabix_index(fname):
