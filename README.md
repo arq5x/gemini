@@ -88,7 +88,7 @@ with just a single core.  However, if you have more CPUs in your arsenal,
 you specify more cores.  This provides a roughly linear increase in speed as a 
 function of the number of cores. **NOTE: using multiple cores requires that
 you have both the `bgzip` tool from `tabix` and the `grabix` 
-(https://github.com/arq5x/grabix) tool installed in your PATH.  On our local
+(https://github.com/arq5x/grabix) tool installed in your PATH**.  On our local
 machine, we are able to load a VCF file derived from the exomes of 60 samples
 in about 10 minutes.  With a single core, it takes a few hours.
 
