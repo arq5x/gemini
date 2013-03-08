@@ -3,15 +3,11 @@
 # native Python imports
 import os.path
 import sys
-import re
-import collections
-from optparse import OptionParser
 import sqlite3
 import numpy as np
 
 # third-party imports
 import cyvcf as vcf
-import pysam
 
 # gemini modules
 from ped import pedformat
@@ -23,6 +19,7 @@ import severe_impact
 import popgen
 from gemini_constants import *
 from compression import pack_blob
+import subprocess
 
 class GeminiLoader(object):
     """
@@ -37,7 +34,7 @@ class GeminiLoader(object):
         # create a reader for the VCF file
         self.vcf_reader = self._get_vcf_reader()
         # load sample information
-        
+
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             # load the sample info from the VCF file.
             self._prepare_samples()
@@ -46,7 +43,7 @@ class GeminiLoader(object):
             self.num_samples = len(self.samples)
         else:
             self.num_samples = 0
-            
+
         self.buffer_size = buffer_size
 
 
@@ -405,10 +402,141 @@ def load(parser, args):
 
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
+    if args.cores == 1:
+        load_single_core(args)
+    else:
+        load_multi_core(args)
+
+def load_single_core(args):
     gemini_loader = GeminiLoader(args)
     gemini_loader.store_resources()
     gemini_loader.populate_from_vcf()
     gemini_loader.build_indices_and_disconnect()
-    
+
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
+
+def load_multi_core(args):
+    grabix_file = bgzip(args.vcf)
+    chunks = load_chunks(grabix_file, args)
+    merge_chunks(chunks, args.db)
+
+def merge_chunks(chunks, db):
+    chunk_names = " ".join(chunks)
+    print "Merging chunks."
+    cmd = "gemini merge_chunks --chunkdb {chunk_names} --db {db}".format(**locals())
+    subprocess.check_call(cmd, shell=True)
+    return db
+
+def load_chunks(grabix_file, args):
+    cores = args.cores
+    submit_command = get_submit_command(args)
+    vcf, _ = os.path.splitext(grabix_file)
+    chunk_steps = get_chunk_steps(grabix_file, cores)
+    chunks = []
+    procs = []
+    chunk_num = 1
+    for start, stop in chunk_steps:
+        print "Loading a chunk."
+        grabix_split = grabix_split_cmd().format(**locals())
+        subprocess.check_call(grabix_split, shell=True)
+        gemini_load = gemini_load_cmd().format(**locals())
+        procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
+                                      shell=True))
+        chunks.append(vcf + ".chunk" + str(chunk_num) + ".db")
+        chunk_num += 1
+    wait_until_loading_finishes(procs)
+    print "Done loading chunks."
+    return chunks
+
+
+def wait_until_loading_finishes(procs):
+    [p.wait() for p in procs]
+
+def gemini_load_cmd():
+    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} -t snpEff "
+            "{vcf}.chunk{chunk_num}.db -o {start}")
+
+def grabix_split_cmd():
+    return "grabix grab {grabix_file} {start} {stop} > {vcf}.chunk{chunk_num}"
+
+def get_chunk_steps(grabix_file, cores):
+    index_file = grabix_index(grabix_file)
+    num_lines = get_num_lines(index_file)
+    chunk_size = int(num_lines / cores)
+    print "Breaking {0} into {1} chunks.".format(grabix_file,
+                                                 int(num_lines/chunk_size))
+    start = range(1, num_lines, chunk_size)
+    stop = range(chunk_size, num_lines, chunk_size) + [num_lines]
+    return zip(start, stop)
+
+def get_num_lines(index_file):
+    with open(index_file) as index_handle:
+        num_lines = int(index_handle.next().strip())
+    return num_lines
+
+def grabix_index(fname):
+    if not which("grabix"):
+        print_cmd_not_found_and_exit("grabix")
+    index_file = fname + ".gbi"
+    if file_exists(index_file):
+        return index_file
+    subprocess.check_call("grabix index {fname}".format(fname=fname), shell=True)
+    return index_file
+
+def bgzip(fname):
+    if not which("bgzip"):
+        print_cmd_not_found_and_exit("bgzip")
+    if is_gz_file(fname):
+        return fname
+    bgzip_file = fname + ".gz"
+    if file_exists(bgzip_file):
+        return bgzip_file
+    subprocess.check_call("bgzip -c {fname} > {fname}.gz".format(fname=fname), shell=True)
+    return bgzip_file
+
+
+def is_gz_file(fname):
+    _, ext = os.path.splitext(fname)
+    if ext == ".gz":
+        return True
+    else:
+        return False
+
+def get_submit_command(args):
+    if args.lsf_queue:
+        return get_lsf_command(args.lsf_queue)
+    else:
+        return "{cmd}"
+
+def get_lsf_command(queue):
+    return "bsub -K -q %s {cmd}" % (queue)
+
+def file_exists(fname):
+    """Check if a file exists and is non-empty.
+    """
+    return os.path.exists(fname) and os.path.getsize(fname) > 0
+
+def which(program):
+    """ returns the path to an executable or None if it can't be found
+     http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+     """
+
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+def print_cmd_not_found_and_exit(cmd):
+    sys.stderr.write("Cannot find {cmd}, install it or put it in your path.".format(cmd))
+    exit(1)
