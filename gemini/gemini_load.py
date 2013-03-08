@@ -423,9 +423,12 @@ def load_multi_core(args):
     merge_chunks(chunks, args.db)
 
 def merge_chunks(chunks, db):
-    chunk_names = " ".join(chunks)
+    chunk_names = ""
+    for chunk in chunks:
+        chunk_names += " --chunkdb  " + chunk 
     print "Merging chunks."
-    cmd = "gemini merge_chunks --chunkdb {chunk_names} --db {db}".format(**locals())
+    
+    cmd = "gemini merge_chunks {chunk_names} --db {db}".format(**locals())
     subprocess.check_call(cmd, shell=True)
     return db
 
@@ -433,7 +436,7 @@ def load_chunks(grabix_file, args):
     cores = args.cores
     submit_command = get_submit_command(args)
     vcf, _ = os.path.splitext(grabix_file)
-    chunk_steps = get_chunk_steps(grabix_file, cores)
+    chunk_steps = get_chunk_steps(grabix_file, args)
     chunks = []
     procs = []
     chunk_num = 1
@@ -461,10 +464,10 @@ def gemini_load_cmd():
 def grabix_split_cmd():
     return "grabix grab {grabix_file} {start} {stop} > {vcf}.chunk{chunk_num}"
 
-def get_chunk_steps(grabix_file, cores):
+def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
-    chunk_size = int(num_lines / cores)
+    chunk_size = int(num_lines / args.cores)
     chunk_num = int(math.ceil(float(num_lines) / float(chunk_size)))
     print "Breaking {0} into {1} chunks.".format(grabix_file, chunk_num)
     start = range(1, num_lines, chunk_size)
@@ -491,6 +494,7 @@ def bgzip(fname):
     if not which("bgzip"):
         print_cmd_not_found_and_exit("bgzip")
     if is_gz_file(fname):
+        print "found"
         return fname
     bgzip_file = fname + ".gz"
     if file_exists(bgzip_file):
