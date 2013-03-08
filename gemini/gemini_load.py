@@ -430,17 +430,23 @@ def merge_chunks(chunks, db):
     
     cmd = "gemini merge_chunks {chunk_names} --db {db}".format(**locals())
     subprocess.check_call(cmd, shell=True)
+    cleanup_temp_db_files(chunks)
     return db
 
 def load_chunks(grabix_file, args):
     cores = args.cores
-    anno_type = args.anno_type
+    anno_type = ""
+    if args.anno_type is not None:
+        anno_type = "-t " + args.anno_type
+
     submit_command = get_submit_command(args)
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
-    chunks = []
+    chunk_vcfs = []
+    chunk_dbs = []
     procs = []
     chunk_num = 1
+    print anno_type
     for start, stop in chunk_steps:
         print "Loading chunk " + str(chunk_num) + "."
         grabix_split = grabix_split_cmd().format(**locals())
@@ -448,18 +454,31 @@ def load_chunks(grabix_file, args):
         gemini_load = gemini_load_cmd().format(**locals())
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
-        chunks.append(vcf + ".chunk" + str(chunk_num) + ".db")
+        
+        chunk_vcf = vcf + ".chunk" + str(chunk_num)
+        chunk_vcfs.append(chunk_vcf)
+        chunk_dbs.append(chunk_vcf + ".db")
         chunk_num += 1
+
     wait_until_loading_finishes(procs)
+    cleanup_temp_vcf_files(chunk_vcfs)
     print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num-1)
-    return chunks
+    return chunk_dbs
 
 
 def wait_until_loading_finishes(procs):
     [p.wait() for p in procs]
 
+def cleanup_temp_vcf_files(chunk_vcfs):
+    for chunk_vcf in chunk_vcfs:
+        os.remove(chunk_vcf)
+        
+def cleanup_temp_db_files(chunk_dbs):
+    for chunk_db in chunk_dbs:
+        os.remove(chunk_db)
+
 def gemini_load_cmd():
-    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} -t {anno_type} "
+    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} {anno_type} "
             "{vcf}.chunk{chunk_num}.db -o {start}")
 
 def grabix_split_cmd():
@@ -495,7 +514,6 @@ def bgzip(fname):
     if not which("bgzip"):
         print_cmd_not_found_and_exit("bgzip")
     if is_gz_file(fname):
-        print "found"
         return fname
     bgzip_file = fname + ".gz"
     if file_exists(bgzip_file):
