@@ -14,7 +14,10 @@ PROCS=$2
 DB=$3
 
 # BGZIP and grabix the VCF so that we can grabix arbitrary chunks.
+echo "bgzipping the VCF"
 bgzip $VCF
+
+echo "making a grabix index of the bgzipped VCF for chunking"
 ../grabix/grabix index $VCF".gz"
 
 # how many lines are in the file?
