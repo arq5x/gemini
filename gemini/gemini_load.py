@@ -441,7 +441,7 @@ def load_chunks(grabix_file, args):
     procs = []
     chunk_num = 1
     for start, stop in chunk_steps:
-        print "Loading a chunk."
+        print "Loading chunk " + str(chunk_num) + "."
         grabix_split = grabix_split_cmd().format(**locals())
         subprocess.check_call(grabix_split, shell=True)
         gemini_load = gemini_load_cmd().format(**locals())
