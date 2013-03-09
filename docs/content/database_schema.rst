@@ -1,6 +1,6 @@
-###############
-Database Schema
-###############
+##########################
+The Gemini database schema
+##########################
 
 
 The ``variants`` table

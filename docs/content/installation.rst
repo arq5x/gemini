@@ -9,20 +9,26 @@ To install you should download the latest source code from GitHub, either by goi
 
     http://github.com/arq5x/gemini
 
-and clicking on "Downloads", or by cloning the git repository with::
+and clicking on "Downloads", or by cloning the git repository with:
+
+.. code-block:: bash
 
     $ git clone https://github.com/arq5x/gemini.git
 
-Once you have the source code, run::
+Once you have the source code, run:
+
+.. code-block:: bash
 
     $ cd gemini
     $ sudo python setup.py install
 
 to install it. If you don't have permission to install it in the default 
 directory, you can simply build the source in-place and use the package 
-from the git repository::
+from the git repository:
 
-    $  python setup.py build_ext --inplace
+.. code-block:: bash
+
+    $ python setup.py build_ext --inplace
 
 
 Installing annotation files
@@ -34,7 +40,9 @@ you just need to run the following script and tell it in which what full path
 you'd like to install the necessary data files. The recommended path is 
 ``/usr/local/share``, but you can install the data files wherever you want.
 
-    gemini/install-data.py /usr/local/share/
+.. code-block:: bash
+
+    $ python gemini/install-data.py /usr/local/share/
 
 
 
@@ -50,10 +58,12 @@ as each annotation tool uses different vocabulary.
 
 
 The variant consequence columns in the variant table are populated either by `snpEff` or `VEP` as defined by the user using the `-t` option while running pop load 
-(To populate these columns the input VCF file should have been annotated either by `snpEff` or `VEP`)::
+(To populate these columns the input VCF file should have been annotated either by `snpEff` or `VEP`):
 
-	$ pop load -v my.vcf -t VEP -d my.db
-	$ pop load -v my.vcf -t snpEFF -d my.db
+.. code-block:: bash
+
+	$ gemini load -v my.vcf -t VEP -d my.db
+	$ gemini load -v my.vcf -t snpEFF -d my.db
 
 By default the following columns in the variant table would be set to null:
 

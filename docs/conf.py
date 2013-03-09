@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'gemini'
-copyright = u'2012'
+copyright = u'2012,2013'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -113,11 +113,12 @@ html_logo = 'gemini.png'
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 html_favicon = 'gemini.png'
+html_style = 'labibi.css'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -128,7 +129,10 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    'index': ['sidebar-intro.html', 'sourcelink.html', 'searchbox.html']
+}
+
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -161,7 +165,7 @@ html_show_sphinx = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'trackdoc'
+htmlhelp_basename = 'gemini-docs'
 
 # Google analytics
 #googleanalytics_id = "UA-24167610-15"
@@ -177,7 +181,7 @@ htmlhelp_basename = 'trackdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'track.tex', u'track Documentation', u'EPFL BBCF', 'manual'),
+  ('index', 'gemini.tex', u'gemini Documentation', u'Quinlan lab @ UVa', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -209,8 +213,30 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'track', u'track Documentation', [u'EPFL BBCF'], 1)
+    ('index', 'gemini', u'gemini Documentation', [u'UVa'], 1)
 ]
+
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+class Mock(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            return type(name, (), {})
+        else:
+            return Mock()
+
+MOCK_MODULES = ['numpy', 'matplotlib', 'matplotlib.pyplot', 
+                'matplotlib.sphinxext', 'matplotlib.sphinxext.plot_directive']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
