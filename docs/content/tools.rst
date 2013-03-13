@@ -84,7 +84,7 @@ variant actually overlapped two crucial regions.
 
     
 -----------------------------------------------------
-``-t list`` How many regions did a variant overlap?
+``-t list`` Which regions did a variant overlap?
 -----------------------------------------------------
 Lastly, we can *list* which regions a variant overlapped using the ``-t list``
 option.  Let's imaging that ``crucial.bed`` looks like this:
