@@ -113,4 +113,60 @@ name).  We specify which column to store in the list with the ``-e`` option.
     chr22   300    500    3   crucial2,crucial3
 
 
+===========================================================================
+``comp_hets``: Identifying potential compound heterozygotes
+===========================================================================
+Many recessive disorders are caused by compound heterozygotes. Unlike canonical
+recessive sites where the same recessive allele is inherited from both parents
+at the _same_ site in the gene, compound heterozygotes occur when
+the individual's phenotype is caused by two heterogeneous recessive alleles at 
+_different_ sites in a particular gene. 
+
+So basically, we are looking for two (typically loss-of-function (LoF))
+heterozygous variants impacting the same gene at different loci.  The
+complicating factor is that this is _recessive_ and as such, we must also 
+require that the consequential alleles at each heterozygous site were 
+inherited on different chromosomes (one from each parent).  As such, in order
+to use this tool, we require that all variants are phased.  Once this has been 
+done, the `comp_hets` tool will provide a report of candidate compound
+heterozygotes for each sample/gene.
+
+For example:
+
+.. code-block:: bash
+
+	$ gemini comp_hets chr22.low.exome.snpeff.100samples.vcf.db
+	sample	gene	het1	het2
+	NA19002	GTSE1	chr22,46722400,46722401,G,A,G|A,stop_gain,exon_22,0.005,1	chr22,46704499,46704500,C,A,A|C,stop_gain,exon_22,0.005,0
+
+This indicates that sample NA19002 has a candidate compound heterozygote in
+GTSE1.  The two hets are reported using the following structure:
+
+``chrom,start,end,ref,alt,genotype,impact,exon,AAF,in_dbsnp``
+
+By default, all coding variants are explored.  However, one may want to
+restrict the analysis to LoF variants.
+
+.. code-block:: bash
+
+	$ gemini comp_hets --only_lof chr22.low.exome.snpeff.100samples.vcf.db
+
+
+===========================================================================
+``region``: Extracting variants from specific regions or genes
+===========================================================================
+One often is concerned with variants found solely in a particular gene or 
+genomic region. ``gemini`` allows one to extract variants that fall within 
+specific genomic coordinates as follows:
+
+.. code-block:: bash
+
+	$ gemini region --reg chr1:100-200 my.db
+
+Or, one can extract variants based on a specific gene name.
+
+.. code-block:: bash
+
+	$ gemini region --gene PTPN22 my.db
+
        
