@@ -169,7 +169,7 @@ def _get_hits(coords, annotation, parser_type):
         raise ValueError("Unexpected parser type: %s" % parser)
     chrom, start, end = coords
     try:
-       hit_iter = annotation.fetch(chrom, start, end, parser=parser)
+        hit_iter = annotation.fetch(str(chrom), start, end, parser=parser)
     # catch invalid region errors raised by ctabix
     except ValueError:
         hit_iter = []

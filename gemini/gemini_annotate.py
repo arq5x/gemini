@@ -18,11 +18,15 @@ def add_requested_column(col_name, update_cursor):
     variants table.  Exit if the column already exists.
     """
     try:
-        alter_qry = "ALTER TABLE variants ADD COLUMN " + col_name + " BOOL DEFAULT NULL"
+        alter_qry = "ALTER TABLE variants ADD COLUMN " \
+                    + col_name \
+                    + " BOOL DEFAULT NULL"
         update_cursor.execute(alter_qry)
     except sqlite3.OperationalError:
-        pass
-        #sys.exit("ERROR: column \"" + col_name + "\" already exists in variants table")  
+        sys.stderr.write("WARNING: column \"(" \
+                 + col_name \
+                 + ")\" already exists in variants table. Overwriting values.")  
+
 
 def _annotate_variants(args, conn, get_val_fn):
     """Generalized annotation of variants with a new column.
@@ -30,9 +34,10 @@ def _annotate_variants(args, conn, get_val_fn):
     get_val_fn takes a list of annotations in a region and returns
     the value for that region to update the database with.
 
-    Separates selection and identification of values from update, to avoid concurrent
-    database access errors from sqlite3, especially on NFS systems. The retained
-    to_update list is small, but batching could help if memory issues emerge.
+    Separates selection and identification of values from update, 
+    to avoid concurrent database access errors from sqlite3, especially on 
+    NFS systems. The retained to_update list is small, but batching 
+    could help if memory issues emerge.
     """
     # For each, use Tabix to detect overlaps with the user-defined
     # annotation file.  Update the variant row with T/F if overlaps found.
@@ -43,12 +48,19 @@ def _annotate_variants(args, conn, get_val_fn):
     to_update = []
     for row in select_cursor:
         to_update.append((str(row["variant_id"]),
-                          get_val_fn(annotations_in_region(row, annos, "tuple", naming))))
+                          get_val_fn(annotations_in_region(row, 
+                                                           annos, 
+                                                           "tuple", 
+                                                           naming))))
     update_cursor = conn.cursor()
     add_requested_column(args.col_name, update_cursor)
     for variant_id, val in to_update:
-        update_qry = "UPDATE variants SET " + args.col_name + " = " + str(val) + \
-                     " WHERE variant_id = " + variant_id
+        update_qry = "UPDATE variants SET " \
+                     + args.col_name \
+                     + " = " \
+                     + str(val) \
+                     + " WHERE variant_id = " \
+                     + variant_id
         update_cursor.execute(update_qry)
 
 def annotate_variants_bool(args, conn):
@@ -126,7 +138,8 @@ def annotate(parser, args):
         annotate_variants_count(args, conn) 
     elif args.col_type == "list":
         if args.col_extract is None:
-            sys.exit("You must specify which column to extract (-e) from the annotation file.")
+            sys.exit("You must specify which column to extract (-e) \
+                      from the annotation file.")
         else:
             annotate_variants_list(args, conn)
     else:
