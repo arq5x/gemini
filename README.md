@@ -10,6 +10,8 @@ the fundamental challenges associated with using databases for very large
 (e.g. 1,000,000 variants times 1,000 samples yields one billion genotypes) 
 datasets.
 
+**NOTE:**  Gemini is currently in a beta state as we move towards publication.
+We welcome comments and suggestions.
 
 Acknowledgements
 ================
@@ -21,7 +23,7 @@ at the Harvard School of Public Health.
 
 Installation
 ============
-If you are okay living dangerously and potentially being disappointed, you can install ``gemini`` as follows:
+You can install ``gemini`` as follows:
 
     $ cd gemini
     $ python setup.py install
