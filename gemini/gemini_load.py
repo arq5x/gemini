@@ -494,11 +494,21 @@ def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
     chunk_size = int(num_lines / args.cores)
-    chunk_num = int(math.ceil(float(num_lines) / float(chunk_size)))
+    chunk_num = int(math.ceil(float(num_lines) / float(args.cores)))
     print "Breaking {0} into {1} chunks.".format(grabix_file, chunk_num)
-    start = range(1, num_lines, chunk_size)
-    stop = range(chunk_size, num_lines, chunk_size) + [num_lines]
-    return zip(start, stop)
+    
+    starts = []
+    stops = []
+    for chunk in range(0, args.cores):
+        start = (chunk * chunk_size) + 1
+        stop  = start + chunk_size - 1
+        # make sure the last chunk covers the remaining lines
+        if chunk >= (args.cores - 1) and stop < num_lines:
+            stop = num_lines
+        starts.append(start)
+        stops.append(stop)
+
+    return zip(starts, stops)
 
 def get_num_lines(index_file):
     with open(index_file) as index_handle:
