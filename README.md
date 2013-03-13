@@ -13,6 +13,11 @@ datasets.
 **NOTE:**  Gemini is currently in a beta state as we move towards publication.
 We welcome comments and suggestions.
 
+Documentation
+================
+
+The official documentation is here: https://github.com/arq5x/gemini
+
 Acknowledgements
 ================
 Gemini is being developed in the Quinlan lab (quinlanlab.org) at the University 
