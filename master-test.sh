@@ -40,6 +40,9 @@ sh test-encode.sh
 # Test EFF string derived elements in INFO column
 sh test-effstring.sh
 
+# Test loading functionality
+sh test-annotate-tool.sh
+
 # cleanup
 rm ./*.db
 
