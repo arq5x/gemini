@@ -453,7 +453,6 @@ def load_chunks(grabix_file, args):
     chunk_dbs = []
     procs = []
     chunk_num = 1
-    print anno_type
     for start, stop in chunk_steps:
         print "Loading chunk " + str(chunk_num) + "." + ped_file
         grabix_split = grabix_split_cmd().format(**locals())
@@ -493,13 +492,14 @@ def grabix_split_cmd():
 def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
-    chunk_size = int(num_lines / args.cores)
+    chunk_size = int(num_lines) / int(args.cores)
     chunk_num = int(math.ceil(float(num_lines) / float(args.cores)))
-    print "Breaking {0} into {1} chunks.".format(grabix_file, chunk_num)
+    print "Breaking {0} into {1} chunks.".format(grabix_file, args.cores)
     
     starts = []
     stops = []
-    for chunk in range(0, args.cores):
+    for chunk in range(0, int(args.cores)):
+        
         start = (chunk * chunk_size) + 1
         stop  = start + chunk_size - 1
         # make sure the last chunk covers the remaining lines
@@ -507,7 +507,6 @@ def get_chunk_steps(grabix_file, args):
             stop = num_lines
         starts.append(start)
         stops.append(stop)
-
     return zip(starts, stops)
 
 def get_num_lines(index_file):
