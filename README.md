@@ -16,7 +16,7 @@ We welcome comments and suggestions.
 Documentation
 ================
 
-The official documentation is here: https://github.com/arq5x/gemini
+The official documentation is here: http://gemini.readthedocs.org/en/latest/
 
 Acknowledgements
 ================
