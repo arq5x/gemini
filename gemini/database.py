@@ -80,11 +80,11 @@ def create_tables(cursor):
                     num_het integer,                            \
                     num_hom_alt integer,                        \
                     num_unknown integer,                        \
-                    aaf float,                                  \
-                    hwe float,                                  \
-                    inbreeding_coeff float,                     \
-                    pi float,                                   \
-                    recomb_rate float,                          \
+                    aaf decimal(2,7),                           \
+                    hwe decimal(2,7),                           \
+                    inbreeding_coeff decimal(2,7),              \
+                    pi decimal(2,7),                            \
+                    recomb_rate decimal(2,7),                   \
                     gene text,                                  \
                     transcript text,                            \
                     is_exonic bool,                             \
@@ -119,16 +119,16 @@ def create_tables(cursor):
                     in_hm3 bool,                                \
                     is_somatic,                                 \
                     in_esp bool,                                \
-                    aaf_esp_ea float,                           \
-                    aaf_esp_aa float,                           \
-                    aaf_esp_all float,                          \
+                    aaf_esp_ea decimal(2,7),                    \
+                    aaf_esp_aa decimal(2,7),                    \
+                    aaf_esp_all decimal(2,7),                   \
                     exome_chip bool,                            \
                     in_1kg bool,                                \
-                    aaf_1kg_amr float,                          \
-                    aaf_1kg_asn float,                          \
-                    aaf_1kg_afr float,                          \
-                    aaf_1kg_eur float,                          \
-                    aaf_1kg_all float,                          \
+                    aaf_1kg_amr decimal(2,7),                   \
+                    aaf_1kg_asn decimal(2,7),                   \
+                    aaf_1kg_afr decimal(2,7),                   \
+                    aaf_1kg_eur decimal(2,7),                   \
+                    aaf_1kg_all decimal(2,7),                   \
                     grc text default NULL,                      \
                     gms_illumina float,                         \
                     gms_solid float,                            \
