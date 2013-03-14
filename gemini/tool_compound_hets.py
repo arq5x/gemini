@@ -6,6 +6,7 @@ import numpy as np
 import cPickle
 import zlib
 import collections
+import re
 from copy import copy
 
 import gemini_utils as util
@@ -32,9 +33,9 @@ class Site(object):
     
     def __repr__(self):
         return ','.join([self.chrom, str(self.start), str(self.end),
-                         self.ref, self.alt, self.gt,
+                         self.ref, self.alt, self.gt or "None",
                          self.impact or "None", 
-                         self.exon or "None", str(self.aaf), 
+                         self.exon or "None", str(self.aaf),
                          str(self.in_dbsnp)])
         
     def __eq__(self, other):
@@ -53,7 +54,7 @@ def get_compound_hets(c, args):
     comp_hets = collections.defaultdict(lambda: collections.defaultdict(list))
 
     query = "SELECT * FROM variants \
-             WHERE is_coding = 1" # is_exonic - what about splice?
+             WHERE impact_severity != 'LOW'" # is_exonic - what about splice?
     c.execute(query)
 
     
@@ -82,8 +83,9 @@ def get_compound_hets(c, args):
                 sample_site.phased = gt_phases[idx]
                 
                 # require phased genotypes
-                if not sample_site.phased:
+                if not sample_site.phased and not args.ignore_phasing:
                     continue
+
                 sample_site.gt = gt_bases[idx]
                 # add the site to the list of candidates
                 # for this sample/gene
@@ -105,21 +107,39 @@ def get_compound_hets(c, args):
                     # expand the genotypes for this sample
                     # at each site into it's composite
                     # alleles.  e.g. A|G -> ['A', 'G']
-                    alleles_site1 = site1.gt.split('|')
-                    alleles_site2 = site2.gt.split('|')
-                    
-                    # return the haplotype on which the alternate
-                    # allele was observed for this sample at each
-                    # candidate het. site.
-                    # e.g., if ALT=G and alleles_site1=['A', 'G']
-                    # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
-                    alt_hap_1 = alleles_site1.index(site1.alt)
-                    alt_hap_2 = alleles_site2.index(site2.alt)
-                    
+                    alleles_site1 = []
+                    alleles_site2 = []
+                    if not args.ignore_phasing:
+                        alleles_site1 = site1.gt.split('|')
+                        alleles_site2 = site2.gt.split('|')
+                    else:
+                        # split on phased (|) or unphased (/) genotypes
+                        alleles_site1 = re.split('\||/', site1.gt)
+                        alleles_site2 = re.split('\||/', site2.gt)
+
                     # it is only a true compound heterozygote iff
                     # the alternates are on opposite haplotypes.
-                    if alt_hap_1 != alt_hap_2:
-                        print "\t".join([sample, gene, str(site1), str(site2)])
+                    if not args.ignore_phasing:
+                        # return the haplotype on which the alternate
+                        # allele was observed for this sample at each
+                        # candidate het. site.
+                        # e.g., if ALT=G and alleles_site1=['A', 'G']
+                        # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
+                        alt_hap_1 = alleles_site1.index(site1.alt)
+                        alt_hap_2 = alleles_site2.index(site2.alt)
+                        
+                        if alt_hap_1 != alt_hap_2:
+                            print "\t".join([sample, 
+                                             gene, 
+                                             str(site1), 
+                                             str(site2)])
+                    else:
+                        # user has asked us to not care about phasing
+                        print "\t".join([sample, 
+                                         gene, 
+                                         str(site1), 
+                                         str(site2)])
+                        
 
 
 def run(parser, args):
