@@ -37,7 +37,7 @@ class GeminiLoader(object):
         # create a reader for the VCF file
         self.vcf_reader = self._get_vcf_reader()
         # load sample information
-        
+
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             # load the sample info from the VCF file.
             self._prepare_samples()
@@ -46,7 +46,7 @@ class GeminiLoader(object):
             self.num_samples = len(self.samples)
         else:
             self.num_samples = 0
-            
+
         self.buffer_size = buffer_size
 
 
@@ -106,11 +106,15 @@ class GeminiLoader(object):
         database.close_and_commit(self.c, self.conn)
 
     def _get_vcf_reader(self):
-        # open the VCF file for reading
-        if self.args.vcf.endswith(".gz"):
-            return vcf.VCFReader(open(self.args.vcf), 'rb', compressed=True)
+        # the VCF is a proper file
+        if self.args.vcf != "-":
+            if self.args.vcf.endswith(".gz"):
+                return vcf.VCFReader(open(self.args.vcf), 'rb', compressed=True)
+            else:
+                return vcf.VCFReader(open(self.args.vcf), 'rb')
+        # the VCF is being passed in via STDIN
         else:
-            return vcf.VCFReader(open(self.args.vcf), 'rb')
+            return vcf.VCFReader(sys.stdin, 'rb')
 
     def _get_anno_version(self):
         """
@@ -411,6 +415,6 @@ def load(parser, args):
     gemini_loader.store_resources()
     gemini_loader.populate_from_vcf()
     #gemini_loader.build_indices_and_disconnect()
-    
+
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
