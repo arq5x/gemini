@@ -24,6 +24,22 @@ pre-annotated with VEP and the second assumes snpEff.
 	# snpEff-annotated VCF
 	$ gemini load -v my.vcf -t snpEff my.db
 
+As each variant is loaded into the ``gemini`` database framework, it is being 
+compared against several annotation files that come installed with the software.  
+We have developed an annotation framework that leverages 
+`tabix <http://sourceforge.net/projects/samtools/files/tabix/>`_, 
+`bedtools <http://bedtools.googlecode.com>`_, and 
+`pybedtools <http://pythonhosted.org/pybedtools/>`_ to make things easy and 
+fairly performant. The idea is that, by augmenting VCF files with many
+informative annotations, and converting the information into a ``sqlite`` 
+database framework, ``gemini`` provides a flexible 
+database-driven API for data exploration, visualization, population genomics 
+and medical genomics.  We feel that this ability to integrate variation
+with the growing wealth of genome annotations is the most compelling aspect of 
+``gemini``.  Combining this with the ability to explore data with SQL 
+using a database design that can scale to 1000s of individuals (genotypes too!)
+makes for a nice, standardized data exploration system.
+
 ================================
 Using multiple CPUS for loading
 ================================
@@ -46,21 +62,35 @@ single core, it takes a few hours.
 
     $ gemini load -v my.vcf -t snpEff --cores 20 my.db
 
-As each variant is loaded into the ``gemini`` database framework, it is being 
-compared against several annotation files that come installed with the software.  
-We have developed an annotation framework that leverages 
-`tabix <http://sourceforge.net/projects/samtools/files/tabix/>`_, 
-`bedtools <http://bedtools.googlecode.com>`_, and 
-`pybedtools <http://pythonhosted.org/pybedtools/>`_ to make things easy and 
-fairly performant. The idea is that, by augmenting VCF files with many
-informative annotations, and converting the information into a ``sqlite`` 
-database framework, ``gemini`` provides a flexible 
-database-driven API for data exploration, visualization, population genomics 
-and medical genomics.  We feel that this ability to integrate variation
-with the growing wealth of genome annotations is the most compelling aspect of 
-``gemini``.  Combining this with the ability to explore data with SQL 
-using a database design that can scale to 1000s of individuals (genotypes too!)
-makes for a nice, standardized data exploration system.
+
+================================
+Using LSF and SGE clusters
+================================
+Thanks to some great work from Brad Chapman and Rory Kirchner, one can also load
+VCF files into gemini in parallel using many cores on LSF or SGE clusters. One
+must simply specify the type of job scheduler your cluster uses and the queue
+name to which your jobs should be submitted.
+
+For example, let's assume you use LSF and a queue named ``preempt_everyone``. 
+Here is all you need to do:
+
+.. code-block:: bash
+
+    $ gemini load -v my.vcf \
+             -t snpEff \
+             --cores 50 \
+             --lsf-queue preempt_everyone \
+             my.db
+
+If you use SGE, it would look like (you guessed it):
+
+.. code-block:: bash
+
+    $ gemini load -v my.vcf \
+             -t snpEff \
+             --cores 50 \
+             --sge-queue preempt_everyone \
+             my.db
 
 
 ===================================
