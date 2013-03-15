@@ -478,7 +478,7 @@ def wait_until_loading_finishes(procs):
 def cleanup_temp_vcf_files(chunk_vcfs):
     for chunk_vcf in chunk_vcfs:
         os.remove(chunk_vcf)
-        
+
 def cleanup_temp_db_files(chunk_dbs):
     for chunk_db in chunk_dbs:
         os.remove(chunk_db)
