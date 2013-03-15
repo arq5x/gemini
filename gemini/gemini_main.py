@@ -400,6 +400,12 @@ def main():
             action='store_true',
             help='Only consider variants that are loss of function', 
             default=False)
+    parser_comp_hets.add_argument('--ignore_phasing', 
+            dest='ignore_phasing', 
+            action='store_true',
+            help='Ignore phasing when screening for compound hets. \
+                  Candidates are inherently _putative_.', 
+            default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
 
 
