@@ -70,7 +70,7 @@ def main():
     #########################################
     # $ gemini examples
     #########################################
-    parser_examples = subparsers.add_parser('examples', 
+    parser_examples = subparsers.add_parser('examples',
             help='show usage examples')
     parser_examples.set_defaults(func=examples)
 
@@ -78,38 +78,41 @@ def main():
     #########################################
     # $ gemini load
     #########################################
-    parser_load = subparsers.add_parser('load',  
+    parser_load = subparsers.add_parser('load',
             help='load a VCF file in gemini database')
     parser_load.add_argument('db', metavar='db',
             help='The name of the database to be created.')
     parser_load.add_argument('-v', dest='vcf',
             help='The VCF file to be loaded.')
-    parser_load.add_argument('-t', dest='anno_type', 
+    parser_load.add_argument('-t', dest='anno_type',
             default=None, metavar='STRING',
             help="The annotations to be used with the input vcf. Options are:\n"
                              "  snpEff  - Annotations as reported by snpEff.\n"
                              "  VEP     - Annotations as reported by VEP.\n"
                              )
     parser_load.add_argument('-p', dest='ped_file',
-            help='Sample information file in PED+ format.', 
+            help='Sample information file in PED+ format.',
             default=None)
-    parser_load.add_argument('--no-load-genotypes', 
+    parser_load.add_argument('--no-load-genotypes',
             dest='no_load_genotypes',
             action='store_true',
-            help='Genotypes exist in the file, but should not be stored.', 
+            help='Genotypes exist in the file, but should not be stored.',
             default=False)
-    parser_load.add_argument('--no-genotypes', 
-            dest='no_genotypes', 
+    parser_load.add_argument('--no-genotypes',
+            dest='no_genotypes',
             action='store_true',
-            help='There are no genotypes in the file (e.g. some 1000G VCFs)', 
+            help='There are no genotypes in the file (e.g. some 1000G VCFs)',
             default=False)
-    parser_load.add_argument('--cores', dest='cores', 
-            default=1, 
+    parser_load.add_argument('--cores', dest='cores',
+            default=1,
             type=int,
             help="Number of cores to use to load in parallel.")
-    parser_load.add_argument('--lsf-queue', 
+    parser_load.add_argument('--lsf-queue',
             dest='lsf_queue',
-            help="Queue name to use for Platform LSF")
+            help="Queue name to use for Platform LSF.")
+    parser_load.add_argument('--sge-queue',
+            dest='sge_queue',
+            help="Queue name to use for Sun Grid Engine.")
 
     parser_load.set_defaults(func=gemini_load.load)
 
@@ -117,39 +120,39 @@ def main():
     #########################################
     # $ gemini load_chunk
     #########################################
-    parser_loadchunk = subparsers.add_parser('load_chunk',  
+    parser_loadchunk = subparsers.add_parser('load_chunk',
             help='load a VCF file in gemini database')
-    parser_loadchunk.add_argument('db', 
+    parser_loadchunk.add_argument('db',
             metavar='db',
             help='The name of the database to be created.')
-    parser_loadchunk.add_argument('-v', 
+    parser_loadchunk.add_argument('-v',
             dest='vcf',
             help='The VCF file to be loaded.')
-    parser_loadchunk.add_argument('-t', 
-            dest='anno_type', 
-            default=None, 
+    parser_loadchunk.add_argument('-t',
+            dest='anno_type',
+            default=None,
             metavar='STRING',
             help="The annotations to be used with the input vcf. Options are:\n"
                              "  snpEff  - Annotations as reported by snpEff.\n"
                              "  VEP     - Annotations as reported by VEP.\n"
                              )
-    parser_loadchunk.add_argument('-o', 
+    parser_loadchunk.add_argument('-o',
             dest='offset',
             help='The starting number for the variant_ids',
             default=None)
-    parser_loadchunk.add_argument('-p', 
+    parser_loadchunk.add_argument('-p',
             dest='ped_file',
-            help='Sample information file in PED+ format.', 
+            help='Sample information file in PED+ format.',
             default=None)
     parser_loadchunk.add_argument('--no-load-genotypes',
-            dest='no_load_genotypes', 
+            dest='no_load_genotypes',
             action='store_true',
-            help='Genotypes exist in the file, but should not be stored.', 
+            help='Genotypes exist in the file, but should not be stored.',
             default=False)
-    parser_loadchunk.add_argument('--no-genotypes', 
-            dest='no_genotypes', 
+    parser_loadchunk.add_argument('--no-genotypes',
+            dest='no_genotypes',
             action='store_true',
-            help='There are no genotypes in the file (e.g. some 1000G VCFs)', 
+            help='There are no genotypes in the file (e.g. some 1000G VCFs)',
             default=False)
     parser_loadchunk.set_defaults(func=gemini_load_chunk.load)
 
@@ -157,14 +160,14 @@ def main():
     #########################################
     # $ gemini merge_chunks
     #########################################
-    parser_mergechunks = subparsers.add_parser('merge_chunks', 
+    parser_mergechunks = subparsers.add_parser('merge_chunks',
             help='combine intermediate db files into the final gemini ')
-    parser_mergechunks.add_argument('--db', 
+    parser_mergechunks.add_argument('--db',
             dest='db',
             help='The name of the final database to be loaded.')
-    parser_mergechunks.add_argument('--chunkdb', 
-            nargs='*', 
-            dest='chunkdbs', 
+    parser_mergechunks.add_argument('--chunkdb',
+            nargs='*',
+            dest='chunkdbs',
             action='append')
 
     parser_mergechunks.set_defaults(func=gemini_merge_chunks.merge_chunks)
@@ -173,32 +176,32 @@ def main():
     #########################################
     # $ gemini query
     #########################################
-    parser_query = subparsers.add_parser('query',  
+    parser_query = subparsers.add_parser('query',
             help='issue ad hoc SQL queries to the DB')
-    parser_query.add_argument('db', 
+    parser_query.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
-    parser_query.add_argument('-q', 
-            dest='query', 
+    parser_query.add_argument('-q',
+            dest='query',
             metavar='QUERY_STR',
             help='The query to be issued to the database')
-    parser_query.add_argument('--gt-filter', 
+    parser_query.add_argument('--gt-filter',
             dest='gt_filter',
             metavar='STRING',
             help='Restrictions to apply to genotype values')
-    parser_query.add_argument('-f', 
-            dest='queryfile', 
+    parser_query.add_argument('-f',
+            dest='queryfile',
             metavar='QUERY_FILE',
             help='A text file containing the query to be issued.')
-    parser_query.add_argument('--header', 
-            dest='use_header', 
+    parser_query.add_argument('--header',
+            dest='use_header',
             action='store_true',
-            help='Add a header of column names to the output.', 
+            help='Add a header of column names to the output.',
             default=False)
-    parser_query.add_argument('--sep', 
+    parser_query.add_argument('--sep',
             dest='separator',
             metavar='STRING',
-            help='Output column separator', 
+            help='Output column separator',
             default="\t")
     parser_query.set_defaults(func=gemini_query.query)
 
@@ -206,35 +209,35 @@ def main():
     #########################################
     # $ gemini dump
     #########################################
-    parser_dump = subparsers.add_parser('dump', 
+    parser_dump = subparsers.add_parser('dump',
             help='shortcuts for extracting data from the DB')
-    parser_dump.add_argument('db', 
+    parser_dump.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
-    parser_dump.add_argument('--variants', 
+    parser_dump.add_argument('--variants',
             dest='variants',
             action='store_true',
-            help='Report all rows/columns from the variants table.', 
+            help='Report all rows/columns from the variants table.',
             default=False)
-    parser_dump.add_argument('--genotypes', 
+    parser_dump.add_argument('--genotypes',
             dest='genotypes',
             action='store_true',
-            help='Report all rows/columns from the variants table \nwith one line per sample/genotype.', 
+            help='Report all rows/columns from the variants table \nwith one line per sample/genotype.',
             default=False)
-    parser_dump.add_argument('--samples', 
-            dest='samples', 
+    parser_dump.add_argument('--samples',
+            dest='samples',
             action='store_true',
-            help='Report all rows/columns from the samples table.', 
+            help='Report all rows/columns from the samples table.',
             default=False)
-    parser_dump.add_argument('--header', 
+    parser_dump.add_argument('--header',
             dest='use_header',
             action='store_true',
-            help='Add a header of column names to the output.', 
+            help='Add a header of column names to the output.',
             default=False)
-    parser_dump.add_argument('--sep', 
-            dest='separator', 
+    parser_dump.add_argument('--sep',
+            dest='separator',
             metavar='STRING',
-            help='Output column separator', 
+            help='Output column separator',
             default="\t")
     parser_dump.set_defaults(func=gemini_dump.dump)
 
@@ -242,28 +245,28 @@ def main():
     #########################################
     # $ gemini region
     #########################################
-    parser_region = subparsers.add_parser('region', 
+    parser_region = subparsers.add_parser('region',
             help='extract variants from specific genomic loci')
-    parser_region.add_argument('db', 
+    parser_region.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
-    parser_region.add_argument('--reg', 
-            dest='region', 
+    parser_region.add_argument('--reg',
+            dest='region',
             metavar='STRING',
             help='Specify a chromosomal region chr:start-end')
-    parser_region.add_argument('--gene', 
+    parser_region.add_argument('--gene',
             dest='gene',
             metavar='STRING',
             help='Specify a gene of interest')
-    parser_region.add_argument('--header', 
-            dest='use_header', 
+    parser_region.add_argument('--header',
+            dest='use_header',
             action='store_true',
-            help='Add a header of column names to the output.', 
+            help='Add a header of column names to the output.',
             default=False)
-    parser_region.add_argument('--sep', 
-            dest='separator', 
+    parser_region.add_argument('--sep',
+            dest='separator',
             metavar='STRING',
-            help='Output column separator', 
+            help='Output column separator',
             default="\t")
     parser_region.set_defaults(func=gemini_region.region)
 
@@ -271,9 +274,9 @@ def main():
     #########################################
     # $ gemini stats
     #########################################
-    parser_stats = subparsers.add_parser('stats', 
+    parser_stats = subparsers.add_parser('stats',
             help='compute useful variant stastics')
-    parser_stats.add_argument('db', 
+    parser_stats.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
     parser_stats.add_argument('--tstv',
@@ -322,23 +325,23 @@ def main():
     #########################################
     # gemini annotate
     #########################################
-    parser_get = subparsers.add_parser('annotate', 
+    parser_get = subparsers.add_parser('annotate',
             help='Add new columns for custom annotations')
-    parser_get.add_argument('db', 
+    parser_get.add_argument('db',
             metavar='db',
             help='The name of the database to be updated.')
-    parser_get.add_argument('-f', 
+    parser_get.add_argument('-f',
             dest='anno_file',
             help='The BED file containing the annotations')
-    parser_get.add_argument('-c', 
+    parser_get.add_argument('-c',
             dest='col_name',
             help='The name of the column to be added to the variant table.')
-    parser_get.add_argument('-t', 
+    parser_get.add_argument('-t',
             dest='col_type',
             help='How the data for the new column (-c) should be stored.',
             default="append",
             choices = ['boolean', 'count', 'list'])
-    parser_get.add_argument('-e', 
+    parser_get.add_argument('-e',
             dest='col_extract',
             help='Column to extract information from for list annotations.')
     parser_get.set_defaults(func=gemini_annotate.annotate)
@@ -347,24 +350,24 @@ def main():
     #########################################
     # gemini windower
     #########################################
-    parser_get = subparsers.add_parser('windower', 
+    parser_get = subparsers.add_parser('windower',
             help='Compute statistics across genome \"windows\"')
-    parser_get.add_argument('db', 
+    parser_get.add_argument('db',
             metavar='db',
             help='The name of the database to be updated.')
-    parser_get.add_argument('-w', 
+    parser_get.add_argument('-w',
             dest='window_size',
             default=1000000,
             help='The name of the column to be added to the variant table.')
-    parser_get.add_argument('-s', 
+    parser_get.add_argument('-s',
             dest='step_size',
             default=0,
             help="The step size for the windows in bp.\n")
-    parser_get.add_argument('-t', 
+    parser_get.add_argument('-t',
             dest='analysis_type',
             help='The type of windowed analysis requested.',
             choices = ['nucl_div', 'hwe'])
-    parser_get.add_argument('-o', 
+    parser_get.add_argument('-o',
             dest='op_type',
             help='The operation that should be applied to the -t values.',
             choices=['mean', 'median', 'min', 'max', 'list'])
@@ -376,7 +379,7 @@ def main():
     #########################################
     parser_get = subparsers.add_parser('db_info',
             help='Get the names and types of cols. database tables')
-    parser_get.add_argument('db', 
+    parser_get.add_argument('db',
             metavar='db',
             help='The name of the database to be updated.')
     parser_get.set_defaults(func=gemini_dbinfo.db_info)
@@ -385,20 +388,20 @@ def main():
     #########################################
     # $ gemini comp_hets
     #########################################
-    parser_comp_hets = subparsers.add_parser('comp_hets', 
+    parser_comp_hets = subparsers.add_parser('comp_hets',
             help='Identify compound heterozygotes')
-    parser_comp_hets.add_argument('db', 
-            metavar='db', 
+    parser_comp_hets.add_argument('db',
+            metavar='db',
             help='The name of the database to be created.')
-    parser_comp_hets.add_argument('--allow-other-hets', 
-            dest='allow_other_hets', 
+    parser_comp_hets.add_argument('--allow-other-hets',
+            dest='allow_other_hets',
             action='store_true',
-            help='Allow other het. individuals when screening candidates.', 
+            help='Allow other het. individuals when screening candidates.',
             default=False)
-    parser_comp_hets.add_argument('--only_lof', 
-            dest='only_lof', 
+    parser_comp_hets.add_argument('--only_lof',
+            dest='only_lof',
             action='store_true',
-            help='Only consider variants that are loss of function', 
+            help='Only consider variants that are loss of function',
             default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
 
@@ -406,14 +409,14 @@ def main():
     #########################################
     # $ gemini pathways
     #########################################
-    parser_pathway = subparsers.add_parser('pathways', 
+    parser_pathway = subparsers.add_parser('pathways',
             help='Map genes and variants to KEGG pathways')
-    parser_pathway.add_argument('db', 
-            metavar='db', 
+    parser_pathway.add_argument('db',
+            metavar='db',
             help='The name of the database to be queried')
-    parser_pathway.add_argument('-v', 
-            dest='version', 
-            default=None, 
+    parser_pathway.add_argument('-v',
+            dest='version',
+            default=None,
             metavar='STRING',
             help="version of ensembl genes to use:\n"
                  " 66 for Ensembl genes 66 and \n"
@@ -431,10 +434,10 @@ def main():
     #########################################
     # $ gemini lof_sieve
     #########################################
-    parser_lof_sieve = subparsers.add_parser('lof_sieve', 
+    parser_lof_sieve = subparsers.add_parser('lof_sieve',
             help='Prioritize LoF mutations')
-    parser_lof_sieve.add_argument('db', 
-            metavar='db', 
+    parser_lof_sieve.add_argument('db',
+            metavar='db',
             help='The name of the database to be queried')
     parser_lof_sieve.set_defaults(func=tool_lof_sieve.lof_sieve)
 
@@ -442,20 +445,20 @@ def main():
     #########################################
     # $ gemini interactions
     #########################################
-    parser_interaction = subparsers.add_parser('interactions', 
+    parser_interaction = subparsers.add_parser('interactions',
             help='Find interaction partners for a gene in sample variants(default mode)')
-    parser_interaction.add_argument('db', 
-            metavar='db', 
+    parser_interaction.add_argument('db',
+            metavar='db',
             help='The name of the database to be queried')
-    parser_interaction.add_argument('-g', 
-            dest='gene', 
+    parser_interaction.add_argument('-g',
+            dest='gene',
             help='Gene to be used as a root in BFS/shortest_path')
-    parser_interaction.add_argument('-r', 
-            dest='radius', 
+    parser_interaction.add_argument('-r',
+            dest='radius',
             type=int,
             help="Set filter for BFS:\n"
                  "valid numbers starting from 0")
-    parser_interaction.add_argument('--var', 
+    parser_interaction.add_argument('--var',
             dest='var_mode',
             help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',
             action='store_true',
@@ -468,14 +471,14 @@ def main():
     #########################################
     parser_interaction = subparsers.add_parser('lof_interactions',
             help='Find interaction partners for a lof gene in sample variants(default mode)')
-    parser_interaction.add_argument('db', 
-            metavar='db', 
+    parser_interaction.add_argument('db',
+            metavar='db',
             help='The name of the database to be queried')
-    parser_interaction.add_argument('-r', 
-            dest='radius', 
+    parser_interaction.add_argument('-r',
+            dest='radius',
             type=int, \
             help="set filter for BFS:\n")
-    parser_interaction.add_argument('--var', 
+    parser_interaction.add_argument('--var',
             dest='var_mode',
             help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',
             action='store_true',
@@ -489,7 +492,7 @@ def main():
     parser_auto_rec = subparsers.add_parser('autosomal_recessive',
             help='Identify variants meeting an autosomal \
                   recessive inheritance model')
-    parser_auto_rec.add_argument('db', 
+    parser_auto_rec.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
     parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
@@ -501,7 +504,7 @@ def main():
     parser_auto_dom = subparsers.add_parser('autosomal_dominant',
             help='Identify variants meeting an autosomal \
                   dominant inheritance model')
-    parser_auto_dom.add_argument('db', 
+    parser_auto_dom.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
     parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
@@ -512,12 +515,12 @@ def main():
     #########################################
     parser_de_novo = subparsers.add_parser('de_novo',
             help='Identify candidate de novo mutations')
-    parser_de_novo.add_argument('db', 
+    parser_de_novo.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
-    parser_de_novo.add_argument('-d', 
+    parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
-            type=int, 
+            type=int,
             help="The minimum aligned\
                   sequence depth (genotype DP) req'd for\
                   each sample",
