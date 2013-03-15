@@ -20,7 +20,10 @@ import popgen
 from gemini_constants import *
 from compression import pack_blob
 import subprocess
-import math
+from cluster_helper.cluster import cluster_view
+import uuid
+from itertools import izip_longest
+import collections
 
 class GeminiLoader(object):
     """
@@ -403,12 +406,15 @@ def load(parser, args):
 
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
-    if args.cores == 1:
-        load_single_core(args)
+    if use_scheduler(args):
+        load_ipython(args)
+    elif args.cores > 1:
+        load_multicore(args)
     else:
-        load_multi_core(args)
+        load_singlecore(args)
 
-def load_single_core(args):
+
+def load_singlecore(args):
     gemini_loader = GeminiLoader(args)
     gemini_loader.store_resources()
     gemini_loader.populate_from_vcf()
@@ -417,34 +423,87 @@ def load_single_core(args):
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
 
-def load_multi_core(args):
+def load_multicore(args):
     grabix_file = bgzip(args.vcf)
-    chunks = load_chunks(grabix_file, args)
-    merge_chunks(chunks, args.db)
+    chunks = load_chunks_multicore(grabix_file, args)
+    merge_chunks_multicore(chunks, args.db)
+
+def load_ipython(args):
+    grabix_file = bgzip(args.vcf)
+    chunks = load_chunks_ipython(grabix_file, args)
+    merge_chunks_ipython(chunks, args.db, args)
 
 def merge_chunks(chunks, db):
-    chunk_names = ""
-    for chunk in chunks:
-        chunk_names += " --chunkdb  " + chunk 
+    cmd = get_merge_chunks_cmd(chunks, db)
     print "Merging chunks."
-    
-    cmd = "gemini merge_chunks {chunk_names} --db {db}".format(**locals())
     subprocess.check_call(cmd, shell=True)
     cleanup_temp_db_files(chunks)
     return db
 
-def load_chunks(grabix_file, args):
+def get_merge_chunks_cmd(chunks, db):
+    chunk_names = ""
+    for chunk in chunks:
+        chunk_names += " --chunkdb  " + chunk
+    return "gemini merge_chunks {chunk_names} --db {db}".format(**locals())
+
+
+def merge_chunks_ipython(chunks, db, args):
+    if len(chunks) == 1:
+        os.rename(chunks[0], db)
+        return db
+    else:
+        sub_merges = get_chunks_to_merge(chunks)
+        tmp_dbs = get_temp_dbs(len(sub_merges))
+        with cluster_view(*get_ipython_args(args)) as view:
+            view.map(merge_chunks, sub_merges, tmp_dbs)
+        merge_chunks_ipython(tmp_dbs, db, args)
+
+def merge_chunks_multicore(chunks, db):
+    if len(chunks) == 1:
+        os.rename(chunks[0], db)
+        return db
+    else:
+        procs = []
+        sub_merges = get_chunks_to_merge(chunks)
+        tmp_dbs = get_temp_dbs(len(sub_merges))
+        for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
+            cmd = get_merge_chunks_cmd(sub_merge, tmp_db)
+            procs.append(subprocess.Popen(cmd, shell=True))
+        wait_until_loading_finishes(procs)
+        cleanup_temp_db_files(chunks)
+        merge_chunks_multicore(tmp_dbs, db)
+
+
+def get_chunks_to_merge(chunks):
+    sublist = list_to_sublists(chunks, 2)
+    if len(sublist[-1]) > 1:
+        return sublist
+    else:
+        sublist[-2].extend(sublist[-1])
+        return sublist[:-1]
+
+def list_to_sublists(l, n):
+    """ convert list l to sublists of length n """
+    return [l[i:i+n] for i in xrange(0, len(l), n)]
+
+def get_temp_dbs(n):
+    return [str(uuid.uuid4()) + ".db" for _ in xrange(n)]
+
+def get_chunk_name(chunk):
+    return "--chunkdb " + chunk
+
+def load_chunks_multicore(grabix_file, args):
     cores = args.cores
-    
+
     # specify the PED file if given one
     ped_file = ""
     if args.ped_file is not None:
-        ped_file = " -p " + args.ped_file
+        ped_file = "-p " + args.ped_file
 
     # specify the annotation type if given one
     anno_type = ""
     if args.anno_type is not None:
-        anno_type = " -t " + args.anno_type
+        anno_type = "-t " + args.anno_type
 
     submit_command = get_submit_command(args)
     vcf, _ = os.path.splitext(grabix_file)
@@ -452,39 +511,76 @@ def load_chunks(grabix_file, args):
     chunk_vcfs = []
     chunk_dbs = []
     procs = []
-    chunk_num = 1
-    for start, stop in chunk_steps:
+    for chunk_num, chunk in chunk_steps:
+        start, stop = chunk
         print "Loading chunk " + str(chunk_num) + "." + ped_file
-        grabix_split = grabix_split_cmd().format(**locals())
-        subprocess.check_call(grabix_split, shell=True)
-        gemini_load = gemini_load_cmd().format(**locals())
+        #grabix_split = grabix_split_cmd().format(**locals())
+        #subprocess.check_call(grabix_split, shell=True)
+        #gemini_load = gemini_load_cmd().format(**locals())
+        gemini_load = gemini_pipe_load_cmd().format(**locals())
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
-        
+
         chunk_vcf = vcf + ".chunk" + str(chunk_num)
         chunk_vcfs.append(chunk_vcf)
         chunk_dbs.append(chunk_vcf + ".db")
-        chunk_num += 1
 
     wait_until_loading_finishes(procs)
-    cleanup_temp_vcf_files(chunk_vcfs)
-    print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num-1)
+    print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num)
     return chunk_dbs
 
+def load_chunks_ipython(grabix_file, args):
+    # specify the PED file if given one
+    ped_file = ""
+    if args.ped_file is not None:
+        ped_file = "-p " + args.ped_file
+
+    # specify the annotation type if given one
+    anno_type = ""
+    if args.anno_type is not None:
+        anno_type = "-t " + args.anno_type
+
+    vcf, _ = os.path.splitext(grabix_file)
+    chunk_steps = get_chunk_steps(grabix_file, args)
+    total_chunks = len(chunk_steps)
+    scheduler, queue, cores = get_ipython_args(args)
+    with cluster_view(*get_ipython_args(args)) as view:
+        load_args = {"ped_file": ped_file,
+                     "anno_type": anno_type,
+                     "vcf": vcf,
+                     "grabix_file": grabix_file}
+        chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
+
+    print "Done loading variants in {0} chunks.".format(total_chunks)
+    return chunk_dbs
+
+def load_chunk(chunk_step, kwargs):
+    chunk_num, chunk = chunk_step
+    start, stop = chunk
+    args = combine_dicts(locals(), kwargs)
+    grabix_split = grabix_split_cmd().format(**args)
+    subprocess.check_call(grabix_split, shell=True)
+    gemini_load = gemini_pipe_load_cmd().format(**args)
+    subprocess.check_call(gemini_load, shell=True)
+    chunk_db = args["vcf"] + ".chunk" + str(chunk_num) + ".db"
+    return chunk_db
 
 def wait_until_loading_finishes(procs):
     [p.wait() for p in procs]
 
-def cleanup_temp_vcf_files(chunk_vcfs):
-    for chunk_vcf in chunk_vcfs:
-        os.remove(chunk_vcf)
-        
 def cleanup_temp_db_files(chunk_dbs):
     for chunk_db in chunk_dbs:
         os.remove(chunk_db)
 
 def gemini_load_cmd():
-    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} {anno_type} {ped_file} -o {start} {vcf}.chunk{chunk_num}.db")
+    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} "
+            "{anno_type} {ped_file} -o {start} {vcf}.chunk{chunk_num}.db")
+
+def gemini_pipe_load_cmd():
+    grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
+    gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file} "
+                       "-o {start} {vcf}.chunk{chunk_num}.db")
+    return " | ".join([grabix_cmd, gemini_load_cmd])
 
 def grabix_split_cmd():
     return "grabix grab {grabix_file} {start} {stop} > {vcf}.chunk{chunk_num}"
@@ -493,13 +589,11 @@ def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
     chunk_size = int(num_lines) / int(args.cores)
-    chunk_num = int(math.ceil(float(num_lines) / float(args.cores)))
     print "Breaking {0} into {1} chunks.".format(grabix_file, args.cores)
-    
+
     starts = []
     stops = []
     for chunk in range(0, int(args.cores)):
-        
         start = (chunk * chunk_size) + 1
         stop  = start + chunk_size - 1
         # make sure the last chunk covers the remaining lines
@@ -507,7 +601,7 @@ def get_chunk_steps(grabix_file, args):
             stop = num_lines
         starts.append(start)
         stops.append(stop)
-    return zip(starts, stops)
+    return list(enumerate(zip(starts, stops)))
 
 def get_num_lines(index_file):
     with open(index_file) as index_handle:
@@ -533,7 +627,8 @@ def bgzip(fname):
     bgzip_file = fname + ".gz"
     if file_exists(bgzip_file):
         return bgzip_file
-    subprocess.check_call("bgzip -c {fname} > {fname}.gz".format(fname=fname), shell=True)
+    subprocess.check_call("bgzip -c {fname} > {fname}.gz".format(fname=fname),
+                          shell=True)
     return bgzip_file
 
 
@@ -578,6 +673,27 @@ def which(program):
 
     return None
 
+def combine_dicts(d1, d2):
+    return dict(d1.items() + d2.items())
+
+def get_ipython_args(args):
+    if args.lsf_queue:
+        return ("lsf", args.lsf_queue, args.cores)
+    elif args.sge_queue:
+        return ("sge", args.sge_queue, args.cores)
+    else:
+        raise ValueError("ipython argument parsing failed for some reason.")
+
 def print_cmd_not_found_and_exit(cmd):
-    sys.stderr.write("Cannot find {cmd}, install it or put it in your path.".format(cmd))
+    sys.stderr.write("Cannot find {cmd}, install it or put it in your "
+                     "path.".format(cmd))
     exit(1)
+
+def use_scheduler(args):
+    if args.lsf_queue or args.sge_queue:
+        return True
+    else:
+        return False
+
+def is_pair(arg):
+    return is_sequence(arg) and len(arg) == 2
