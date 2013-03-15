@@ -518,7 +518,6 @@ def load_chunks_multicore(grabix_file, args):
         #subprocess.check_call(grabix_split, shell=True)
         #gemini_load = gemini_load_cmd().format(**locals())
         gemini_load = gemini_pipe_load_cmd().format(**locals())
-        print gemini_load
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
 
