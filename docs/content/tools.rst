@@ -9,7 +9,7 @@ Built-in analysis tools
 Many recessive disorders are caused by compound heterozygotes. Unlike canonical
 recessive sites where the same recessive allele is inherited from both parents
 at the _same_ site in the gene, compound heterozygotes occur when
-the individual's phenotype is caused by two heterogeneous recessive alleles at 
+the individual's phenotype is caused by two heterozygous recessive alleles at 
 _different_ sites in a particular gene. 
 
 So basically, we are looking for two (typically loss-of-function (LoF))
