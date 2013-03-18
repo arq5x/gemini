@@ -64,10 +64,10 @@ single core, it takes a few hours.
 
 
 ================================
-Using LSF and SGE clusters
+Using LSF, SGE and PBS clusters
 ================================
 Thanks to some great work from Brad Chapman and Rory Kirchner, one can also load
-VCF files into gemini in parallel using many cores on LSF or SGE clusters. One
+VCF files into gemini in parallel using many cores on LSF, SGE or PBS clusters. One
 must simply specify the type of job scheduler your cluster uses and the queue
 name to which your jobs should be submitted.
 
@@ -82,7 +82,7 @@ Here is all you need to do:
              --lsf-queue preempt_everyone \
              my.db
 
-If you use SGE, it would look like (you guessed it):
+If you use SGE, it would look like:
 
 .. code-block:: bash
 
@@ -90,6 +90,16 @@ If you use SGE, it would look like (you guessed it):
              -t snpEff \
              --cores 50 \
              --sge-queue preempt_everyone \
+             my.db
+
+If you use PBS, it would look like: (you guessed it):
+
+.. code-block:: bash
+
+    $ gemini load -v my.vcf \
+             -t snpEff \
+             --cores 50 \
+             --pbs-queue preempt_everyone \
              my.db
 
 
