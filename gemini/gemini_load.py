@@ -466,10 +466,9 @@ def merge_chunks_multicore(chunks, db):
         for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
             cmd = get_merge_chunks_cmd(sub_merge, tmp_db)
             procs.append(subprocess.Popen(cmd, shell=True))
-        wait_until_loading_finishes(procs)
+        wait_until_finished(procs)
         cleanup_temp_db_files(chunks)
         merge_chunks_multicore(tmp_dbs, db)
-
 
 def get_chunks_to_merge(chunks):
     sublist = list_to_sublists(chunks, 2)
@@ -519,7 +518,7 @@ def load_chunks_multicore(grabix_file, args):
         chunk_vcfs.append(chunk_vcf)
         chunk_dbs.append(chunk_vcf + ".db")
 
-    wait_until_loading_finishes(procs)
+    wait_until_finished(procs)
     print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num)
     return chunk_dbs
 
@@ -557,12 +556,8 @@ def load_chunk(chunk_step, kwargs):
     chunk_db = args["vcf"] + ".chunk" + str(chunk_num) + ".db"
     return chunk_db
 
-def wait_until_loading_finishes(procs):
+def wait_until_finished(procs):
     [p.wait() for p in procs]
-
-def cleanup_temp_vcf_files(chunk_vcfs):
-    for chunk_vcf in chunk_vcfs:
-        os.remove(chunk_vcf)
 
 def cleanup_temp_db_files(chunk_dbs):
     for chunk_db in chunk_dbs:
@@ -573,9 +568,6 @@ def gemini_pipe_load_cmd():
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file} "
                        "-o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
-
-def grabix_split_cmd():
-    return "grabix grab {grabix_file} {start} {stop} > {vcf}.chunk{chunk_num}"
 
 def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
@@ -675,6 +667,8 @@ def get_ipython_args(args):
         return ("lsf", args.lsf_queue, args.cores)
     elif args.sge_queue:
         return ("sge", args.sge_queue, args.cores)
+    elif args.torque_queue:
+        return ("pbs", args.pbs_queue, args.cores)
     else:
         raise ValueError("ipython argument parsing failed for some reason.")
 
@@ -684,7 +678,7 @@ def print_cmd_not_found_and_exit(cmd):
     exit(1)
 
 def use_scheduler(args):
-    if args.lsf_queue or args.sge_queue:
+    if any([args.lsf_queue, args.sge_queue, args.pbs_queue]):
         return True
     else:
         return False

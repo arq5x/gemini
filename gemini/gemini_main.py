@@ -113,6 +113,9 @@ def main():
     parser_load.add_argument('--sge-queue',
             dest='sge_queue',
             help="Queue name to use for Sun Grid Engine.")
+    parser_load.add_argument('--pbs-queue',
+            dest='pbs_queue',
+            help="Queue name to use for a PBS based scheduler (Torque/PBS Pro)")
 
     parser_load.set_defaults(func=gemini_load.load)
 
@@ -403,11 +406,11 @@ def main():
             action='store_true',
             help='Only consider variants that are loss of function',
             default=False)
-    parser_comp_hets.add_argument('--ignore_phasing', 
-            dest='ignore_phasing', 
+    parser_comp_hets.add_argument('--ignore_phasing',
+            dest='ignore_phasing',
             action='store_true',
             help='Ignore phasing when screening for compound hets. \
-                  Candidates are inherently _putative_.', 
+                  Candidates are inherently _putative_.',
             default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
 
