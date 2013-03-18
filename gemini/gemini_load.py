@@ -22,8 +22,6 @@ from compression import pack_blob
 import subprocess
 from cluster_helper.cluster import cluster_view
 import uuid
-from itertools import izip_longest
-import collections
 
 class GeminiLoader(object):
     """
@@ -404,8 +402,6 @@ def load(parser, args):
     # collect of the the add'l annotation files
     annotations.load_annos()
 
-    # create a new gemini loader and populate
-    # the gemini db and files from the VCF
     if use_scheduler(args):
         load_ipython(args)
     elif args.cores > 1:
@@ -415,6 +411,8 @@ def load(parser, args):
 
 
 def load_singlecore(args):
+    # create a new gemini loader and populate
+    # the gemini db and files from the VCF
     gemini_loader = GeminiLoader(args)
     gemini_loader.store_resources()
     gemini_loader.populate_from_vcf()
@@ -445,7 +443,6 @@ def get_merge_chunks_cmd(chunks, db):
     for chunk in chunks:
         chunk_names += " --chunkdb  " + chunk
     return "gemini merge_chunks {chunk_names} --db {db}".format(**locals())
-
 
 def merge_chunks_ipython(chunks, db, args):
     if len(chunks) == 1:
@@ -514,9 +511,6 @@ def load_chunks_multicore(grabix_file, args):
     for chunk_num, chunk in chunk_steps:
         start, stop = chunk
         print "Loading chunk " + str(chunk_num) + "." + ped_file
-        #grabix_split = grabix_split_cmd().format(**locals())
-        #subprocess.check_call(grabix_split, shell=True)
-        #gemini_load = gemini_load_cmd().format(**locals())
         gemini_load = gemini_pipe_load_cmd().format(**locals())
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
@@ -558,8 +552,6 @@ def load_chunk(chunk_step, kwargs):
     chunk_num, chunk = chunk_step
     start, stop = chunk
     args = combine_dicts(locals(), kwargs)
-    grabix_split = grabix_split_cmd().format(**args)
-    subprocess.check_call(grabix_split, shell=True)
     gemini_load = gemini_pipe_load_cmd().format(**args)
     subprocess.check_call(gemini_load, shell=True)
     chunk_db = args["vcf"] + ".chunk" + str(chunk_num) + ".db"
@@ -575,10 +567,6 @@ def cleanup_temp_vcf_files(chunk_vcfs):
 def cleanup_temp_db_files(chunk_dbs):
     for chunk_db in chunk_dbs:
         os.remove(chunk_db)
-
-def gemini_load_cmd():
-    return ("gemini load_chunk -v {vcf}.chunk{chunk_num} "
-            "{anno_type} {ped_file} -o {start} {vcf}.chunk{chunk_num}.db")
 
 def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
@@ -620,6 +608,7 @@ def grabix_index(fname):
     index_file = fname + ".gbi"
     if file_exists(index_file):
         return index_file
+    print "Indexing {0} with grabix.".format(fname)
     subprocess.check_call("grabix index {fname}".format(fname=fname), shell=True)
     return index_file
 
@@ -631,6 +620,7 @@ def bgzip(fname):
     bgzip_file = fname + ".gz"
     if file_exists(bgzip_file):
         return bgzip_file
+    print "bgzipping {0} into {1}.".format(fname, fname + ".gz")
     subprocess.check_call("bgzip -c {fname} > {fname}.gz".format(fname=fname),
                           shell=True)
     return bgzip_file
@@ -698,6 +688,3 @@ def use_scheduler(args):
         return True
     else:
         return False
-
-def is_pair(arg):
-    return is_sequence(arg) and len(arg) == 2
