@@ -16,7 +16,7 @@ core dependencies:
     3. `samtools <http://sourceforge.net/projects/samtools/files/>`_
     4. `tabix <http://sourceforge.net/projects/samtools/files/>`_
     5. `bedtools <https://code.google.com/p/bedtools/>`_
-    6. `pybedtools <http://pythonhosted.org/pybedtools/main.html#installing-pybedtools>`
+    6. `pybedtools <http://pythonhosted.org/pybedtools/main.html#installing-pybedtools>`_
 
 
 
