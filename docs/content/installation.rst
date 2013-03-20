@@ -20,7 +20,7 @@ core dependencies:
 
 
 
-Software installation
+Gemini installation
 =====================
 Once the above dependencies have been installed, one can begin installing 
 ``gemini`` itself. To install you should download the latest source code from 
