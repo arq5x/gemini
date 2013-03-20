@@ -3,9 +3,26 @@ Installation
 ############
 
 
+Software dependencies
+=====================
+Gemini depends upon several widely-used genomics command line software as well
+as multiple Python packages.  We recognize that the dependency stack is quite
+deep and are working on ways to minimize dependencies in the interest of the
+most streamlined installation process possible.  Nonetheless, the following are
+core dependencies:
+
+    1. Python 2.7.x
+    2. `grabix <https://github.com/arq5x/grabix>`_
+    3. `samtools <http://sourceforge.net/projects/samtools/files/>`_
+    4. `tabix <http://sourceforge.net/projects/samtools/files/>`_
+
+
+
 Software installation
 =====================
-To install you should download the latest source code from GitHub, either by going to::
+Once the above dependencies have been installed, one can begin installing 
+``gemini`` itself. To install you should download the latest source code from 
+GitHub, either by going to::
 
     http://github.com/arq5x/gemini
 
@@ -44,6 +61,15 @@ you'd like to install the necessary data files. The recommended path is
 
     $ python gemini/install-data.py /usr/local/share/
 
+
+Running the testing suite
+===========================
+Gemini comes with a full test suite to make sure that everything has installed
+correctly on your system.  We **strongly** encourage you to run these tests.
+
+.. code-block:: bash
+
+    $ sh master-test.sh
 
 
 ---------------------------
