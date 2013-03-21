@@ -150,7 +150,16 @@ def load_annos():
     }
 
     for anno in anno_files:
-        annos[anno] = pysam.Tabixfile(anno_files[anno])
+        try:
+            annos[anno] = pysam.Tabixfile(anno_files[anno])
+        except IOError:
+            sys.exit("Gemini cannot open this annotation file: %s. \n"
+                     "Have you installed the annotation files?  If so, "
+                     "have they been moved or deleted? Exiting...\n\n"
+                     "For more details:\n\t"
+                     "http://gemini.readthedocs.org/en/latest/content/"
+                     "#installation.html\#installing-annotation-files\n" 
+                     % anno_files[anno])
 
 # ## Standard access to Tabix indexed files
 

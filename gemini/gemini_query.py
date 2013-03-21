@@ -66,7 +66,7 @@ def _split_select(query, sample_to_idx):
 
     # iterate through all of the select columns andclear
     # distinguish the genotype-specific columns from the base columns
-    from_loc = query.find("from")
+    from_loc = query.lower().find("from")
     if from_loc < 1:
          sys.exit("Malformed query.")
 
@@ -102,7 +102,7 @@ def add_gt_cols_to_query(query):
     In essence, when a gneotype filter has been requested, we always add
     the gts, gt_types and gt_phases columns.
     """
-    from_loc = query.find("from")
+    from_loc = query.lower().find("from")
     if from_loc > 1:
         raw_select_clause = query[0:from_loc].rstrip()
         rest_of_query = query[from_loc:len(query)]
