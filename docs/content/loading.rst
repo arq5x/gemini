@@ -4,6 +4,15 @@ Loading a VCF file into Gemini
 
 
 ==============================
+Annotate with snpEff or VEP
+==============================
+While not necessary, we suggest that you first annotate your VCF with snpEff or 
+VEP prior to loading it into Gemini.  Instructions for for installing and 
+running these tools can be found in the following section:
+
+:doc:`functional_annotation`
+
+==============================
 The basics
 ==============================
 

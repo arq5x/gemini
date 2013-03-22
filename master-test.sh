@@ -43,6 +43,9 @@ sh test-effstring.sh
 # Test loading functionality
 sh test-annotate-tool.sh
 
+# Test pathway tool
+sh test-pathtool.sh
+
 # cleanup
 rm ./*.db
 
