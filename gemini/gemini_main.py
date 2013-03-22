@@ -113,9 +113,9 @@ def main():
     parser_load.add_argument('--sge-queue',
             dest='sge_queue',
             help="Queue name to use for Sun Grid Engine.")
-    parser_load.add_argument('--pbs-queue',
-            dest='pbs_queue',
-            help="Queue name to use for a PBS based scheduler (Torque/PBS Pro)")
+    parser_load.add_argument('--torque-queue',
+            dest='torque_queue',
+            help="Queue name to use for a Torque based scheduler")
 
     parser_load.set_defaults(func=gemini_load.load)
 

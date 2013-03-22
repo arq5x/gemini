@@ -668,7 +668,7 @@ def get_ipython_args(args):
     elif args.sge_queue:
         return ("sge", args.sge_queue, args.cores)
     elif args.torque_queue:
-        return ("pbs", args.pbs_queue, args.cores)
+        return ("torque", args.torque_queue, args.cores)
     else:
         raise ValueError("ipython argument parsing failed for some reason.")
 
@@ -678,7 +678,7 @@ def print_cmd_not_found_and_exit(cmd):
     exit(1)
 
 def use_scheduler(args):
-    if any([args.lsf_queue, args.sge_queue, args.pbs_queue]):
+    if any([args.lsf_queue, args.sge_queue, args.torque_queue]):
         return True
     else:
         return False
