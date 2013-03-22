@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 # native Python imports
 import os.path
 import sys
@@ -428,8 +429,9 @@ def load_multicore(args):
 
 def load_ipython(args):
     grabix_file = bgzip(args.vcf)
-    chunks = load_chunks_ipython(grabix_file, args)
-    merge_chunks_ipython(chunks, args.db, args)
+    with cluster_view(*get_ipython_args(args)) as view:
+        chunks = load_chunks_ipython(grabix_file, args, view)
+        merge_chunks_ipython(chunks, args.db, view)
 
 def merge_chunks(chunks, db):
     cmd = get_merge_chunks_cmd(chunks, db)
@@ -444,16 +446,15 @@ def get_merge_chunks_cmd(chunks, db):
         chunk_names += " --chunkdb  " + chunk
     return "gemini merge_chunks {chunk_names} --db {db}".format(**locals())
 
-def merge_chunks_ipython(chunks, db, args):
+def merge_chunks_ipython(chunks, db, view):
     if len(chunks) == 1:
         os.rename(chunks[0], db)
         return db
     else:
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges))
-        with cluster_view(*get_ipython_args(args)) as view:
-            view.map(merge_chunks, sub_merges, tmp_dbs)
-        merge_chunks_ipython(tmp_dbs, db, args)
+        view.map(merge_chunks, sub_merges, tmp_dbs)
+        merge_chunks_ipython(tmp_dbs, db, view)
 
 def merge_chunks_multicore(chunks, db):
     if len(chunks) == 1:
@@ -522,7 +523,7 @@ def load_chunks_multicore(grabix_file, args):
     print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num)
     return chunk_dbs
 
-def load_chunks_ipython(grabix_file, args):
+def load_chunks_ipython(grabix_file, args, view):
     # specify the PED file if given one
     ped_file = ""
     if args.ped_file is not None:
@@ -537,12 +538,11 @@ def load_chunks_ipython(grabix_file, args):
     chunk_steps = get_chunk_steps(grabix_file, args)
     total_chunks = len(chunk_steps)
     scheduler, queue, cores = get_ipython_args(args)
-    with cluster_view(*get_ipython_args(args)) as view:
-        load_args = {"ped_file": ped_file,
-                     "anno_type": anno_type,
-                     "vcf": vcf,
-                     "grabix_file": grabix_file}
-        chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
+    load_args = {"ped_file": ped_file,
+                 "anno_type": anno_type,
+                 "vcf": vcf,
+                 "grabix_file": grabix_file}
+    chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
 
     print "Done loading variants in {0} chunks.".format(total_chunks)
     return chunk_dbs
