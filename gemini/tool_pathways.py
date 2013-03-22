@@ -108,7 +108,7 @@ def get_ind_pathways(c, args):
 
     # header
     print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
-                     'highest_impact', 'sample', 'genotype', \
+                     'impact', 'sample', 'genotype', \
                      'gene', 'transcript', 'pathway'])
 
     _report_variant_pathways(c, args, idx_to_sample)
@@ -129,7 +129,7 @@ def get_ind_lof_pathways(c, args):
 
     # header
     print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
-                     'highest_impact', 'sample', 'genotype', \
+                     'impact', 'sample', 'genotype', \
                      'gene', 'transcript', 'pathway'])
 
     _report_variant_pathways(c, args, idx_to_sample)
