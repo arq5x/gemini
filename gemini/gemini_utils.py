@@ -2,6 +2,7 @@
 import sqlite3
 import collections
 
+
 def map_samples_to_indicies(c):
     """Return a dict mapping samples names (key)
        to sample indices in the numpy genotype arrays (value).
@@ -16,7 +17,7 @@ def map_samples_to_indicies(c):
 
 
 def map_indicies_to_samples(c):
-    """Return a dict mapping samples indices in the 
+    """Return a dict mapping samples indices in the
        numpy arrays (key) to sample names.
     """
     idx_to_sample = {}
@@ -28,7 +29,7 @@ def map_indicies_to_samples(c):
     return idx_to_sample
 
 
-def get_col_names_and_indices(sqlite_description, ignore_gt_cols = False):
+def get_col_names_and_indices(sqlite_description, ignore_gt_cols=False):
     """Return a list of column namanes and a list of the row indicies.
        Optionally exclude gt_* columns.
     """
@@ -38,7 +39,7 @@ def get_col_names_and_indices(sqlite_description, ignore_gt_cols = False):
         # e.g., each col in sqlite desc is a tuple like:
         # ('variant_id', None, None, None, None, None, None)
         col_name = col_tup[0]
-        if ((not ignore_gt_cols) or \
+        if ((not ignore_gt_cols) or
            (ignore_gt_cols and not col_name.startswith('gt'))):
             col_indices.append(idx)
             col_names.append(col_name)
@@ -49,7 +50,7 @@ def get_col_names_and_indices(sqlite_description, ignore_gt_cols = False):
 class OrderedSet(collections.MutableSet):
 
     def __init__(self, iterable=None):
-        self.end = end = [] 
+        self.end = end = []
         end += [None, end, end]         # sentinel node for doubly linked list
         self.map = {}                   # key --> [key, prev, next]
         if iterable is not None:
@@ -68,7 +69,7 @@ class OrderedSet(collections.MutableSet):
             curr[2] = end[1] = self.map[key] = [key, curr, end]
 
     def discard(self, key):
-        if key in self.map:        
+        if key in self.map:
             key, prev, next = self.map.pop(key)
             prev[2] = next
             next[1] = prev
@@ -103,5 +104,3 @@ class OrderedSet(collections.MutableSet):
         if isinstance(other, OrderedSet):
             return len(self) == len(other) and list(self) == list(other)
         return set(self) == set(other)
-
-            
