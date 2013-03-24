@@ -9,12 +9,12 @@ Prefer the former if you have system level permissions for installation
 since it will work for all system users.
 """
 import os
-
 import yaml
 
 CONFIG_FILE = "gemini-config.yaml"
 CONFIG_DIRS = [os.path.join(os.environ["HOME"], ".gemini"),
                "/usr/local/share/gemini"]
+
 
 def _get_config_file(dirs=None):
     dnames = CONFIG_DIRS if dirs is None else dirs + CONFIG_DIRS
@@ -23,7 +23,8 @@ def _get_config_file(dirs=None):
         if os.path.exists(fname):
             return fname
     raise ValueError("Gemini configuration file {0} not found in {1}".format(
-            CONFIG_FILE, dnames))
+        CONFIG_FILE, dnames))
+
 
 def read_gemini_config(dirs=None, allow_missing=False):
     try:
@@ -36,16 +37,18 @@ def read_gemini_config(dirs=None, allow_missing=False):
     with open(fname) as in_handle:
         return yaml.load(in_handle)
 
+
 def _find_best_config_file(dirs=None):
     dnames = CONFIG_DIRS if dirs is None else dirs + CONFIG_DIRS
     dnames.reverse()
     for dname in dnames:
         if os.access(dname, os.W_OK) or \
-        os.access(os.path.dirname(dname), os.W_OK):
+                os.access(os.path.dirname(dname), os.W_OK):
             return os.path.join(dname, CONFIG_FILE)
-    
+
     raise ValueError("Gemini configuration: "
                      "Could not find writeable directory: {0}".format(dnames))
+
 
 def write_gemini_config(new_config, dirs=None):
     try:

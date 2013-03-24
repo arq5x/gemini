@@ -2,6 +2,7 @@
 
 import sqlite3
 
+
 def index_variation(cursor):
     cursor.execute('''create index var_chr_start_idx on\
                       variants(chrom, start)''')
@@ -18,17 +19,21 @@ def index_variation(cursor):
     cursor.execute('''create index var_lof_idx on variants(is_lof)''')
     cursor.execute('''create index var_depth_idx on variants(depth)''')
 
+
 def index_variation_impacts(cursor):
     cursor.execute('''create index varimp_exonic_idx on \
                       variant_impacts(is_exonic)''')
     cursor.execute('''create index varimp_coding_idx on \
                       variant_impacts(is_coding)''')
-    cursor.execute('''create index varimp_lof_idx on variant_impacts(is_lof)''')
+    cursor.execute(
+        '''create index varimp_lof_idx on variant_impacts(is_lof)''')
     cursor.execute('''create index varimp_impact_idx on \
                       variant_impacts(impact)''')
 
+
 def index_samples(cursor):
     cursor.execute('''create unique index sample_name_idx on samples(name)''')
+
 
 def create_indices(cursor):
     """
@@ -36,6 +41,7 @@ def create_indices(cursor):
     """
     index_variation(cursor)
     index_samples(cursor)
+
 
 def create_tables(cursor):
     """
@@ -80,7 +86,7 @@ def create_tables(cursor):
                     num_het integer,                            \
                     num_hom_alt integer,                        \
                     num_unknown integer,                        \
-                    aaf decimal(2,7),                           \
+                    aaf real,                                   \
                     hwe decimal(2,7),                           \
                     inbreeding_coeff decimal(2,7),              \
                     pi decimal(2,7),                            \
@@ -192,6 +198,7 @@ def create_tables(cursor):
                      name text,                              \
                      resource text)''')
 
+
 def insert_variation(cursor, buffer):
     """
     Populate the variants table with each variant in the buffer.
@@ -206,8 +213,8 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?)', \
-                                                     buffer)
+                                                     ?,?,?,?,?,?,?,?,?,?)',
+                       buffer)
     cursor.execute("END")
 
 
@@ -218,12 +225,12 @@ def insert_variation_impacts(cursor, buffer):
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into variant_impacts values (?,?,?,?,?,?,?,?, \
                                                             ?,?,?,?,?,?,?,?, \
-                                                            ?,?)', \
-                                                            buffer)
+                                                            ?,?)',
+                       buffer)
     cursor.execute("END")
 
 
-def insert_sample(cursor,sample_list):
+def insert_sample(cursor, sample_list):
     """
     Populate the samples with sample ids, names, and
     other indicative information.
@@ -233,12 +240,14 @@ def insert_sample(cursor,sample_list):
                                   (?,?,?,?,?,?,?,?)''', sample_list)
     cursor.execute("END")
 
+
 def insert_resources(cursor, resources):
     """Populate table of annotation resources used in this database.
     """
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('''insert into resources values (?,?)''', resources)
     cursor.execute("END")
+
 
 def close_and_commit(cursor, connection):
     """

@@ -12,6 +12,7 @@ import time
 import gemini_constants
 from gemini.annotations import annotations_in_region, guess_contig_naming
 
+
 def add_requested_column(col_name, update_cursor):
     """
     Attempt to add a new, user-defined column to the
@@ -23,20 +24,20 @@ def add_requested_column(col_name, update_cursor):
                     + " BOOL DEFAULT NULL"
         update_cursor.execute(alter_qry)
     except sqlite3.OperationalError:
-        sys.stderr.write("WARNING: column \"(" \
-                 + col_name \
-                 + ")\" already exists in variants table. Overwriting values.")  
+        sys.stderr.write("WARNING: column \"("
+                         + col_name
+                         + ")\" already exists in variants table. Overwriting values.")
 
 
 def _annotate_variants(args, conn, get_val_fn):
     """Generalized annotation of variants with a new column.
-    
+
     get_val_fn takes a list of annotations in a region and returns
     the value for that region to update the database with.
 
-    Separates selection and identification of values from update, 
-    to avoid concurrent database access errors from sqlite3, especially on 
-    NFS systems. The retained to_update list is small, but batching 
+    Separates selection and identification of values from update,
+    to avoid concurrent database access errors from sqlite3, especially on
+    NFS systems. The retained to_update list is small, but batching
     could help if memory issues emerge.
     """
     # For each, use Tabix to detect overlaps with the user-defined
@@ -48,9 +49,9 @@ def _annotate_variants(args, conn, get_val_fn):
     to_update = []
     for row in select_cursor:
         to_update.append((str(row["variant_id"]),
-                          get_val_fn(annotations_in_region(row, 
-                                                           annos, 
-                                                           "tuple", 
+                          get_val_fn(annotations_in_region(row,
+                                                           annos,
+                                                           "tuple",
                                                            naming))))
     update_cursor = conn.cursor()
     add_requested_column(args.col_name, update_cursor)
@@ -63,11 +64,12 @@ def _annotate_variants(args, conn, get_val_fn):
                      + variant_id
         update_cursor.execute(update_qry)
 
+
 def annotate_variants_bool(args, conn):
     """
     Populate a new, user-defined column in the variants
     table with a BOOLEAN indicating whether or not
-    overlaps were detected between the variant and the 
+    overlaps were detected between the variant and the
     annotation file.
     """
     def has_anno_hit(hits):
@@ -78,11 +80,12 @@ def annotate_variants_bool(args, conn):
         return has_hit
     return _annotate_variants(args, conn, has_anno_hit)
 
+
 def annotate_variants_count(args, conn):
     """
     Populate a new, user-defined column in the variants
     table with a INTEGER indicating the count of overlaps
-    between the variant and the 
+    between the variant and the
     annotation file.
     """
     def get_hit_count(hits):
@@ -92,11 +95,12 @@ def annotate_variants_count(args, conn):
         return count
     return _annotate_variants(args, conn, get_hit_count)
 
+
 def annotate_variants_list(args, conn):
     """
     Populate a new, user-defined column in the variants
     table with a INTEGER indicating the count of overlaps
-    between the variant and the 
+    between the variant and the
     annotation file.
     """
     def get_hit_list(hits):
@@ -115,6 +119,7 @@ def annotate_variants_list(args, conn):
             return "NULL"
     return _annotate_variants(args, conn, get_hit_list)
 
+
 def annotate(parser, args):
 
     if (args.db is None):
@@ -129,13 +134,13 @@ def annotate(parser, args):
         exit(1)
 
     conn = sqlite3.connect(args.db)
-    conn.row_factory = sqlite3.Row # allow us to refer to columns by name
+    conn.row_factory = sqlite3.Row  # allow us to refer to columns by name
     conn.isolation_level = None
 
     if args.col_type == "boolean":
         annotate_variants_bool(args, conn)
     elif args.col_type == "count":
-        annotate_variants_count(args, conn) 
+        annotate_variants_count(args, conn)
     elif args.col_type == "list":
         if args.col_extract is None:
             sys.exit("You must specify which column to extract (-e) \
