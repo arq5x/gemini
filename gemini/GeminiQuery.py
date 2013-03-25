@@ -70,22 +70,25 @@ class GeminiQuery(object):
     def __iter__(self):
         return self
     
+    @property
+    def header(self):
+        """
+        Return a header
+        """
+
+        if self.query_type == "no-genotypes":
+            h = [col for col in self.all_query_cols]
+            return GeminiRow(OrderedDict(itertools.izip(h, h)))
+        else:
+            h = [col for col in self.all_query_cols] + \
+                [col for col in OrderedSet(self.all_cols_orig) - OrderedSet(self.select_cols)]
+            return GeminiRow(OrderedDict(itertools.izip(h, h)))
+
+
     def next(self):
         """
         Return a GeminiRow object for the next query result
         """
-
-        # handle a header if requested
-        if self.use_header and not self.header_processed:
-            self.header_processed = True
-
-            if self.query_type == "no-genotypes":
-                h = [col for col in self.all_query_cols]
-                return GeminiRow(OrderedDict(itertools.izip(h, h)))
-            else:
-                h = [col for col in self.all_query_cols] + \
-                    [col for col in OrderedSet(self.all_cols_orig) - OrderedSet(self.select_cols)]
-                return GeminiRow(OrderedDict(itertools.izip(h, h)))
 
         try:
             row = self.c.next()
@@ -292,47 +295,65 @@ if __name__ == "__main__":
 
     db = sys.argv[1]
 
-    g_query = GeminiQuery(db)
+    gq = GeminiQuery(db)
 
     print "test a basic query with no genotypes"
     query  = "select chrom, start, end from variants limit 5"
-    g_query.run(query)
-    for row in g_query:
+    gq.run(query)
+    for row in gq:
         print row
 
 
     print "test a basic query with no genotypes using a header"
     query  = "select chrom, start, end from variants limit 5"
-    g_query.run(query, use_header=True)
-    for row in g_query:
+    gq.run(query)
+    print gq.header
+    for row in gq:
         print row
 
 
     print "test query that selects a sample genotype"
     query  = "select chrom, start, end, gts.NA20814 from variants limit 5"
-    g_query.run(query)
-    for row in g_query:
+    gq.run(query)
+    for row in gq:
         print row
 
 
     print "test query that selects a sample genotype and uses a header"
     query  = "select chrom, start, end, gts.NA20814 from variants limit 5"
-    g_query.run(query, use_header=True)
-    for row in g_query:
+    gq.run(query)
+    print gq.header
+    for row in gq:
         print row
 
 
     print "test query that selects and _filters_ on a sample genotype"
     query  = "select chrom, start, end, gts.NA20814 from variants limit 50"
     db_filter = "gt_types.NA20814 == HET"
-    g_query.run(query, db_filter)
-    for row in g_query:
+    gq.run(query, db_filter)
+    for row in gq:
         print row
 
     print "test query that selects and _filters_ on a sample genotype and uses a filter"
     query  = "select chrom, start, end, gts.NA20814 from variants limit 50"
     db_filter = "gt_types.NA20814 == HET"
-    g_query.run(query, db_filter, use_header=True)
-    for row in g_query:
+    gq.run(query, db_filter)
+    print gq.header
+    for row in gq:
         print row
+
+    print "test query that selects and _filters_ on a sample genotype and uses a filter and a header"
+    query  = "select chrom, start, end, gts.NA20814 from variants limit 50"
+    db_filter = "gt_types.NA20814 == HET"
+    gq.run(query, db_filter)
+    print gq.header
+    for row in gq:
+        print row
+
+    print "demonstrate accessing individual columns"
+    query  = "select chrom, start, end, gts.NA20814 from variants limit 50"
+    db_filter = "gt_types.NA20814 == HET"
+    gq.run(query, db_filter)
+    for row in gq:
+        print row['chrom'], row['start'], row['end'], row['gts.NA20814']
 
