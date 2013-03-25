@@ -350,6 +350,7 @@ column name    type        notes
 =============  ==========  ==================================================
 name           STRING      Name of the annotation type
 resource       STRING      Filename of the resource, with version information
+=============  ==========  ==================================================
 
 
 The ``version`` table
@@ -361,3 +362,7 @@ Establishes which version of ``gemini`` was used to create a database.
 column name    type        notes
 =============  ==========  ==================================================
 version        STRING      What version of gemini was used to create the DB.
+=============  ==========  ==================================================
+
+
+
