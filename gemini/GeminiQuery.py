@@ -273,7 +273,7 @@ class GeminiQuery(object):
             sys.exit("Malformed query.")
         
         raw_select_clause = self.query[0:from_loc].rstrip()
-        rest_of_query = self.query[from_loc:len(query)]
+        rest_of_query = self.query[from_loc:len(self.query)]
         
         for token in raw_select_clause.replace(',', '').split():
             if token == "SELECT" or token == "select":
