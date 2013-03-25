@@ -11,6 +11,7 @@ import numpy as np
 import cyvcf as vcf
 
 # gemini modules
+import version
 from ped import pedformat
 import infotag
 import database
@@ -56,6 +57,11 @@ class GeminiLoader(object):
         """Create table of annotation resources used in this gemini database.
         """
         database.insert_resources(self.c, annotations.get_resources())
+
+    def store_version(self):
+        """Create table documenting which gemini version was used for this db.
+        """
+        database.insert_version(self.c, version.__version__)
 
     def populate_from_vcf(self):
         """
@@ -416,6 +422,7 @@ def load_singlecore(args):
     # the gemini db and files from the VCF
     gemini_loader = GeminiLoader(args)
     gemini_loader.store_resources()
+    gemini_loader.store_version()
     gemini_loader.populate_from_vcf()
     gemini_loader.build_indices_and_disconnect()
 

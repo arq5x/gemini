@@ -70,6 +70,21 @@ def append_resource_info(main_curr, chunk_db):
     main_curr.execute(cmd)
 
 
+def append_version_info(main_curr, chunk_db):
+    """
+    Append the version info from a chunk_db
+    to the main database.
+    """
+    cmd = "attach ? as toMerge"
+    main_curr.execute(cmd, (chunk_db, ))
+
+    cmd = "INSERT INTO version SELECT * FROM toMerge.version"
+    main_curr.execute(cmd)
+
+    cmd = "detach toMerge"
+    main_curr.execute(cmd)
+
+
 def update_sample_genotype_counts(main_curr, chunk_db):
     """
     Update the main sample_genotype_counts table with the
@@ -129,6 +144,7 @@ def merge_db_chunks(args):
             append_sample_genotype_counts(main_curr, db)
             append_sample_info(main_curr, db)
             append_resource_info(main_curr, db)
+            append_version_info(main_curr, db)
         else:
             update_sample_genotype_counts(main_curr, db)
 

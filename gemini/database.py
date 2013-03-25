@@ -194,10 +194,12 @@ def create_tables(cursor):
                      num_hom_alt integer,                                 \
                      num_unknown integer,                                 \
                      PRIMARY KEY(sample_id ASC))''')
+    
     cursor.execute('''create table if not exists resources ( \
                      name text,                              \
                      resource text)''')
 
+    cursor.execute('''create table if not exists version (version text)''')
 
 def insert_variation(cursor, buffer):
     """
@@ -246,6 +248,14 @@ def insert_resources(cursor, resources):
     """
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('''insert into resources values (?,?)''', resources)
+    cursor.execute("END")
+
+def insert_version(cursor, version):
+    """Populate table of documenting which 
+    gemini version was used for this database.
+    """
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.execute('''insert into version values (?)''', (version,))
     cursor.execute("END")
 
 
