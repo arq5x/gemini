@@ -39,6 +39,3 @@ Table of contents
    content/caveats
    content/bugs
    content/licensing
-
-
-.. content/functional_annotation
