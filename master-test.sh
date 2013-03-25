@@ -46,6 +46,9 @@ sh test-annotate-tool.sh
 # Test pathway tool
 sh test-pathtool.sh
 
+# Test interaction tool
+sh test-interactions.sh
+
 # cleanup
 rm ./*.db
 
