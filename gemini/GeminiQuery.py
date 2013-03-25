@@ -6,7 +6,6 @@ import sqlite3
 import re
 import string
 import itertools
-from pyparsing import ParseResults
 from collections import defaultdict
 # from collections import OrderedDict
 
@@ -46,6 +45,41 @@ class GeminiRow(object):
 
 
 class GeminiQuery(object):
+    """
+    An interface to submit queries to an existing Gemini database
+    and iterate over the results of the query.
+
+    We create a GeminiQuery object by specifying database to which to
+    connect::
+        from gemini import GeminiQuery
+        gq = GeminiQuery("my.db")
+
+    We can then issue a query against the database and iterate through 
+    the results by using the ``run()`` method::
+
+        for row in gq.run("select chrom, start, end from variants"):
+            print row
+
+    Instead of printing the entire row, one access print specific columns::
+
+        for row in gq.run("select chrom, start, end from variants"):
+            print row['chrom']
+
+    Also, all of the underlying numpy genotype arrays are 
+    always available::
+
+        for row in gq.run("select chrom, start, end from variants"):
+            gts = row.gts
+            print row['chrom'], gts
+            # yields "chr1" ['A/G' 'G/G' ... 'A/G']
+
+    The ``run()`` methods also accepts genotype filter::
+
+        query = "select chrom, start, end" from variants"
+        gt_filter = "gt_types.NA20814 == HET"
+        for row in gq.run(query):
+            print row
+    """
 
     def __init__(self, db):
         self.db = db
@@ -57,14 +91,16 @@ class GeminiQuery(object):
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
         self.idx_to_sample = util.map_indicies_to_samples(self.c)
 
-    def run(self, query, gt_filter=None, use_header=False):
+    def run(self, query, gt_filter=None):
         """
-        Execute the query against the Gemini database
+        Execute a query against a Gemini database. The user may
+        specify:
+
+            1. (reqd.) an SQL `query`.
+            2. (opt.) a genotype filter.
         """
         self.query = query
         self.gt_filter = gt_filter
-        self.use_header = use_header
-        self.header_processed = False
 
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
@@ -86,7 +122,8 @@ class GeminiQuery(object):
     @property
     def header(self):
         """
-        Return a header
+        Return a header describing the columns that 
+        were selected in the query issued to a GeminiQuery object.
         """
 
         if self.query_type == "no-genotypes":
@@ -97,9 +134,37 @@ class GeminiQuery(object):
                 [col for col in OrderedSet(self.all_cols_orig) - OrderedSet(self.select_cols)]
             return GeminiRow(OrderedDict(itertools.izip(h, h)))
 
+    @property
+    def sample2index(self):
+        """
+        Return a dictionary mapping sample names to 
+        genotype array offsets::
+
+            gq = GeminiQuery("my.db")
+            s2i = gq.sample2index
+
+            print s2i['NA20814']
+            # yields 1088
+        """
+        return self.sample_to_idx
+
+    @property
+    def index2sample(self):
+        """
+        Return a dictionary mapping sample names to 
+        genotype array offsets::
+
+            gq = GeminiQuery("my.db")
+            i2s = gq.index2sample
+
+            print i2s[1088]
+            # yields "NA20814"
+        """
+        return self.idx_to_sample
+    
     def next(self):
         """
-        Return a GeminiRow object for the next query result
+        Return the GeminiRow object for the next query result.
         """
 
         try:
