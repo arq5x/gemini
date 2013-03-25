@@ -83,6 +83,26 @@ class GeminiQuery(object):
         gq.run(query)
         for row in gq:
             print row
+
+    Lastly, one can use the ``sample_to_idx`` and ``idx_to_sample``
+    dictionaries to gain access to sample-level genotype information
+    either by sample name or by sample index::
+
+        # grab dict mapping sample to genotype array indices
+        smp2idx = gq.sample_to_idx
+ 
+        query  = "select chrom, start, end from variants"
+        gt_filter  = "gt_types.NA20814 == HET"
+        gq.run(query, gt_filter)
+ 
+        # print a header listing the selected columns
+        print gq.header
+        for row in gq:
+            # access a NUMPY array of the sample genotypes.
+            gts = row['gts']
+            # use the smp2idx dict to access sample genotypes
+            idx = smp2idx['NA20814']
+            print row, gts[idx]
     """
 
     def __init__(self, db):
