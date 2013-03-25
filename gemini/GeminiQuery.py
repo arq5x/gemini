@@ -57,18 +57,21 @@ class GeminiQuery(object):
     We can then issue a query against the database and iterate through 
     the results by using the ``run()`` method::
 
-        for row in gq.run("select chrom, start, end from variants"):
+        gq.run("select chrom, start, end from variants")
+        for row in gq:
             print row
 
     Instead of printing the entire row, one access print specific columns::
 
-        for row in gq.run("select chrom, start, end from variants"):
+        gq.run("select chrom, start, end from variants")
+        for row in gq:
             print row['chrom']
 
     Also, all of the underlying numpy genotype arrays are 
     always available::
 
-        for row in gq.run("select chrom, start, end from variants"):
+        gq.run("select chrom, start, end from variants")
+        for row in gq:
             gts = row.gts
             print row['chrom'], gts
             # yields "chr1" ['A/G' 'G/G' ... 'A/G']
@@ -77,7 +80,8 @@ class GeminiQuery(object):
 
         query = "select chrom, start, end" from variants"
         gt_filter = "gt_types.NA20814 == HET"
-        for row in gq.run(query):
+        gq.run(query)
+        for row in gq:
             print row
     """
 
