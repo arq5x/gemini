@@ -129,7 +129,11 @@ class GeminiQuery(object):
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
                 not any("gt" in s for s in self.query_pieces):
-            self.query_type = "no-genotypes"
+            if self.gt_filter is None:
+                self.query_type = "no-genotypes"
+            else:
+                self.gt_filter = self._correct_genotype_filter()
+                self.query_type = "filter-genotypes"
         else:
             if self.gt_filter is None:
                 self.query_type = "select-genotypes"
@@ -155,7 +159,8 @@ class GeminiQuery(object):
             return GeminiRow(OrderedDict(itertools.izip(h, h)))
         else:
             h = [col for col in self.all_query_cols] + \
-                [col for col in OrderedSet(self.all_cols_orig) - OrderedSet(self.select_cols)]
+                [col for col in OrderedSet(self.all_columns_orig) \
+                 - OrderedSet(self.select_columns)]
             return GeminiRow(OrderedDict(itertools.izip(h, h)))
 
     @property
@@ -211,9 +216,9 @@ class GeminiQuery(object):
                 else:
                     # reuse the original column anme user requested
                     # e.g. replace gts[1085] with gts.NA20814
-                    orig_col = self.all_cols_orig[idx]
-                    fields[orig_col] = eval(col.strip())
+                    orig_col = self.gt_idx_to_name_map[col]
 
+                    fields[orig_col] = eval(col.strip())
             return GeminiRow(fields,
                              gts, gt_types, gt_phases, gt_depths)
         except:
@@ -236,8 +241,11 @@ class GeminiQuery(object):
         Execute a query. Intercept gt* columns and 
         replace sample names with indices where necessary.
         """
-        (self.select_cols, self.all_cols_new,
-         self.all_cols_orig, self.gt_col_map) = self._split_select()
+        
+        # break up the select statement into individual
+        # pieces and replace genotype columns using sample
+        # names with sample indices
+        self._split_select()
 
         self.query = self._add_gt_cols_to_query()
         self.c.execute(self.query)
@@ -245,14 +253,14 @@ class GeminiQuery(object):
         self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
                                if not tuple[0].startswith("gt")]
 
-        if "*" in self.select_cols:
-            self.select_cols.remove("*")
-            all_cols_orig.remove("*")
-            self.all_cols_new.remove("*")
-            self.select_cols += self.all_query_cols
+        if "*" in self.select_columns:
+            self.select_columns.remove("*")
+            self.all_columns_orig.remove("*")
+            self.all_columns_new.remove("*")
+            self.select_columns += self.all_query_cols
 
         self.report_cols = self.all_query_cols + \
-            list(OrderedSet(self.all_cols_new) - OrderedSet(self.select_cols))
+            list(OrderedSet(self.all_columns_new) - OrderedSet(self.select_columns))
 
     def _correct_genotype_col(self, raw_col):
         """
@@ -349,10 +357,11 @@ class GeminiQuery(object):
         select_columns = ['chrom', 'start', 'end']
         all_columns = ['chrom', 'start', 'end', 'gt_types[11]']
         """
-        select_columns = []
-        all_columns_new = []
-        all_columns_orig = []
-        gt_col_map = {}
+        self.select_columns = []
+        self.all_columns_new = []
+        self.all_columns_orig = []
+        self.gt_name_to_idx_map = {}
+        self.gt_idx_to_name_map = {}
 
         # iterate through all of the select columns andclear
         # distinguish the genotype-specific columns from the base columns
@@ -367,16 +376,15 @@ class GeminiQuery(object):
             if token == "SELECT" or token == "select":
                 continue
             if not token.startswith("GT") and not token.startswith("gt"):
-                select_columns.append(token)
-                all_columns_new.append(token)
-                all_columns_orig.append(token)
+                self.select_columns.append(token)
+                self.all_columns_new.append(token)
+                self.all_columns_orig.append(token)
             else:
                 new_col = self._correct_genotype_col(token)
-                all_columns_new.append(new_col)
-                all_columns_orig.append(token)
-                gt_col_map[token] = new_col
-
-        return select_columns, all_columns_new, all_columns_orig, gt_col_map
+                self.all_columns_new.append(new_col)
+                self.all_columns_orig.append(token)
+                self.gt_name_to_idx_map[token] = new_col
+                self.gt_idx_to_name_map[new_col] = token
 
 
 if __name__ == "__main__":
