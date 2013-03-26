@@ -49,9 +49,13 @@ class GeminiLoader(object):
             self.num_samples = 0
 
         self.buffer_size = buffer_size
-
-
         self._get_anno_version()
+
+        if self.args.anno_type == "VEP":
+            if not self._is_proper_vep_input():
+                error = "\nERROR: Check gemini docs for the recommended VCF annotation with VEP"\
+                        "\nhttp://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-vep"
+                sys.exit(error)
 
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
@@ -136,6 +140,18 @@ class GeminiLoader(object):
                 self.args.maj_version = int(self.args.raw_version.split('.')[0])
         elif self.args.anno_type == "VEP":
             pass
+
+    def _is_proper_vep_input(self):
+        """
+        Test whether the VCF header meets expectations for
+        proper execution of VEP for use with Gemini.
+        """
+        format = "Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|PolyPhen|SIFT".upper()
+
+        if 'CSQ' in self.vcf_reader.infos and \
+                format in str(self.vcf_reader.infos['CSQ']).upper():
+            return True
+        return False
 
     def _create_db(self):
         """

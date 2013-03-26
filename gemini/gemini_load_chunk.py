@@ -25,12 +25,13 @@ import popgen
 from gemini_constants import *
 from compression import pack_blob
 
+
 class GeminiLoader(object):
     """
     Object for creating and populating a gemini
     database and auxillary data files.
     """
-    def __init__(self, args, buffer_size = 10000):
+    def __init__(self, args, buffer_size=10000):
         self.args = args
 
         # create the gemini database
@@ -49,9 +50,13 @@ class GeminiLoader(object):
             self.num_samples = 0
 
         self.buffer_size = buffer_size
-
-
         self._get_anno_version()
+
+        if self.args.anno_type == "VEP":
+            if not self._is_proper_vep_input():
+                error = "\nERROR: Check gemini docs for the recommended VCF annotation with VEP"\
+                        "\nhttp://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-vep"
+                sys.exit(error)
 
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
@@ -81,13 +86,12 @@ class GeminiLoader(object):
             for var_impact in variant_impacts:
                 self.var_impacts_buffer.append(var_impact)
 
-
             buffer_count += 1
             # buffer full - time to insert into DB
             if buffer_count >= self.buffer_size:
                 sys.stderr.write(str(self.counter) + " variants processed.\n")
                 database.insert_variation(self.c, self.var_buffer)
-                database.insert_variation_impacts(self.c, \
+                database.insert_variation_impacts(self.c,
                                                   self.var_impacts_buffer)
                 # binary.genotypes.append(var_buffer)
                 # reset for the next batch
@@ -95,7 +99,7 @@ class GeminiLoader(object):
                 self.var_impacts_buffer = []
                 buffer_count = 0
             self.v_id += 1
-            self.counter +=1
+            self.counter += 1
         # final load to the database
         database.insert_variation(self.c, self.var_buffer)
         database.insert_variation_impacts(self.c, self.var_impacts_buffer)
@@ -142,6 +146,18 @@ class GeminiLoader(object):
         elif self.args.anno_type == "VEP":
             pass
 
+    def _is_proper_vep_input(self):
+        """
+        Test whether the VCF header meets expectations for
+        proper execution of VEP for use with Gemini.
+        """
+        format = "Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|PolyPhen|SIFT".upper()
+
+        if 'CSQ' in self.vcf_reader.infos and \
+                format in str(self.vcf_reader.infos['CSQ']).upper():
+            return True
+        return False
+
     def _create_db(self):
         """
         private method to open a new DB
@@ -187,22 +203,22 @@ class GeminiLoader(object):
         ############################################################
         # collect annotations from gemini's custom annotation files
         ############################################################
-        cyto_band         = annotations.get_cyto_info(var)
-        rs_ids            = annotations.get_dbsnp_info(var)
-        clinvar_info      = annotations.get_clinvar_info(var)
-        in_dbsnp          = 0 if rs_ids is None else 1
-        rmsk_hits         = annotations.get_rmsk_info(var)
-        in_cpg            = annotations.get_cpg_island_info(var)
-        in_segdup         = annotations.get_segdup_info(var)
-        is_conserved      = annotations.get_conservation_info(var)
-        esp               = annotations.get_esp_info(var)
-        thousandG         = annotations.get_1000G_info(var)
-        recomb_rate       = annotations.get_recomb_info(var)
-        gms               = annotations.get_gms(var)
-        grc               = annotations.get_grc(var)
-        encode_tfbs       = annotations.get_encode_tfbs(var)
-        encode_dnaseI     = annotations.get_encode_dnase_clusters(var)
-        encode_cons_seg   = annotations.get_encode_consensus_segs(var)
+        cyto_band = annotations.get_cyto_info(var)
+        rs_ids = annotations.get_dbsnp_info(var)
+        clinvar_info = annotations.get_clinvar_info(var)
+        in_dbsnp = 0 if rs_ids is None else 1
+        rmsk_hits = annotations.get_rmsk_info(var)
+        in_cpg = annotations.get_cpg_island_info(var)
+        in_segdup = annotations.get_segdup_info(var)
+        is_conserved = annotations.get_conservation_info(var)
+        esp = annotations.get_esp_info(var)
+        thousandG = annotations.get_1000G_info(var)
+        recomb_rate = annotations.get_recomb_info(var)
+        gms = annotations.get_gms(var)
+        grc = annotations.get_grc(var)
+        encode_tfbs = annotations.get_encode_tfbs(var)
+        encode_dnaseI = annotations.get_encode_dnase_clusters(var)
+        encode_cons_seg = annotations.get_encode_consensus_segs(var)
 
         # impact is a list of impacts for this variant
         impacts = None
@@ -210,7 +226,7 @@ class GeminiLoader(object):
         # impact terms initialized to None for handling unannotated vcf's
         # anno_id in variants is for the trans. with the most severe impact term
         gene = transcript = exon = codon_change = aa_change = aa_length = \
-        biotype = consequence = effect_severity = None
+            biotype = consequence = effect_severity = None
         is_coding = is_exonic = is_lof = 0
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
 
@@ -235,7 +251,7 @@ class GeminiLoader(object):
                 anno_id = severe_impacts.anno_id
                 is_exonic = severe_impacts.is_exonic
                 is_coding = severe_impacts.is_coding
-                is_lof    = severe_impacts.is_lof
+                is_lof = severe_impacts.is_lof
 
         # construct the filter string
         filter = None
@@ -251,10 +267,10 @@ class GeminiLoader(object):
         # these arrays will be pickled-to-binary, compressed,
         # and loaded as SqlLite BLOB values (see compression.pack_blob)
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
-            gt_bases  = np.array(var.gt_bases, np.str)  # 'A/G', './.'
-            gt_types  = np.array(var.gt_types, np.int8) # -1, 0, 1, 2
-            gt_phases = np.array(var.gt_phases, np.bool) # T F F
-            gt_depths = np.array(var.gt_depths, np.int32) # 10 37 0
+            gt_bases = np.array(var.gt_bases, np.str)  # 'A/G', './.'
+            gt_types = np.array(var.gt_types, np.int8)  # -1, 0, 1, 2
+            gt_phases = np.array(var.gt_phases, np.bool)  # T F F
+            gt_depths = np.array(var.gt_depths, np.int32)  # 10 37 0
 
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
@@ -269,7 +285,7 @@ class GeminiLoader(object):
         variant_impacts = []
         if impacts is not None:
             for idx, impact in enumerate(impacts):
-                var_impact = [self.v_id, (idx+1), impact.gene,
+                var_impact = [self.v_id, (idx + 1), impact.gene,
                               impact.transcript, impact.is_exonic,
                               impact.is_coding, impact.is_lof,
                               impact.exon, impact.codon_change,
@@ -334,7 +350,7 @@ class GeminiLoader(object):
                    encode_cons_seg.helas3,
                    encode_cons_seg.hepg2,
                    encode_cons_seg.huvec,
-                   encode_cons_seg.k562,]
+                   encode_cons_seg.k562, ]
         return variant, variant_impacts
 
     def _prepare_samples(self):
@@ -358,7 +374,7 @@ class GeminiLoader(object):
         sample_list = []
         for sample in self.samples:
             i = self.sample_to_id[sample]
-            if self.ped_hash.has_key(sample):
+            if sample in self.ped_hash:
                 ped = self.ped_hash[sample]
                 sample_list = [i, sample, ped.family, ped.paternal,
                                ped.maternal, ped.sex, ped.phenotype,
@@ -379,7 +395,7 @@ class GeminiLoader(object):
            Index 2 == # of missing genotypes for the sample
            Index 3 == # of hom_alt genotypes for the sample
         """
-        self.sample_gt_counts = np.array(np.zeros( (len(self.samples), 4) ),
+        self.sample_gt_counts = np.array(np.zeros((len(self.samples), 4)),
                                          dtype='uint32')
 
     def _update_sample_gt_counts(self, gt_types):
@@ -397,12 +413,13 @@ class GeminiLoader(object):
         for idx, gt_counts in enumerate(self.sample_gt_counts):
             self.c.execute("""insert into sample_genotype_counts values \
                             (?,?,?,?,?)""",
-                            [idx,
+                           [idx,
                             int(gt_counts[HOM_REF]),  # hom_ref
                             int(gt_counts[HET]),  # het
                             int(gt_counts[UNKNOWN]),  # hom_alt
-                            int(gt_counts[HOM_ALT])]) # missing
+                            int(gt_counts[HOM_ALT])])  # missing
         self.c.execute("END")
+
 
 def load(parser, args):
     if (args.db is None or args.vcf is None):
@@ -420,8 +437,9 @@ def load(parser, args):
     gemini_loader = GeminiLoader(args)
     gemini_loader.store_resources()
     gemini_loader.store_version()
+
     gemini_loader.populate_from_vcf()
-    #gemini_loader.build_indices_and_disconnect()
+    # gemini_loader.build_indices_and_disconnect()
 
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
