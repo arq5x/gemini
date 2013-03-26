@@ -5,6 +5,7 @@
     from the VCF INFO field.
 """
 
+
 def _safe_single_attr(x):
     """Handle cleaning of attributes after extraction:
       - '.'s to indicate None
@@ -17,36 +18,42 @@ def _safe_single_attr(x):
     else:
         return x
 
+
 def extract_aaf(var):
     """
     Extract the AAF directly from the INFO field.
     """
     return var.INFO.get('AF')
-    
+
+
 def get_ancestral_allele(var):
     """
     Return the reported ancestral allele if there is one
     """
     return _safe_single_attr(var.INFO.get('AA'))
-        
+
+
 def get_rms_bq(var):
     """
     Return the RMS base quality at this position
     """
     return var.INFO.get('BQ')
 
+
 def get_cigar(var):
     """
-    Return the cigar string describing how to align an 
+    Return the cigar string describing how to align an
     alternate allele to the reference allele
     """
     return var.INFO.get('CIGAR')
-    
+
+
 def in_hm2(var):
     """
     Return whether the variant was part of HapMap2
     """
     return var.INFO.get('H2')
+
 
 def in_hm3(var):
     """
@@ -54,18 +61,21 @@ def in_hm3(var):
     """
     return var.INFO.get('H3')
 
+
 def is_somatic(var):
     """
     Return whether the variant is somatically acquired
     """
     return var.INFO.get('SOMATIC')
-    
+
+
 def get_depth(var):
     """
     Return the depth of aligned sequences for a given variant,
     or None if it isn't present in the VCF.
     """
     return _safe_single_attr(var.INFO.get('DP'))
+
 
 def get_strand_bias(var):
     """
@@ -74,12 +84,14 @@ def get_strand_bias(var):
     """
     return var.INFO.get('SB')
 
+
 def get_rms_map_qual(var):
     """
     Return the RMS mapping quality,
     or None if it isn't present in the VCF.
     """
     return var.INFO.get('MQ')
+
 
 def get_homopol_run(var):
     """
@@ -88,12 +100,14 @@ def get_homopol_run(var):
     """
     return var.INFO.get('HRun')
 
+
 def get_map_qual_zero(var):
     """
     Return the total counts of mapping quality zero reads,
     or None if it isn't present in the VCF.
     """
     return var.INFO.get('MQ0')
+
 
 def get_num_of_alleles(var):
     """
@@ -102,12 +116,14 @@ def get_num_of_alleles(var):
     """
     return _safe_single_attr(var.INFO.get('AN'))
 
+
 def get_frac_dels(var):
     """
     Returns the fraction of reads containing spanning deletions,
     or None if it isn't present in the VCF.
     """
     return var.INFO.get('Dels')
+
 
 def get_haplotype_score(var):
     """
@@ -116,6 +132,7 @@ def get_haplotype_score(var):
     """
     return var.INFO.get('HaplotypeScore')
 
+
 def get_quality_by_depth(var):
     """
     Returns the quality by depth or the variant confidence,
@@ -123,12 +140,14 @@ def get_quality_by_depth(var):
     """
     return var.INFO.get('QD')
 
+
 def get_allele_count(var):
     """
     Returns allele counts in genotypes,
     or None if it isn't present in the VCF.
     """
     return _safe_single_attr(var.INFO.get('AC'))
+
 
 def get_allele_bal(var):
     """

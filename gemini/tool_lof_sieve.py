@@ -4,9 +4,6 @@ import os
 import sys
 import re
 import sqlite3
-import numpy as np
-import cPickle
-import zlib
 from collections import defaultdict
 from gemini.config import read_gemini_config
 import gemini_utils as util
@@ -33,17 +30,17 @@ def get_ind_lof(c, args):
     c.execute(query)
 
     # header
-    print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
-                     'highest_impact', 'aa_change', 'var_trans_pos', 
-                     'trans_aa_length', 'var_trans_pct', \
+    print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt',
+                     'highest_impact', 'aa_change', 'var_trans_pos',
+                     'trans_aa_length', 'var_trans_pct',
                      'sample', 'genotype', 'gene', 'transcript', 'trans_type'])
 
     for r in c:
         gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
-        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))        
-        gene     = str(r['gene'])
-        trans    = str(r['transcript'])
-        
+        gts = np.array(cPickle.loads(zlib.decompress(r['gts'])))
+        gene = str(r['gene'])
+        trans = str(r['transcript'])
+
         aa_change = str(r['aa_change'])
         aa_length = str(r['aa_length'])
         transcript_pos = None
@@ -55,14 +52,14 @@ def get_ind_lof(c, args):
 
         for idx, gt_type in enumerate(gt_types):
             if gt_type == HET or gt_type == HOM_ALT:
-                print "\t".join([r['chrom'], str(r['start']), \
-                                 str(r['end']), r['ref'], r['alt'], \
-                                 r['impact'], \
-                                 r['aa_change'] or 'None', \
-                                 transcript_pos or 'None', \
-                                 r['aa_length'] or 'None', \
-                                 str(transcript_pct) or 'None', \
-                                 idx_to_sample[idx], \
+                print "\t".join([r['chrom'], str(r['start']),
+                                 str(r['end']), r['ref'], r['alt'],
+                                 r['impact'],
+                                 r['aa_change'] or 'None',
+                                 transcript_pos or 'None',
+                                 r['aa_length'] or 'None',
+                                 str(transcript_pct) or 'None',
+                                 idx_to_sample[idx],
                                  gts[idx], gene, trans, r['biotype']])
 
 

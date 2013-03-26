@@ -11,6 +11,7 @@ from gemini.config import read_gemini_config
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
 
+
 class ClinVarInfo(object):
     def __init__(self):
         self.clinvar_dbsource = None
@@ -38,15 +39,15 @@ class ClinVarInfo(object):
                                 '512': 'tested-inconclusive',
                                 '1073741824': 'other'}
 
-        self.sig_code_map =    {'0': 'unknown',
-                                '1': 'untested',
-                                '2': 'non-pathogenic',
-                                '3': 'probable-non-pathogenic',
-                                '4': 'probable-pathogenic',
-                                '5': 'pathogenic',
-                                '6': 'drug-response',
-                                '7': 'histocompatibility',
-                                '255': 'other'}
+        self.sig_code_map = {'0': 'unknown',
+                             '1': 'untested',
+                             '2': 'non-pathogenic',
+                             '3': 'probable-non-pathogenic',
+                             '4': 'probable-pathogenic',
+                             '5': 'pathogenic',
+                             '6': 'drug-response',
+                             '7': 'histocompatibility',
+                             '255': 'other'}
 
     def __repr__(self):
         return '\t'.join([self.clinvar_dbsource,
@@ -87,16 +88,16 @@ class ClinVarInfo(object):
 
 
 ESPInfo = collections.namedtuple("ESPInfo",
-                                  "found \
+                                 "found \
                                   aaf_EA \
                                   aaf_AA \
                                   aaf_ALL \
                                   exome_chip")
 ENCODEDnaseIClusters = collections.namedtuple("ENCODEDnaseIClusters",
-                                        "cell_count \
+                                              "cell_count \
                                          cell_list")
 ENCODESegInfo = collections.namedtuple("ENCODESegInfo",
-                                        "gm12878 \
+                                       "gm12878 \
                                          h1hesc \
                                          helas3 \
                                          hepg2 \
@@ -110,6 +111,7 @@ ThousandGInfo = collections.namedtuple("ThousandGInfo",
                                         aaf_AFR \
                                         aaf_EUR")
 
+
 def load_annos():
     """
     Populate a dictionary of Tabixfile handles for
@@ -122,31 +124,31 @@ def load_annos():
     """
     config = read_gemini_config()
     anno_dirname = config["annotation_dir"]
-    anno_files   = {
-        'cytoband'     : os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-        'dbsnp'        : os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
-        'clinvar'      : os.path.join(anno_dirname, 'clinvar_20130118.vcf.gz'),
-        'gwas'         : os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
-        'rmsk'         : os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
-        'segdup'       : os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
-        'conserved'    : os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
-        'cpg_island'   : os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
-        'dgv'          : os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
-        'esp'          : os.path.join(anno_dirname, \
-                                      'ESP6500SI.all.snps_indels.vcf.gz'),
-        '1000g'        : os.path.join(anno_dirname, \
- 'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz'),
-        'recomb'       : os.path.join(anno_dirname, \
-                         'genetic_map_HapMapII_GRCh37.gz'),
-        'gms'          : os.path.join(anno_dirname, \
-                         'GRCh37-gms-mappability.vcf.gz'),
-        'grc'          : os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
-        'encode_tfbs'          : os.path.join(anno_dirname, \
-                      'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
-        'encode_dnase1'        : os.path.join(anno_dirname, \
-                                'stam.125cells.dnaseI.hg19.bed.gz'),
-        'encode_consensus_segs': os.path.join(anno_dirname, \
-                                'encode.6celltypes.consensus.bedg.gz')
+    anno_files = {
+        'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
+        'dbsnp': os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
+        'clinvar': os.path.join(anno_dirname, 'clinvar_20130118.vcf.gz'),
+        'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
+        'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
+        'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
+        'conserved': os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
+        'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
+        'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
+        'esp': os.path.join(anno_dirname,
+                            'ESP6500SI.all.snps_indels.vcf.gz'),
+        '1000g': os.path.join(anno_dirname,
+                              'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz'),
+        'recomb': os.path.join(anno_dirname,
+                               'genetic_map_HapMapII_GRCh37.gz'),
+        'gms': os.path.join(anno_dirname,
+                            'GRCh37-gms-mappability.vcf.gz'),
+        'grc': os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+        'encode_tfbs': os.path.join(anno_dirname,
+                                    'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
+        'encode_dnase1': os.path.join(anno_dirname,
+                                      'stam.125cells.dnaseI.hg19.bed.gz'),
+        'encode_consensus_segs': os.path.join(anno_dirname,
+                                              'encode.6celltypes.consensus.bedg.gz')
     }
 
     for anno in anno_files:
@@ -158,10 +160,11 @@ def load_annos():
                      "have they been moved or deleted? Exiting...\n\n"
                      "For more details:\n\t"
                      "http://gemini.readthedocs.org/en/latest/content/"
-                     "#installation.html\#installing-annotation-files\n" 
+                     "#installation.html\#installing-annotation-files\n"
                      % anno_files[anno])
 
 # ## Standard access to Tabix indexed files
+
 
 def _get_hits(coords, annotation, parser_type):
     """Retrieve BED information, recovering if BED annotation file does have a chromosome.
@@ -184,13 +187,16 @@ def _get_hits(coords, annotation, parser_type):
         hit_iter = []
     return hit_iter
 
+
 def _get_chr_as_grch37(chrom):
     if chrom in ["chrM"]:
         return "MT"
     return chrom if not chrom.startswith("chr") else chrom[3:]
 
+
 def _get_chr_as_ucsc(chrom):
     return chrom if chrom.startswith("chr") else "chr" + chrom
+
 
 def guess_contig_naming(anno):
     """Guess which contig naming scheme a given annotation file uses.
@@ -200,6 +206,7 @@ def guess_contig_naming(anno):
         return "ucsc"
     else:
         return "grch37"
+
 
 def _get_var_coords(var, naming):
     """Retrieve variant coordinates from multiple input objects.
@@ -218,6 +225,7 @@ def _get_var_coords(var, naming):
         chrom = _get_chr_as_grch37(chrom)
     return chrom, start, end
 
+
 def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
     """Iterator of annotations found in a genomic region.
 
@@ -234,6 +242,7 @@ def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
 
 # ## Track-specific annotations
 
+
 def get_cpg_island_info(var):
     """
     Returns a boolean indicating whether or not the
@@ -242,6 +251,7 @@ def get_cpg_island_info(var):
     for hit in annotations_in_region(var, "cpg_island", "bed"):
         return True
     return False
+
 
 def get_cyto_info(var):
     """
@@ -255,9 +265,6 @@ def get_cyto_info(var):
         else:
             cyto_band += hit.contig + hit.name
     return cyto_band if len(cyto_band) > 0 else None
-
-
-
 
 
 def get_clinvar_info(var):
@@ -292,22 +299,22 @@ def get_clinvar_info(var):
             else:
                 info_map[info] = True
 
-        clinvar.clinvar_dbsource         = info_map['CLNSRC']   or None
-        clinvar.clinvar_dbsource_id      = info_map['CLNSRCID'] or None
+        clinvar.clinvar_dbsource = info_map['CLNSRC'] or None
+        clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
-                        clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
+            clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
         clinvar.clinvar_sig              = \
-                        clinvar.lookup_clinvar_significance(info_map['CLNSIG'])
-        clinvar.clinvar_dsdb             = info_map['CLNDSDB']   or None
-        clinvar.clinvar_dsdbid           = info_map['CLNDSDBID'] or None
+            clinvar.lookup_clinvar_significance(info_map['CLNSIG'])
+        clinvar.clinvar_dsdb = info_map['CLNDSDB'] or None
+        clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
         # Clinvar represents commas as \x2c.  Make them commas.
         raw_disease_name = info_map['CLNDBN'] or None
         clinvar.clinvar_disease_name     = \
-                        raw_disease_name.replace('\\x2c', ',')
-        clinvar.clinvar_disease_acc      = info_map['CLNACC']    or None
-        clinvar.clinvar_in_omim          = 1 if 'OM'  in info_map else 0
+            raw_disease_name.replace('\\x2c', ',')
+        clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
+        clinvar.clinvar_in_omim = 1 if 'OM' in info_map else 0
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
-        clinvar.clinvar_on_diag_assay    = 1 if 'CDA' in info_map else 0
+        clinvar.clinvar_on_diag_assay = 1 if 'CDA' in info_map else 0
 
     return clinvar
 
@@ -316,7 +323,7 @@ def get_dbsnp_info(var):
     """
     Returns a suite of annotations from dbSNP
     """
-    rs_ids  = []
+    rs_ids = []
     for hit in annotations_in_region(var, "dbsnp", "vcf", "grch37"):
         rs_ids.append(hit.id)
         # load each VCF INFO key/value pair into a DICT
@@ -343,14 +350,14 @@ def get_esp_info(var):
             fetched.append(hit)
             # We need a single ESP entry for a variant
             if fetched != None and len(fetched) == 1 and \
-               hit.alt == var.ALT[0] and hit.ref == var.REF:
+                    hit.alt == var.ALT[0] and hit.ref == var.REF:
                 found = True
                 # loads each VCF INFO key/value pair into a DICT
                 for info in hit.info.split(";"):
                     if info.find("=") > 0:
                     # splits on first occurence of '='
                     # useful to handle valuerror: too many values to unpack (e.g (a,b) = split(",", (a,b,c,d)) for cases like
-                    #SA=http://www.ncbi.nlm.nih.gov/sites/varvu?gene=4524&amp%3Brs=1801131|http://omim.org/entry/607093#0004
+                    # SA=http://www.ncbi.nlm.nih.gov/sites/varvu?gene=4524&amp%3Brs=1801131|http://omim.org/entry/607093#0004
                         (key, value) = info.split("=", 1)
                         info_map[key] = value
                 # get the % minor allele frequencies
@@ -362,14 +369,15 @@ def get_esp_info(var):
                     aaf_AA = float(lines[1]) / 100.0
                     aaf_ALL = float(lines[2]) / 100.0
 
-                #Is the SNP on an human exome chip?
+                # Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
-                   info_map['EXOME_CHIP'] == "no":
+                        info_map['EXOME_CHIP'] == "no":
                     exome_chip = 0
                 elif info_map.get('EXOME_CHIP') is not None and \
-                     info_map['EXOME_CHIP'] == "yes":
+                        info_map['EXOME_CHIP'] == "yes":
                     exome_chip = 1
     return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)
+
 
 def get_1000G_info(var):
     """
@@ -382,7 +390,7 @@ def get_1000G_info(var):
         fetched.append(hit)
         # We need a single 1000G entry for a variant
         if fetched != None and len(fetched) == 1 and \
-           hit.alt == var.ALT[0] and hit.ref == var.REF:
+                hit.alt == var.ALT[0] and hit.ref == var.REF:
             # loads each VCF INFO key/value pair into a DICT
             found = True
             for info in hit.info.split(";"):
@@ -393,6 +401,7 @@ def get_1000G_info(var):
     return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'),
                          info_map.get('ASN_AF'), info_map.get('AFR_AF'),
                          info_map.get('EUR_AF'))
+
 
 def get_rmsk_info(var):
     """
@@ -414,6 +423,7 @@ def get_segdup_info(var):
         return True
     return False
 
+
 def get_conservation_info(var):
     """
     Returns a boolean indicating whether or not the
@@ -432,6 +442,7 @@ def get_conservation_info(var):
         return True
     return False
 
+
 def get_recomb_info(var):
     """
     Returns the mean recombination rate at the site.
@@ -447,11 +458,13 @@ def get_recomb_info(var):
 
     return float(tot_rate) / float(count) if count > 0 else None
 
+
 def _get_first_vcf_hit(hit_iter):
     if hit_iter is not None:
         hits = list(hit_iter)
         if len(hits) > 0:
             return hits[0]
+
 
 def _get_vcf_info_attrs(hit):
     info_map = {}
@@ -461,15 +474,18 @@ def _get_vcf_info_attrs(hit):
             info_map[key] = value
     return info_map
 
+
 def get_gms(var):
     """Return Genome Mappability Scores for multiple technologies.
     """
     techs = ["illumina", "solid", "iontorrent"]
     GmsTechs = collections.namedtuple("GmsTechs", techs)
-    hit = _get_first_vcf_hit(annotations_in_region(var, "gms", "vcf", "grch37"))
+    hit = _get_first_vcf_hit(
+        annotations_in_region(var, "gms", "vcf", "grch37"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
     return apply(GmsTechs,
                  [attr_map.get("GMS_{0}".format(x), None) for x in techs])
+
 
 def get_grc(var):
     """Return GRC patched genome regions.
@@ -500,6 +516,7 @@ def get_encode_tfbs(var):
     else:
         return None
 
+
 def get_encode_dnase_clusters(var):
     """
     If a variant overlaps a DnaseI cluster, return the number of cell types
@@ -515,6 +532,7 @@ def get_encode_dnase_clusters(var):
     for hit in annotations_in_region(var, "encode_dnase1", "tuple"):
         return ENCODEDnaseIClusters(hit[3], hit[5])
     return ENCODEDnaseIClusters(None, None)
+
 
 def get_encode_consensus_segs(var):
     """
@@ -537,6 +555,7 @@ def get_encode_consensus_segs(var):
 
     return ENCODESegInfo(None, None, None, None, None, None)
 
+
 def get_encode_segway_segs(var):
     """
     Queries a meta-BEDGRAPH of SegWay ENCODE segmentations for 6 cell types:
@@ -550,6 +569,7 @@ def get_encode_segway_segs(var):
 
     return ENCODESegInfo(None, None, None, None, None, None)
 
+
 def get_encode_chromhmm_segs(var):
     """
     Queries a meta-BEDGRAPH of SegWay ENCODE segmentations for 6 cell types:
@@ -562,6 +582,7 @@ def get_encode_chromhmm_segs(var):
         return ENCODESegInfo(hit[3], hit[4], hit[5], hit[6], hit[7], hit[8])
 
     return ENCODESegInfo(None, None, None, None, None, None)
+
 
 def get_resources():
     """Retrieve list of annotation resources loaded into gemini.

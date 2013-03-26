@@ -4,10 +4,13 @@ import os.path
 import sys
 import argparse
 import textwrap
-import gemini_load, gemini_load_chunk, gemini_query,\
-       gemini_region, gemini_stats, gemini_dump, \
-       gemini_annotate, gemini_windower, \
-       gemini_browser, gemini_dbinfo, gemini_merge_chunks
+import gemini_load
+import gemini_load_chunk
+import gemini_query
+import \
+    gemini_region, gemini_stats, gemini_dump, \
+    gemini_annotate, gemini_windower, \
+    gemini_browser, gemini_dbinfo, gemini_merge_chunks
 
 import tool_compound_hets
 import tool_autosomal_recessive
@@ -16,6 +19,7 @@ import tool_de_novo_mutations
 import tool_pathways
 import tool_lof_sieve
 import tool_interactions
+
 
 def examples(parser, args):
 
@@ -66,96 +70,95 @@ def main():
     parser = argparse.ArgumentParser(prog='gemini')
     subparsers = parser.add_subparsers(title='[sub-commands]', dest='command')
 
-
     #########################################
     # $ gemini examples
     #########################################
     parser_examples = subparsers.add_parser('examples',
-            help='show usage examples')
+                                            help='show usage examples')
     parser_examples.set_defaults(func=examples)
-
 
     #########################################
     # $ gemini load
     #########################################
     parser_load = subparsers.add_parser('load',
-            help='load a VCF file in gemini database')
+                                        help='load a VCF file in gemini database')
     parser_load.add_argument('db', metavar='db',
-            help='The name of the database to be created.')
+                             help='The name of the database to be created.')
     parser_load.add_argument('-v', dest='vcf',
-            help='The VCF file to be loaded.')
+                             help='The VCF file to be loaded.')
     parser_load.add_argument('-t', dest='anno_type',
-            default=None, metavar='STRING',
-            help="The annotations to be used with the input vcf. Options are:\n"
+                             default=None, metavar='STRING',
+                             help="The annotations to be used with the input vcf. Options are:\n"
                              "  snpEff  - Annotations as reported by snpEff.\n"
                              "  VEP     - Annotations as reported by VEP.\n"
                              )
     parser_load.add_argument('-p', dest='ped_file',
-            help='Sample information file in PED+ format.',
-            default=None)
+                             help='Sample information file in PED+ format.',
+                             default=None)
     parser_load.add_argument('--no-load-genotypes',
-            dest='no_load_genotypes',
-            action='store_true',
-            help='Genotypes exist in the file, but should not be stored.',
-            default=False)
+                             dest='no_load_genotypes',
+                             action='store_true',
+                             help='Genotypes exist in the file, but should not be stored.',
+                             default=False)
     parser_load.add_argument('--no-genotypes',
-            dest='no_genotypes',
-            action='store_true',
-            help='There are no genotypes in the file (e.g. some 1000G VCFs)',
-            default=False)
+                             dest='no_genotypes',
+                             action='store_true',
+                             help='There are no genotypes in the file (e.g. some 1000G VCFs)',
+                             default=False)
     parser_load.add_argument('--cores', dest='cores',
-            default=1,
-            type=int,
-            help="Number of cores to use to load in parallel.")
+                             default=1,
+                             type=int,
+                             help="Number of cores to use to load in parallel.")
     parser_load.add_argument('--lsf-queue',
-            dest='lsf_queue',
-            help="Queue name to use for Platform LSF.")
+                             dest='lsf_queue',
+                             help="Queue name to use for Platform LSF.")
     parser_load.add_argument('--sge-queue',
-            dest='sge_queue',
-            help="Queue name to use for Sun Grid Engine.")
+                             dest='sge_queue',
+                             help="Queue name to use for Sun Grid Engine.")
+    parser_load.add_argument('--torque-queue',
+                             dest='torque_queue',
+                             help="Queue name to use for a Torque based scheduler")
 
     parser_load.set_defaults(func=gemini_load.load)
-
 
     #########################################
     # $ gemini load_chunk
     #########################################
     parser_loadchunk = subparsers.add_parser('load_chunk',
-            help='load a VCF file in gemini database')
+                                             help='load a VCF file in gemini database')
     parser_loadchunk.add_argument('db',
-            metavar='db',
-            help='The name of the database to be created.')
+                                  metavar='db',
+                                  help='The name of the database to be created.')
     parser_loadchunk.add_argument('-v',
-            dest='vcf',
-            help='The VCF file to be loaded.')
+                                  dest='vcf',
+                                  help='The VCF file to be loaded.')
     parser_loadchunk.add_argument('-t',
-            dest='anno_type',
-            default=None,
-            metavar='STRING',
-            help="The annotations to be used with the input vcf. Options are:\n"
-                             "  snpEff  - Annotations as reported by snpEff.\n"
-                             "  VEP     - Annotations as reported by VEP.\n"
-                             )
+                                  dest='anno_type',
+                                  default=None,
+                                  metavar='STRING',
+                                  help="The annotations to be used with the input vcf. Options are:\n"
+                                  "  snpEff  - Annotations as reported by snpEff.\n"
+                                  "  VEP     - Annotations as reported by VEP.\n"
+                                  )
     parser_loadchunk.add_argument('-o',
-            dest='offset',
-            help='The starting number for the variant_ids',
-            default=None)
+                                  dest='offset',
+                                  help='The starting number for the variant_ids',
+                                  default=None)
     parser_loadchunk.add_argument('-p',
-            dest='ped_file',
-            help='Sample information file in PED+ format.',
-            default=None)
+                                  dest='ped_file',
+                                  help='Sample information file in PED+ format.',
+                                  default=None)
     parser_loadchunk.add_argument('--no-load-genotypes',
-            dest='no_load_genotypes',
-            action='store_true',
-            help='Genotypes exist in the file, but should not be stored.',
-            default=False)
+                                  dest='no_load_genotypes',
+                                  action='store_true',
+                                  help='Genotypes exist in the file, but should not be stored.',
+                                  default=False)
     parser_loadchunk.add_argument('--no-genotypes',
-            dest='no_genotypes',
-            action='store_true',
-            help='There are no genotypes in the file (e.g. some 1000G VCFs)',
+                                  dest='no_genotypes',
+                                  action='store_true',
+                                 help='There are no genotypes in the file (e.g. some 1000G VCFs)',
             default=False)
     parser_loadchunk.set_defaults(func=gemini_load_chunk.load)
-
 
     #########################################
     # $ gemini merge_chunks
@@ -171,7 +174,6 @@ def main():
             action='append')
 
     parser_mergechunks.set_defaults(func=gemini_merge_chunks.merge_chunks)
-
 
     #########################################
     # $ gemini query
@@ -204,7 +206,6 @@ def main():
             help='Output column separator',
             default="\t")
     parser_query.set_defaults(func=gemini_query.query)
-
 
     #########################################
     # $ gemini dump
@@ -241,7 +242,6 @@ def main():
             default="\t")
     parser_dump.set_defaults(func=gemini_dump.dump)
 
-
     #########################################
     # $ gemini region
     #########################################
@@ -269,7 +269,6 @@ def main():
             help='Output column separator',
             default="\t")
     parser_region.set_defaults(func=gemini_region.region)
-
 
     #########################################
     # $ gemini stats
@@ -321,7 +320,6 @@ def main():
             default=False)
     parser_stats.set_defaults(func=gemini_stats.stats)
 
-
     #########################################
     # gemini annotate
     #########################################
@@ -340,12 +338,11 @@ def main():
             dest='col_type',
             help='How the data for the new column (-c) should be stored.',
             default="append",
-            choices = ['boolean', 'count', 'list'])
+            choices=['boolean', 'count', 'list'])
     parser_get.add_argument('-e',
             dest='col_extract',
             help='Column to extract information from for list annotations.')
     parser_get.set_defaults(func=gemini_annotate.annotate)
-
 
     #########################################
     # gemini windower
@@ -366,13 +363,12 @@ def main():
     parser_get.add_argument('-t',
             dest='analysis_type',
             help='The type of windowed analysis requested.',
-            choices = ['nucl_div', 'hwe'])
+            choices=['nucl_div', 'hwe'])
     parser_get.add_argument('-o',
             dest='op_type',
             help='The operation that should be applied to the -t values.',
             choices=['mean', 'median', 'min', 'max', 'list'])
     parser_get.set_defaults(func=gemini_windower.windower)
-
 
     #########################################
     # gemini db_info
@@ -383,7 +379,6 @@ def main():
             metavar='db',
             help='The name of the database to be updated.')
     parser_get.set_defaults(func=gemini_dbinfo.db_info)
-
 
     #########################################
     # $ gemini comp_hets
@@ -403,14 +398,13 @@ def main():
             action='store_true',
             help='Only consider variants that are loss of function',
             default=False)
-    parser_comp_hets.add_argument('--ignore_phasing', 
-            dest='ignore_phasing', 
+    parser_comp_hets.add_argument('--ignore_phasing',
+            dest='ignore_phasing',
             action='store_true',
             help='Ignore phasing when screening for compound hets. \
-                  Candidates are inherently _putative_.', 
+                  Candidates are inherently _putative_.',
             default=False)
     parser_comp_hets.set_defaults(func=tool_compound_hets.run)
-
 
     #########################################
     # $ gemini pathways
@@ -436,7 +430,6 @@ def main():
             default=False)
     parser_pathway.set_defaults(func=tool_pathways.pathways)
 
-
     #########################################
     # $ gemini lof_sieve
     #########################################
@@ -446,7 +439,6 @@ def main():
             metavar='db',
             help='The name of the database to be queried')
     parser_lof_sieve.set_defaults(func=tool_lof_sieve.lof_sieve)
-
 
     #########################################
     # $ gemini interactions
@@ -471,7 +463,6 @@ def main():
             default=False)
     parser_interaction.set_defaults(func=tool_interactions.genequery)
 
-
     #########################################
     # gemini lof_interactions
     #########################################
@@ -482,7 +473,7 @@ def main():
             help='The name of the database to be queried')
     parser_interaction.add_argument('-r',
             dest='radius',
-            type=int, \
+            type=int,
             help="set filter for BFS:\n")
     parser_interaction.add_argument('--var',
             dest='var_mode',
@@ -490,7 +481,6 @@ def main():
             action='store_true',
             default=False)
     parser_interaction.set_defaults(func=tool_interactions.lofgenequery)
-
 
     #########################################
     # $ gemini autosomal_recessive
@@ -503,7 +493,6 @@ def main():
             help='The name of the database to be queried.')
     parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
 
-
     #########################################
     # $ gemini autosomal_dominant
     #########################################
@@ -514,7 +503,6 @@ def main():
             metavar='db',
             help='The name of the database to be queried.')
     parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
-
 
     #########################################
     # $ gemini de_novo
@@ -533,7 +521,6 @@ def main():
             default=20)
     parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
 
-
     #########################################
     # $ gemini browser
     #########################################
@@ -542,10 +529,6 @@ def main():
     parser_browser.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
     parser_browser.set_defaults(func=gemini_browser.browser_main)
-
-
-
-
 
     #######################################################
     # parse the args and call the selected function

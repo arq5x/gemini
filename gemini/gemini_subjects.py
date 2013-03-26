@@ -7,6 +7,7 @@ import numpy as np
 import gemini_utils as util
 from gemini_constants import *
 
+
 class Subject(object):
     """
     Describe a single subject in the the samples table.
@@ -20,7 +21,7 @@ class Subject(object):
         self.sex = row['sex']
         self.phenotype = int(row['phenotype'])
         self.ethnicity = row['ethnicity']
-        
+
         # 1 = unaffected
         # 2 = affected
         # 0 or -9 is unknown.
@@ -29,16 +30,15 @@ class Subject(object):
             self.affected = True
         else:
             self.affected = False
-        
+
     def __repr__(self):
         return "\t".join([self.name, str(self.phenotype)])
-        
+
     def set_father(self):
         self.father = True
-        
+
     def set_mother(self):
         self.mother = True
-
 
 
 class Family(object):
@@ -51,24 +51,24 @@ class Family(object):
         self.mother = None
         self.family_id = self.subjects[0].family_id
         self.children = []
-        
+
     def find_parents(self):
         """
         Screen for children with parental ids so that
         we can identify the parents in this family.
-        
+
         NOTE: assumes at most a 2 generation family.
         """
         for subject in self.subjects:
             # if mom and dad are found, we know this is the child
             if subject.maternal_id is not None and \
-               subject.maternal_id != -9 and \
-               subject.paternal_id is not None and \
-               subject.paternal_id != -9:
+                subject.maternal_id != -9 and \
+                subject.paternal_id is not None and \
+                    subject.paternal_id != -9:
                 self.father_name = str(subject.paternal_id)
                 self.mother_name = str(subject.maternal_id)
                 self.children.append(subject)
-        
+
         # now track the actual sampleIds for the parents
         for subject in self.subjects:
             if subject.name == self.father_name:
@@ -76,46 +76,44 @@ class Family(object):
             elif subject.name == self.mother_name:
                 self.mother = subject
 
-
     def get_auto_recessive_filter(self):
         """
         Generate an autosomal recessive eval() filter to apply for this family.
         For example:
-        
+
         '(gt_types[57] == HET and \  # mom
           gt_types[58] == HET and \  # dad
           gt_types[11] == HOM_ALT)'  # affected child
         """
-        
+
         # identify which samples are the parents in the family.
         self.find_parents()
-        
+
         # if either parent is affected, this family cannot satisfy
         # a recessive model, as the parents should be carriers.
         if self.father.affected == True or self.mother.affected == True:
             return None
-        
+
         mask = "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                 str(HET)
+            str(HET)
         mask += " and "
         mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-                 str(HET)
+            str(HET)
         mask += " and "
         for i, child in enumerate(self.children):
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(HOM_ALT)
+                    str(HOM_ALT)
             else:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
-                         str(HOM_ALT)
-            
+                    str(HOM_ALT)
+
             if i < (len(self.children) - 1):
                 mask += " and "
-        
+
         mask += ")"
         return mask
-
 
     def get_auto_dominant_filter(self):
         """
@@ -123,73 +121,71 @@ class Family(object):
         For example:
         '(
           ((bool(gt_types[57] == HET)         # mom
-            != \ 
+            != \
             bool(gt_types[58] == HET)) and \  # dad
             gt_types[11] == HET               # affected child
         )'
-        
-        NOTE: the bool(dad) != bool(mom) is an XOR requiring that one and 
+
+        NOTE: the bool(dad) != bool(mom) is an XOR requiring that one and
         only one of the parents is heterozygous
         """
-        
+
         # identify which samples are the parents in the family.
         self.find_parents()
-        
+
         mask = "((bool("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                 str(HET)
+            str(HET)
         mask += ") != "
         mask += 'bool(gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-                 str(HET)
+            str(HET)
         mask += ")) and "
         for i, child in enumerate(self.children):
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(HET)
+                    str(HET)
             else:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(HOM_REF)
-            
+                    str(HOM_REF)
+
             if i < (len(self.children) - 1):
                 mask += " and "
 
         mask += ")"
         return mask
-
 
     def get_de_novo_filter(self):
         """
         Generate aa de novo mutation eval() filter to apply for this family.
         For example:
-        
+
         '(gt_types[57] == HOM_REF and \  # mom
           gt_types[58] == HOM_REF and \  # dad
           gt_types[11] == HET)'          # affected child
-        """        
+        """
         # identify which samples are the parents in the family.
         self.find_parents()
-        
+
         mask = "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                 str(HOM_REF)
+            str(HOM_REF)
         mask += " and "
         mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-                 str(HOM_REF)
+            str(HOM_REF)
         mask += " and "
         for i, child in enumerate(self.children):
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                         str(HET)
+                    str(HET)
             else:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
-                         str(HOM_REF)
-            
+                    str(HOM_REF)
+
             if i < (len(self.children) - 1):
                 mask += " and "
-        
+
         mask += ")"
         return mask
-
 
     def get_subject_genotype_columns(self):
         """
@@ -203,7 +199,7 @@ class Family(object):
             columns.append('gts[' + str(child.sample_id - 1) + ']')
 
         return columns
-        
+
     def get_subject_depth_columns(self):
         """
         Return the indices into the gt_depths numpy array for the parents
@@ -231,7 +227,7 @@ class Family(object):
                 subjects.append(child.name + "(child; unaffected)")
 
         return subjects
-        
+
     def get_subject_depth_labels(self):
         """
         Return header depth labels for the parents and the children.
@@ -241,9 +237,8 @@ class Family(object):
         subjects.append(self.mother.name + "(depth)")
         for child in self.children:
             subjects.append(child.name + "(depth)")
-            
+
         return subjects
-        
 
 
 def get_families(c):
@@ -255,7 +250,7 @@ def get_families(c):
              WHERE family_id is not NULL \
              ORDER BY family_id"
     c.execute(query)
-    
+
     families_dict = {}
     for row in c:
         subject = Subject(row)
@@ -265,10 +260,9 @@ def get_families(c):
         else:
             families_dict[family_id] = []
             families_dict[family_id].append(subject)
-    
+
     families = []
     for fam in families_dict:
         family = Family(families_dict[fam])
         families.append(family)
     return families
-

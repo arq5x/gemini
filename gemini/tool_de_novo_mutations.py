@@ -2,9 +2,6 @@
 import sqlite3
 import os
 import sys
-import numpy as np
-import cPickle
-import zlib
 import collections
 from copy import copy
 
@@ -13,18 +10,19 @@ import gemini_utils as util
 from gemini_constants import *
 import gemini_subjects as subjects
 
-def get_de_novo_candidates(c, min_sample_depth = 30):
+
+def get_de_novo_candidates(c, min_sample_depth=30):
     """
     Report candidate variants that meet appear to be de novo
-    mutations in the child. We cannot distinguisj mutations that 
+    mutations in the child. We cannot distinguisj mutations that
     occured in the parental germline from those that occurred
     early in development in the child post-conception.
     """
 
     families = subjects.get_families(c)
-    
+
     for family in families:
-        
+
         query = "SELECT chrom, start, end, ref, alt, gene, \
                         impact, impact_severity, gt_types, \
                         gt_depths, gts \
@@ -32,14 +30,14 @@ def get_de_novo_candidates(c, min_sample_depth = 30):
                  WHERE impact_severity != 'LOW'"
 
         c.execute(query)
-        all_query_cols = [str(tuple[0]) for tuple in c.description \
-                                            if not tuple[0].startswith("gt")]
-                                  
-        family_genotype_mask        = family.get_de_novo_filter()
-        family_sample_gt_columns    = family.get_subject_genotype_columns()
+        all_query_cols = [str(tuple[0]) for tuple in c.description
+                          if not tuple[0].startswith("gt")]
+
+        family_genotype_mask = family.get_de_novo_filter()
+        family_sample_gt_columns = family.get_subject_genotype_columns()
         family_sample_depth_columns = family.get_subject_depth_columns()
-        family_sample_gt_labels     = family.get_subject_genotype_labels()
-        family_sample_dp_labels     = family.get_subject_depth_labels()
+        family_sample_gt_labels = family.get_subject_genotype_labels()
+        family_sample_dp_labels = family.get_subject_depth_labels()
 
         header = []
         header.append("family_id")
@@ -50,16 +48,16 @@ def get_de_novo_candidates(c, min_sample_depth = 30):
         for col in family_sample_dp_labels:
             header.append(col)
         yield header
-        
+
         # report the resulting de_novo variants for this familiy
         for row in c:
-                        
+
             # unpack the genotype arrays so that we can interrogate
             # the genotypes present in each family member to conforming
             # to the genetic model being tested
-            gt_types  = compression.unpack_genotype_blob(row['gt_types'])
+            gt_types = compression.unpack_genotype_blob(row['gt_types'])
             gt_depths = compression.unpack_genotype_blob(row['gt_depths'])
-            gts       = compression.unpack_genotype_blob(row['gts'])
+            gts = compression.unpack_genotype_blob(row['gts'])
 
             # does the variant meet the a de novo model for this family?
             # if not, ignore.
@@ -106,6 +104,3 @@ def run(parser, args):
 
         for result in get_de_novo_candidates(c, args.min_sample_depth):
             print '\t'.join(result)
-
-
-
