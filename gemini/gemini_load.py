@@ -95,6 +95,7 @@ class GeminiLoader(object):
                 buffer_count = 0
             self.v_id += 1
         # final load to the database
+        self.v_id -= 1
         database.insert_variation(self.c, self.var_buffer)
         database.insert_variation_impacts(self.c, self.var_impacts_buffer)
         sys.stderr.write(str(self.v_id) + " variants processed.\n")
