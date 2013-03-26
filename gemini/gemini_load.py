@@ -65,13 +65,11 @@ class GeminiLoader(object):
         self.var_buffer = []
         self.var_impacts_buffer = []
         buffer_count = 0
+        format = "Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|PolyPhen|SIFT".upper()
         
         if self.args.anno_type in (None, 'snpEff') or \
             (self.args.anno_type == "VEP" and 'CSQ' in self.vcf_reader.infos and \
-            'Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|POLYPHEN|SIFT' in \
-            str(self.vcf_reader.infos['CSQ']) or \
-            'Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|PolyPhen|SIFT' in \
-            str(self.vcf_reader.infos['CSQ'])):
+            format in str(self.vcf_reader.infos['CSQ']).upper()):
             
             # process and load each variant in the VCF file
             for var in self.vcf_reader:
