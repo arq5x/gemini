@@ -65,34 +65,44 @@ class GeminiLoader(object):
         self.var_buffer = []
         self.var_impacts_buffer = []
         buffer_count = 0
+        
+        if self.args.anno_type in (None, 'snpEff') or \
+            (self.args.anno_type == "VEP" and 'CSQ' in self.vcf_reader.infos and \
+            'Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|POLYPHEN|SIFT' in \
+            str(self.vcf_reader.infos['CSQ']) or \
+            'Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|PolyPhen|SIFT' in \
+            str(self.vcf_reader.infos['CSQ'])):
+            
+            # process and load each variant in the VCF file
+            for var in self.vcf_reader:
+                (variant, variant_impacts) = self._prepare_variation(var)
+                # add the core variant info to the variant buffer
+                self.var_buffer.append(variant)
+                # add each of the impact for this variant (1 per gene/transcript)
+                for var_impact in variant_impacts:
+                    self.var_impacts_buffer.append(var_impact)
 
-        # process and load each variant in the VCF file
-        for var in self.vcf_reader:
-            (variant, variant_impacts) = self._prepare_variation(var)
-            # add the core variant info to the variant buffer
-            self.var_buffer.append(variant)
-            # add each of the impact for this variant (1 per gene/transcript)
-            for var_impact in variant_impacts:
-                self.var_impacts_buffer.append(var_impact)
 
-
-            buffer_count += 1
-            # buffer full - time to insert into DB
-            if buffer_count >= self.buffer_size:
-                sys.stderr.write(str(self.v_id) + " variants processed.\n")
-                database.insert_variation(self.c, self.var_buffer)
-                database.insert_variation_impacts(self.c, \
+                buffer_count += 1
+                # buffer full - time to insert into DB
+                if buffer_count >= self.buffer_size:
+                    sys.stderr.write(str(self.v_id) + " variants processed.\n")
+                    database.insert_variation(self.c, self.var_buffer)
+                    database.insert_variation_impacts(self.c, \
                                                   self.var_impacts_buffer)
-                # binary.genotypes.append(var_buffer)
-                # reset for the next batch
-                self.var_buffer = []
-                self.var_impacts_buffer = []
-                buffer_count = 0
-            self.v_id += 1
-        # final load to the database
-        database.insert_variation(self.c, self.var_buffer)
-        database.insert_variation_impacts(self.c, self.var_impacts_buffer)
-        sys.stderr.write(str(self.v_id) + " variants processed.\n")
+                    # binary.genotypes.append(var_buffer)
+                    # reset for the next batch
+                    self.var_buffer = []
+                    self.var_impacts_buffer = []
+                    buffer_count = 0
+                self.v_id += 1
+            # final load to the database
+            database.insert_variation(self.c, self.var_buffer)
+            database.insert_variation_impacts(self.c, self.var_impacts_buffer)
+            sys.stderr.write(str(self.v_id) + " variants processed.\n")
+        else:
+            print "\nERROR: CHECK GEMINI DOCS FOR THE RECOMMENDED VCF ANNOTATION WITH VEP"
+            print "http://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-vep\n"
 
     def build_indices_and_disconnect(self):
         """
