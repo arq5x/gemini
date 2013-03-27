@@ -411,8 +411,8 @@ class GeminiLoader(object):
                             [idx,
                             int(gt_counts[HOM_REF]),  # hom_ref
                             int(gt_counts[HET]),  # het
-                            int(gt_counts[UNKNOWN]),  # hom_alt
-                            int(gt_counts[HOM_ALT])]) # missing
+                            int(gt_counts[HOM_ALT]),  # hom_alt
+                            int(gt_counts[UNKNOWN])]) # missing
         self.c.execute("END")
 
 def load(parser, args):
