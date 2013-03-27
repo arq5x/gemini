@@ -7,3 +7,4 @@ gemini load -v test4.vep.snpeff.vcf -t snpEff test4.snpeff.db
 gemini load -v test4.vep.snpeff.vcf -t VEP test4.vep.db
 gemini load -v test5.vep.snpeff.vcf -t snpEff test5.snpeff.db
 gemini load -v test5.vep.snpeff.vcf -t VEP test5.vep.db
+gemini load -v test.query.vcf -t snpEff test.query.db

@@ -49,6 +49,9 @@ sh test-pathtool.sh
 # Test interaction tool
 sh test-interactions.sh
 
+# Test query tool
+sh test-query.sh
+
 # cleanup
 rm ./*.db
 
