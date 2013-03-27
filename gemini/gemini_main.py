@@ -191,20 +191,11 @@ def main():
             dest='gt_filter',
             metavar='STRING',
             help='Restrictions to apply to genotype values')
-    parser_query.add_argument('-f',
-            dest='queryfile',
-            metavar='QUERY_FILE',
-            help='A text file containing the query to be issued.')
     parser_query.add_argument('--header',
             dest='use_header',
             action='store_true',
             help='Add a header of column names to the output.',
             default=False)
-    parser_query.add_argument('--sep',
-            dest='separator',
-            metavar='STRING',
-            help='Output column separator',
-            default="\t")
     parser_query.set_defaults(func=gemini_query.query)
 
     #########################################

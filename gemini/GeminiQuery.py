@@ -40,6 +40,15 @@ class GeminiRow(object):
             elif val == 'gt_depths':
                 return self.gt_depths
 
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            return self.row.keys()
+        except:
+            raise StopIteration
+
     def __repr__(self):
         return '\t'.join([str(self.row[c]) for c in self.row])
 
@@ -108,12 +117,16 @@ class GeminiQuery(object):
     def __init__(self, db):
         self.db = db
         self.query_executed = False
+        self.for_browser = False
 
         self._connect_to_database()
         # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323 
         self.sample_to_idx = util.map_samples_to_indicies(self.c)
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
         self.idx_to_sample = util.map_indicies_to_samples(self.c)
+
+    def _set_gemini_browser(self, for_browser):
+        self.for_browser = for_browser
 
     def run(self, query, gt_filter=None):
         """
@@ -125,6 +138,11 @@ class GeminiQuery(object):
         """
         self.query = query
         self.gt_filter = gt_filter
+
+        # does this query involve the variants table?
+        self.is_variants_query = True
+        if 'variants' not in self.query:
+            self.is_variants_query = False
 
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
@@ -198,14 +216,14 @@ class GeminiQuery(object):
 
         try:
             row = self.c.next()
+            if self.is_variants_query:
+                gts = compression.unpack_genotype_blob(row['gts'])
+                gt_types = compression.unpack_genotype_blob(row['gt_types'])
+                gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
+                gt_depths = compression.unpack_genotype_blob(row['gt_depths'])
 
-            gts = compression.unpack_genotype_blob(row['gts'])
-            gt_types = compression.unpack_genotype_blob(row['gt_types'])
-            gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
-            gt_depths = compression.unpack_genotype_blob(row['gt_depths'])
-
-            if self.gt_filter and not eval(self.gt_filter):
-                return self.next()
+                if self.gt_filter and not eval(self.gt_filter):
+                    return self.next()
 
             fields = OrderedDict()
             for idx, col in enumerate(self.report_cols):
@@ -216,11 +234,31 @@ class GeminiQuery(object):
                 else:
                     # reuse the original column anme user requested
                     # e.g. replace gts[1085] with gts.NA20814
-                    orig_col = self.gt_idx_to_name_map[col]
+                    if '[' in col:
+                        orig_col = self.gt_idx_to_name_map[col]
+                        fields[orig_col] = eval(col.strip())
+                    else:
+                        # asked for "gts" or "gt_types", e.g.
+                        if col == "gts":
+                            fields[col] = ','.join(gts)
+                        elif col == "gt_types":
+                            fields[col] = ','.join(str(t) for t in gt_types)
+                        elif col == "gt_phases":
+                            fields[col] = ','.join(str(p) for p in gt_phases)
+                        elif col == "gt_depths":
+                            fields[col] = ','.join(str(d) for d in gt_depths)
 
-                    fields[orig_col] = eval(col.strip())
-            return GeminiRow(fields,
-                             gts, gt_types, gt_phases, gt_depths)
+            if self.is_variants_query:
+                if not self.for_browser:
+                    return GeminiRow(fields,
+                                gts, gt_types, gt_phases, gt_depths)
+                else:
+                    return fields
+            else:
+                if not self.for_browser:
+                    return GeminiRow(fields)
+                else:
+                    return fields
         except:
             raise StopIteration
 
@@ -241,26 +279,36 @@ class GeminiQuery(object):
         Execute a query. Intercept gt* columns and 
         replace sample names with indices where necessary.
         """
+        if self.is_variants_query:
+            # break up the select statement into individual
+            # pieces and replace genotype columns using sample
+            # names with sample indices
+            self._split_select()
+
+            # we only need genotype information if the user is 
+            # querying the variants table
+            self.query = self._add_gt_cols_to_query()
         
-        # break up the select statement into individual
-        # pieces and replace genotype columns using sample
-        # names with sample indices
-        self._split_select()
+            self.c.execute(self.query)
 
-        self.query = self._add_gt_cols_to_query()
-        self.c.execute(self.query)
-
-        self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
+            self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
                                if not tuple[0].startswith("gt")]
 
-        if "*" in self.select_columns:
-            self.select_columns.remove("*")
-            self.all_columns_orig.remove("*")
-            self.all_columns_new.remove("*")
-            self.select_columns += self.all_query_cols
+            if "*" in self.select_columns:
+                self.select_columns.remove("*")
+                self.all_columns_orig.remove("*")
+                self.all_columns_new.remove("*")
+                self.select_columns += self.all_query_cols
 
-        self.report_cols = self.all_query_cols + \
-            list(OrderedSet(self.all_columns_new) - OrderedSet(self.select_columns))
+            self.report_cols = self.all_query_cols + \
+                list(OrderedSet(self.all_columns_new) - OrderedSet(self.select_columns))
+        # the query does not involve the variants table
+        # and as such, we don't need to do anything fancy.
+        else:
+            self.c.execute(self.query)
+            self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
+                                if not tuple[0].startswith("gt")]
+            self.report_cols = self.all_query_cols
 
     def _correct_genotype_col(self, raw_col):
         """
@@ -275,8 +323,13 @@ class GeminiQuery(object):
         """
         if raw_col == "*":
             return raw_col.lower()
-        (column, sample) = raw_col.split('.')
-        corrected = column.lower() + "[" + str(self.sample_to_idx[sample]).lower() + "]"
+        elif '.' in raw_col:
+            # e.g., "gts.NA12878"
+            (column, sample) = raw_col.split('.')
+            corrected = column.lower() + "[" + str(self.sample_to_idx[sample]).lower() + "]"
+        else:
+            # e.g. "gts" - do nothing
+            corrected = raw_col
         return corrected
 
     def _correct_genotype_filter(self):

@@ -3,9 +3,7 @@ import os
 import logging
 import sqlite3
 import copy
-from gemini_query import filter_query, \
-    apply_basic_query, \
-    apply_query_w_genotype_select
+import GeminiQuery
 
 import tool_de_novo_mutations as de_novo_tool
 import tool_autosomal_recessive as recessive_tool
@@ -51,35 +49,6 @@ def index():
     return template('index.j2')
 
 
-def connect_to_db(database):
-
-    conn = sqlite3.connect(database)
-    conn.isolation_level = None
-    conn.row_factory = sqlite3.Row  # allow us to refer to columns by name
-    c = conn.cursor()
-
-    return c
-
-# -- query routing
-
-
-def process_query(query, gt_filter, use_header):
-
-    c = connect_to_db(database)
-
-    if query and gt_filter:
-        row_iter = filter_query(c, query, gt_filter, use_header)
-    else:
-        query_pieces = query.split()
-        if not any(s.startswith("gt") for s in query_pieces) and \
-                not any("gt" in s for s in query_pieces):
-            row_iter = apply_basic_query(c, query, use_header)
-        else:
-            row_iter = apply_query_w_genotype_select(c, query, use_header)
-
-    return row_iter
-
-
 @app.route('/query', method='GET')
 def query():
 
@@ -89,15 +58,20 @@ def query():
         use_header = request.GET.get('use_header')
         igv_links = request.GET.get('igv_links')
 
-        row_iter = process_query(query, gt_filter, use_header)
-
-        print "header=", use_header, request.GET.get('use_header')
-        return query, gt_filter, use_header, igv_links, row_iter
+        return query, gt_filter, use_header, igv_links
 
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
 
-        (query, gt_filter, use_header, igv_links, row_iter) = _get_fields()
+        (query, gt_filter, use_header, igv_links) = _get_fields()
+
+        if use_header: use_header = True
+        if igv_links: igv_links = True
+
+        gq = GeminiQuery.GeminiQuery(database)
+        gq._set_gemini_browser(True)
+        gq.run(query, gt_filter)
+
 
         if len(query) == 0:
             return template('query.j2', dbfile=database)
@@ -106,7 +80,7 @@ def query():
                           or 'start' not in query.lower()
                           or 'end' not in query.lower()):
             return template('query.j2', dbfile=database,
-                            rows=row_iter,
+                            rows=gq,
                             igv_links=igv_links,
                             igv_links_error=True,
                             use_header=use_header,
@@ -114,7 +88,7 @@ def query():
                             query=query)
         else:
             return template('query.j2', dbfile=database,
-                            rows=row_iter,
+                            rows=gq,
                             igv_links=igv_links,
                             igv_links_error=False,
                             use_header=use_header,
@@ -124,7 +98,10 @@ def query():
     # user clicked the "save to file" button
     elif request.GET.get('save', '').strip():
 
-        (query, gt_filter, use_header, igv_links, row_iter) = _get_fields()
+        (query, gt_filter, use_header, igv_links) = _get_fields()
+
+        gq = GeminiQuery.GeminiQuery(database)
+        gq.run(query, gt_filter)
 
         if len(query) == 0:
             return template('query.j2', dbfile=database)
@@ -134,7 +111,7 @@ def query():
         # the user.
         tmp_file = '/tmp.txt'
         tmp = open(_static_folder + tmp_file, 'w')
-        for row in row_iter:
+        for row in gq:
             tmp.write('\t'.join(str(c) for c in row) + '\n')
         tmp.close()
 
