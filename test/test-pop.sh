@@ -36,5 +36,19 @@ check obs exp
 rm obs exp
 
 ################################################################################
-#3. Test dbsnp
+#3. Test dbsnp and rsids
 ################################################################################
+
+echo "    pop_metrics.t3...\c"
+echo "1	rs201219564
+1	rs140739101
+1	rs75062661
+1	rs200505207
+1	rs200676709
+1	rs41285790
+1	rs201898716
+0	None
+1	rs6672356" > exp
+gemini query -q "select in_dbsnp, rs_ids from variants" test2.snpeff.db > obs
+check obs exp
+rm obs exp
