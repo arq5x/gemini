@@ -52,6 +52,10 @@ sh test-interactions.sh
 # Test query tool
 sh test-query.sh
 
+# Test stats tool
+sh test-stats.sh
+
 # cleanup
 rm ./*.db
+rm ./file.dot
 
