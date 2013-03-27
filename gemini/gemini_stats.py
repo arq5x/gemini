@@ -34,7 +34,7 @@ def get_tstv(c, args):
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(float(ts) / float(tv))
+        str(round(float(ts) / float(tv),4) )
 
 
 def get_tstv_coding(c, args):
@@ -62,7 +62,7 @@ def get_tstv_coding(c, args):
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(float(ts) / float(tv))
+        str(round(float(ts) / float(tv),4))
 
 
 def get_tstv_noncoding(c, args):
@@ -91,7 +91,7 @@ def get_tstv_noncoding(c, args):
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(float(ts) / float(tv))
+        str(round(float(ts) / float(tv), 4))
 
 
 def get_snpcounts(c, args):
@@ -155,7 +155,6 @@ def get_mds(c, args):
             genotypes[sample].append(gt_type)
 
     mds = collections.defaultdict(float)
-    deno = collections.defaultdict(float)
     # convert the genotype list for each sample
     # to a numpy array for performance.
     # masks stores an array of T/F indicating which genotypes are
@@ -168,7 +167,7 @@ def get_mds(c, args):
         masks[sample] = \
             np.ma.masked_where(genotypes[sample] != UNKNOWN,
                                genotypes[sample]).mask
-
+    
     # compute the euclidean distance for each s1/s2 combination
     # using numpy's vectorized sum() and square() operations.
     # we use the mask arrays to identify the indices of known genotypes
@@ -182,19 +181,16 @@ def get_mds(c, args):
             both_mask = masks[str(sample1)] & masks[str(sample2)]
             genotype1 = genotypes[sample1]
             genotype2 = genotypes[sample2]
-
+            
             # distance between s1 and s2:
             eucl_dist = float(np.sum(np.square((genotype1 - genotype2)[both_mask]))) \
-                / \
-                float(np.sum(both_mask))
-
+                                / float(np.sum(both_mask))
             mds[pair] = eucl_dist
-            deno[pair] = np.sum(both_mask)
-
+            
     # report the pairwise MDS for each sample pair.
     print "sample1\tsample2\tdistance"
     for pair in mds:
-        print "\t".join([str(pair[0]), str(pair[1]), str(mds[pair] / deno[pair])])
+        print "\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair],4))])
 
 
 def get_variants_by_sample(c, args):
@@ -205,11 +201,10 @@ def get_variants_by_sample(c, args):
     idx_to_sample = util.map_indicies_to_samples(c)
 
     # report.
-    print '\t'.join(['sample', 'num_hom_ref', 'num_het',
-                     'num_hom_alt', 'num_unknown', 'total'])
+    print '\t'.join(['sample', 'total'])
 
     query = "SELECT sample_id, \
-             (num_hom_ref + num_het + num_hom_alt) as total \
+             (num_het + num_hom_alt) as total \
              FROM sample_genotype_counts"
     c.execute(query)
     for row in c:

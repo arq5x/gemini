@@ -49,6 +49,10 @@ sh test-pathtool.sh
 # Test interaction tool
 sh test-interactions.sh
 
+# Test stats tool
+sh test-stats.sh
+
 # cleanup
 rm ./*.db
+rm ./file.dot
 
