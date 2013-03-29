@@ -1,30 +1,39 @@
 """Configuration YAML files for Gemini.
 
-Provide Gemini configuration files in two alternative locations:
+Provide Gemini configuration files in alternative locations:
 
+- Installer based: gemini-virtualenv/../data or gemini-virtualenv/../gemini/data
 - Global:    /usr/local/share/gemini/gemini-config.yaml
 - User only: $HOME/.gemini/gemini-config.yaml
 
-Prefer the former if you have system level permissions for installation
-since it will work for all system users.
+Prefer installer based or global if you have system level permissions for
+installation since it will work for all system users.
 """
 import os
 import yaml
 
 CONFIG_FILE = "gemini-config.yaml"
-CONFIG_DIRS = [os.path.join(os.environ["HOME"], ".gemini"),
-               "/usr/local/share/gemini"]
 
+def get_config_dirs():
+    virtualenv_loc = __file__.find("gemini-virtualenv")
+    if virtualenv_loc >= 0:
+        base = __file__[:virtualenv_loc]
+        dirs = [os.path.join(base, "data"), os.path.join(base, "gemini", "data")]
+    else:
+        dirs = []
+    dirs.append("/usr/local/share/gemini")
+    dirs.append(os.path.join(os.environ["HOME"], ".gemini"))
+    return dirs
 
 def _get_config_file(dirs=None):
-    dnames = CONFIG_DIRS if dirs is None else dirs + CONFIG_DIRS
+    dirs = [] if dirs is None else dirs
+    dnames = dirs + get_config_dirs()
     for dname in dnames:
         fname = os.path.join(dname, CONFIG_FILE)
         if os.path.exists(fname):
             return fname
     raise ValueError("Gemini configuration file {0} not found in {1}".format(
         CONFIG_FILE, dnames))
-
 
 def read_gemini_config(dirs=None, allow_missing=False):
     try:
@@ -37,10 +46,9 @@ def read_gemini_config(dirs=None, allow_missing=False):
     with open(fname) as in_handle:
         return yaml.load(in_handle)
 
-
 def _find_best_config_file(dirs=None):
-    dnames = CONFIG_DIRS if dirs is None else dirs + CONFIG_DIRS
-    dnames.reverse()
+    dirs = [] if dirs is None else dirs
+    dnames = dirs + get_config_dirs()
     for dname in dnames:
         if os.access(dname, os.W_OK) or \
                 os.access(os.path.dirname(dname), os.W_OK):
@@ -48,7 +56,6 @@ def _find_best_config_file(dirs=None):
 
     raise ValueError("Gemini configuration: "
                      "Could not find writeable directory: {0}".format(dnames))
-
 
 def write_gemini_config(new_config, dirs=None):
     try:
