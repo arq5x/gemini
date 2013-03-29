@@ -25,25 +25,16 @@ of Virginia and is led by Uma Paila.  Substantial contributions have also been
 made by Brad Chapman (@chapmanb), Rory Kirchner (@roryk), and Oliver Hofmann
 at the Harvard School of Public Health.
 
-
 Installation
 ============
-You can install ``gemini`` as follows:
+Install ``gemini`` using the automated installation script::
 
-    $ cd gemini
-    $ python setup.py install
+    wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
+    python gemini_install.py /usr/local /usr/local/share/gemini
 
-One of the more appealing features in ``gemini`` is that it automatically annotates variants in a VCF file with several
-genome annotations (see below for more details).  However, you must first install these data files on your system. 
-It's easy enough --- you just need to run the following script and tell it in which what full path you'd like to install
-the necessary data files. The recommended path is in ``/usr/local/share``:
-
-    $ gemini/install-data.py /usr/local/share/
-
-Lastly, run the test suite to make sure everything is running normally.
-
-	$ sh master-test.sh
-    
+This installs gemini along with required python libraries, third party tools and
+data files used for variant annotation. The installation documentation contains
+additional details on installed files and tools.
 
 Gemini Browser
 ================
@@ -61,7 +52,6 @@ At this point, the gemini browser is running on port 8088 on your local machine.
 Open a web browser to http://localhost:8088/.  You should see something like:
 
 ![](https://raw.github.com/arq5x/gemini/master/img/browser-query.png)
-
 
 
 Caveats and Limitations

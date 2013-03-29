@@ -2,6 +2,27 @@
 Installation
 ############
 
+Automated installation
+======================
+
+Gemini contains an automated installation script which installs
+gemini along with required Python dependencies, third party software
+and data files::
+
+    wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
+    python gemini_install.py /usr/local /usr/local/share/gemini
+
+This installs the gemini executable in ``/usr/local/bin/gemini`` and
+associated data files in ``/usr/local/share/gemini``. It allows easy
+upgrading of gemini and data files to the latest released version with::
+
+    gemini update
+
+The installer requires Python 2.7.x, git, and the ability to ssh to
+your local machine. It also has options to install in non-root
+environments::
+
+    gemini_install.py ~/gemini ~/gemini --nosudo
 
 Software dependencies
 =====================
@@ -17,8 +38,6 @@ core dependencies:
     4. `tabix <http://sourceforge.net/projects/samtools/files/>`_
     5. `bedtools <https://code.google.com/p/bedtools/>`_
     6. `pybedtools <http://pythonhosted.org/pybedtools/main.html#installing-pybedtools>`_
-
-
 
 Gemini installation
 =====================

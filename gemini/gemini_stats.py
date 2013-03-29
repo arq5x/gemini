@@ -192,7 +192,7 @@ def get_mds(c, args):
     # report the pairwise MDS for each sample pair.
     print "sample1\tsample2\tdistance"
     for pair in mds:
-        print "\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair],4)])
+        print "\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair],4))])
 
 
 def get_variants_by_sample(c, args):
