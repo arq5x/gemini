@@ -1,11 +1,11 @@
 numpy==1.6.0
 pyparsing==1.5.7
 pysam==0.6
--e git://github.com/arq5x/cyvcf.git@db8b06f510#egg=cyvcf
+git+https://github.com/arq5x/cyvcf.git@db8b06f510#egg=cyvcf
 PyYAML==3.10
 pybedtools==0.6.1
 python-graph-core==1.8.2
 python-graph-dot==1.8.2
 bottle==0.11.6
-ipython-cluster-helper==0.1.1
--e git://github.com/arq5x/gemini.git@69de79201d#egg=gemini
+ipython-cluster-helper==0.1.2
+git+https://github.com/arq5x/gemini.git@69de79201d#egg=gemini

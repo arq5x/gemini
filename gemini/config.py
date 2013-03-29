@@ -18,7 +18,7 @@ def get_config_dirs():
     virtualenv_loc = __file__.find("gemini-virtualenv")
     if virtualenv_loc >= 0:
         base = __file__[:virtualenv_loc]
-        dirs = [os.path.join(base, "data"), os.path.join(base, "gemini", "data")]
+        dirs = [os.path.join(base), os.path.join(base, "gemini")]
     else:
         dirs = []
     dirs.append("/usr/local/share/gemini")

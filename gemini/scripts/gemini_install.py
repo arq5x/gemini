@@ -12,7 +12,7 @@ Handles installation of:
 
 Requires: Python 2.7, git
 
-Run gemini_install.py -h for help information.
+Run gemini_install.py -h usage.
 """
 import argparse
 import os
@@ -21,13 +21,12 @@ import subprocess
 import sys
 
 remotes = {"requirements":
-           "https://raw.github.com/arq5x/gemini/master/requirements.txt",
+#"https://raw.github.com/arq5x/gemini/master/requirements.txt",
+           "/home/bchapman/bio/gemini/requirements.txt",
            "cloudbiolinux":
            "https://github.com/chapmanb/cloudbiolinux.git",
            "virtualenv":
-           "https://raw.github.com/pypa/virtualenv/master/virtualenv.py",
-           "data-script":
-           "https://raw.github.com/arq5x/gemini/master/gemini/install-data.py"}
+           "https://raw.github.com/pypa/virtualenv/master/virtualenv.py"}
 
 def main(args):
     check_dependencies()
@@ -37,14 +36,16 @@ def main(args):
     os.chdir(work_dir)
     print "Installing gemini..."
     make_dirs(args)
-    gemini_bin = install_gemini(remotes, args.datadir, args.tooldir, args.sudo)
+    gemini = install_gemini(remotes, args.datadir, args.tooldir, args.sudo)
     cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
     fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir,
                               "ubuntu", args.sudo)
     if args.install_tools:
-        install_tools(gemini_bin["fab"], cbl["tool_fabfile"], fabricrc)
+        print "Installing associated tools..."
+        install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     if args.install_data:
-        install_data(gemini_bin["python"], remotes, args.datadir)
+        print "Installing gemini data..."
+        install_data(gemini["python"], gemini["data_script"], args.datadir)
     print "Finished: gemini, tools and data installed"
     print " Tools installed in:\n  %s" % args.tooldir
     print " Data installed in:\n  %s" % args.datadir
@@ -73,23 +74,36 @@ def install_gemini(remotes, datadir, tooldir, use_sudo):
                 subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
                 cmd = ["ln", "-s", ve_script, final_script]
                 subprocess.check_call(sudo_cmd + cmd)
+    python_bin = os.path.join(virtualenv_dir, "bin", "python")
+    library_loc = subprocess.check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
+                                          shell=True)
     return {"fab": os.path.join(virtualenv_dir, "bin", "fab"),
-            "python": os.path.join(virtualenv_dir, "bin", "python")}
+            "data_script": os.path.join(os.path.dirname(library_loc.strip()), "install-data.py"),
+            "python": python_bin}
 
 def install_tools(fab_cmd, fabfile, fabricrc):
-    """Install 3rd party tools used by Gemini.
+    """Install 3rd party tools used by Gemini using a custom CloudBioLinux flavor.
     """
-    tools = ["tabix", "grabix"]
-    for tool in tools:
-        cmd = [fab_cmd, "-f", fabfile, "-H", "localhost", "-c", fabricrc,
-               "install_custom:%s" % tool]
-        subprocess.check_call(cmd)
+    tools = ["tabix", "grabix", "samtools", "bedtools"]
+    flavor_dir = os.path.join(os.getcwd(), "gemini-flavor")
+    if not os.path.exists(flavor_dir):
+        os.makedirs(flavor_dir)
+    with open(os.path.join(flavor_dir, "main.yaml"), "w") as out_handle:
+        out_handle.write("packages:\n")
+        out_handle.write("  - bio_nextgen\n")
+        out_handle.write("libraries:\n")
+    with open(os.path.join(flavor_dir, "custom.yaml"), "w") as out_handle:
+        out_handle.write("bio_nextgen:\n")
+        for tool in tools:
+            out_handle.write("  - %s\n" % tool)
+    cmd = [fab_cmd, "-f", fabfile, "-H", "localhost", "-c", fabricrc,
+           "install_biolinux:target=custom,flavor=%s" % flavor_dir]
+    subprocess.check_call(cmd)
 
-def install_data(python_cmd, remotes, datadir):
+def install_data(python_cmd, data_script, datadir):
     """Install biological data used by gemini.
     """
-    subprocess.check_call(["wget", remotes["data-script"]])
-    subprocess.check_call([python_cmd, "install-data.py", datadir])
+    subprocess.check_call([python_cmd, data_script, datadir])
 
 def write_fabricrc(base_file, tooldir, datadir, distribution, use_sudo):
     out_file = os.path.join(os.getcwd(), os.path.basename(base_file))

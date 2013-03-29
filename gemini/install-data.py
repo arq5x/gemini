@@ -18,15 +18,15 @@ The recommended Gemini install location is /usr/local/share/gemini.
 anno_files = \
 ['dbsnp.137.vcf.gz',
 'clinvar_20130118.vcf.gz',
-'29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz', 
-'hg19.CpG.bed.gz', 
-'hg19.cytoband.bed.gz', 
-'hg19.dgv.bed.gz', 
-'hg19.gwas.bed.gz', 
-'hg19.rmsk.bed.gz', 
-'hg19.segdup.bed.gz', 
-'ESP6500SI.all.snps_indels.vcf.gz', 
-'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz', 
+'29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
+'hg19.CpG.bed.gz',
+'hg19.cytoband.bed.gz',
+'hg19.dgv.bed.gz',
+'hg19.gwas.bed.gz',
+'hg19.rmsk.bed.gz',
+'hg19.segdup.bed.gz',
+'ESP6500SI.all.snps_indels.vcf.gz',
+'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz',
 'genetic_map_HapMapII_GRCh37.gz',
 'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz',
 'encode.6celltypes.consensus.bedg.gz',
@@ -48,7 +48,9 @@ def install_annotation_files(anno_root_dir):
     """
     # create the full gemini data path based on
     # the root dir the user provided
-    if anno_root_dir.endswith(("gemini", "gemini/")):
+    if anno_root_dir.endswith(("gemini/data", "gemini/data/")):
+        anno_dir = anno_root_dir
+    elif anno_root_dir.endswith(("gemini", "gemini/")):
         anno_dir = os.path.join(anno_root_dir, "data")
     else:
         anno_dir = os.path.join(anno_root_dir, "gemini", "data")
@@ -71,7 +73,7 @@ def install_annotation_files(anno_root_dir):
     cur_config["annotation_dir"] = anno_dir
     cur_config["versions"] = anno_versions
     write_gemini_config(cur_config)
- 
+
 def _download_to_dir(url, dirname, version, cur_version):
     """
     Grab an annotation file and place in /usr/share/gemini/data
