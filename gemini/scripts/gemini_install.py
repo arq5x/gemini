@@ -21,8 +21,7 @@ import subprocess
 import sys
 
 remotes = {"requirements":
-#"https://raw.github.com/arq5x/gemini/master/requirements.txt",
-           "/home/bchapman/bio/gemini/requirements.txt",
+           "https://raw.github.com/arq5x/gemini/master/requirements.txt",
            "cloudbiolinux":
            "https://github.com/chapmanb/cloudbiolinux.git",
            "virtualenv":
@@ -60,20 +59,19 @@ def install_gemini(remotes, datadir, tooldir, use_sudo):
         subprocess.check_call(["python", "virtualenv.py", "--no-site-packages",
                                "--distribute", virtualenv_dir])
         os.remove("virtualenv.py")
-    if False:
-        pip_cmd = os.path.join(virtualenv_dir, "bin", "pip")
-        subprocess.check_call([pip_cmd, "install", "--upgrade", "fabric"])
-        subprocess.check_call([pip_cmd, "install", "--upgrade", "distribute"])
-        subprocess.check_call([pip_cmd, "install", "--upgrade", "cython"])
-        subprocess.check_call([pip_cmd, "install", "-r", remotes["requirements"]])
-        for script in ["gemini"]:
-            final_script = os.path.join(tooldir, "bin", script)
-            ve_script = os.path.join(virtualenv_dir, "bin", script)
-            if not os.path.exists(final_script):
-                sudo_cmd = ["sudo"] if use_sudo else []
-                subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
-                cmd = ["ln", "-s", ve_script, final_script]
-                subprocess.check_call(sudo_cmd + cmd)
+    pip_cmd = os.path.join(virtualenv_dir, "bin", "pip")
+    subprocess.check_call([pip_cmd, "install", "--upgrade", "fabric"])
+    subprocess.check_call([pip_cmd, "install", "--upgrade", "distribute"])
+    subprocess.check_call([pip_cmd, "install", "--upgrade", "cython"])
+    subprocess.check_call([pip_cmd, "install", "-r", remotes["requirements"]])
+    for script in ["gemini"]:
+        final_script = os.path.join(tooldir, "bin", script)
+        ve_script = os.path.join(virtualenv_dir, "bin", script)
+        if not os.path.exists(final_script):
+            sudo_cmd = ["sudo"] if use_sudo else []
+            subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
+            cmd = ["ln", "-s", ve_script, final_script]
+            subprocess.check_call(sudo_cmd + cmd)
     python_bin = os.path.join(virtualenv_dir, "bin", "python")
     library_loc = subprocess.check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
                                           shell=True)
