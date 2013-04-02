@@ -10,7 +10,8 @@ import gemini_query
 import \
     gemini_region, gemini_stats, gemini_dump, \
     gemini_annotate, gemini_windower, \
-    gemini_browser, gemini_dbinfo, gemini_merge_chunks
+    gemini_browser, gemini_dbinfo, gemini_merge_chunks, gemini_update
+import gemini.version
 
 import tool_compound_hets
 import tool_autosomal_recessive
@@ -68,6 +69,9 @@ def main():
     # create the top-level parser
     #########################################
     parser = argparse.ArgumentParser(prog='gemini')
+    parser.add_argument("-v", "--version", help="Installed gemini version",
+                        action="version",
+                        version="%(prog)s " + str(gemini.version.__version__))
     subparsers = parser.add_subparsers(title='[sub-commands]', dest='command')
 
     #########################################
@@ -520,6 +524,12 @@ def main():
     parser_browser.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
     parser_browser.set_defaults(func=gemini_browser.browser_main)
+
+    #########################################
+    # $ gemini update
+    #########################################
+    parser_update = subparsers.add_parser("update", help="Update gemini software and data files.")
+    parser_update.set_defaults(func=gemini_update.release)
 
     #######################################################
     # parse the args and call the selected function
