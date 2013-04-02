@@ -58,7 +58,12 @@ def make_windows(c, args, temp_file):
     # the requested statistic for each window
     windowed_analysis = windows.map(window_data, o=args.op_type, c=op_col)
     for window in windowed_analysis:
-        print str(window).strip()
+        each = str(window).strip().split("\t")
+        if args.op_type == "collapse" or each[3] is ".":
+            print "\t".join(each[0:])
+        else:
+            print "\t".join(each[0:3])+"\t"+str(round(float(each[3]),4))
+        
     # cleanup
     os.remove(temp_file)
 
