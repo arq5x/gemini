@@ -88,13 +88,13 @@ rm obs exp
 echo "    columns.t05...\c"
 echo "ABFilter
 LowQual;QUALFilter
-PASS
-PASS
-PASS
-PASS
+None
+None
+None
+None
 ABFilter;LowQual;QDFilter;QUALFilter;SBFilter
 ABFilter;LowQual;QUALFilter
-PASS" > exp
+None" > exp
 gemini query -q "select filter from variants" \
 	   test2.snpeff.db \
        > obs

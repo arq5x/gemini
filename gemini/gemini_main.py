@@ -358,11 +358,13 @@ def main():
     parser_get.add_argument('-t',
             dest='analysis_type',
             help='The type of windowed analysis requested.',
-            choices=['nucl_div', 'hwe'])
+            choices=['nucl_div', 'hwe'],
+            default='hwe')
     parser_get.add_argument('-o',
             dest='op_type',
             help='The operation that should be applied to the -t values.',
-            choices=['mean', 'median', 'min', 'max', 'list'])
+            choices=['mean', 'median', 'min', 'max', 'collapse'],
+            default='mean')
     parser_get.set_defaults(func=gemini_windower.windower)
 
     #########################################
