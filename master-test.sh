@@ -55,6 +55,12 @@ sh test-query.sh
 # Test stats tool
 sh test-stats.sh
 
+# Test windower
+sh test-windower.sh
+
+# Test gemini region
+sh test-region.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot
