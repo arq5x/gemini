@@ -24,10 +24,14 @@ def get_de_novo_candidates(c, min_sample_depth=30):
     for family in families:
 
         query = "SELECT chrom, start, end, ref, alt, gene, \
-                        impact, impact_severity, gt_types, \
+                        impact, impact_severity, in_dbsnp, \
+                        rs_ids, aaf_1kg_all, aaf_esp_all, \
+                        clinvar_sig, clinvar_disease_name, \
+                        clinvar_dbsource, gt_types, \
                         gt_depths, gts \
                  FROM variants \
-                 WHERE impact_severity != 'LOW'"
+                 WHERE impact_severity != 'LOW' \
+                 AND num_het = 1"
 
         c.execute(query)
         all_query_cols = [str(tuple[0]) for tuple in c.description
