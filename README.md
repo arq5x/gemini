@@ -423,7 +423,7 @@ variants that affect protein_coding transcripts from processed RNA, etc.
     chr22	17140745	17140746	A	G	splice_donor	None	None	None	None	NA19223	A|G	ANKRD62P1	ENST00000456726	lincRNA
 
 
-Identifying potential compund heterozygotes
+Identifying potential compound heterozygotes
 ===========================================================================
 Many recessive disorders are caused by compound heterozygotes. Unlike canonical
 recessive sites where the same recessive allele is inherited from both parents
