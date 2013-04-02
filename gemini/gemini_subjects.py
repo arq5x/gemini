@@ -9,6 +9,7 @@ from gemini_constants import *
 
 
 class Subject(object):
+
     """
     Describe a single subject in the the samples table.
     """
@@ -32,7 +33,8 @@ class Subject(object):
             self.affected = False
 
     def __repr__(self):
-        return "\t".join([self.name, str(self.phenotype)])
+        return "\t".join([self.name, self.paternal_id,
+                          self.maternal_id, str(self.phenotype)])
 
     def set_father(self):
         self.father = True
@@ -42,6 +44,7 @@ class Subject(object):
 
 
 class Family(object):
+
     """
     Describe the relationships among multiple subjects in a family.
     """
@@ -62,12 +65,12 @@ class Family(object):
         for subject in self.subjects:
             # if mom and dad are found, we know this is the child
             if subject.maternal_id is not None and \
-                subject.maternal_id != -9 and \
-                subject.paternal_id is not None and \
-                    subject.paternal_id != -9:
-                self.father_name = str(subject.paternal_id)
-                self.mother_name = str(subject.maternal_id)
-                self.children.append(subject)
+               subject.maternal_id != -9 and \
+               subject.paternal_id is not None and \
+               subject.paternal_id != -9:
+               self.father_name = str(subject.paternal_id)
+               self.mother_name = str(subject.maternal_id)
+               self.children.append(subject)
 
         # now track the actual sampleIds for the parents
         for subject in self.subjects:
