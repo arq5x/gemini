@@ -11,6 +11,7 @@ import \
     gemini_region, gemini_stats, gemini_dump, \
     gemini_annotate, gemini_windower, \
     gemini_browser, gemini_dbinfo, gemini_merge_chunks, gemini_update
+import gemini.version
 
 import tool_compound_hets
 import tool_autosomal_recessive
@@ -68,6 +69,9 @@ def main():
     # create the top-level parser
     #########################################
     parser = argparse.ArgumentParser(prog='gemini')
+    parser.add_argument("-v", "--version", help="Installed gemini version",
+                        action="version",
+                        version="%(prog)s " + str(gemini.version.__version__))
     subparsers = parser.add_subparsers(title='[sub-commands]', dest='command')
 
     #########################################
