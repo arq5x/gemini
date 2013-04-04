@@ -3,15 +3,11 @@
 # native Python imports
 import os.path
 import sys
-import re
-import collections
-from optparse import OptionParser
 import sqlite3
 import numpy as np
 
 # third-party imports
 import cyvcf as vcf
-import pysam
 
 # gemini modules
 import version
@@ -68,10 +64,17 @@ class GeminiLoader(object):
         """
         database.insert_version(self.c, version.__version__)
 
+    def _get_vid(self):
+        if hasattr(self.args, 'offset'):
+            v_id = int(self.args.offset)
+        else:
+            v_id = 1
+        return v_id
+
     def populate_from_vcf(self):
         """
         """
-        self.v_id = int(self.args.offset)
+        self.v_id = self._get_vid()
         self.counter = 0
         self.var_buffer = []
         self.var_impacts_buffer = []
@@ -101,6 +104,7 @@ class GeminiLoader(object):
             self.v_id += 1
             self.counter += 1
         # final load to the database
+        self.v_id -= 1
         database.insert_variation(self.c, self.var_buffer)
         database.insert_variation_impacts(self.c, self.var_impacts_buffer)
         sys.stderr.write(str(self.counter) + " variants processed.\n")
