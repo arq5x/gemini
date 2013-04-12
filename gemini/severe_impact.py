@@ -27,7 +27,7 @@ def interpret_severe_impact(args, var):
         try:
             effect_strings_str = var.INFO["EFF"]
             effect_strings = effect_strings_str.split(",")
-            # print len(effect_strings)
+            
         except KeyError:
             if "SNPEFF_EFFECT" in var.INFO:
                 impact_details = snpEff.gatk_effect_details(var.INFO)
@@ -44,7 +44,7 @@ def interpret_severe_impact(args, var):
                 impact_detail = piece[1]
                     # all the other information, which is inside the ()
                 impact_info = snpEff.effect_map[impact_string]
-                # update the impact stored if a higher severity transcript
+                # update the impact stored if a higher or an equal severity transcript
                 # is encountered
                 if impact_info.priority_code <= max_severity:
                     impact_details = snpEff.EffectDetails(impact_string,
@@ -53,7 +53,8 @@ def interpret_severe_impact(args, var):
                                                           counter,
                                                           args.maj_version)
                     impact_all.append(impact_details)
-                    max_severity = impact_info.priority_code
+                    # store the current "winning" severity for the next iteration
+                    max_severity = impact_info.priority_code 
                     # This would store the highest priority for the next outer loop
                     top_severity =  impact_info.priority
         
@@ -94,7 +95,6 @@ def interpret_severe_impact(args, var):
                         # update the impact stored only if a higher severity
                         # transcript is encountered
                         if impact_info.priority_code < max_severity:
-                            impact_type = impact_info
                             impact_details = vep.EffectDetails(
                                 impact_string, impact_info.priority, effect_string, counter)
                             max_severity = impact_info.priority_code  # store the current "winning" severity for the next iteration.
@@ -109,7 +109,6 @@ def interpret_severe_impact(args, var):
                 if impact_info is None:
                     pass
                 elif impact_info.priority_code < max_severity:
-                    impact_type = impact_info
                     impact_details = vep.EffectDetails(
                         impact_string, impact_info.priority, effect_string, counter)
                     max_severity = impact_info.priority_code  # initialize the max_severity to the former value of priority code
