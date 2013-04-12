@@ -413,17 +413,15 @@ def main():
             help='The name of the database to be queried')
     parser_pathway.add_argument('-v',
             dest='version',
-            default=None,
+            default='68',
             metavar='STRING',
-            help="version of ensembl genes to use:\n"
-                 " 66 for Ensembl genes 66 and \n"
-                 " 67 for Ensembl genes 67 \n"
-                 " 68 for Ensembl genes 68 \n"
+            help="Version of ensembl genes to use. "
+                 "Supported versions: 66 to 71\n"
             )
     parser_pathway.add_argument('--lof',
             dest='lof',
             action='store_true',
-            help='Report pathways for indivs/genes/sites woth LoF variants',
+            help='Report pathways for indivs/genes/sites with LoF variants',
             default=False)
     parser_pathway.set_defaults(func=tool_pathways.pathways)
 

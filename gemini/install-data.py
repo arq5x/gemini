@@ -36,6 +36,9 @@ anno_files = \
 'kegg_pathways_ensembl66',
 'kegg_pathways_ensembl67',
 'kegg_pathways_ensembl68',
+'kegg_pathways_ensembl69',
+'kegg_pathways_ensembl70',
+'kegg_pathways_ensembl71',
 'hprd_interaction_graph'
 ]
 

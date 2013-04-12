@@ -16,13 +16,15 @@ path_dirname = config["annotation_dir"]
 
 
 def get_pathways(args):
-
-    if args.version == None or args.version == '66':
-        path_file = os.path.join(path_dirname, 'kegg_pathways_ensembl66') 
-    elif args.version == '67':
-        path_file = os.path.join(path_dirname, 'kegg_pathways_ensembl67')
-    elif args.version == '68':
-        path_file = os.path.join(path_dirname, 'kegg_pathways_ensembl68')
+    
+    version_dic = defaultdict()
+    version_dic = {'66': 'kegg_pathways_ensembl66', '67': 'kegg_pathways_ensembl67',
+                   '68': 'kegg_pathways_ensembl68', '69': 'kegg_pathways_ensembl69',
+                   '70': 'kegg_pathways_ensembl70', '71': 'kegg_pathways_ensembl71'}
+    
+    if args.version in version_dic:
+        path_file = os.path.join(path_dirname, version_dic[args.version])
+         
     else:
         sys.exit("Unsupported Ensembl gene version.\n")
 

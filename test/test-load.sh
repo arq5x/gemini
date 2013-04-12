@@ -30,10 +30,10 @@ gemini load -v ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.snippet.s
     -t snpEff 1000G.snippet.snpEff.db
 
 echo "    load.t2...\c"
-echo "chr1	10582	G	A	DDX11L1
-chr1	10610	C	G	DDX11L1
-chr1	13301	C	T	DDX11L1
-chr1	13326	G	C	DDX11L1
+echo "chr1	10582	G	A	WASH7P
+chr1	10610	C	G	WASH7P
+chr1	13301	C	T	WASH7P
+chr1	13326	G	C	WASH7P
 chr1	13956	TC	T	DDX11L1
 chr1	13979	T	C	DDX11L1
 chr1	30922	G	T	FAM138A

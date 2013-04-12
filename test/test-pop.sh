@@ -29,7 +29,7 @@ echo "0	None	None	None	None	None
 1	0.0032	None	0.01	None	0.01
 0	None	None	None	None	None
 0	None	None	None	None	None
-1	1.0	0.99	1.0	1.0	0.99" > exp
+1	1	0.99	1	1	0.99" > exp
 gemini query -q "select in_1kg, aaf_1kg_all, aaf_1kg_asn, aaf_1kg_amr, aaf_1kg_afr, aaf_1kg_eur from variants" test2.snpeff.db \
 > obs
 check obs exp
