@@ -60,8 +60,9 @@ def install_gemini(remotes, datadir, tooldir, use_sudo):
                                "--distribute", virtualenv_dir])
         os.remove("virtualenv.py")
     pip_cmd = os.path.join(virtualenv_dir, "bin", "pip")
+    ez_cmd = os.path.join(virtualenv_dir, "bin", "easy_install")
     # work around issue with latest version of pip on MacOSX: https://github.com/pypa/pip/issues/829
-    subprocess.check_call([pip_cmd, "install", "pip==1.2.1"])
+    subprocess.check_call([ez_cmd, "pip==1.2.1"])
     subprocess.check_call([pip_cmd, "install", "--upgrade", "fabric"])
     subprocess.check_call([pip_cmd, "install", "--upgrade", "distribute"])
     subprocess.check_call([pip_cmd, "install", "--upgrade", "cython"])
