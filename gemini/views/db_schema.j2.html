@@ -1,6 +1,6 @@
 {% extends "base.j2.html" %}
 
-{% block title %}Gemini query interface{% endblock %}
+{% block title %}GEMINI query interface{% endblock %}
 
 {% block head %}{% endblock %}
 
@@ -12,7 +12,7 @@
       <div class="span3">
         <div class="well sidebar-nav-fixed">
           <ul class="nav nav-list">
-              
+
             <!-- VARIANTS table -->
             <li class="nav-header" style="font-size: 10pt;">
                 <a href="#variants-table">variants table</a>
@@ -21,7 +21,7 @@
             <li style="font-size: 10pt;">
                 <a href="#variants-core">Core VCF cols.</a>
             </li>
-            
+
             <li style="font-size: 10pt;">
                 <a href="#variants-popgen">Variant / PopGen cols.</a>
             </li>
@@ -29,19 +29,19 @@
             <li style="font-size: 10pt;">
                 <a href="#variants-genotypes">Genotype info cols</a>
             </li>
-            
+
             <li style="font-size: 10pt;">
                 <a href="#variants-gene">Gene information cols.</a>
             </li>
-            
+
             <li style="font-size: 10pt;">
                 <a href="#variants-optional-vcf">Optional VCF cols.</a>
             </li>
-            
+
             <li style="font-size: 10pt;">
                 <a href="#variants-popfreq">Variant frequency cols.</a>
             </li>
-            
+
             <li style="font-size: 10pt;">
                 <a href="#variants-disease">Disease info. cols.</a>
             </li>
@@ -49,38 +49,38 @@
             <li style="font-size: 10pt;">
                 <a href="#variants-genome-anno">Genome anno. cols.</a>
             </li>
-            
+
             <li style="font-size: 10pt;">
                 <a href="#variants-mappability">Mappability cols.</a>
             </li>
-            
+
             <li style="font-size: 10pt;">
                 <a href="#variants-encode">ENCODE info. cols.</a>
             </li>
-            
+
             <!-- VARIANT_IMPACTS table -->
             <li class="nav-header" style="font-size: 10pt;">
                 <a href="#variant-impacts-table">variant_impacts table</a>
             </li>
-            
+
             <!-- SAMPLES table -->
             <li class="nav-header" style="font-size: 10pt;">
                 <a href="#samples-table">samples table</a>
             </li>
 
 
-            
+
           </ul>
         </div><!--/.well -->
       </div><!--/span-->
 
       <div class="span9">
-          
+
           <a name="variants-table"></a>
           <p>
           <h2>The <em>variants</em> table</h2>
           </p>
-          
+
           <a name="variants-core"></a>
           <div class="alert alert-info">
               Core columns
@@ -146,7 +146,7 @@
         <div class="alert alert-info">
             Variant and PopGen info
         </div>
-        
+
         <div class="doc-table-wrapper" name="variants-popgen">
           <table class='table table-striped table-hover table-condensed'>
               <colgroup>
@@ -218,12 +218,12 @@
           </table>
         </div>
 
-        
+
         <a name="variants-genotypes"></a>
         <div class="alert alert-info">
             Genotype information
         </div>
-        
+
         <div class="doc-table-wrapper" name="variants-genotypes">
           <table class='table table-striped table-hover table-condensed'>
               <colgroup>
@@ -240,21 +240,21 @@
               <tbody valign="top">
               <tr class="row-even"><td>gts</td>
               <td>BLOB</td>
-              <td>A compressed binary vector of sample genotypes 
+              <td>A compressed binary vector of sample genotypes
                   (e.g., &#8220;A/A&#8221;, &#8220;A|G&#8221;, &#8220;G/G&#8221;)
                   Access a specific sample's genotype with <code>gts.sample_id</code>
               </td>
               </tr>
               <tr class="row-odd"><td>gt_types</td>
               <td>BLOB</td>
-              <td>A compressed binary vector of numeric genotype &#8220;types&#8221; 
+              <td>A compressed binary vector of numeric genotype &#8220;types&#8221;
                   (e.g., 0, 1, 2)
                   Access a specific sample's genotype type with <code>gt_types.sample_id</code>
               </td>
               </tr>
               <tr class="row-even"><td>gt_phases</td>
               <td>BLOB</td>
-              <td>A compressed binary vector of sample genotype phases 
+              <td>A compressed binary vector of sample genotype phases
                   (e.g., False, True, False)
                   Access a specific sample's genotype phasing info with <code>gt_phases.sample_id</code>
               </td>
@@ -268,13 +268,13 @@
               </tbody>
           </table>
       </div> <!-- table-wrapper -->
-      
-      
+
+
       <a name="variants-gene"></a>
       <div class="alert alert-info">
           Gene information
       </div>
-      
+
       <div class="doc-table-wrapper" name="variants-gene">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -367,7 +367,7 @@
       <div class="alert alert-info">
           Optional VCF INFO fields
       </div>
-      
+
       <div class="doc-table-wrapper" name="variants-optional-vcf">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -445,13 +445,13 @@
             </tbody>
         </table>
       </div>
-      
-      
+
+
       <a name="variants-popfreq"></a>
       <div class="alert alert-info">
           Population frequency information
       </div>
-      
+
       <div class="doc-table-wrapper" name="variants-popfreq">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -533,13 +533,13 @@
             </tbody>
         </table>
       </div>
-      
-      
+
+
       <a name="variants-disease"></a>
       <div class="alert alert-info">
           Disease phenotype info.
       </div>
-      
+
       <div class="doc-table-wrapper" name="variants-disease">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -628,7 +628,7 @@
       <div class="alert alert-info">
           Genome annotations
       </div>
-      
+
       <div class="doc-table-wrapper" name="variants-genome-anno">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -694,13 +694,13 @@
             </tbody>
         </table>
       </div>
-      
-      
+
+
       <a name="variants-mappability"></a>
       <div class="alert alert-info">
          Mappability
       </div>
-      
+
       <div class="doc-table-wrapper" name="variants-mappability">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -748,13 +748,13 @@
             </tbody>
           </table>
       </div>
-      
-      
+
+
       <a name="variants-encode"></a>
       <div class="alert alert-info">
          ENCODE information
       </div>
-      
+
       <div class="doc-table-wrapper" name="variants-encode">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -836,13 +836,13 @@
             </tr>
             </tbody>          </table>
       </div>
-      
-      
+
+
       <a name="variant-impacts-table"></a>
       <p>
       <h2>The <em>variant_impacts</em> table</h2>
       </p>
-          
+
       <div class="doc-table-wrapper" name="variants-impacts">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -940,15 +940,15 @@
             </tbody>
         </table>
       </div>
-      
-      
-      
-      
+
+
+
+
       <a name="samples-table"></a>
       <p>
       <h2>The <em>samples</em> table</h2>
       </p>
-          
+
       <div class="doc-table-wrapper" name="samples">
         <table class='table table-striped table-hover table-condensed'>
             <colgroup>
@@ -998,10 +998,9 @@
             </tbody>
         </table>
       </div>
-      
-      
+
+
     </div>  <!--span-9 -->
   </div><!-- end of page -->
 
 {% endblock %}
-

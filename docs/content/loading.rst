@@ -1,5 +1,5 @@
 ##############################
-Loading a VCF file into Gemini
+Loading a VCF file into GEMINI
 ##############################
 
 
@@ -7,7 +7,7 @@ Loading a VCF file into Gemini
 Annotate with snpEff or VEP
 ==============================
 While not necessary, we suggest that you first annotate your VCF with snpEff or
-VEP prior to loading it into Gemini.  Instructions for for installing and
+VEP prior to loading it into GEMINI.  Instructions for for installing and
 running these tools can be found in the following section:
 
 :doc:`functional_annotation`
@@ -16,8 +16,8 @@ running these tools can be found in the following section:
 The basics
 ==============================
 
-Before we can use Gemini to explore genetic variation, we must first ``load`` our
-VCF file into the Gemini database framework.  We expect you to have first
+Before we can use GEMINI to explore genetic variation, we must first ``load`` our
+VCF file into the GEMINI database framework.  We expect you to have first
 annotated the functional consequence of each variant in your VCF using either
 VEP or snpEff (Note that v3.0+ of snpEff is required to track the amino acid
 length of each impacted transcript). Logically,the loading step is done with
@@ -33,7 +33,7 @@ pre-annotated with VEP and the second assumes snpEff.
 	# snpEff-annotated VCF
 	$ gemini load -v my.vcf -t snpEff my.db
 
-As each variant is loaded into the ``gemini`` database framework, it is being
+As each variant is loaded into the ``GEMINI`` database framework, it is being
 compared against several annotation files that come installed with the software.
 We have developed an annotation framework that leverages
 `tabix <http://sourceforge.net/projects/samtools/files/tabix/>`_,
@@ -41,11 +41,11 @@ We have developed an annotation framework that leverages
 `pybedtools <http://pythonhosted.org/pybedtools/>`_ to make things easy and
 fairly performant. The idea is that, by augmenting VCF files with many
 informative annotations, and converting the information into a ``sqlite``
-database framework, ``gemini`` provides a flexible
+database framework, ``GEMINI`` provides a flexible
 database-driven API for data exploration, visualization, population genomics
 and medical genomics.  We feel that this ability to integrate variation
 with the growing wealth of genome annotations is the most compelling aspect of
-``gemini``.  Combining this with the ability to explore data with SQL
+``GEMINI``.  Combining this with the ability to explore data with SQL
 using a database design that can scale to 1000s of individuals (genotypes too!)
 makes for a nice, standardized data exploration system.
 
@@ -76,7 +76,7 @@ single core, it takes a few hours.
 Using LSF, SGE and Torque clusters
 ================================
 Thanks to some great work from Brad Chapman and Rory Kirchner, one can also load
-VCF files into gemini in parallel using many cores on LSF, SGE or Torque clusters. One
+VCF files into GEMINI in parallel using many cores on LSF, SGE or Torque clusters. One
 must simply specify the type of job scheduler your cluster uses and the queue
 name to which your jobs should be submitted.
 

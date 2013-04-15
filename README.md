@@ -1,16 +1,16 @@
-gemini - a framework for mining genome variation.
+GEMINI - a framework for mining genome variation.
 =================================================
 
 Overview
 ========
-The intent of ``gemini`` is to provide a simple, flexible, and powerful
+The intent of ``GEMINI`` is to provide a simple, flexible, and powerful
 framework for exploring genetic variation for disease and population genetics.
-We aim to leverage the expressive power of SQL while attempting to overcome 
-the fundamental challenges associated with using databases for very large 
-(e.g. 1,000,000 variants times 1,000 samples yields one billion genotypes) 
+We aim to leverage the expressive power of SQL while attempting to overcome
+the fundamental challenges associated with using databases for very large
+(e.g. 1,000,000 variants times 1,000 samples yields one billion genotypes)
 datasets.
 
-**NOTE:**  Gemini is currently in a beta state as we move towards publication.
+**NOTE:**  GEMINI is currently in a beta state as we move towards publication.
 We welcome comments and suggestions.
 
 Documentation
@@ -20,35 +20,35 @@ The official documentation is here: http://gemini.readthedocs.org/en/latest/
 
 Acknowledgements
 ================
-Gemini is being developed in the Quinlan lab (quinlanlab.org) at the University 
+GEMINI is being developed in the Quinlan lab (quinlanlab.org) at the University
 of Virginia and is led by Uma Paila.  Substantial contributions have also been
 made by Brad Chapman (@chapmanb), Rory Kirchner (@roryk), and Oliver Hofmann
 at the Harvard School of Public Health.
 
 Installation
 ============
-Install ``gemini`` using the automated installation script::
+Install ``GEMINI`` using the automated installation script::
 
     wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
     python gemini_install.py /usr/local /usr/local/share/gemini
 
-This installs gemini along with required python libraries, third party tools and
+This installs GEMINI along with required python libraries, third party tools and
 data files used for variant annotation. The installation documentation contains
 additional details on installed files and tools.
 
-Gemini Browser
+GEMINI Browser
 ================
-Currently, the majority of gemini's functionality is available via a command-line
+Currently, the majority of GEMINI's functionality is available via a command-line
 interface.  However, we are developing a browser-based interface for easier exploration
-of gemini databases created with the `gemini load` command.
+of GEMINI databases created with the `gemini load` command.
 
 Ironically, as of now, one must launch said browser from the command line as
-follows (where `my.db` should be replaced with the name of the gemini database
+follows (where `my.db` should be replaced with the name of the GEMINI database
 you would like to explore).
 
     $ gemini browser my.db
 
-At this point, the gemini browser is running on port 8088 on your local machine.
+At this point, the GEMINI browser is running on port 8088 on your local machine.
 Open a web browser to http://localhost:8088/.  You should see something like:
 
 ![](https://raw.github.com/arq5x/gemini/master/img/browser-query.png)
@@ -56,8 +56,8 @@ Open a web browser to http://localhost:8088/.  You should see something like:
 
 Caveats and Limitations
 =======================
-``gemini`` is currently in an *alpha* state.  The basic functionality that we
-intend to develop is present, but we may tweak the API and/or restructure 
+``GEMINI`` is currently in an *alpha* state.  The basic functionality that we
+intend to develop is present, but we may tweak the API and/or restructure
 the underlying database as needed.
 
 
@@ -65,7 +65,7 @@ the underlying database as needed.
 
 
 
-Have a look at this [poster](http://dl.dropbox.com/u/515640/posters_and_slides/Quinlan-Gemini-Poster.pdf) to get a high-level sense of what ``gemini`` is trying to accomplish.
+Have a look at this [poster](http://dl.dropbox.com/u/515640/posters_and_slides/Quinlan-Gemini-Poster.pdf) to get a high-level sense of what ``GEMINI`` is trying to accomplish.
 
 The first thing we have to do is load an existing VCF file into the gemini framework.  We expect you to have
 annotated the functional consequence of each variant in your VCF using either VEP or snpEff (Note that v3.0+ of snpEff is required to track the amino acid
@@ -79,25 +79,25 @@ assumes snpEff.
 
 	# snpEff-annotated VCF
 	$ gemini load -v my.vcf -t snpEff my.db
-	
+
 Now, the loading step is very computationally intensive and thus can be very slow
 with just a single core.  However, if you have more CPUs in your arsenal,
-you specify more cores.  This provides a roughly linear increase in speed as a 
+you specify more cores.  This provides a roughly linear increase in speed as a
 function of the number of cores. **NOTE: using multiple cores requires that
-you have both the `bgzip` tool from `tabix` and the `grabix` 
+you have both the `bgzip` tool from `tabix` and the `grabix`
 (https://github.com/arq5x/grabix) tool installed in your PATH**.  On our local
 machine, we are able to load a VCF file derived from the exomes of 60 samples
 in about 10 minutes.  With a single core, it takes a few hours.
 
 	gemini load -v my.vcf -t snpEff --cores 20 my.db
 
-As each variant is loaded into the ``gemini`` database framework, it is being compared against several
+As each variant is loaded into the ``GEMINI`` database framework, it is being compared against several
 annotation files that come installed with the software.  We have developed an annotation framework
-that leverages Tabix, BEDTools, and pybedtools to make things easy and fairly performant. The idea is that, 
+that leverages Tabix, BEDTools, and pybedtools to make things easy and fairly performant. The idea is that,
 by augmenting VCF files with many informative annotations, and converting the information
-into a ``sqlite`` database framework, ``gemini`` provides a flexible database-driven API for data exploration,
+into a ``sqlite`` database framework, ``GEMINI`` provides a flexible database-driven API for data exploration,
 visualization, population genomics and medical genomics.  **We feel that this ability to integrate variation
-with the growing wealth of gemome annotations is the most compelling aspect of gemini ``gemini``**.  Combining this
+with the growing wealth of gemome annotations is the most compelling aspect of ``GEMINI``**.  Combining this
 with the ability to explore data with SQL using a database design that can scale to 1000s of individuals (genotypes too!)
 makes for a tasty data exploration cupcake.  Here are some examples of the things you can do.
 
@@ -112,7 +112,7 @@ Pre-defined analysis short-cuts. Compute the ratio of transitions to transversio
     1,302,778	511,578		2.547
 
 A framework for exploring genetic variation in the context of built-in genome annotations. Return the coordinates, alleles, and clinical significance of all OMIM variants with an alternate allele frequency l.t.e 1%::
-	
+
     $ gemini query -q "select chrom, start, ref, alt, clin_sigs \
                      from variants where in_omim = 1 and aaf < 0.1" my.db
 
@@ -135,19 +135,19 @@ including: ENCODE regulatory and histone modification tracks, conservation, GWAS
 Basic workflow
 ==============
 
-**Import a VCF file into the ``gemini`` framework.**
+**Import a VCF file into the ``GEMINI`` framework.**
 We recommend first annotating your VCF with ``SnpEff`` or ``VEP`` (other tools may be supported soon).  In the process of loading the VCF into the database framework, many other annotations are calculated for each variant and stored for subsequent querying/analysis. **Note**: If using snpEff, ee currently require VCFs to be annotated with version 3.0 or later.
-    
+
     $ gemini load -v my.snpEff.vcf -t snpEff my.db
-    
+
 **Explore variation using shortcuts. Here are a few brief examples**
 
 Compute the transition / transversion ratio:
-  
+
     $ gemini stats --tstv my.db
-  
+
 Compute the site frequency spectrum:
-  
+
     $ gemini stats --sfs my.db
 
 Compute the pairwise genetic distance for use with PCA:
@@ -158,42 +158,42 @@ Compute the pairwise genetic distance for use with PCA:
 **Explore variation  using custom queries. Here are a few brief examples:**
 
 Extract all transitions with a call rate > 95%::
-  
+
     $ gemini query -q "select * from variants where sub_type = 'ts' and call_rate >= 0.95" my.db
-  
+
 Extract all loss-of-function variants with an alternate allele frequency < 1%:
-  
+
     $ gemini query -q "select * from variants where is_lof = 1 and aaf >= 0.01" my.db
-  
+
 Extract the nucleotide diversity for each variant:
-  
+
     $ gemini query -q "select chrom, start, end, pi from variants" my.db
 
-Combine ``gemini`` with ``bedtools`` to compute nucleotide diversity estimates across 100kb windows:
+Combine ``GEMINI`` with ``bedtools`` to compute nucleotide diversity estimates across 100kb windows:
 
     $ gemini query -q "select chrom, start, end, pi from variants order by chrom, start, end" my.db | \
     bedtools map -a hg19.windows.bed -b - -c 4 -o mean
-	
+
 
 Queries selecting and filtering upon individual genotypes
 ===========================================================
 The above examples illustrate *ad hoc* queries that do not request or filter
-upon the genotypes of individual samples.  Since ``gemini`` stores the genotype
+upon the genotypes of individual samples.  Since ``GEMINI`` stores the genotype
 information for each variant in compressed arrays that are stored as BLOBs
-in the database, standard SQL queries cannot directly access individual 
+in the database, standard SQL queries cannot directly access individual
 genotypes. However, we have enhanced the SQL syntax to support such queries
-with C "struct-like" access.  For example, to retrieve the alleles for a given 
-sample's (in this case, sample 1094PC0009), one would add `gts.1094PC0009` 
-to the select statement.  
+with C "struct-like" access.  For example, to retrieve the alleles for a given
+sample's (in this case, sample 1094PC0009), one would add `gts.1094PC0009`
+to the select statement.
 
-Here is an example of selecting the genotype alleles for four 
+Here is an example of selecting the genotype alleles for four
 different samples (note the examples below use the test.snpEff.vcf.db
-file that is created in the ./test directory when you run the 
+file that is created in the ./test directory when you run the
 `sh master-test.sh` command as described above)::
 
     $ gemini query -q "select chrom, start, end, ref, alt, gene, \
 	                 gts.1094PC0005, \
-					 gts.1094PC0009, \                                                
+					 gts.1094PC0009, \
                      gts.1094PC0012, \
 					 gts.1094PC0013 \
                  from variants" test.snpEff.vcf.db
@@ -207,7 +207,7 @@ file that is created in the ./test directory when you run the
     chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
     chr1	69760	69761	A	T	OR4F5	A/A	A/T	A/A	A/A
     chr1	69870	69871	G	A	OR4F5	./.	G/G	G/G	G/G
-	
+
 You can also add a header so that you can keep track of who's who::
 
     $ gemini query -q "select chrom, start, end, ref, alt, gene,
@@ -229,7 +229,7 @@ You can also add a header so that you can keep track of who's who::
     chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
     chr1	69760	69761	A	T	OR4F5	A/A	A/T	A/A	A/A
     chr1	69870	69871	G	A	OR4F5	./.	G/G	G/G	G/G
-	
+
 Let's now get the genotype and the depth of aligned sequence observed for a
 sample so that we can assess the confidence in the genotype::
 
@@ -249,9 +249,9 @@ sample so that we can assess the confidence in the genotype::
 	chr1	69870	69871	G	A	OR4F5	./.	-1
 
 Now, we often want to focus only on variants where a given sample has a
-specific genotype (e.g., looking for homozygous variants in family trios).  
+specific genotype (e.g., looking for homozygous variants in family trios).
 Unfortunately, we cannot directly do this in the SQL query, but the `gemini query`
-tool has an option called `--gt-filter` that allows one to specify filters to 
+tool has an option called `--gt-filter` that allows one to specify filters to
 apply to the returned rows.  The rules followed in the `--gt-filter` option
 follow Python syntax.  As an example, let's only return rows where sample
 1094PC0012 is heterozygous.  In order to do this, we apply a filter to the
@@ -290,7 +290,7 @@ allele::
 	chr1	69427	69428	T	G	OR4F5	T/T	T/T	T/T	T/T
 	chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
 	chr1	69760	69761	A	T	OR4F5	A/A	A/T	A/A	A/A
-	
+
 I changed my mind, let's restrict the above to those variants where sample
 1094PC0012 must also be heterozygous::
 
@@ -310,18 +310,18 @@ I changed my mind, let's restrict the above to those variants where sample
 	 chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
 
 
-Adding your own, custom annotations to the ``gemini`` framework
+Adding your own, custom annotations to the ``GEMINI`` framework
 ===========================================================
-It is inevitable that researchers will want to enhance the ``gemini``
-framework with their own, custom annotations. ``gemini`` provides a
-sub-command called ``annotate`` for exactly this purpose.  As long as 
+It is inevitable that researchers will want to enhance the ``GEMINI``
+framework with their own, custom annotations. ``GEMINI`` provides a
+sub-command called ``annotate`` for exactly this purpose.  As long as
 you provide a ``tabix``'ed annotation file in either BED or VCF format,
 the ``annotate`` tool will, for each variant in the ``variants`` table,
 screen for overlaps in your annotation file and update a new column in the
 ``variants`` table that you may specify on the command line.  This is best
-illustrated by example. 
+illustrated by example.
 
-Let's assume you have already created a ``gemini`` database of a VCF file
+Let's assume you have already created a ``GEMINI`` database of a VCF file
 using the ``load`` module.
 
 	$ gemini load -v my.vcf -t VEP my.db
@@ -338,7 +338,7 @@ or did not overlap (0) intervals in your annotation file.
 	chr22	16504488	16504489	2	0
 	chr22	16504490	16504491	3	1
 
-Add a new column called "my_col" that counts the number of overlaps a given variant 
+Add a new column called "my_col" that counts the number of overlaps a given variant
 has with intervals in your annotation file.
 
 	# Add my_col to the database as a _count_
@@ -367,11 +367,11 @@ annotation file for each given variant.
 Extracting KEGG pathways for variants/genes/individuals
 =======================================================
 
-``gemini`` catalogs KEGG pathway information and using the 
+``GEMINI`` catalogs KEGG pathway information and using the
 ``pathways`` tool, one can extract pathway information for each
 sample that has variants affecting a given gene.  The only requirement
 is that we know what version of Ensembl genes were using by snpEff or VEP.
-Currently, we expect version 66, 67, or 68.  
+Currently, we expect version 66, 67, or 68.
 
     $ gemini pathways -v 66 chr22.low.exome.snpeff.100samples.vcf.db
 
@@ -393,7 +393,7 @@ argument:
 
 Filtering candidate LoF variants by transcript position or transcript type.
 ===========================================================================
-Not all candidate LoF variants are created equal.  For example, a nonsense 
+Not all candidate LoF variants are created equal.  For example, a nonsense
 (stop gain) variant impacting the first 5% of a polypeptide is far more
 likely to be deleterious than one affecting the last 5%. (For an empirical
 analysis of this in the human genome, see Fig 1C in [MacArthur et al, 2012](http://www.sciencemag.org/content/335/6070/823)). Assuming you've
@@ -418,15 +418,15 @@ Identifying potential compound heterozygotes
 Many recessive disorders are caused by compound heterozygotes. Unlike canonical
 recessive sites where the same recessive allele is inherited from both parents
 at the _same_ site in the gene, compund heterozygotes occur when
-the individual's phenotype is caused by two heterogeneous recessive alleles at 
-_different_ sites in a particular gene. 
+the individual's phenotype is caused by two heterogeneous recessive alleles at
+_different_ sites in a particular gene.
 
 So basically, we are looking for two (typically loss-of-function (LoF))
 heterozygous variants impacting the same gene at different loci.  The
-complicating factor is that this is _recessive_ and as such, we must also 
-require that the consequential alleles at each heterozygous site were 
+complicating factor is that this is _recessive_ and as such, we must also
+require that the consequential alleles at each heterozygous site were
 inherited on different chromosomes (one from each parent).  As such, in order
-to use this tool, we require that all variants are phased.  Once this has been 
+to use this tool, we require that all variants are phased.  Once this has been
 done, the `comp_hets` tool will provide a report of candidate compund
 heterozygotes for each sample/gene.
 
@@ -448,7 +448,7 @@ restrict the analysis to LoF variants.
 Extracting variants from specific regions or genes
 ==================================================
 
-``gemini`` allows one to extract variants that fall within specific genomic coordinates as follows
+``GEMINI`` allows one to extract variants that fall within specific genomic coordinates as follows
 
 	$ gemini region --reg chr1:100-200 my.db
 
@@ -460,7 +460,7 @@ Or, one can extract variants based on a specific gene name.
 Conducting analyses on genome "windows".
 ========================================
 
-``gemini`` includes a convenient tool for computing variation metrics across genomic windows (fixed and sliding).
+``GEMINI`` includes a convenient tool for computing variation metrics across genomic windows (fixed and sliding).
 Here are a few examples to whet your appetite.  If you're still hungry, email us.
 
 Compute the average nucleotide diversity for all variants found in non-overlapping, 50Kb windows.

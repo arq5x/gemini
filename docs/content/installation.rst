@@ -5,16 +5,16 @@ Installation
 Automated installation
 ======================
 
-Gemini contains an automated installation script which installs
-gemini along with required Python dependencies, third party software
+GEMINI contains an automated installation script which installs
+GEMINI along with required Python dependencies, third party software
 and data files::
 
     wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
     python gemini_install.py /usr/local /usr/local/share/gemini
 
-This installs the gemini executable in ``/usr/local/bin/gemini`` and
+This installs the GEMINI executable in ``/usr/local/bin/gemini`` and
 associated data files in ``/usr/local/share/gemini``. It allows easy
-upgrading of gemini and data files to the latest released version with::
+upgrading of GEMINI and data files to the latest released version with::
 
     gemini update
 
@@ -26,7 +26,7 @@ environments::
 
 Software dependencies
 =====================
-Gemini depends upon several widely-used genomics command line software as well
+GEMINI depends upon several widely-used genomics command line software as well
 as multiple Python packages.  We recognize that the dependency stack is quite
 deep and are working on ways to minimize dependencies in the interest of the
 most streamlined installation process possible.  Nonetheless, the following are
@@ -39,10 +39,10 @@ core dependencies:
     5. `bedtools <https://code.google.com/p/bedtools/>`_
     6. `pybedtools <http://pythonhosted.org/pybedtools/main.html#installing-pybedtools>`_
 
-Gemini installation
+GEMINI installation
 =====================
-Once the above dependencies have been installed, one can begin installing 
-``gemini`` itself. To install you should download the latest source code from 
+Once the above dependencies have been installed, one can begin installing
+``GEMINI`` itself. To install you should download the latest source code from
 GitHub, either by going to::
 
     http://github.com/arq5x/gemini
@@ -60,8 +60,8 @@ Once you have the source code, run:
     $ cd gemini
     $ sudo python setup.py install
 
-to install it. If you don't have permission to install it in the default 
-directory, you can simply build the source in-place and use the package 
+to install it. If you don't have permission to install it in the default
+directory, you can simply build the source in-place and use the package
 from the git repository:
 
 .. code-block:: bash
@@ -71,11 +71,11 @@ from the git repository:
 
 Installing annotation files
 ===========================
-One of the more appealing features in ``gemini`` is that it automatically 
-annotates variants in a VCF file with several genome annotations.  However, 
-you must first install these data files on your system. It's easy enough --- 
-you just need to run the following script and tell it in which what full path 
-you'd like to install the necessary data files. The recommended path is 
+One of the more appealing features in ``GEMINI`` is that it automatically
+annotates variants in a VCF file with several genome annotations.  However,
+you must first install these data files on your system. It's easy enough ---
+you just need to run the following script and tell it in which what full path
+you'd like to install the necessary data files. The recommended path is
 ``/usr/local/share``, but you can install the data files wherever you want.
 
 .. code-block:: bash
@@ -85,7 +85,7 @@ you'd like to install the necessary data files. The recommended path is
 
 Running the testing suite
 ===========================
-Gemini comes with a full test suite to make sure that everything has installed
+GEMINI comes with a full test suite to make sure that everything has installed
 correctly on your system.  We **strongly** encourage you to run these tests.
 
 .. code-block:: bash
@@ -96,15 +96,15 @@ correctly on your system.  We **strongly** encourage you to run these tests.
 ---------------------------
 Functional annotation tools
 ---------------------------
-`gemini` depends upon external tools to predict the functional consequence of variants in a VCF file.
-We currently support annotations produced by both `SnpEff <http://snpeff.sourceforge.net/>`_ 
-and `VEP <http://useast.ensembl.org/info/docs/variation/vep/index.html>`_.  
-Recommended instructions for annotating existing VCF files with these tools are available here.  
-In addition, we have attempted to standardize the terms used to describe the functional consequence of a given variant, 
+`GEMINI` depends upon external tools to predict the functional consequence of variants in a VCF file.
+We currently support annotations produced by both `SnpEff <http://snpeff.sourceforge.net/>`_
+and `VEP <http://useast.ensembl.org/info/docs/variation/vep/index.html>`_.
+Recommended instructions for annotating existing VCF files with these tools are available here.
+In addition, we have attempted to standardize the terms used to describe the functional consequence of a given variant,
 as each annotation tool uses different vocabulary.
 
 
-The variant consequence columns in the variant table are populated either by `snpEff` or `VEP` as defined by the user using the `-t` option while running pop load 
+The variant consequence columns in the variant table are populated either by `snpEff` or `VEP` as defined by the user using the `-t` option while running pop load
 (To populate these columns the input VCF file should have been annotated either by `snpEff` or `VEP`):
 
 .. code-block:: bash
@@ -135,7 +135,7 @@ By default the following columns in the variant table would be set to null:
 
 Impacts
 .......
-The table below shows the alternate `gemini` terms for the consequences from `snpEff` and `VEP`, for SQL queries. 
+The table below shows the alternate `GEMINI` terms for the consequences from `snpEff` and `VEP`, for SQL queries.
 The last column represents the severity terms associated with the impacts:
 
 =============================================       ===================================    =====================================================     ================
@@ -164,19 +164,19 @@ TF_binding_site                                     null                        
 regulatory_region_ablation                          null                                   regulatory_region_ablation                                MED
 regulatory_region_amplification                     null                                   regulatory_region_amplification                           MED
 TFBS_ablation                                       null                                   TFBS_ablation                                             MED
-TFBS_amplification                                  null                                   TFBS_amplification                                        MED                                         
+TFBS_amplification                                  null                                   TFBS_amplification                                        MED
 synonymous_stop                                     SYNONYMOUS_STOP                        stop_retained_variant                                     LOW
 synonymous_coding                                   SYNONYMOUS_CODING                      synonymous_variant                                        LOW
 UTR_5_prime                                         UTR_5_PRIME                            5_prime_UTR_variant                                       LOW
 UTR_3_prime                                         UTR_3_PRIME                            3_prime_UTR_variant                                       LOW
 intron                                              INTRON                                 intron_variant                                            LOW
 CDS                                                 CDS                                    coding_sequence_variant                                   LOW
-upstream                                            UPSTREAM                               upstream_gene_variant					                 LOW              
+upstream                                            UPSTREAM                               upstream_gene_variant					                 LOW
 downstream                                          DOWNSTREAM                             downstream_gene_variant                                   LOW
 intergenic                                          INTERGENIC, INTERGENIC_CONSERVED       intergenic_variant                                        LOW
 intragenic                                          INTRAGENIC                             null                                                      LOW
 gene                                                GENE                                   null                                                      LOW
-transcript                                          TRANSCRIPT                             null                                                      LOW   
+transcript                                          TRANSCRIPT                             null                                                      LOW
 exon                                                EXON                                   null                                                      LOW
 start_gain                                          START_GAINED                           null                                                      LOW
 synonymous_start                                    SYNONYMOUS_START                       null                                                      LOW
@@ -191,4 +191,4 @@ transcript_amplification                            null                        
 feature elongation                                  null                                   feature elongation                                        LOW
 feature truncation                                  null                                   feature truncation                                        LOW
 =============================================       ===================================    =====================================================     ================
-*Note: "null" refers to the absence of the corresponding term in the alternate database* 
+*Note: "null" refers to the absence of the corresponding term in the alternate database*
