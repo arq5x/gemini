@@ -27,10 +27,11 @@ For example:
 
 	$ gemini comp_hets chr22.low.exome.snpeff.100samples.vcf.db
 	sample	gene	het1	het2
-	NA19002	GTSE1	chr22,46722400,46722401,G,A,G|A,stop_gain,exon_22,0.005,1	chr22,46704499,46704500,C,A,A|C,stop_gain,exon_22,0.005,0
-
-This indicates that sample NA19002 has a candidate compound heterozygote in
-GTSE1.  The two heterozygotes are reported using the following structure:
+	NA19675  PKDREJ  chr22,46653547,46653548,C,T,C|T,non_syn_coding,exon_22_46651560_46659219,0.005,1  chr22,46657894,46657895,G,A,A|G,non_syn_coding,exon_22_46651560_46659219,0.005,1
+	
+	
+This indicates that sample NA19675 has a candidate compound heterozygote in
+PKDREJ.  The two heterozygotes are reported using the following structure:
 
 ``chrom,start,end,ref,alt,genotype,impact,exon,AAF,in_dbsnp``
 
@@ -43,15 +44,9 @@ restrict the analysis to LoF variants using the ``--only_lof`` option.
 .. code-block:: bash
 
 	$ gemini comp_hets --only_lof chr22.low.exome.snpeff.100samples.vcf.db
-
----------------------
-``--ignore-phasing``
----------------------
-If your genotypes aren't phased, we can't be certain that two heterozygotes
-are on opposite alleles.  However, we can still identify pairs of heterozygotes
-that are *candidates* for compound heterozygotes. Just use the 
-``--ignore-phasing`` option.
-
+	NA19002	GTSE1	chr22,46722400,46722401,G,A,G|A,stop_gain,exon_22,0.005,1	chr22,46704499,46704500,C,A,A|C,stop_gain,exon_22,0.005,0
+	
+	
 ----------------------
 ``--allow-other-hets``
 ----------------------
@@ -64,9 +59,25 @@ the ``--allow-other-hets`` option
 .. code-block:: bash
 
 	$ gemini comp_hets --allow-other-hets chr22.low.exome.snpeff.100samples.vcf.db
+	NA19375  PKDREJ  chr22,46658977,46658978,T,C,T|C,non_syn_coding,exon_22_46651560_46659219,0.25,1  chr22,46655778,46655779,G,C,C|G,non_syn_coding,exon_22_46651560_46659219,0.08,1
+	HG01619  PKDREJ  chr22,46658977,46658978,T,C,C|T,non_syn_coding,exon_22_46651560_46659219,0.25,1  chr22,46657307,46657308,T,C,T|C,non_syn_coding,exon_22_46651560_46659219,0.005,1
+	
+Here, samples NA19375 and HG01619 are both hets for the same variant (chr22,46658977,46658978)
 
 
+---------------------
+``--ignore-phasing``
+---------------------
+If your genotypes aren't phased, we can't be certain that two heterozygotes
+are on opposite alleles.  However, we can still identify pairs of heterozygotes
+that are *candidates* for compound heterozygotes. Just use the 
+``--ignore-phasing`` option.
 
+.. code-block:: bash
+
+	$ gemini comp_hets --ignore_phasing example.db
+	M1047  DHODH  chr16,72048539,72048540,C,T,C/T,non_syn_coding,3/4,0.125,1  chr16,72057434,72057435,C,T,C/T,non_syn_coding,8/9,0.125,1
+	M1282  DHODH  chr16,72055099,72055100,C,T,C/T,non_syn_coding,5/9,0.125,0  chr16,72055114,72055116,CT,C,CT/C,frame_shift,5/9,0.125,0
 
 
 
@@ -114,8 +125,137 @@ To document.
 To document.
 
 
+===========================================================================
+``pathways``: Map genes and variants to KEGG pathways.
+===========================================================================
+Mapping genes to biological pathways is useful in understanding the 
+function/role played by a gene. Likewise, genes involved in common pathways 
+is helpful in understanding heterogeneous diseases. We have integrated
+the KEGG pathway mapping for gene variants, to explain/annotate variation. 
+This requires your VCF be annotated with either snpEff/VEP.
+
+Examples:
+
+.. code-block:: bash
+
+	$ gemini pathways -v 68 example.db
+	chrom	start	end	ref	alt	impact	sample	genotype	gene	transcript	pathway
+	chr10	52004314	52004315	T	C	intron	M128215	C/C	ASAH2	ENST00000395526	hsa00600:Sphingolipid_metabolism,hsa01100:Metabolic_pathways
+	chr10	126678091	126678092	G	A	stop_gain	M128215	G/A	CTBP2	ENST00000531469	hsa05220:Chronic_myeloid_leukemia,hsa04310:Wnt_signaling_pathway,hsa04330:Notch_signaling_pathway,hsa05200:Pathways_in_cancer
+	chr16	72057434	72057435	C	T	non_syn_coding	M10475	C/T	DHODH	ENST00000219240	hsa01100:Metabolic_pathways,hsa00240:Pyrimidine_metabolism
+	
+
+Here, -v specifies the version of the Ensembl genes used to build the KEGG
+pathway map. Hence, use versions that match the VEP/snpEff versions of the 
+annotated vcf for correctness. For e.g VEP v2.6 and snpEff v3.1 use Ensembl 
+68 version of the genomes.
+
+We currently support versions 66 through 71 of the Ensembl genes	
 
 
+---------------
+``--lof``
+---------------
+By default, all gene variants that map to pathways are reported.  However, 
+one may want to restrict the analysis to LoF variants using the ``--lof`` option.
+
+.. code-block:: bash
+
+	$ gemini pathways --lof -v 68 example.db
+	chrom	start	end	ref	alt	impact	sample	genotype	gene	transcript	pathway
+	chr10	126678091	126678092	G	A	stop_gain	M128215	G/A	CTBP2	ENST00000531469	hsa05220:Chronic_myeloid_leukemia,hsa04310:Wnt_signaling_pathway,hsa04330:Notch_signaling_pathway,hsa05200:Pathways_in_cancer
+
+
+
+===========================================================================
+``interactions``: Find genes among variants that are interacting partners.
+===========================================================================
+Integrating the knowledge of the known protein-protein interactions would be 
+useful in explaining variation data. Meaning to say that a damaging variant 
+in an interacting partner of a  potential protein may be equally interesting 
+as the protein itself. We have used the HPRD binary interaction data to build 
+a p-p network graph which can be explored by Gemini. 
+
+
+Examples:
+
+.. code-block:: bash
+
+	$ gemini interactions -g CTBP2 -r 3 example.db
+	sample	gene	order_of_interaction	interacting_gene
+	M128215	CTBP2	0_order:	CTBP2
+	M128215	CTBP2	1_order:	RAI2
+	M128215	CTBP2	2_order:	RB1
+	M128215	CTBP2	3_order:	TGM2,NOTCH2NL
+
+Return CTBP2 (-g) interacting gene variants till the third order (-r)
+
+---------------------
+``lof_interactions``
+---------------------
+Use this option to restrict your analysis to only LoF variants.
+
+.. code-block:: bash
+  
+	$ gemini lof_interactions -r 3 example.db
+	sample	lof_gene	order_of_interaction	interacting_gene
+	M128215	TGM2	1_order:	RB1
+	M128215	TGM2	2_order:	none
+	M128215	TGM2	3_order:	NOTCH2NL,CTBP2
+	
+
+Meaning to say return all LoF gene TGM2 (in sample M128215) interacting 
+partners to a 3rd order of interaction.
+
+
+---------------------
+``--var``
+---------------------
+
+An extended variant information (chrom, start, end etc.) for the interacting gene 
+may be achieved with the --var option for both the ``interactions`` and the
+``lof_interactions``
+
+.. code-block:: bash
+  
+	$ gemini interactions -g CTBP2 -r 3 --var example.db
+	sample	gene	order_of_interaction	interacting_gene	var_id	chrom	start	end	impact	biotype	in_dbsnp	clinvar_sig	clinvar_disease_name	aaf_1kg_all	aaf_esp_all
+	M128215	CTBP2	0	CTBP2	5	chr10	126678091	126678092	stop_gain	protein_coding	1	None	None	None	None
+	M128215	CTBP2	1	RAI2	9	chrX	17819376	17819377	non_syn_coding	protein_coding	1	None	None	1	0.000473
+	M128215	CTBP2	2	RB1	7	chr13	48873834	48873835	upstream	protein_coding	1	None	None	0.94	None
+	M128215	CTBP2	3	NOTCH2NL	1	chr1	145273344	145273345	non_syn_coding	protein_coding	1	None	None	None	None
+	M128215	CTBP2	3	TGM2	8	chr20	36779423	36779424	stop_gain	protein_coding	0	None	None	None	None
+	
+.. code-block:: bash
+	
+	$ gemini lof_interactions -r 3 --var example.db
+	sample	lof_gene	order_of_interaction	interacting_gene	var_id	chrom	start	end	impact	biotype	in_dbsnp	clinvar_sig	clinvar_disease_name	aaf_1kg_all	aaf_esp_all
+	M128215	TGM2	1	RB1	7	chr13	48873834	48873835	upstream	protein_coding	1	None	None	0.94	None
+	M128215	TGM2	3	NOTCH2NL	1	chr1	145273344	145273345	non_syn_coding	protein_coding	1	None	None	None	None
+	M128215	TGM2	3	CTBP2	5	chr10	126678091	126678092	stop_gain	protein_coding	1	None	None	None	None
+
+
+===================================================================================
+``lof_sieve``: Filter LoF variants by transcript position and type
+===================================================================================
+Not all candidate LoF variants are created equal. For e.g, a nonsense (stop gain) 
+variant impacting the first 5% of a polypeptide is far more likely to be deleterious 
+than one affecting the last 5%. Assuming you've annotated your VCF with snpEff v3.0+, 
+the lof_sieve tool reports the fractional position (e.g. 0.05 for the first 5%) of 
+the mutation in the amino acid sequence. In addition, it also reports the predicted 
+function of the transcript so that one can segregate candidate LoF variants that 
+affect protein_coding transcripts from processed RNA, etc.
+
+
+.. code-block:: bash
+
+	$ gemini lof_sieve chr22.low.exome.snpeff.100samples.vcf.db
+	chrom   start   end ref alt highest_impact  aa_change   var_trans_pos   trans_aa_length var_trans_pct   sample  genotype    gene    transcript  trans_type
+	chr22   17072346    17072347    C   T   stop_gain   W365*   365 557 0.655296229803  NA19327 C|T CCT8L2  ENST00000359963 protein_coding
+	chr22   17072346    17072347    C   T   stop_gain   W365*   365 557 0.655296229803  NA19375 T|C CCT8L2  ENST00000359963 protein_coding
+	chr22   17129539    17129540    C   T   splice_donor    None    None    None    None    NA18964 T|C TPTEP1  ENST00000383140 lincRNA
+	chr22   17129539    17129540    C   T   splice_donor    None    None    None    None    NA19675 T|C TPTEP1  ENST00000383140 lincRNA
+	
 
 ===========================================================
 ``annotate``: adding your own custom annotations
@@ -229,8 +369,6 @@ name).  We specify which column to store in the list with the ``-e`` option.
 
 
 
-
-
 ===========================================================================
 ``region``: Extracting variants from specific regions or genes
 ===========================================================================
@@ -276,8 +414,100 @@ that overlap by 10kb.
 .. code-block:: bash
 
 	$ gemini windower -w 50000 -s 10000 -t nucl_div -o mean my.db
+	
+
+Compute the max value for HWE statistic for all variants in a window of size
+10kb
+
+.. code-block:: bash
+
+	$ gemini windower  -w 10000 -t hwe -o max my.db
 
 
+===========================================================================
+``stats``: Compute useful variant statistics.
+===========================================================================
+The ``stats`` tool computes some useful variant statistics like
+
+
+Compute the transition and transversion ratios for the snps
+
+.. code-block:: bash
+	
+	$ gemini stats --tstv my.db
+	ts	tv	ts/tv
+	4	5	0.8
+
+
+
+---------------------
+``--tstv-coding``
+---------------------
+Compute the transition/transversion ratios for the snps in the coding 
+regions.
+
+----------------------
+``--tstv-noncoding``
+----------------------
+Compute the transition/transversion ratios for the snps in the non-coding 
+regions.
+
+
+Compute the type and count of the snps.
+
+.. code-block:: bash
+
+	$ gemini stats --snp-counts my.db
+	type	count
+	A->G	2
+	C->T	1
+	G->A	1
+	
+
+Calculate the site frequency spectrum of the variants.
+
+.. code-block:: bash
+	
+	$ gemini stats --sfs my.db
+	aaf	count
+	0.125	2
+	0.375	1
+
+
+Compute the pair-wise genetic distance between each sample
+
+.. code-block:: bash
+	
+	$ gemini stats --mds my.db
+	sample1	sample2	distance
+	M10500	M10500	0.0
+	M10475	M10478	1.25
+	M10500	M10475	2.0
+	M10500	M10478	0.5714
+	
+
+
+Return a count of the types of genotypes per sample
+
+.. code-block:: bash
+
+	$ gemini stats --gts-by-sample my.db
+	sample	num_hom_ref	num_het	num_hom_alt	num_unknown	total
+	M10475	4	1	3	1	9
+	M10478	2	2	4	1	9
+	
+
+
+Return the total variants per sample (sum of homozygous
+and heterozygous variants)	
+	
+.. code-block:: bash
+
+	$ gemini stats --vars-by-sample my.db
+	sample	total
+	M10475	4
+	M10478	6
+	
 
 
 ===========================================================================

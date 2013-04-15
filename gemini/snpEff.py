@@ -77,11 +77,11 @@ class EffectDetails(object):
 
     def __str__(self):
         return "\t".join([self.consequence, self.effect_severity,
-                          self.impact, self.codon_change,
-                          self.aa_change, self.aa_length, self.gene,
+                          str(self.impact), str(self.codon_change),
+                          str(self.aa_change), str(self.aa_length), str(self.gene),
                           str(self.biotype), str(self.is_exonic),
-                          str(self.is_coding), self.transcript,
-                          self.exon, self.anno_id])
+                          str(self.is_coding), str(self.transcript),
+                          str(self.exon), str(self.anno_id)])
 
     def __repr__(self):
         return self.__str__()

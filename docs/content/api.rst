@@ -1,5 +1,5 @@
 ############################
-Using the Gemini API
+Using the GEMINI API
 ############################
 
 .. automodule:: gemini
