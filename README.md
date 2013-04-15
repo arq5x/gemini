@@ -97,7 +97,7 @@ that leverages Tabix, BEDTools, and pybedtools to make things easy and fairly pe
 by augmenting VCF files with many informative annotations, and converting the information
 into a ``sqlite`` database framework, ``GEMINI`` provides a flexible database-driven API for data exploration,
 visualization, population genomics and medical genomics.  **We feel that this ability to integrate variation
-with the growing wealth of gemome annotations is the most compelling aspect of GEMINI ``GEMINI``**.  Combining this
+with the growing wealth of gemome annotations is the most compelling aspect of ``GEMINI``**.  Combining this
 with the ability to explore data with SQL using a database design that can scale to 1000s of individuals (genotypes too!)
 makes for a tasty data exploration cupcake.  Here are some examples of the things you can do.
 
