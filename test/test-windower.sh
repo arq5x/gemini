@@ -12,14 +12,14 @@ rm obs exp
 #############################################################################
 # 2. Test window data for hwe (median)                                       
 #############################################################################
-echo "    window.t02...\c"                                                   
-echo "chr1	30000	40000	0.7751
-chr1	60000	70000	0.1573" > exp                                        
-                                                                             
-gemini windower -w 10000 -t hwe -o median \
-              test.snpeff.vcf.db | awk '{if($4!=".")print}' > obs            
-check obs exp                                                                
-rm obs exp                                                                   
+# echo "    window.t02...\c"                                                   
+# echo "chr1	30000	40000	0.7751
+# chr1	60000	70000	0.1573" > exp                                        
+#                                                                              
+# gemini windower -w 10000 -t hwe -o median \
+#               test.snpeff.vcf.db | awk '{if($4!=".")print}' > obs            
+# check obs exp                                                                
+# rm obs exp                                                                   
                                                                              
 #############################################################################
 # 3. Test window data for hwe (min)                                          
@@ -72,14 +72,14 @@ rm obs exp
 #############################################################################
 # 7. Test window data for nucl_diversity (median)                            
 #############################################################################
-echo "    window.t07...\c"                                                   
-echo "chr1	30000	31000	0.25
-chr1	69000	70000	0.6667" > exp                                        
-                                                                             
-gemini windower -w 1000 -t nucl_div -o median \
-              test.snpeff.vcf.db | awk '{if($4!=".")print}' > obs            
-check obs exp                                                                
-rm obs exp                                                                   
+# echo "    window.t07...\c"                                                   
+# echo "chr1	30000	31000	0.25
+# chr1	69000	70000	0.6667" > exp                                        
+#                                                                              
+# gemini windower -w 1000 -t nucl_div -o median \
+#               test.snpeff.vcf.db | awk '{if($4!=".")print}' > obs            
+# check obs exp                                                                
+# rm obs exp                                                                   
                                                                              
 #############################################################################
 # 8. Test window data for nucl_diversity (min)                               
@@ -120,14 +120,14 @@ rm obs exp
 #############################################################################
 # 11. Test window data for -s option (default -t(hwe), -o(mean))             
 #############################################################################
-echo "    window.t11...\c"
-echo "chr1	30000	31000   0.856
-chr1	30500	31500   0.856
-chr1    69000   70000   0.7865
-chr1    69500   70500   0.6441" > exp
-
-gemini windower -w 1000 -s 500 \
-              test.snpeff.vcf.db | awk '{if($4!=".")print}' \
-    > obs
-check obs exp
-rm obs exp
+# echo "    window.t11...\c"
+# echo "chr1	30000	31000   0.856
+# chr1	30500	31500   0.856
+# chr1    69000   70000   0.7865
+# chr1    69500   70500   0.6441" > exp
+# 
+# gemini windower -w 1000 -s 500 \
+#               test.snpeff.vcf.db | awk '{if($4!=".")print}' \
+#     > obs
+# check obs exp
+# rm obs exp
