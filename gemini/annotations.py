@@ -125,6 +125,7 @@ def load_annos():
     config = read_gemini_config()
     anno_dirname = config["annotation_dir"]
     anno_files = {
+        'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
         'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
         'dbsnp': os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
         'clinvar': os.path.join(anno_dirname, 'clinvar_20130118.vcf.gz'),
@@ -266,6 +267,15 @@ def get_cyto_info(var):
             cyto_band += hit.contig + hit.name
     return cyto_band if len(cyto_band) > 0 else None
 
+def get_pfamA_domains(var):
+    """
+    Returns pfamA domains that a variant overlaps
+    """
+    pfam_domain = []
+    for hit in annotations_in_region(var, "pfam_domain", "bed"):
+        pfam_domain.append(hit.name)
+    return ",".join(pfam_domain) if len(pfam_domain) > 0 else None
+        
 
 def get_clinvar_info(var):
     """

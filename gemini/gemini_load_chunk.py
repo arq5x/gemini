@@ -207,6 +207,7 @@ class GeminiLoader(object):
         ############################################################
         # collect annotations from gemini's custom annotation files
         ############################################################
+        pfam_domain = annotations.get_pfamA_domains(var)
         cyto_band = annotations.get_cyto_info(var)
         rs_ids = annotations.get_dbsnp_info(var)
         clinvar_info = annotations.get_clinvar_info(var)
@@ -319,7 +320,7 @@ class GeminiLoader(object):
                    clinvar_info.clinvar_disease_acc,
                    clinvar_info.clinvar_in_locus_spec_db,
                    clinvar_info.clinvar_on_diag_assay,
-                   cyto_band, rmsk_hits, in_cpg,
+                   pfam_domain, cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, hom_ref, het,
                    hom_alt, unknown, aaf,
                    hwe_p_value, inbreeding_coeff, pi_hat,
