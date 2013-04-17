@@ -51,3 +51,6 @@ directory specified (`/usr/local/share/gemini` in the first example above) speci
 the directory in which the gemini annotations files should be installed.  NOTE that
 these are rather large files (some > 1Gb).  
 
+License
+================
+`GEMINI` is freely available under the MIT [http://raw.github.com/arq5x/gemini/master/LICENSE](license).
