@@ -12,7 +12,8 @@ and data files::
     wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
     python gemini_install.py /usr/local /usr/local/share/gemini
 
-This installs the GEMINI executable in ``/usr/local/bin/gemini`` and
+This installs the GEMINI executable as ``/usr/local/bin/gemini``,
+other required third party dependencies in ``/usr/local/bin``, and
 associated data files in ``/usr/local/share/gemini``. It allows easy
 upgrading of GEMINI and data files to the latest released version with::
 
@@ -23,6 +24,10 @@ your local machine. It also has options to install in non-root
 environments::
 
     gemini_install.py ~/gemini ~/gemini --nosudo
+
+If you use the automated installation script, you're now ready to being using
+GEMINI. The instructions below detail the manual installation steps
+for anyone who prefers to setup GEMINI without the automated installer.
 
 Software dependencies
 =====================
