@@ -53,4 +53,4 @@ these are rather large files (some > 1Gb).
 
 License
 ================
-`GEMINI` is freely available under the MIT [https://raw.github.com/arq5x/gemini/master/LICENSE](license).
+`GEMINI` is freely available under the MIT [license](https://github.com/arq5x/gemini/blob/master/LICENSE).
