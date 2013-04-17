@@ -3,7 +3,7 @@ pyparsing==1.5.7
 pysam==0.6
 git+https://github.com/arq5x/cyvcf.git@db8b06f510#egg=cyvcf
 PyYAML==3.10
-pybedtools==0.6.1
+pybedtools==0.6.2
 python-graph-core==1.8.2
 python-graph-dot==1.8.2
 bottle==0.11.6
