@@ -43,6 +43,8 @@ anno_files = \
 'hprd_interaction_graph'
 ]
 
+toadd_anno_files = ["cse-hiseq-8_4-2013-02-20.bed.gz"]
+
 anno_versions = {
     "GRCh37-gms-mappability.vcf.gz": 2,
     "hg19.rmsk.bed.gz": 2}
@@ -63,14 +65,21 @@ def install_annotation_files(anno_root_dir):
 
     cur_config = read_gemini_config(allow_missing=True)
 
-    # download and install each of the annotation files
-    for orig in anno_files:
+    _download_anno_files("http://people.virginia.edu/~arq5x/files/gemini/annotations",
+                         anno_files, cur_config)
+    _download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
+                         toadd_anno_files, cur_config)
+
+def _download_anno_files(base_url, file_names, cur_config):
+    """Download and install each of the annotation files
+    """
+    for orig in file_names:
         if orig.endswith(".gz"):
             dls = [orig, "%s.tbi" % orig]
         else:
             dls = [orig]
         for dl in dls:
-            url = "http://people.virginia.edu/~arq5x/files/gemini/annotations/{fname}".format(fname=dl)
+            url = "{base_url}/{fname}".format(fname=dl, base_url=base_url)
             _download_to_dir(url, anno_dir, anno_versions.get(orig, 1),
                              cur_config.get("versions", {}).get(orig, 1))
 

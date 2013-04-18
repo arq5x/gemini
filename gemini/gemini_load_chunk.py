@@ -221,6 +221,7 @@ class GeminiLoader(object):
         recomb_rate = annotations.get_recomb_info(var)
         gms = annotations.get_gms(var)
         grc = annotations.get_grc(var)
+        in_cse = annotations.get_cse(var)
         encode_tfbs = annotations.get_encode_tfbs(var)
         encode_dnaseI = annotations.get_encode_dnase_clusters(var)
         encode_cons_seg = annotations.get_encode_consensus_segs(var)
@@ -344,7 +345,7 @@ class GeminiLoader(object):
                    esp.aaf_AA, esp.aaf_ALL, esp.exome_chip, thousandG.found,
                    thousandG.aaf_AMR, thousandG.aaf_ASN, thousandG.aaf_AFR,
                    thousandG.aaf_EUR, thousandG.aaf_ALL, grc,
-                   gms.illumina, gms.solid, gms.iontorrent,
+                   gms.illumina, gms.solid, gms.iontorrent, in_cse,
                    encode_tfbs,
                    encode_dnaseI.cell_count,
                    encode_dnaseI.cell_list,
