@@ -318,9 +318,10 @@ def get_clinvar_info(var):
         clinvar.clinvar_dsdb = info_map['CLNDSDB'] or None
         clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
         # Clinvar represents commas as \x2c.  Make them commas.
+        # Remap all unicode characters into plain text string replacements
         raw_disease_name = info_map['CLNDBN'] or None
-        clinvar.clinvar_disease_name     = \
-            raw_disease_name.replace('\\x2c', ',')
+        clinvar.clinvar_disease_name = \
+            unicode(raw_disease_name, errors="replace").encode(errors="replace")
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
         clinvar.clinvar_in_omim = 1 if 'OM' in info_map else 0
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
