@@ -141,6 +141,7 @@ def create_tables(cursor):
                     gms_illumina float,                         \
                     gms_solid float,                            \
                     gms_iontorrent float,                       \
+                    in_cse bool,                                \
                     encode_tfbs text,                           \
                     encode_dnaseI_cell_count integer,           \
                     encode_dnaseI_cell_list text,               \
@@ -245,7 +246,7 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?)', buffer)
+                                                         ?,?)', buffer)
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
         cursor.execute("END TRANSACTION")

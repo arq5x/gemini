@@ -144,6 +144,7 @@ def load_annos():
         'gms': os.path.join(anno_dirname,
                             'GRCh37-gms-mappability.vcf.gz'),
         'grc': os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+        'cse': os.path.join(anno_dirname, "cse-hiseq-8_4-2013-02-20.bed.gz"),
         'encode_tfbs': os.path.join(anno_dirname,
                                     'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
         'encode_dnase1': os.path.join(anno_dirname,
@@ -506,6 +507,12 @@ def get_grc(var):
         regions.add(hit.name)
     return ",".join(sorted(list(regions))) if len(regions) > 0 else None
 
+def get_cse(var):
+    """Return if a variant is in a CSE: Context-specific error region.
+    """
+    for hit in annotations_in_region(var, "cse", "bed", "grch37"):
+        return True
+    return False
 
 def get_encode_tfbs(var):
     """

@@ -185,7 +185,7 @@ recomb_rate               FLOAT         | Returns the mean recombination rate at
 
 
 
-Mappability
+Variant error assessment
 ........................
 ========================  ========      ==============================================================================================
 ========================  ========      ==============================================================================================
@@ -201,6 +201,10 @@ gms_illumina              FLOAT         | Genome Mappability Scores (GMS) for Il
                                         | https://github.com/chapmanb/bcbio.variation/blob/master/src/bcbio/variation/utils/gms.clj
 gms_solid                 FLOAT         Genome Mappability Scores with SOLiD error models
 gms_iontorrent            FLOAT         Genome Mappability Scores with IonTorrent error models
+in_cse                    BOOL          | Is a variant in an error prone genomic position,
+                                        | using CSE: Context-Specific Sequencing Errors 
+                                        | https://code.google.com/p/discovering-cse/
+                                        | http://www.biomedcentral.com/1471-2105/14/S5/S1
 ========================  ========      ==============================================================================================
 
 
