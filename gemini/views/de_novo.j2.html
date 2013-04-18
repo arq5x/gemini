@@ -64,9 +64,9 @@
 			<tr> 
                 {% if igv_links %}
                     <td>
-                        <a href="http://localhost:60151/goto?locus={{row['chrom']}}:{{row[start]}}-{{row[end]}}"></a>
+                    <a href="http://localhost:60151/goto?locus={{row['chrom']}}:{{row['start']}}-{{row['end']}}"></a>
                     </td>
-                    {% endif %}
+                {% endif %}
 				{%for col in row %}
 				<td>{{col}}</td>
 				{% endfor %}

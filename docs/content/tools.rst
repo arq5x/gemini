@@ -91,9 +91,51 @@ that are *candidates* for compound heterozygotes. Just use the
     
     ``gemini load -v my.vcf -p my.ped my.db``
 
-To document.
+Assuming you have defined the familial relationships between samples when loading
+your VCF into GEMINI, one can leverage a built-in tool for identifying de novo 
+(a.k.a spontaneous) mutations that arise in offspring. 
 
+---------------------
+``default behavior``
+---------------------
 
+By default, the ``de novo`` tool will report, for each
+family in the database, a list of mutations that are not found in the parents yet
+are observed as heterozygotes in the offspring. For example:
+
+.. code-block:: bash
+
+	$ gemini de_novo my.db 
+	
+	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	in_dbsnp	rs_ids		aaf_1kg_all	aaf_esp_all	clinvar_sig	clinvar_disease_name	clinvar_dbsource	sample1(father)	sample2(mother)	sample3(child; affected)	sample1(depth)	sample2(depth)	sample3(depth)
+	1	chr1	17197609	17197610	G	A	BX284668.1	non_syn_coding	MED	1	rs200754171		None	None	None	None	None	G/G	G/G	G/A	104	168	244
+	1	chr1	196763706	196763707	T	C	CFHR3	splice_acceptor	HIGH	1	rs481759		None	None	None	None	None	T/T	T/T	T/C	26	28	34
+	1	chr1	248813541	248813542	G	A	OR2T27	non_syn_coding	MED	1	rs77685347	0.	17	0.180025	None	None	None	G/G	G/G	G/A	21	38	68
+	1	chr2	90060872	90060873	A	T	AC009958.1	non_syn_coding	MED	1	rs202041075		None	None	None	None	None	A/A	A/A	A/T	90	238	234
+	1	chr3	195505789	195505790	G	C	MUC4	non_syn_coding	MED	1	rs11928301		None	None	None	None	None	G/G	G/G	G/C	250	247	248
+	...
+
+---------------------
+``-d``
+---------------------
+
+Unfortunately, inherited variants can often appear to be de novo mutations simply because 
+insufficient sequence coverage was available for one of the parents to detect that the
+parent(s) is also a heterozygote (and thus the variant was actually inherited, not
+spontaneous).  One simple way to filter such artifacts is to enforce a minimum sequence
+depth for each sample.  For example, if we require that at least 50 sequence alignments
+were present for mom, dad and child, two of the above variants will be eliminated
+as candidates:
+
+.. code-block:: bash
+
+	$ gemini de_novo -d 50 my.db 
+	
+	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	in_dbsnp	rs_ids		aaf_1kg_all	aaf_esp_all	clinvar_sig	clinvar_disease_name	clinvar_dbsource	sample1(father)	sample2(mother)	sample3(child; affected)	sample1(depth)	sample2(depth)	sample3(depth)
+	1	chr1	17197609	17197610	G	A	BX284668.1	non_syn_coding	MED	1	rs200754171		None	None	None	None	None	G/G	G/G	G/A	104	168	244
+	1	chr2	90060872	90060873	A	T	AC009958.1	non_syn_coding	MED	1	rs202041075		None	None	None	None	None	A/A	A/A	A/T	90	238	234
+	1	chr3	195505789	195505790	G	C	MUC4	non_syn_coding	MED	1	rs11928301		None	None	None	None	None	G/G	G/G	G/C	250	247	248
+	...
 
 
 
@@ -107,8 +149,26 @@ To document.
     
     ``gemini load -v my.vcf -p my.ped my.db``
 
-To document.
+Assuming you have defined the familial relationships between samples when loading
+your VCF into GEMINI, one can leverage a built-in tool for identifying variants
+that meet an autosomal recessive inheritance pattern. The reported variants
+will be restricted to those variants having the potential to impact the
+function of affecting protein coding transcripts.
 
+.. code-block:: bash
+
+	$ gemini autosomal_recessive my.db | head
+	
+	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	sample1(father)	sample2(mother)	sample3(child; affected)
+	1	chr1	1888192	1888193	C	A	C1orf222	non_syn_coding	MED	C/A	C/A	A/A
+	1	chr1	6162053	6162054	T	C	CHD5	non_syn_coding	MED	T/C	T/C	C/C
+	1	chr1	6646958	6646968	GCCTGCCTTC	G	ZBTB48	inframe_codon_loss	MED	GCCTGCCTTC/G	GCCTGCCTTC/G	G/G
+	1	chr1	11826629	11826630	C	T	C1orf167	non_syn_coding	MED	C/T	C/T	T/T
+	1	chr1	11828237	11828238	G	A	C1orf167	non_syn_coding	MED	G/A	G/A	A/A
+	1	chr1	11828318	11828319	G	A	C1orf167	non_syn_coding	MED	G/A	G/A	A/A
+	1	chr1	11831614	11831615	C	T	C1orf167	non_syn_coding	MED	C/T	C/T	T/T
+	1	chr1	11836627	11836628	T	C	C1orf167	non_syn_coding	MED	T/C	T/C	C/C
+	1	chr1	11836681	11836682	C	T	C1orf167	non_syn_coding	MED	C/T	C/T	T/T	...
 
 
 
@@ -122,7 +182,27 @@ To document.
     
     ``gemini load -v my.vcf -p my.ped my.db``
 
-To document.
+Assuming you have defined the familial relationships between samples when loading
+your VCF into GEMINI, one can leverage a built-in tool for identifying variants
+that meet an autosomal dominant inheritance pattern. The reported variants
+will be restricted to those variants having the potential to impact the
+function of affecting protein coding transcripts.
+
+.. code-block:: bash
+
+	$ gemini autosomal_dominant my.db | head
+	
+	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	sample1(father)	sample2(mother)	sample3(child; affected)
+	1	chr1	16855	16856	A	G	WASH7P	splice_donor	HIGH	A/A	A/G	A/G
+	1	chr1	881917	881918	G	A	NOC2L	non_syn_coding	MED	G/A	G/G	G/A
+	1	chr1	907757	907758	A	G	PLEKHN1	non_syn_coding	MED	A/A	A/G	A/G
+	1	chr1	909237	909238	G	C	PLEKHN1	non_syn_coding	MED	G/C	C/C	G/C
+	1	chr1	916548	916549	A	G	C1orf170	non_syn_coding	MED	A/G	G/G	A/G
+	1	chr1	935221	935222	C	A	HES4	non_syn_coding	MED	C/A	A/A	C/A
+	1	chr1	949607	949608	G	A	ISG15	non_syn_coding	MED	G/A	G/G	G/A
+	1	chr1	979747	979748	A	T	AGRN	non_syn_coding	MED	A/T	A/A	A/T
+	1	chr1	1361529	1361530	C	T	TMEM88B	non_syn_coding	MED	C/T	C/C	C/T
+
 
 
 ===========================================================================
