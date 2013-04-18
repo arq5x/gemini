@@ -136,14 +136,14 @@ def de_novo():
         min_sample_depth = str(request.GET.get('min-depth', '').strip())
         igv_links = request.GET.get('igv_links')
 
-        c = connect_to_db(database)
+        gq = GeminiQuery.GeminiQuery(database)
 
         if len(min_sample_depth) == 0:
             row_iter = \
-                de_novo_tool.get_de_novo_candidates(c)
+                de_novo_tool.get_de_novo_candidates(gq.c)
         else:
             row_iter = \
-                de_novo_tool.get_de_novo_candidates(c, int(min_sample_depth))
+                de_novo_tool.get_de_novo_candidates(gq.c, int(min_sample_depth))
 
         return template('de_novo.j2', dbfile=database,
                         rows=row_iter,
