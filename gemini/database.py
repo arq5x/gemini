@@ -77,6 +77,7 @@ def create_tables(cursor):
                     clinvar_disease_acc text default NULL,      \
                     clinvar_in_locus_spec_db bool,              \
                     clinvar_on_diag_assay bool,                 \
+                    pfam_domain text,                           \
                     cyto_band text default NULL,                \
                     rmsk text default NULL,                     \
                     in_cpg_island bool,                         \
@@ -215,7 +216,8 @@ def insert_variation(cursor, buffer):
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
                                                      ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?)',
+                                                     ?,?,?,?,?,?,?,?,?,?, \
+                                                     ?)',
                        buffer)
     cursor.execute("END")
 
