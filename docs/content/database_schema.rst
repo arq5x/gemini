@@ -82,6 +82,7 @@ polyphen_pred             STRING        Polyphen predictions for the snps (only 
 polyphen_score            FLOAT         Polyphen scores for the severely affected transcript
 sift_pred                 STRING        SIFT predictions for the snp's (VEP only) for the most severely affected transcript
 sift_score                FLOAT         SIFT scores for the predictions
+pfam_domain               STRING        Pfam protein domain that the variant affects
 ========================  ========      ==============================================================================================
 
 

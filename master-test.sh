@@ -61,6 +61,9 @@ sh test-windower.sh
 # Test gemini region
 sh test-region.sh
 
+# Test pfam domains
+sh test-pfam.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot
