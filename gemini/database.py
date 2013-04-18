@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sqlite3
+import sys
 
 
 def index_variation(cursor):
@@ -202,24 +203,53 @@ def create_tables(cursor):
 
     cursor.execute('''create table if not exists version (version text)''')
 
+
+def _insert_variation_one_per_transaction(cursor, buffer):
+    for variant in buffer:
+        try:
+            cursor.execute("BEGIN TRANSACTION")
+            cursor.execute('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?)', variant)
+            cursor.execute("END TRANSACTION")
+        # skip repeated keys until we get to the failed variant
+        except sqlite3.IntegrityError, e:
+            cursor.execute("END TRANSACTION")
+            continue
+        except sqlite3.ProgrammingError, e:
+            print variant
+            print "Error %s:" % (e.args[0])
+            sys.exit(1)
+
 def insert_variation(cursor, buffer):
     """
     Populate the variants table with each variant in the buffer.
     """
-    cursor.execute("BEGIN TRANSACTION")
-    cursor.executemany('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?,?,?,?,?,?,?,?,?,?, \
-                                                     ?)',
-                       buffer)
-    cursor.execute("END")
+    try:
+        cursor.execute("BEGIN TRANSACTION")
+        cursor.executemany('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?)', buffer)
+        cursor.execute("END TRANSACTION")
+    except sqlite3.ProgrammingError:
+        cursor.execute("END TRANSACTION")
+        _insert_variation_one_per_transaction(cursor, buffer)
 
 
 def insert_variation_impacts(cursor, buffer):
