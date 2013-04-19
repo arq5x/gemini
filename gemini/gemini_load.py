@@ -73,7 +73,7 @@ def merge_chunks_ipython(chunks, db, view):
         return db
     else:
         sub_merges = get_chunks_to_merge(chunks)
-        tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0]))
+        tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
         view.map(merge_chunks, sub_merges, tmp_dbs)
         merge_chunks_ipython(tmp_dbs, db, view)
 
@@ -84,7 +84,7 @@ def merge_chunks_multicore(chunks, db):
     else:
         procs = []
         sub_merges = get_chunks_to_merge(chunks)
-        tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0]))
+        tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
         for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
             cmd = get_merge_chunks_cmd(sub_merge, tmp_db)
             procs.append(subprocess.Popen(cmd, shell=True))
