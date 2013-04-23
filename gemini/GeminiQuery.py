@@ -225,14 +225,14 @@ class GeminiQuery(object):
 
                 if self.is_variants_query:
                     gts = compression.unpack_genotype_blob(row['gts'])
-                    gt_types = 
+                    gt_types = \
                         compression.unpack_genotype_blob(row['gt_types'])
-                    gt_phases = 
+                    gt_phases = \
                         compression.unpack_genotype_blob(row['gt_phases'])
-                    gt_depths = 
+                    gt_depths = \
                         compression.unpack_genotype_blob(row['gt_depths'])
 
-                    # skip the record if it does not meet the user's genotype filter
+                    # skip the rec. if it doesn't meet user's genotype filter
                     if self.gt_filter and not eval(self.gt_filter):
                         continue
 
@@ -253,13 +253,13 @@ class GeminiQuery(object):
                             if col == "gts":
                                 fields[col] = ','.join(gts)
                             elif col == "gt_types":
-                                fields[col] = 
+                                fields[col] = \
                                     ','.join(str(t) for t in gt_types)
                             elif col == "gt_phases":
-                                fields[col] = 
+                                fields[col] = \
                                     ','.join(str(p) for p in gt_phases)
                             elif col == "gt_depths":
-                                fields[col] = 
+                                fields[col] = \
                                     ','.join(str(d) for d in gt_depths)
 
                 if self.is_variants_query:
