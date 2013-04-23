@@ -20,6 +20,12 @@ KEGG, and HPRD.  All of this information is stored in portable
 SQLite database that allows one to explore and interpret both coding and
 non-coding variation using "off-the-shelf" tools or an enhanced SQL engine.
 
+.. note::
+
+   1. GEMINI solely supports human genetic variation mapped to build 37 (aka hg19) of the human genome.
+   2. GEMINI is very strict about adherance to VCF format 4.1.
+   3. For best performance, load and query GEMINI databases on the fastest hard drive to which you have access.
+
 =================
 Table of contents
 =================
