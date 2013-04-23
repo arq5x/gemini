@@ -1,8 +1,5 @@
-import sys
 import os
-import logging
-import sqlite3
-import copy
+import warnings
 import GeminiQuery
 
 import tool_de_novo_mutations as de_novo_tool
@@ -18,8 +15,10 @@ import tool_autosomal_dominant as dominant_tool
 # sys.path.insert(0, third_party_path)
 
 # -- common bottle importation
-from bottle import TEMPLATE_PATH, Bottle, run, CGIServer, static_file, debug, request
-from bottle import jinja2_view as view, jinja2_template as template
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from bottle import TEMPLATE_PATH, Bottle, run, static_file, debug, request
+    from bottle import jinja2_view as view, jinja2_template as template
 
 debug(True)
 
