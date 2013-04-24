@@ -1,30 +1,31 @@
-GEMINI - a framework for mining genome variation.
-=================================================
+GEMINI - integrative exploration of genetic variation and genome annotations.
+=============================================================================
 
 Overview
 ========
-The intent of ``GEMINI`` is to provide a simple, flexible, and powerful
-framework for exploring genetic variation for disease and population genetics.
-We aim to leverage the expressive power of SQL while attempting to overcome
-the fundamental challenges associated with using databases for very large
+The intent of ``GEMINI`` (GEnome MINIing) is to provide a simple, flexible, and 
+powerful framework for exploring genetic variation for personal and medical genetics.
+GEMINI is unique in that it integrated genetic variation (from VCF files) with
+a wealth of genome annotations into a unified database framework. Using this
+integrated database as the analysis framework, we aim to leverage the expressive 
+power of SQL for data analysis, while attempting to overcome the fundamental 
+challenges associated with using databases for very large
 (e.g. 1,000,000 variants times 1,000 samples yields one billion genotypes)
 datasets.
 
-**NOTE:**  GEMINI is currently in a beta state as we move towards publication.
-We welcome comments and suggestions.
-
 Documentation
 ================
-
 The official documentation is here: http://gemini.readthedocs.org/en/latest/
 
+Mailing List:
+https://groups.google.com/forum/?fromgroups#!forum/gemini-variation
 
 Acknowledgements
 ================
 GEMINI is being developed in the Quinlan lab (quinlanlab.org) at the University
-of Virginia and is led by Uma Paila.  Substantial contributions have also been
-made by Brad Chapman (@chapmanb), Rory Kirchner (@roryk), and Oliver Hofmann
-at the Harvard School of Public Health.
+of Virginia and is led by Uma Paila and Aaron Quinlan.  Substantial contributions 
+to the code base have also been made by Brad Chapman (@chapmanb) and
+Rory Kirchner (@roryk) at the Harvard School of Public Health.
 
 
 Installation
