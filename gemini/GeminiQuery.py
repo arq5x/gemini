@@ -232,7 +232,7 @@ class GeminiQuery(object):
                     gt_depths = \
                         compression.unpack_genotype_blob(row['gt_depths'])
 
-                    # skip the rec. if it doesn't meet user's genotype filter
+                    # skip the record if it does not meet the user's genotype filter
                     if self.gt_filter and not eval(self.gt_filter):
                         continue
 
