@@ -21,6 +21,7 @@ anno_files = \
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
 'hg19.pfam.ucscgenes.bed.gz',
+'hg19.gerp.bw',
 'hg19.cytoband.bed.gz',
 'hg19.dgv.bed.gz',
 'hg19.gwas.bed.gz',
