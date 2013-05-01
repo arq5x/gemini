@@ -42,10 +42,11 @@ anno_files = \
 'kegg_pathways_ensembl69',
 'kegg_pathways_ensembl70',
 'kegg_pathways_ensembl71',
-'hprd_interaction_graph'
+'hprd_interaction_graph'.
+'cse-hiseq-8_4-2013-02-20.bed.gz'
 ]
 
-toadd_anno_files = ["cse-hiseq-8_4-2013-02-20.bed.gz"]
+toadd_anno_files = []
 
 anno_versions = {
     "GRCh37-gms-mappability.vcf.gz": 2,
@@ -67,7 +68,7 @@ def install_annotation_files(anno_root_dir):
 
     cur_config = read_gemini_config(allow_missing=True)
 
-    _download_anno_files("http://people.virginia.edu/~arq5x/files/gemini/annotations",
+    _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
                          anno_files, cur_config)
     _download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
                          toadd_anno_files, cur_config)
