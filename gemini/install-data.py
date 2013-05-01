@@ -42,7 +42,7 @@ anno_files = \
 'kegg_pathways_ensembl69',
 'kegg_pathways_ensembl70',
 'kegg_pathways_ensembl71',
-'hprd_interaction_graph'.
+'hprd_interaction_graph',
 'cse-hiseq-8_4-2013-02-20.bed.gz'
 ]
 
