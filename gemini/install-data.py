@@ -22,6 +22,7 @@ anno_files = \
 'hg19.CpG.bed.gz',
 'hg19.pfam.ucscgenes.bed.gz',
 'hg19.gerp.bw',
+'hg19.gerp.elements.bed.gz',
 'hg19.cytoband.bed.gz',
 'hg19.dgv.bed.gz',
 'hg19.gwas.bed.gz',

@@ -224,7 +224,12 @@ class GeminiLoader(object):
         encode_tfbs = annotations.get_encode_tfbs(var)
         encode_dnaseI = annotations.get_encode_dnase_clusters(var)
         encode_cons_seg = annotations.get_encode_consensus_segs(var)
-        gerp = annotations.get_gerp(var) 
+        gerp_el = annotations.get_gerp_elements(var) 
+        
+        # grab the GERP score for this variant if asked.
+        gerp_bp = None
+        if self.args.load_gerp_bp is True:
+            gerp_bp = annotations.get_gerp_bp(var)
 
         # impact is a list of impacts for this variant
         impacts = None
@@ -322,7 +327,7 @@ class GeminiLoader(object):
                    clinvar_info.clinvar_in_locus_spec_db,
                    clinvar_info.clinvar_on_diag_assay,
                    pfam_domain, cyto_band, rmsk_hits, in_cpg,
-                   in_segdup, is_conserved, gerp, 
+                   in_segdup, is_conserved, gerp_bp, gerp_el,
                    hom_ref, het, hom_alt, unknown, 
                    aaf, hwe_p_value, inbreeding_coeff, pi_hat,
                    recomb_rate, gene, transcript,

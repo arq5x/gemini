@@ -4,6 +4,7 @@ import sqlite3
 import os
 import sys
 import collections
+import subprocess as subp
 import re
 
 from bx.bbi.bigwig_file import BigWigFile
@@ -40,7 +41,8 @@ anno_files = {
                                   'stam.125cells.dnaseI.hg19.bed.gz'),
     'encode_consensus_segs': os.path.join(anno_dirname,
                                           'encode.6celltypes.consensus.bedg.gz'),
-    'gerp': os.path.join(anno_dirname, 'hg19.gerp.bw'),
+    'gerp_bp': os.path.join(anno_dirname, 'hg19.gerp.bw'),
+    'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
 }
 
 class ClinVarInfo(object):
@@ -200,7 +202,7 @@ def _get_bw_summary(coords, annotation):
     """Return summary of BigWig scores in an interval
     """
     chrom, start, end = coords
-    return annotation.summarize(str(chrom), start, end, end-start)
+    return annotation.summarize(str(chrom), start, end, end-start).min_val[0]
 
 
 def _get_chr_as_grch37(chrom):
@@ -288,12 +290,26 @@ def get_cyto_info(var):
             cyto_band += hit.contig + hit.name
     return cyto_band if len(cyto_band) > 0 else None
 
-def get_gerp(var):
+def get_gerp_bp(var):
     """
     Returns a summary of the GERP scores for the variant.
     """
-    gerp = bigwig_summary(var, "gerp").max_val[0]
+    gerp = bigwig_summary(var, "gerp_bp")
     return gerp
+
+def get_gerp_elements(var):
+    """
+    Returns the GERP element information.
+    """
+    p_vals = []
+    for hit in annotations_in_region(var, "gerp_elements", "tuple"):
+        p_vals.append(hit[3])
+    if len(p_vals) == 1:
+        return p_vals[0]
+    elif len(p_vals) > 1:
+        return min(float(p) for p in p_vals)
+    else:
+        return None
 
 def get_pfamA_domains(var):
     """
