@@ -123,12 +123,25 @@ def load_chunks_multicore(grabix_file, args):
     if args.anno_type is not None:
         anno_type = "-t " + args.anno_type
 
+    no_genotypes = ""
+    if args.no_genotypes is True:
+        no_genotypes = "--no-genotypes"
+
+    no_load_genotypes = ""
+    if args.no_load_genotypes is True:
+        no_load_genotypes = "--no-load-genotypes"
+        
+    load_gerp_bp = ""
+    if args.load_gerp_bp is True:
+        load_gerp_bp = "--load-gerp-bp"
+
     submit_command = get_submit_command(args)
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
     chunk_vcfs = []
     chunk_dbs = []
     procs = []
+
     for chunk_num, chunk in chunk_steps:
         start, stop = chunk
         print "Loading chunk " + str(chunk_num) + "." + ped_file
@@ -186,8 +199,10 @@ def cleanup_temp_db_files(chunk_dbs):
 
 def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
-    gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file} "
-                       "-o {start} {vcf}.chunk{chunk_num}.db")
+    gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
+                       " {no_genotypes} {no_load_genotypes} {no_genotypes}"
+                       " {load_gerp_bp}"
+                       " -o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
 
 def get_chunk_steps(grabix_file, args):

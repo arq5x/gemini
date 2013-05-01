@@ -4,13 +4,46 @@ import sqlite3
 import os
 import sys
 import collections
+import subprocess as subp
 import re
 
+from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
 
 # dictionary of anno_type -> open Tabix file handles
+config = read_gemini_config()
+anno_dirname = config["annotation_dir"]
 annos = {}
 
+anno_files = {
+    'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
+    'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
+    'dbsnp': os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
+    'clinvar': os.path.join(anno_dirname, 'clinvar_20130118.vcf.gz'),
+    'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
+    'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
+    'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
+    'conserved': os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
+    'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
+    'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
+    'esp': os.path.join(anno_dirname,
+                        'ESP6500SI.all.snps_indels.vcf.gz'),
+    '1000g': os.path.join(anno_dirname,
+                          'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz'),
+    'recomb': os.path.join(anno_dirname,
+                           'genetic_map_HapMapII_GRCh37.gz'),
+    'gms': os.path.join(anno_dirname,
+                        'GRCh37-gms-mappability.vcf.gz'),
+    'grc': os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+    'encode_tfbs': os.path.join(anno_dirname,
+                                'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
+    'encode_dnase1': os.path.join(anno_dirname,
+                                  'stam.125cells.dnaseI.hg19.bed.gz'),
+    'encode_consensus_segs': os.path.join(anno_dirname,
+                                          'encode.6celltypes.consensus.bedg.gz'),
+    'gerp_bp': os.path.join(anno_dirname, 'hg19.gerp.bw'),
+    'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
+}
 
 class ClinVarInfo(object):
     def __init__(self):
@@ -122,40 +155,15 @@ def load_annos():
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
     """
-    config = read_gemini_config()
-    anno_dirname = config["annotation_dir"]
-    anno_files = {
-        'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
-        'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-        'dbsnp': os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
-        'clinvar': os.path.join(anno_dirname, 'clinvar_20130118.vcf.gz'),
-        'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
-        'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
-        'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
-        'conserved': os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
-        'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
-        'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
-        'esp': os.path.join(anno_dirname,
-                            'ESP6500SI.all.snps_indels.vcf.gz'),
-        '1000g': os.path.join(anno_dirname,
-                              'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz'),
-        'recomb': os.path.join(anno_dirname,
-                               'genetic_map_HapMapII_GRCh37.gz'),
-        'gms': os.path.join(anno_dirname,
-                            'GRCh37-gms-mappability.vcf.gz'),
-        'grc': os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
-        'cse': os.path.join(anno_dirname, "cse-hiseq-8_4-2013-02-20.bed.gz"),
-        'encode_tfbs': os.path.join(anno_dirname,
-                                    'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
-        'encode_dnase1': os.path.join(anno_dirname,
-                                      'stam.125cells.dnaseI.hg19.bed.gz'),
-        'encode_consensus_segs': os.path.join(anno_dirname,
-                                              'encode.6celltypes.consensus.bedg.gz')
-    }
-
     for anno in anno_files:
         try:
-            annos[anno] = pysam.Tabixfile(anno_files[anno])
+            # .gz denotes Tabix files.
+            if anno_files[anno].endswith(".gz"):
+                annos[anno] = pysam.Tabixfile(anno_files[anno])
+            # .bw denotes BigWig files.
+            elif anno_files[anno].endswith(".bw"):
+                annos[anno] = BigWigFile( open( anno_files[anno] ) )
+
         except IOError:
             sys.exit("Gemini cannot open this annotation file: %s. \n"
                      "Have you installed the annotation files?  If so, "
@@ -188,6 +196,12 @@ def _get_hits(coords, annotation, parser_type):
     except ValueError:
         hit_iter = []
     return hit_iter
+
+def _get_bw_summary(coords, annotation):
+    """Return summary of BigWig scores in an interval
+    """
+    chrom, start, end = coords
+    return annotation.summarize(str(chrom), start, end, end-start).min_val[0]
 
 
 def _get_chr_as_grch37(chrom):
@@ -242,9 +256,16 @@ def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
         anno = annos[anno]
     return _get_hits(coords, anno, parser_type)
 
+
+def bigwig_summary(var, anno, naming="ucsc"):
+    coords = _get_var_coords(var, naming)
+    if isinstance(anno, basestring):
+        anno = annos[anno]
+    return _get_bw_summary(coords, anno)  
+
+
+
 # ## Track-specific annotations
-
-
 def get_cpg_island_info(var):
     """
     Returns a boolean indicating whether or not the
@@ -267,6 +288,27 @@ def get_cyto_info(var):
         else:
             cyto_band += hit.contig + hit.name
     return cyto_band if len(cyto_band) > 0 else None
+
+def get_gerp_bp(var):
+    """
+    Returns a summary of the GERP scores for the variant.
+    """
+    gerp = bigwig_summary(var, "gerp_bp")
+    return gerp
+
+def get_gerp_elements(var):
+    """
+    Returns the GERP element information.
+    """
+    p_vals = []
+    for hit in annotations_in_region(var, "gerp_elements", "tuple"):
+        p_vals.append(hit[3])
+    if len(p_vals) == 1:
+        return p_vals[0]
+    elif len(p_vals) > 1:
+        return min(float(p) for p in p_vals)
+    else:
+        return None
 
 def get_pfamA_domains(var):
     """
@@ -605,4 +647,4 @@ def get_encode_chromhmm_segs(var):
 def get_resources():
     """Retrieve list of annotation resources loaded into gemini.
     """
-    return [(n, os.path.basename(annos[n].filename)) for n in sorted(annos.keys())]
+    return [(n, os.path.basename(anno_files[n])) for n in sorted(anno_files.keys())]

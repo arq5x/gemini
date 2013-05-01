@@ -99,6 +99,11 @@ def main():
     parser_load.add_argument('-p', dest='ped_file',
                              help='Sample information file in PED+ format.',
                              default=None)
+    parser_load.add_argument('--load-gerp-bp',
+                             dest='load_gerp_bp',
+                             action='store_true',
+                             help='Load GERP scores at base pair resolution. Slow. Off by default.',
+                             default=False)
     parser_load.add_argument('--no-load-genotypes',
                              dest='no_load_genotypes',
                              action='store_true',
@@ -160,8 +165,13 @@ def main():
     parser_loadchunk.add_argument('--no-genotypes',
                                   dest='no_genotypes',
                                   action='store_true',
-                                 help='There are no genotypes in the file (e.g. some 1000G VCFs)',
-            default=False)
+                                  help='There are no genotypes in the file (e.g. some 1000G VCFs)',
+                                  default=False)
+    parser_loadchunk.add_argument('--load-gerp-bp',
+                                  dest='load_gerp_bp',
+                                  action='store_true',
+                                  help='Load GERP scores at base pair resolution. Slow. Off by default.',
+                                  default=False)
     parser_loadchunk.set_defaults(func=gemini_load_chunk.load)
 
     #########################################
