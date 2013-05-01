@@ -115,7 +115,23 @@ If you use Torque, it would look like: (you guessed it):
 ===================================
 Describing samples with a PED file
 ===================================
-To do.
+GEMINI also accepts PED files in order to establish the familial relationships
+and phenotypic information of the samples in the VCF file.
+
+.. code-block:: bash
+
+    $ gemini load -v my.vcf -p my.ped -t snpEff my.db
+
+=======================================
+Load GERP base pair conservation scores 
+=======================================
+By default, GERP scores at base pair resolution are not computed owing to the roughly 2X
+increasing in loading time.  However, one can optionally ask GEMINI to compute these scores
+by using the ``--load-gerp-bp`` option.
+
+.. code-block:: bash
+
+    $ gemini load -v my.vcf --load-gerp-bp -t snpEff my.db
 
 
 ===================================
