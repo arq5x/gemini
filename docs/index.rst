@@ -43,5 +43,6 @@ Table of contents
    content/api
    content/acknowledgements
    content/caveats
+   content/history
    content/bugs
    content/licensing
