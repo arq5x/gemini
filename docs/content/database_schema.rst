@@ -179,6 +179,13 @@ in_segdup                 BOOL          | Does the variant overlap a segmental d
                                         | Based on UCSC: Variation&Repeats > Segmental Dups > genomicSuperDups track
 is_conserved              BOOL          | Does the variant overlap a conserved region?
                                         | Based on the 29-way mammalian conservation study
+gerp_bp_score             FLOAT         | GERP conservation score. 
+                                        | Only populated if the ``--load-gerp-bp`` option is used when loading. 
+                                        | Higher scores reflect greater conservation. **At base-pair resolution**.
+                                        | Details: http://mendel.stanford.edu/SidowLab/downloads/gerp/
+gerp_element_pval         FLOAT         | GERP elements P-val 
+                                        | Lower P-values scores reflect greater conservation. **Not at base-pair resolution**.  
+                                        | Details: http://mendel.stanford.edu/SidowLab/downloads/gerp/
 recomb_rate               FLOAT         | Returns the mean recombination rate at the variant site
                                         | Based on HapMapII_GRCh37 genetic map
 ========================  ========      ==============================================================================================

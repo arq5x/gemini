@@ -688,6 +688,26 @@
             </div>
             </td>
             </tr>
+            <tr class="row-even"><td>gerp_bp_score</td>
+            <td>FLOAT</td>
+            <td><div class="first last line-block">
+            <div class="line">GERP conservation score.</div>
+            <div class="line">Only populated if the <tt class="docutils literal"><span class="pre">--load-gerp-bp</span></tt> option is used when             loading.</div>
+            <div class="line">Higher scores reflect greater conservation. <strong>At base-pair resolution</strong>.</div>
+            <div class="line">Details: <a class="reference external" href="http://mendel.stanford.edu/SidowLab/downloads/gerp/">http://mendel.stanford.edu/SidowLab/downloads/gerp/</a></div>
+            </div>
+            </td>
+            </tr>
+            <tr class="row-odd"><td>gerp_element_pval</td>
+            <td>FLOAT</td>
+            <td><div class="first last line-block">
+            <div class="line">GERP elements P-val</div>
+            <div class="line">Lower P-values scores reflect greater conservation. <strong>Not at base-pair resolution</strong>.</div>
+            <div class="line">Details: <a class="reference external" href="http://mendel.stanford.edu/SidowLab/downloads/gerp/">http://mendel.stanford.edu/SidowLab/downloads/gerp/</a></div>
+            </div>
+            </td>
+            </tr>
+
             <tr class="row-even"><td>recomb_rate</td>
             <td>FLOAT</td>
             <td><div class="first last line-block">
@@ -750,6 +770,17 @@
             <td>FLOAT</td>
             <td>Genome Mappability Scores with IonTorrent error models</td>
             </tr>
+            <tr class="row-even"><td>in_cse</td>
+            <td>BOOL</td>
+            <td><div class="first last line-block">
+            <div class="line">Is a variant in an error prone genomic position,</div>
+            <div class="line">using CSE: Context-Specific Sequencing Errors</div>
+            <div class="line"><a class="reference external" href="https://code.google.com/p/discovering-cse/">https://code.google.com/p/discovering-cse/</a></div>
+            <div class="line"><a class="reference external" href="http://www.biomedcentral.com/1471-2105/14/S5/S1">http://www.biomedcentral.com/1471-2105/14/S5/S1</a></div>
+            </div>
+            </td>
+            </tr>
+
             </tbody>
           </table>
       </div>
