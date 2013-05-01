@@ -6,7 +6,6 @@ import sqlite3
 import pysam
 
 from gemini.annotations import annotations_in_region, guess_contig_naming
-from gemini.database import drop_variation_index, index_variation
 
 
 def add_requested_column(col_name, update_cursor):
