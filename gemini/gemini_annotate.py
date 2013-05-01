@@ -3,14 +3,10 @@
 import os
 import sys
 import sqlite3
-import subprocess
-import collections
-import pybedtools as pbt
 import pysam
-import time
 
-import gemini_constants
 from gemini.annotations import annotations_in_region, guess_contig_naming
+from gemini.database import drop_variation_index, index_variation
 
 
 def add_requested_column(col_name, update_cursor):
@@ -45,25 +41,39 @@ def _annotate_variants(args, conn, get_val_fn):
     annos = pysam.Tabixfile(args.anno_file)
     naming = guess_contig_naming(annos)
     select_cursor = conn.cursor()
-    select_cursor.execute("SELECT chrom, start, end, variant_id FROM variants")
+    add_requested_column(args.col_name, select_cursor)
+    current_id = 0
+    CHUNK_SIZE = 10000
     to_update = []
-    for row in select_cursor:
-        to_update.append((str(row["variant_id"]),
-                          get_val_fn(annotations_in_region(row,
-                                                           annos,
-                                                           "tuple",
-                                                           naming))))
-    update_cursor = conn.cursor()
-    add_requested_column(args.col_name, update_cursor)
+    while True:
+        select_cursor.execute("BEGIN TRANSACTION")
+        select_cursor.execute('''SELECT chrom, start, end, variant_id FROM variants WHERE variant_id > %s limit %s''' % (current_id, str(CHUNK_SIZE)))
+        results = select_cursor.fetchall()
+        if not results:
+            select_cursor.execute("END TRANSACTION")
+            break
+
+        for row in results:
+            to_update.append((str(row["variant_id"]),
+                              get_val_fn(annotations_in_region(row,
+                                                               annos,
+                                                               "tuple",
+                                                               naming))))
+            current_id = row["variant_id"]
+        _update_variants(to_update, args.col_name, select_cursor)
+        to_update = []
+        select_cursor.execute("END TRANSACTION")
+
+
+def _update_variants(to_update, col_name, cursor):
     for variant_id, val in to_update:
         update_qry = "UPDATE variants SET " \
-                     + args.col_name \
+                     + col_name \
                      + " = " \
                      + str(val) \
                      + " WHERE variant_id = " \
                      + variant_id
-        update_cursor.execute(update_qry)
-
+        cursor.execute(update_qry)
 
 def annotate_variants_bool(args, conn):
     """
@@ -120,6 +130,8 @@ def annotate_variants_list(args, conn):
     return _annotate_variants(args, conn, get_hit_list)
 
 
+
+
 def annotate(parser, args):
 
     if (args.db is None):
@@ -149,7 +161,3 @@ def annotate(parser, args):
             annotate_variants_list(args, conn)
     else:
         sys.exit("Unknown column type requested. Exiting.")
-
-
-if __name__ == "__main__":
-    main()
