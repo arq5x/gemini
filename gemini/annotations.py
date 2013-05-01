@@ -35,6 +35,7 @@ anno_files = {
     'gms': os.path.join(anno_dirname,
                         'GRCh37-gms-mappability.vcf.gz'),
     'grc': os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+    'cse': os.path.join(anno_dirname, "cse-hiseq-8_4-2013-02-20.bed.gz"),
     'encode_tfbs': os.path.join(anno_dirname,
                                 'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
     'encode_dnase1': os.path.join(anno_dirname,
