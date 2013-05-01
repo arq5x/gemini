@@ -64,6 +64,9 @@ sh test-region.sh
 # Test pfam domains
 sh test-pfam.sh
 
+# Test GERP scores
+sh test-gerp.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot
