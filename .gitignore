@@ -34,3 +34,11 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# gemini-specific detritus from unit testing
+test/*.db
+test/exp
+test/obs
+
+# emacs temporary file
+.#*
