@@ -7,7 +7,6 @@ import pysam
 
 from gemini.annotations import annotations_in_region, guess_contig_naming
 
-
 def add_requested_column(col_name, update_cursor):
     """
     Attempt to add a new, user-defined column to the
@@ -21,7 +20,7 @@ def add_requested_column(col_name, update_cursor):
     except sqlite3.OperationalError:
         sys.stderr.write("WARNING: column \"("
                          + col_name
-                         + ")\" already exists in variants table. Overwriting values.")
+                         + ")\" already exists in variants table. Overwriting values.\n")
 
 
 def _annotate_variants(args, conn, get_val_fn):
@@ -37,42 +36,47 @@ def _annotate_variants(args, conn, get_val_fn):
     """
     # For each, use Tabix to detect overlaps with the user-defined
     # annotation file.  Update the variant row with T/F if overlaps found.
-    annos = pysam.Tabixfile(args.anno_file)
-    naming = guess_contig_naming(annos)
+    anno = pysam.Tabixfile(args.anno_file)
+    naming = guess_contig_naming(anno)
     select_cursor = conn.cursor()
+    update_cursor = conn.cursor()
     add_requested_column(args.col_name, select_cursor)
+    
+    last_id = 0
     current_id = 0
-    CHUNK_SIZE = 10000
+    total = 0
+    CHUNK_SIZE = 100000
     to_update = []
+
+    select_cursor.execute('''SELECT chrom, start, end, variant_id FROM variants''')
     while True:
-        select_cursor.execute("BEGIN TRANSACTION")
-        select_cursor.execute('''SELECT chrom, start, end, variant_id FROM variants WHERE variant_id > %s limit %s''' % (current_id, str(CHUNK_SIZE)))
-        results = select_cursor.fetchall()
-        if not results:
-            select_cursor.execute("END TRANSACTION")
-            break
-
-        for row in results:
-            to_update.append((str(row["variant_id"]),
-                              get_val_fn(annotations_in_region(row,
-                                                               annos,
+        for row in select_cursor.fetchmany(CHUNK_SIZE):
+            to_update.append((get_val_fn(annotations_in_region(row,
+                                                               anno,
                                                                "tuple",
-                                                               naming))))
+                                                               naming)),
+                              str(row["variant_id"])))
             current_id = row["variant_id"]
-        _update_variants(to_update, args.col_name, select_cursor)
-        to_update = []
-        select_cursor.execute("END TRANSACTION")
 
+        if current_id <= last_id:
+            break
+        else:
+            update_cursor.execute("BEGIN TRANSACTION")
+            _update_variants(to_update, args.col_name, update_cursor)
+            update_cursor.execute("END TRANSACTION")
+
+            total += len(to_update)
+            print "updated", total, "variants"
+            last_id = current_id
+        to_update = []
 
 def _update_variants(to_update, col_name, cursor):
-    for variant_id, val in to_update:
         update_qry = "UPDATE variants SET " \
                      + col_name \
-                     + " = " \
-                     + str(val) \
-                     + " WHERE variant_id = " \
-                     + variant_id
-        cursor.execute(update_qry)
+                     + " = ?" \
+                     + " WHERE variant_id = ?"
+        cursor.executemany(update_qry, to_update)
+
 
 def annotate_variants_bool(args, conn):
     """
@@ -82,11 +86,10 @@ def annotate_variants_bool(args, conn):
     annotation file.
     """
     def has_anno_hit(hits):
-        has_hit = 0
         for hit in hits:
-            has_hit = 1
-            break
-        return has_hit
+            return 1
+        return 0
+
     return _annotate_variants(args, conn, has_anno_hit)
 
 
@@ -98,10 +101,8 @@ def annotate_variants_count(args, conn):
     annotation file.
     """
     def get_hit_count(hits):
-        count = 0
-        for hit in hits:
-            count += 1
-        return count
+        return len(hits)
+
     return _annotate_variants(args, conn, get_hit_count)
 
 
