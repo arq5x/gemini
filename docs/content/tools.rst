@@ -91,6 +91,26 @@ that are *candidates* for compound heterozygotes. Just use the
     
     ``gemini load -v my.vcf -p my.ped my.db``
 
+
+`Example PED file format for GEMINI`
+
+.. code-block:: bash
+
+	#Family_ID	Individual_ID	Paternal_ID	Maternal_ID	Sex	Phenotype	Ethnicity
+	1	S173	S238	S239	1	2	caucasian	
+	1	S238	-9	-9	1	1	caucasian
+	1	S239	-9	-9	2	1	caucasian
+	2	S193	S230	S231	1	2	caucasian
+	2	S230	-9	-9	1	1	caucasian
+	2	S231	-9	-9	2	1	caucasian
+	3	S242	S243	S244	1	2	caucasian
+	3	S243	-9	-9	1	1	caucasian
+	3	S244	-9	-9	2	1	caucasian
+	4	S253	S254	S255	1	2	caucasianNEuropean
+	4	S254	-9	-9	1	1	caucasianNEuropean
+	4	S255	-9	-9	2	1	caucasianNEuropean
+	
+
 Assuming you have defined the familial relationships between samples when loading
 your VCF into GEMINI, one can leverage a built-in tool for identifying de novo 
 (a.k.a spontaneous) mutations that arise in offspring. 
