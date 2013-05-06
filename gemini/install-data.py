@@ -69,11 +69,11 @@ def install_annotation_files(anno_root_dir):
     cur_config = read_gemini_config(allow_missing=True)
 
     _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
-                         anno_files, cur_config)
-    _download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
-                         toadd_anno_files, cur_config)
+                         anno_files, anno_dir, cur_config)
+    #_download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
+    #                     toadd_anno_files, cur_config)
 
-def _download_anno_files(base_url, file_names, cur_config):
+def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
     """
     for orig in file_names:
