@@ -139,7 +139,12 @@ class GeminiLoader(object):
         self.args.version = None
 
         if self.args.anno_type == "snpEff":
-            version_string = self.vcf_reader.metadata['SnpEffVersion']
+            try:
+                version_string = self.vcf_reader.metadata['SnpEffVersion']
+            except KeyError:
+                error = ("\nWARNING: VCF is not annotated with snpEff, check documentation at:\n"\
+                "http://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-snpeff\n")
+                sys.exit(error)
             # e.g., "SnpEff 3.0a (build 2012-07-08), by Pablo Cingolani"
             if version_string.startswith('\"SnpEff'):
                 toks = version_string.split(' ')
