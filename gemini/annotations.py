@@ -365,7 +365,7 @@ def get_clinvar_info(var):
         # Remap all unicode characters into plain text string replacements
         raw_disease_name = info_map['CLNDBN'] or None
         clinvar.clinvar_disease_name = \
-            unicode(raw_disease_name, errors="replace").encode(errors="replace")
+        raw_disease_name.decode('string_escape')
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
         clinvar.clinvar_in_omim = 1 if 'OM' in info_map else 0
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
