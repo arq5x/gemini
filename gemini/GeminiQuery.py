@@ -4,10 +4,8 @@ import os
 import sys
 import sqlite3
 import re
-import string
 import itertools
-from collections import defaultdict
-# from collections import OrderedDict
+import collections
 
 # gemini imports
 import gemini_utils as util
@@ -140,11 +138,6 @@ class GeminiQuery(object):
         self.query = query
         self.gt_filter = gt_filter
 
-        # does this query involve the variants table?
-        self.is_variants_query = True
-        if 'variants' not in self.query:
-            self.is_variants_query = False
-
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
                 not any("gt" in s for s in self.query_pieces):
@@ -223,7 +216,7 @@ class GeminiQuery(object):
             try:
                 row = self.c.next()
 
-                if self.is_variants_query:
+                if self._query_needs_genotype_info():
                     gts = compression.unpack_genotype_blob(row['gts'])
                     gt_types = \
                         compression.unpack_genotype_blob(row['gt_types'])
@@ -262,7 +255,7 @@ class GeminiQuery(object):
                                 fields[col] = \
                                     ','.join(str(d) for d in gt_depths)
 
-                if self.is_variants_query:
+                if self._query_needs_genotype_info():
                     if not self.for_browser:
                         return GeminiRow(fields,
                                          gts, gt_types, gt_phases, gt_depths)
@@ -293,7 +286,7 @@ class GeminiQuery(object):
         Execute a query. Intercept gt* columns and
         replace sample names with indices where necessary.
         """
-        if self.is_variants_query:
+        if self._query_needs_genotype_info():
             # break up the select statement into individual
             # pieces and replace genotype columns using sample
             # names with sample indices
@@ -453,6 +446,28 @@ class GeminiQuery(object):
                 self.gt_name_to_idx_map[token] = new_col
                 self.gt_idx_to_name_map[new_col] = token
 
+    def _tokenize_query(self):
+        tokens = list(flatten([x.split(",") for x in self.query.split(" ")]))
+        return tokens
+
+    def _query_needs_genotype_info(self):
+        tokens = self._tokenize_query()
+        return "variants" in tokens and any([x.startswith("gt") for x in tokens])
+
+def flatten(l):
+    """
+    flatten an irregular list of lists
+    example: flatten([[[1, 2, 3], [4, 5]], 6]) -> [1, 2, 3, 4, 5, 6]
+    lifted from: http://stackoverflow.com/questions/2158395/
+
+    """
+    for el in l:
+        if isinstance(el, collections.Iterable) and not isinstance(el,
+                                                                   basestring):
+            for sub in flatten(el):
+                yield sub
+        else:
+            yield el
 
 if __name__ == "__main__":
 

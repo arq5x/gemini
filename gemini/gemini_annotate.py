@@ -41,7 +41,7 @@ def _annotate_variants(args, conn, get_val_fn):
     select_cursor = conn.cursor()
     update_cursor = conn.cursor()
     add_requested_column(args.col_name, select_cursor)
-    
+
     last_id = 0
     current_id = 0
     total = 0
@@ -101,7 +101,7 @@ def annotate_variants_count(args, conn):
     annotation file.
     """
     def get_hit_count(hits):
-        return len(hits)
+        return len(list(hits))
 
     return _annotate_variants(args, conn, get_hit_count)
 
