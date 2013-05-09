@@ -310,7 +310,7 @@ def get_ipython_args(args):
 
 def print_cmd_not_found_and_exit(cmd):
     sys.stderr.write("Cannot find {cmd}, install it or put it in your "
-                     "path.".format(cmd))
+                     "path.".format(cmd=cmd))
     exit(1)
 
 def use_scheduler(args):
