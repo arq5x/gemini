@@ -124,9 +124,9 @@ def annotate_variants_list(args, conn):
                           annotation file. Exiting.")
         if len(hit_list) > 0:
             val = ",".join(hit_list)
-            return "'%s'" % val
+            return '%s' % val
         else:
-            return "NULL"
+            return None
     return _annotate_variants(args, conn, get_hit_list)
 
 
