@@ -25,7 +25,7 @@ rm obs exp
 gemini load -v test1.snpeff.vcf --load-gerp-bp \
 	        gerp.db
 
-echo "    gerp.t1...\c"
+echo "    gerp.t2...\c"
 echo "chr1	30859	30860	G	C	0.0	None
 chr1	69269	69270	A	G	-0.726000010967	5.41355e-97
 chr1	69510	69511	A	G	1.14999997616	5.41355e-97
