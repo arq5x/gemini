@@ -168,6 +168,18 @@ def load_chunks_ipython(grabix_file, args, view):
     if args.anno_type is not None:
         anno_type = "-t " + args.anno_type
 
+    no_genotypes = ""
+    if args.no_genotypes is True:
+        no_genotypes = "--no-genotypes"
+
+    no_load_genotypes = ""
+    if args.no_load_genotypes is True:
+        no_load_genotypes = "--no-load-genotypes"
+        
+    load_gerp_bp = ""
+    if args.load_gerp_bp is True:
+        load_gerp_bp = "--load-gerp-bp"
+
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
     total_chunks = len(chunk_steps)
@@ -175,7 +187,10 @@ def load_chunks_ipython(grabix_file, args, view):
     load_args = {"ped_file": ped_file,
                  "anno_type": anno_type,
                  "vcf": vcf,
-                 "grabix_file": grabix_file}
+                 "grabix_file": grabix_file,
+                 "no_genotypes": no_genotypes,
+                 "no_load_genotypes": no_load_genotypes,
+                 "load_gerp_bp": load_gerp_bp}
     chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
 
     print "Done loading variants in {0} chunks.".format(total_chunks)
@@ -310,7 +325,7 @@ def get_ipython_args(args):
 
 def print_cmd_not_found_and_exit(cmd):
     sys.stderr.write("Cannot find {cmd}, install it or put it in your "
-                     "path.".format(cmd))
+                     "path.".format(cmd=cmd))
     exit(1)
 
 def use_scheduler(args):
