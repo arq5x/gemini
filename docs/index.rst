@@ -34,6 +34,7 @@ Table of contents
 
    content/installation
    content/quick_start
+   content/faq
    content/functional_annotation
    content/loading
    content/querying
