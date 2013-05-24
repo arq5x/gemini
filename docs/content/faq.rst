@@ -3,6 +3,20 @@ F.A.Q.
 ##############################
 
 
+========================================
+Does GEMINI work with non-human genomes?
+========================================
+
+Currently, no.  However, we recognize that the GEMINI framework is suitable to
+genetic research in other organisms. This may be a focus of future work.
+
+
+======================================================
+What versions of the human genome does GEMINI support?
+======================================================
+Currently, we support solely build 37 of the human genome (a.k.a, hg19). We intend to support forthcoming versions of the human genome in future releases.
+
+
 =======================================
 How can I use PLINK files with GEMINI?
 =======================================

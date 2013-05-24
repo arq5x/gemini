@@ -34,7 +34,6 @@ Table of contents
 
    content/installation
    content/quick_start
-   content/faq
    content/functional_annotation
    content/loading
    content/querying
@@ -45,5 +44,6 @@ Table of contents
    content/acknowledgements
    content/caveats
    content/history
+   content/faq
    content/bugs
    content/licensing
