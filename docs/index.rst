@@ -44,5 +44,6 @@ Table of contents
    content/acknowledgements
    content/caveats
    content/history
+   content/faq
    content/bugs
    content/licensing
