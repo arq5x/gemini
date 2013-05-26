@@ -33,3 +33,12 @@ found in the "Load a PLINK binary fileset" section `here <http://atgu.mgh.harvar
 `here <http://atgu.mgh.harvard.edu/plinkseq/output.shtml#vcf>`_.
 
 At this point, you should have a VCF file that is compatible with GEMINI.
+
+Alternatively, in his `bcbio <https://github.com/chapmanb/bcbio-nextgen>`_ project, Brad Chapman has written a convenient 
+`script <https://github.com/chapmanb/bcbio-nextgen/blob/master/scripts/plink_to_vcf.py>`_ for directly converting PLINK files to VCF.  Below is an example of how to use 
+this script.
+
+.. code-block:: bash
+
+	$ plink_to_vcf.py <ped file> <map file> <UCSC reference file in 2bit format)
+
