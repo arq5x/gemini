@@ -38,6 +38,10 @@ details on installed files and tools.::
     wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
     python gemini_install.py /usr/local /usr/local/share/gemini
 
+(Some older versions of wget have certificate problems with GitHub
+files. If you run into this problem, you can alternatively download
+the script using ``wget --no-check-certificates`` or ``curl -O``)
+
 If you don't have administrative (or sudo) priveleges on you machine, use the
 `--nosudo` option::
 
