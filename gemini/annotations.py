@@ -262,7 +262,7 @@ def bigwig_summary(var, anno, naming="ucsc"):
     coords = _get_var_coords(var, naming)
     if isinstance(anno, basestring):
         anno = annos[anno]
-    return _get_bw_summary(coords, anno)  
+    return _get_bw_summary(coords, anno)
 
 
 
@@ -319,7 +319,7 @@ def get_pfamA_domains(var):
     for hit in annotations_in_region(var, "pfam_domain", "bed"):
         pfam_domain.append(hit.name)
     return ",".join(pfam_domain) if len(pfam_domain) > 0 else None
-        
+
 
 def get_clinvar_info(var):
     """
@@ -364,8 +364,11 @@ def get_clinvar_info(var):
         # Clinvar represents commas as \x2c.  Make them commas.
         # Remap all unicode characters into plain text string replacements
         raw_disease_name = info_map['CLNDBN'] or None
+        #raw_disease_name.decode('string_escape')
         clinvar.clinvar_disease_name = \
-        raw_disease_name.decode('string_escape')
+            unicode(raw_disease_name, errors="replace").encode(errors="replace")
+        clinvar.clinvar_disease_name = clinvar.clinvar_disease_name.decode('string_escape')
+
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
         clinvar.clinvar_in_omim = 1 if 'OM' in info_map else 0
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
