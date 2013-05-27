@@ -21,3 +21,11 @@ def release(parser, args):
     config = gemini.config.read_gemini_config()
     install_script = os.path.join(os.path.dirname(__file__), "install-data.py")
     subprocess.check_call([sys.executable, install_script, config["annotation_dir"]])
+    print "Gemini upgraded to latest version"
+    # update tests
+    test_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(pip_bin))),
+                            "gemini")
+    if os.path.exists(test_dir) and os.path.exists(os.path.join(test_dir, "master-test.sh")):
+        os.chdir(test_dir)
+        subprocess.check_call(["git", "pull", "origin", "master"])
+        print "Run test suite with: cd %s && bash master-test.sh" % test_dir

@@ -11,61 +11,61 @@ export -f check
 cd test
 
 # setup the testing databases from the testing VCF files
-sh data-setup.sh
+bash data-setup.sh
 
 # Test basic functionality
-sh test-columns.sh
+bash test-columns.sh
 
 # Test loading functionality
-sh test-load.sh
+bash test-load.sh
 
 # Test genotype BLOB functionality
-sh test-genotypes.sh
+bash test-genotypes.sh
 
 # Test ClinVar attributes
-sh test-clinvar.sh
+bash test-clinvar.sh
 
 # Test population_gen metrics
-sh test-pop.sh
+bash test-pop.sh
 
 # Test mappability
-sh test-map.sh
+bash test-map.sh
 
 # Test genome annotations
-sh test-genome.sh
+bash test-genome.sh
 
 # Test encode annotations
-sh test-encode.sh
+bash test-encode.sh
 
 # Test EFF string derived elements in INFO column
-sh test-effstring.sh
+bash test-effstring.sh
 
 # Test loading functionality
-sh test-annotate-tool.sh
+bash test-annotate-tool.sh
 
 # Test pathway tool
-sh test-pathtool.sh
+bash test-pathtool.sh
 
 # Test interaction tool
-sh test-interactions.sh
+bash test-interactions.sh
 
 # Test query tool
-sh test-query.sh
+bash test-query.sh
 
 # Test stats tool
-sh test-stats.sh
+bash test-stats.sh
 
 # Test windower
-sh test-windower.sh
+bash test-windower.sh
 
 # Test gemini region
-sh test-region.sh
+bash test-region.sh
 
 # Test pfam domains
-sh test-pfam.sh
+bash test-pfam.sh
 
 # Test GERP scores
-sh test-gerp.sh
+bash test-gerp.sh
 
 # cleanup
 rm ./*.db

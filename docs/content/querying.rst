@@ -74,7 +74,7 @@ to the select statement.
 Here is an example of selecting the genotype alleles for four
 different samples (note the examples below use the test.snpEff.vcf.db
 file that is created in the ./test directory when you run the
-`sh master-test.sh` command as described above):
+`bash master-test.sh` command as described above):
 
 .. code-block:: bash
 
