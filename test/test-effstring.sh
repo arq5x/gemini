@@ -85,7 +85,7 @@ echo "anno_id	gene	transcript	impact	impact_severity	biotype	is_exonic	is_coding
 gemini query -q "select anno_id, gene, transcript, impact, impact_severity, biotype, \
                     is_exonic, is_coding, is_lof from variants" \
                     --header \
-                    test1.snpEff.db \
+                    test1.snpeff.db \
                     > obs
 check obs exp
 rm obs exp
