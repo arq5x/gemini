@@ -12,7 +12,7 @@ Handles installation of:
 
 Requires: Python 2.7, git
 
-Run gemini_install.py -h usage.
+Run gemini_install.py -h for usage.
 """
 import argparse
 import os
@@ -25,7 +25,9 @@ remotes = {"requirements":
            "cloudbiolinux":
            "https://github.com/chapmanb/cloudbiolinux.git",
            "virtualenv":
-           "https://raw.github.com/pypa/virtualenv/master/virtualenv.py"}
+           "https://raw.github.com/pypa/virtualenv/master/virtualenv.py",
+           "gemini":
+           "https://github.com/arq5x/gemini.git"}
 
 def main(args):
     check_dependencies()
@@ -45,9 +47,12 @@ def main(args):
     if args.install_data:
         print "Installing gemini data..."
         install_data(gemini["python"], gemini["data_script"], args.datadir)
+    test_script = install_testbase(args.datadir, remotes["gemini"])
     print "Finished: gemini, tools and data installed"
     print " Tools installed in:\n  %s" % args.tooldir
     print " Data installed in:\n  %s" % args.datadir
+    print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
+                                                    os.path.basename(test_script))
     shutil.rmtree(work_dir)
 
 def install_gemini(remotes, datadir, tooldir, use_sudo):
@@ -106,6 +111,20 @@ def install_data(python_cmd, data_script, datadir):
     """Install biological data used by gemini.
     """
     subprocess.check_call([python_cmd, data_script, datadir])
+
+def install_testbase(datadir, repo):
+    """Clone or update gemini code so we have the latest test suite.
+    """
+    gemini_dir = os.path.join(datadir, "gemini")
+    cur_dir = os.getcwd()
+    if not os.path.exists(gemini_dir):
+        os.chdir(os.path.split(gemini_dir)[0])
+        subprocess.check_call(["git", "clone", repo])
+    else:
+        os.chdir(gemini_dir)
+        subprocess.check_call(["git", "pull", "origin", "master"])
+    os.chdir(cur_dir)
+    return os.path.join(gemini_dir, "master-test.sh")
 
 def write_fabricrc(base_file, tooldir, datadir, distribution, use_sudo):
     out_file = os.path.join(os.getcwd(), os.path.basename(base_file))
