@@ -61,7 +61,7 @@ def install_gemini(remotes, datadir, tooldir, use_sudo):
     virtualenv_dir = os.path.join(datadir, "gemini-virtualenv")
     if not os.path.exists(virtualenv_dir):
         subprocess.check_call(["wget", remotes["virtualenv"]])
-        subprocess.check_call([sys.executable, "virtualenv.py", "--no-site-packages",
+        subprocess.check_call([sys.executable, "virtualenv.py", "--system-site-packages",
                                "--distribute", virtualenv_dir])
         os.remove("virtualenv.py")
     pip_cmd = os.path.join(virtualenv_dir, "bin", "pip")
