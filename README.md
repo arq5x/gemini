@@ -38,10 +38,6 @@ details on installed files and tools.::
     wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
     python gemini_install.py /usr/local /usr/local/share/gemini
 
-(Some older versions of wget have certificate problems with GitHub
-files. If you run into this problem, you can alternatively download
-the script using ``wget --no-check-certificates`` or ``curl -O``)
-
 If you don't have administrative (or sudo) priveleges on you machine, use the
 `--nosudo` option::
 
@@ -54,7 +50,12 @@ The first directory specified (`/usr/local` in the first example above) dictates
 the directory in which the gemini software should be installed.  The second
 directory specified (`/usr/local/share/gemini` in the first example above) specifies
 the directory in which the gemini annotations files should be installed.  NOTE that
-these are rather large files (some > 1Gb).  
+these are rather large files (some > 1Gb).
+
+The [installation documentation][install] has additional tips and tricks if you
+run into any problems downloading or using the installation script.
+
+[install]: http://gemini.readthedocs.org/en/latest/content/installation.html
 
 License
 ================
