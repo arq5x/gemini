@@ -12,10 +12,6 @@ and data files::
     wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
     python gemini_install.py /usr/local /usr/local/share/gemini
 
-(Some older versions of wget have certificate problems with GitHub
-files. If you run into this problem, you can alternatively download
-the script using``wget --no-check-certificates`` or ``curl -O``)
-
 This installs the GEMINI executable as ``/usr/local/bin/gemini``,
 other required third party dependencies in ``/usr/local/bin``, and
 associated data files in ``/usr/local/share/gemini``. It allows easy
@@ -31,7 +27,19 @@ environments::
 
 If you use the automated installation script, you're now ready to use
 GEMINI. The instructions below detail the manual installation steps
-for anyone who prefers to setup GEMINI without the automated installer.
+for anyone who prefers to setup GEMINI without the automated
+installer.
+
+Some tips and tricks for installation issues:
+
+- Some older versions of wget have certificate problems with GitHub
+  files. If you run into this problem, you can alternatively download
+  the install script using``wget --no-check-certificates`` or ``curl -O``.
+
+- The installation script is idempotent and you can re-run it multiple
+  times without any issues. If you experience internet connectivity or
+  other transient errors during installation, a re-run can often solve
+  the problem (fingers crossed).
 
 Software dependencies
 =====================
