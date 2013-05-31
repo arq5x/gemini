@@ -30,16 +30,18 @@ GEMINI. The instructions below detail the manual installation steps
 for anyone who prefers to setup GEMINI without the automated
 installer.
 
-Some tips and tricks for installation issues:
+.. tip::
 
-- Some older versions of wget have certificate problems with GitHub
-  files. If you run into this problem, you can alternatively download
-  the install script using``wget --no-check-certificates`` or ``curl -O``.
+  **Some tips and tricks for installation issues:**
 
-- The installation script is idempotent and you can re-run it multiple
-  times without any issues. If you experience internet connectivity or
-  other transient errors during installation, a re-run can often solve
-  the problem (fingers crossed).
+  1. Some older versions of wget have certificate problems with GitHub
+     files. If you run into this problem, you can alternatively download
+     the install script using``wget --no-check-certificates`` or ``curl -O``.
+
+  2. The installation script is idempotent and you can re-run it multiple
+     times without any issues. If you experience internet connectivity or
+     other transient errors during installation, a re-run can often solve
+     the problem (fingers crossed).
 
 Software dependencies
 =====================
