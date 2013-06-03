@@ -7,28 +7,54 @@ Automated installation
 
 GEMINI contains an automated installation script which installs
 GEMINI along with required Python dependencies, third party software
-and data files::
+and data files. 
 
-    wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
-    python gemini_install.py /usr/local /usr/local/share/gemini
+.. code-block:: bash
+
+    $ wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
+    $ python gemini_install.py /usr/local /usr/local/share/gemini
 
 This installs the GEMINI executable as ``/usr/local/bin/gemini``,
 other required third party dependencies in ``/usr/local/bin``, and
 associated data files in ``/usr/local/share/gemini``. It allows easy
-upgrading of GEMINI and data files to the latest released version with::
+upgrading of GEMINI and data files to the latest released version with:
 
-    gemini update
+.. code-block:: bash
+
+    $ gemini update
 
 The installer requires Python 2.7.x, git, and the ability to ssh to
-your local machine. It also has options to install in non-root
-environments::
+your local machine. It also has options to install in "non-root"
+environments:
 
-    gemini_install.py ~/gemini ~/gemini --nosudo
+.. code-block:: bash
 
-If you use the automated installation script, you're now ready to use
-GEMINI. The instructions below detail the manual installation steps
-for anyone who prefers to setup GEMINI without the automated
-installer.
+    $ python gemini_install.py ~/gemini ~/gemini --nosudo
+
+At this point, you will have a self-contained installation of GEMINI, 
+including both the software and its associated genome annotations. However,
+if you have done a custom install in a "non-root" enviornment, you will
+first need to update your ``PATH`` environment variable to include the path
+to the bin directory that you just created by running the automated installer.
+
+For example, if, as above, you placed you custom install in ``~/gemini``, you
+would need to update your ``PATH`` as follows:
+
+.. code-block:: bash
+
+    $ export PATH=$PATH:~/gemini/bin
+
+Note that this change will only last for the life of your current terminal 
+session.  To make this more permanent, update your ``.bash_profile`` so that
+this change is made each time you login.
+
+If successful, you should be able to run the following command from anywhere
+on your system:
+
+.. code-block:: bash
+
+   $ gemini -v
+   gemini 0.3.0b
 
 .. tip::
 
@@ -58,7 +84,7 @@ core dependencies:
     5. `bedtools <https://code.google.com/p/bedtools/>`_
     6. `pybedtools <http://pythonhosted.org/pybedtools/main.html#installing-pybedtools>`_
 
-GEMINI installation
+Manual installation
 =====================
 Once the above dependencies have been installed, one can begin installing
 ``GEMINI`` itself. To install you should download the latest source code from
