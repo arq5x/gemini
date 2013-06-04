@@ -72,7 +72,10 @@ def install_gemini(remotes, datadir, tooldir, use_sudo):
     subprocess.check_call([pip_cmd, "install", "--upgrade", "distribute"])
     subprocess.check_call([pip_cmd, "install", "--upgrade", "cython"])
     subprocess.check_call([pip_cmd, "install", "--upgrade", "pyyaml"])
+    # Install problem dependencies separately: numpy and bx-python
     subprocess.check_call([pip_cmd, "install", "numpy==1.7.1"])
+    subprocess.check_call([pip_cmd, "install", "--upgrade",
+                           "https://bitbucket.org/james_taylor/bx-python/get/tip.tar.bz2"])
     subprocess.check_call([pip_cmd, "install", "-r", remotes["requirements"]])
     for script in ["gemini"]:
         final_script = os.path.join(tooldir, "bin", script)
@@ -82,12 +85,21 @@ def install_gemini(remotes, datadir, tooldir, use_sudo):
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
             cmd = ["ln", "-s", ve_script, final_script]
             subprocess.check_call(sudo_cmd + cmd)
+    _cleanup_problem_files(virtualenv_dir)
     python_bin = os.path.join(virtualenv_dir, "bin", "python")
     library_loc = subprocess.check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
                                           shell=True)
     return {"fab": os.path.join(virtualenv_dir, "bin", "fab"),
             "data_script": os.path.join(os.path.dirname(library_loc.strip()), "install-data.py"),
             "python": python_bin}
+
+def _cleanup_problem_files(virtualenv_dir):
+    """Remove problem bottle items in PATH which conflict with site-packages
+    """
+    for cmd in ["bottle.py", "bottle.pyc"]:
+        bin_cmd = os.path.join(virtualenv_dir, "bin", cmd)
+        if os.path.exists(bin_cmd):
+            os.remove(bin_cmd)
 
 def install_tools(fab_cmd, fabfile, fabricrc):
     """Install 3rd party tools used by Gemini using a custom CloudBioLinux flavor.
