@@ -127,7 +127,7 @@ class GeminiQuery(object):
     def _set_gemini_browser(self, for_browser):
         self.for_browser = for_browser
 
-    def run(self, query, gt_filter=None):
+    def run(self, query, gt_filter=None, show_variant_samples=False):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -137,6 +137,7 @@ class GeminiQuery(object):
         """
         self.query = query
         self.gt_filter = gt_filter
+        self.show_variant_samples = show_variant_samples
 
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
@@ -156,6 +157,7 @@ class GeminiQuery(object):
         self._apply_query()
         self.query_executed = True
 
+
     def __iter__(self):
         return self
 
@@ -168,12 +170,13 @@ class GeminiQuery(object):
 
         if self.query_type == "no-genotypes":
             h = [col for col in self.all_query_cols]
-            return GeminiRow(OrderedDict(itertools.izip(h, h)))
         else:
             h = [col for col in self.all_query_cols] + \
                 [col for col in OrderedSet(self.all_columns_orig)
                  - OrderedSet(self.select_columns)]
-            return GeminiRow(OrderedDict(itertools.izip(h, h)))
+        if self.show_variant_samples:
+            h += ["samples_with_variant"]
+        return GeminiRow(OrderedDict(itertools.izip(h, h)))
 
     @property
     def sample2index(self):
@@ -230,6 +233,7 @@ class GeminiQuery(object):
                         continue
 
                 fields = OrderedDict()
+
                 for idx, col in enumerate(self.report_cols):
                     if col == "*":
                         continue
@@ -254,6 +258,12 @@ class GeminiQuery(object):
                             elif col == "gt_depths":
                                 fields[col] = \
                                     ','.join(str(d) for d in gt_depths)
+
+                if self.show_variant_samples:
+                    gt_types = compression.unpack_genotype_blob(row['gt_types'])
+                    to_keep = [x for x, y in enumerate(gt_types) if y == HET or y == HOM_ALT]
+                    sample_names = [self.idx_to_sample[x] for x in to_keep]
+                    fields["variant_samples"] = ",".join(sample_names)
 
                 if self._query_needs_genotype_info():
                     if not self.for_browser:
@@ -452,7 +462,8 @@ class GeminiQuery(object):
 
     def _query_needs_genotype_info(self):
         tokens = self._tokenize_query()
-        return "variants" in tokens and any([x.startswith("gt") for x in tokens])
+        requested_genotype = "variants" in tokens and any([x.startswith("gt") for x in tokens])
+        return requested_genotype or self.show_variant_samples
 
 def flatten(l):
     """

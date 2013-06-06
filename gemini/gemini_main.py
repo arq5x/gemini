@@ -205,6 +205,12 @@ def main():
             dest='gt_filter',
             metavar='STRING',
             help='Restrictions to apply to genotype values')
+    parser_query.add_argument('--show-variant-samples',
+                              dest='show_variant_samples',
+                              action='store_true',
+                              default=False,
+                              help=('Add a column of all sample names with a variant to each '
+                                    'variant.'))
     parser_query.add_argument('--header',
             dest='use_header',
             action='store_true',
