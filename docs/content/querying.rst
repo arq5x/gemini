@@ -236,6 +236,7 @@ which of your samples have that variant in them. You can display the samples con
 a variant with the --show-sample-variants flag:
 
 .. code-block:: bash
+
    	$ gemini query --header --show-samples -q "select chrom, start, end, ref, alt \
                                         from variants where is_lof=1 limit 5" test.query.db
 
