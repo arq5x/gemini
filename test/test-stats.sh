@@ -67,7 +67,7 @@ check obs exp
 rm obs exp
 
 ###################################################################
-# 6. Test transition / transversion ratios in coding region 
+# 6. Test transition / transversion ratios in coding region
 ###################################################################
 echo "    stat.t06...\c"
 echo "ts	tv	ts/tv
@@ -110,5 +110,18 @@ M10478	M10475	1.25
 M10500	M10478	0.5714" > exp
 gemini stats --mds test5.snpeff.db \
       > obs
+check obs exp
+rm obs exp
+
+###################################################################
+# 9. Test summarize
+###################################################################
+echo "    stat.t09...\c"
+echo "sample	total	num_het	num_hom_alt
+M10475	4	1	3
+M128215	6	3	3
+M10478	6	2	4
+M10500	6	1	5" > exp
+gemini stats --summarize "select * from variants" test5.snpeff.db > obs
 check obs exp
 rm obs exp

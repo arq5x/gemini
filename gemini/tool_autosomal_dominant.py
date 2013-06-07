@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 import sqlite3
 import os
-import sys
-import numpy as np
-from copy import copy
 
 import compression
-import gemini_utils as util
 from gemini_constants import *
 import gemini_subjects as subjects
 

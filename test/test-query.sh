@@ -100,7 +100,7 @@ rm obs exp
 
 
 ####################################################################
-# 6. Test a query of the variants table with a 
+# 6. Test a query of the variants table with a
 # request for all sample genotypes
 ####################################################################
 echo "    query.t06...\c"
@@ -117,7 +117,7 @@ check obs exp
 rm obs exp
 
 ####################################################################
-# 7. Test a query of the variants table with a 
+# 7. Test a query of the variants table with a
 # request for all sample genotype types
 ####################################################################
 echo "    query.t07...\c"
@@ -134,7 +134,7 @@ check obs exp
 rm obs exp
 
 ####################################################################
-# 8. Test a query of the variants table with a 
+# 8. Test a query of the variants table with a
 # request for all sample genotype phases
 ####################################################################
 echo "    query.t08...\c"
@@ -151,7 +151,7 @@ check obs exp
 rm obs exp
 
 ####################################################################
-# 9. Test a query of the variants table with a 
+# 9. Test a query of the variants table with a
 # request for all sample genotype phases
 ####################################################################
 echo "    query.t09...\c"
@@ -298,5 +298,36 @@ gemini query -q "select chrom, start, end, ref, alt, gene, gts.1094PC0018, gts.1
                  from variants" \
              --gt-filter "gt_types.1094PC0018 == HET and gt_types.1094PC0019 == HOM_REF" test.query.db \
        > obs
+check obs exp
+rm obs exp
+
+#########################################################################
+# 16. Test a basic query of the variants table with show-variant-samples
+#########################################################################
+echo "    query.t16...\c"
+echo "chrom	start	end	ref	alt	variant_samples	HET_samples	HOM_ALT_samples
+chr1	30547	30548	T	G	1478PC0016,1719PC0007,1719PC0009		1478PC0016,1719PC0007,1719PC0009
+chr1	30859	30860	G	C	1478PC0017B,1719PC0005	1719PC0005	1478PC0017B
+chr1	30866	30869	CCT	C	1094PC0012,1094PC0021,1478PC0011,1478PC0014B,1719PC0005	1094PC0012,1094PC0021,1478PC0011,1719PC0005	1478PC0014B
+chr1	30894	30895	T	C	1094PC0005,1094PC0009,1478PC0017B	1094PC0005,1094PC0009	1478PC0017B
+chr1	30922	30923	G	T	1478PC0006B,1478PC0008B,1478PC0013B,1478PC0014B,1478PC0015B,1478PC0016,1478PC0018,1478PC0020,1478PC0025,1719PC0001,1719PC0007,1719PC0009,1719PC0010,1719PC0015,1719PC0016		1478PC0006B,1478PC0008B,1478PC0013B,1478PC0014B,1478PC0015B,1478PC0016,1478PC0018,1478PC0020,1478PC0025,1719PC0001,1719PC0007,1719PC0009,1719PC0010,1719PC0015,1719PC0016" > exp
+gemini query --header --show-samples -q "select chrom, start, end, ref, alt \
+                                        from variants limit 5" test.query.db > obs
+check obs exp
+rm obs exp
+
+##########################################################################
+# 17. Test a query of the variants table with a
+# request for all sample genotype types and a request for the sample names
+##########################################################################
+echo "    query.t17...\c"
+echo "chrom	start	end	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples
+chr1	30547	30548	T	G	2,2,2,2,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,0,2,3,2,3,2,2,2,2,2,0,2,2,2,2,2,2,2	1478PC0016,1719PC0007,1719PC0009		1478PC0016,1719PC0007,1719PC0009
+chr1	30859	30860	G	C	0,0,0,0,2,2,0,2,0,0,0,2,2,0,0,2,2,2,2,2,0,2,2,0,2,0,0,0,0,3,0,2,0,2,2,2,2,2,2,2,2,2,1,2,0,2,0,2,2,0,0,0,0,2,2,2,2,2,2,2	1478PC0017B,1719PC0005	1719PC0005	1478PC0017B
+chr1	30866	30869	CCT	C	0,0,1,0,2,2,0,2,0,1,0,2,2,0,0,2,2,2,2,2,0,2,2,1,2,0,3,0,0,0,0,2,0,2,2,2,2,0,2,2,2,2,1,2,0,2,0,0,2,0,0,0,0,2,2,2,2,2,2,2	1094PC0012,1094PC0021,1478PC0011,1478PC0014B,1719PC0005	1094PC0012,1094PC0021,1478PC0011,1719PC0005	1478PC0014B
+chr1	30894	30895	T	C	1,1,0,0,2,2,0,2,0,0,0,2,0,0,0,2,2,2,0,2,0,2,2,0,2,2,0,0,0,3,0,2,0,2,2,2,2,0,2,2,2,2,0,2,0,2,0,0,2,2,0,0,0,0,2,2,2,2,2,2	1094PC0005,1094PC0009,1478PC0017B	1094PC0005,1094PC0009	1478PC0017B
+chr1	30922	30923	G	T	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,3,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,2,3,3,2,2,2,2,2,3,2,3,3,2,2,2,2,3,3,2,2,2,2,2,2	1478PC0006B,1478PC0008B,1478PC0013B,1478PC0014B,1478PC0015B,1478PC0016,1478PC0018,1478PC0020,1478PC0025,1719PC0001,1719PC0007,1719PC0009,1719PC0010,1719PC0015,1719PC0016		1478PC0006B,1478PC0008B,1478PC0013B,1478PC0014B,1478PC0015B,1478PC0016,1478PC0018,1478PC0020,1478PC0025,1719PC0001,1719PC0007,1719PC0009,1719PC0010,1719PC0015,1719PC0016" > exp
+gemini query --header --show-samples -q "select chrom, start, end, ref, alt, gt_types \
+                                        from variants limit 5" test.query.db > obs
 check obs exp
 rm obs exp
