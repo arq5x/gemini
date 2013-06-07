@@ -175,7 +175,7 @@ class GeminiQuery(object):
                 [col for col in OrderedSet(self.all_columns_orig)
                  - OrderedSet(self.select_columns)]
         if self.show_variant_samples:
-            h += ["samples_with_variant", "HET_samples", "HOM_ALT_samples"]
+            h += ["variant_samples", "HET_samples", "HOM_ALT_samples"]
         return GeminiRow(OrderedDict(itertools.izip(h, h)))
 
     @property
