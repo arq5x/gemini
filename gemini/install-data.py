@@ -86,7 +86,7 @@ def _download_anno_files(base_url, file_names, anno_dir, cur_config):
             _download_to_dir(url, anno_dir, anno_versions.get(orig, 1),
                              cur_config.get("versions", {}).get(orig, 1))
 
-    cur_config["annotation_dir"] = anno_dir
+    cur_config["annotation_dir"] = os.path.abspath(anno_dir)
     cur_config["versions"] = anno_versions
     write_gemini_config(cur_config)
 
