@@ -329,6 +329,11 @@ def main():
             action='store_true',
             help='Report the count of each genotype class obs. per sample.',
             default=False)
+    parser_stats.add_argument('--summarize',
+            dest='query',
+            metavar='QUERY_STR',
+            default=None,
+            help='The query to be issued to the database to summarize')
     parser_stats.set_defaults(func=gemini_stats.stats)
 
     #########################################
