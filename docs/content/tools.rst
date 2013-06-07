@@ -607,6 +607,11 @@ and heterozygous variants)
 	sample	total
 	M10475	4
 	M10478	6
+	
+	
+----------------------
+``--summarize``
+----------------------
 
 If none of these tools are exactly what you want, you can summarize the variants
 per sample of an arbitrary query using the --summarize flag. For example, if you
@@ -614,6 +619,7 @@ wanted to know, for each sample, how many variants are on chromosome 1 that are 
 in dbSNP:
 
 .. code-block:: bash
+
    	$ gemini stats --summarize "select * from variants where in_dbsnp=1 and chrom='chr1'" my.db
 	sample	total	num_het	num_hom_alt
 	M10475	1	1	0
