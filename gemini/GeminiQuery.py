@@ -175,7 +175,7 @@ class GeminiQuery(object):
                 [col for col in OrderedSet(self.all_columns_orig)
                  - OrderedSet(self.select_columns)]
         if self.show_variant_samples:
-            h += ["samples_with_variant"]
+            h += ["samples_with_variant", "HET_samples", "HOM_ALT_samples"]
         return GeminiRow(OrderedDict(itertools.izip(h, h)))
 
     @property
@@ -261,9 +261,16 @@ class GeminiQuery(object):
 
                 if self.show_variant_samples:
                     gt_types = compression.unpack_genotype_blob(row['gt_types'])
-                    to_keep = [x for x, y in enumerate(gt_types) if y == HET or y == HOM_ALT]
-                    sample_names = [self.idx_to_sample[x] for x in to_keep]
-                    fields["variant_samples"] = ",".join(sample_names)
+                    variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
+                                       y == HOM_ALT]
+                    variant_names = [self.idx_to_sample[x] for x in variant_samples]
+                    fields["variant_samples"] = ",".join(variant_names)
+                    het_samples = [x for x, y in enumerate(gt_types) if y == HET]
+                    het_names = [self.idx_to_sample[x] for x in het_samples]
+                    fields["HET_samples"] = ",".join(het_names)
+                    hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
+                    hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
+                    fields["HOM_ALT_samples"] = ",".join(hom_alt_names)
 
                 if self._query_needs_genotype_info():
                     if not self.for_browser:
