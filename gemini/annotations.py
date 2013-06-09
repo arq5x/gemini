@@ -11,12 +11,13 @@ from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
 
 # dictionary of anno_type -> open Tabix file handles
-config = read_gemini_config()
-anno_dirname = config["annotation_dir"]
 annos = {}
 
-anno_files = {
-    'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
+def get_anno_files():
+    config = read_gemini_config()
+    anno_dirname = config["annotation_dir"]
+    return {
+     'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
     'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
     'dbsnp': os.path.join(anno_dirname, 'dbsnp.137.vcf.gz'),
     'clinvar': os.path.join(anno_dirname, 'clinvar_20130118.vcf.gz'),
@@ -44,7 +45,7 @@ anno_files = {
                                           'encode.6celltypes.consensus.bedg.gz'),
     'gerp_bp': os.path.join(anno_dirname, 'hg19.gerp.bw'),
     'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
-}
+    }
 
 class ClinVarInfo(object):
     def __init__(self):
@@ -156,7 +157,8 @@ def load_annos():
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
     """
-    for anno in anno_files:
+    anno_files = get_anno_files()
+    for anno in anno_files: 
         try:
             # .gz denotes Tabix files.
             if anno_files[anno].endswith(".gz"):
@@ -651,4 +653,5 @@ def get_encode_chromhmm_segs(var):
 def get_resources():
     """Retrieve list of annotation resources loaded into gemini.
     """
+    anno_files = get_anno_files()
     return [(n, os.path.basename(anno_files[n])) for n in sorted(anno_files.keys())]

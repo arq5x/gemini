@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import re
 import sqlite3
-from collections import defaultdict
-from gemini.config import read_gemini_config
 import gemini_utils as util
 from gemini_constants import *
-
-
-config = read_gemini_config()
-path_dirname = config["annotation_dir"]
 
 
 def get_ind_lof(c, args):

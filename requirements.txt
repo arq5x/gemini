@@ -7,6 +7,6 @@ pybedtools==0.6.2
 python-graph-core==1.8.2
 python-graph-dot==1.8.2
 bottle==0.11.6
-ipython-cluster-helper==0.1.5
+ipython-cluster-helper==0.1.6
 bx-python>=0.7.1
 git+https://github.com/arq5x/gemini.git@83fe05c051#egg=gemini
