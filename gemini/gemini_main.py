@@ -205,6 +205,12 @@ def main():
             dest='gt_filter',
             metavar='STRING',
             help='Restrictions to apply to genotype values')
+    parser_query.add_argument('--show-samples',
+                              dest='show_variant_samples',
+                              action='store_true',
+                              default=False,
+                              help=('Add a column of all sample names with a variant to each '
+                                    'variant.'))
     parser_query.add_argument('--header',
             dest='use_header',
             action='store_true',
@@ -323,6 +329,11 @@ def main():
             action='store_true',
             help='Report the count of each genotype class obs. per sample.',
             default=False)
+    parser_stats.add_argument('--summarize',
+            dest='query',
+            metavar='QUERY_STR',
+            default=None,
+            help='The query to be issued to the database to summarize')
     parser_stats.set_defaults(func=gemini_stats.stats)
 
     #########################################

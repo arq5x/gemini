@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sqlite3
 import os
-import sys
 import numpy as np
 import cPickle
 import zlib
@@ -9,6 +8,8 @@ import collections
 
 import gemini_utils as util
 from gemini_constants import *
+import GeminiQuery
+from itertools import izip
 
 
 def get_tstv(c, args):
@@ -265,3 +266,21 @@ def stats(parser, args):
             get_gtcounts_by_sample(c, args)
         elif args.mds:
             get_mds(c, args)
+        elif args.query:
+            summarize_query_by_sample(args)
+
+def summarize_query_by_sample(args):
+    gq = GeminiQuery.GeminiQuery(args.db)
+    gq.run(args.query, show_variant_samples=True)
+    total_counts = collections.Counter()
+    het_counts = collections.Counter()
+    hom_alt_counts = collections.Counter()
+    print "\t".join(["sample", "total", "num_het", "num_hom_alt"])
+    for row in gq:
+        total_counts.update(row["variant_samples"].split(","))
+        het_counts.update(row["HET_samples"].split(","))
+        hom_alt_counts.update(row["HOM_ALT_samples"].split(","))
+    for key in total_counts.keys():
+        count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
+                     hom_alt_counts.get(key, 0)]
+        print "\t".join(map(str, count_row))
