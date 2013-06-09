@@ -32,8 +32,10 @@ def _get_config_file(dirs=None):
         fname = os.path.join(dname, CONFIG_FILE)
         if os.path.exists(fname):
             return fname
-    raise ValueError("Gemini configuration file {0} not found in {1}".format(
-        CONFIG_FILE, dnames))
+    raise ValueError("GEMINI configuration file {0} not found in {1}.\n"
+                     "Please ensure the GEMINI data is installed using the install-data.py script\n"
+                     "http://gemini.readthedocs.org/en/latest/content/installation.html"
+                     .format(CONFIG_FILE, dnames))
 
 def read_gemini_config(dirs=None, allow_missing=False):
     try:
