@@ -9,4 +9,4 @@ python-graph-dot==1.8.2
 bottle==0.11.6
 ipython-cluster-helper==0.1.6
 bx-python>=0.7.1
-git+https://github.com/arq5x/gemini.git@83fe05c051#egg=gemini
+git+https://github.com/arq5x/gemini.git@563ae17c91#egg=gemini
