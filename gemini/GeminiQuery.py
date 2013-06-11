@@ -312,7 +312,6 @@ class GeminiQuery(object):
             # we only need genotype information if the user is
             # querying the variants table
             self.query = self._add_gt_cols_to_query()
-
             self.c.execute(self.query)
 
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
@@ -379,6 +378,30 @@ class GeminiQuery(object):
                 corrected_gt_filter.append(token)
         return " ".join(corrected_gt_filter)
 
+    def _get_select_cols_and_query_remainder(self):
+        """
+        Separate the a list of selected columns from
+        the rest of the query
+
+        Returns:
+            1. a list of the selected columns
+            2. a string of the rest of the query after the SELECT
+        """
+        from_loc = self.query.lower().find("from")
+
+        raw_select_clause = self.query[0:from_loc].rstrip()
+        rest_of_query = self.query[from_loc:len(self.query)]
+
+        # remove the SELECT keyword from the query
+        select_pattern = re.compile("select", re.IGNORECASE)
+        raw_select_clause = select_pattern.sub('', raw_select_clause)
+
+        # now create and iterate through a list of of the SELECT'ed columns
+        selected_columns = raw_select_clause.replace(' ', '').split(',')
+        selected_columns = [c.strip() for c in selected_columns]
+
+        return selected_columns, rest_of_query
+
     def _add_gt_cols_to_query(self):
         """
         We have to modify the raw query to select the genotype
@@ -392,32 +415,32 @@ class GeminiQuery(object):
         In essence, when a gneotype filter has been requested, we always add
         the gts, gt_types and gt_phases columns.
         """
-        from_loc = self.query.lower().find("from")
-        if from_loc > 1:
-            raw_select_clause = self.query[0:from_loc].rstrip()
-            rest_of_query = self.query[from_loc:len(self.query)]
 
-            # remove any GT columns
-            select_clause_list = []
-            for token in raw_select_clause.split():
-                if not token.startswith("gt") and not token.startswith("GT"):
-                    select_clause_list.append(token)
+        if "from" not in self.query.lower():
+            sys.exit("Malformed query: expected a FROM keyword.")
 
-            # add the genotype columns to the query
-            if select_clause_list[len(select_clause_list) - 1].endswith(",") or \
-                (len(select_clause_list) == 1 and
-                 select_clause_list[0].strip().lower() == "select"):
-                select_clause = " ".join(select_clause_list) + \
-                    " gts, gt_types, gt_phases, gt_depths "
-            else:
-                select_clause = " ".join(select_clause_list) + \
+        (select_tokens, rest_of_query) = \
+            self._get_select_cols_and_query_remainder()
+        
+        # remove any GT columns
+        select_clause_list = []
+        for token in select_tokens:
+            if not token.startswith("gt") and not token.startswith("GT"):
+                select_clause_list.append(token)
+
+        # reconstruct the query with the GT* columns added
+        if len(select_clause_list) > 0:
+            select_clause = ",".join(select_clause_list) + \
                     ", gts, gt_types, gt_phases, gt_depths "
-            self.query = select_clause + rest_of_query
-            # extract the original select columns
-            return self.query
-
         else:
-            sys.exit("Malformed query.")
+            select_clause = ",".join(select_clause_list) + \
+                    " gts, gt_types, gt_phases, gt_depths "
+        
+        self.query = "select " + select_clause + rest_of_query
+
+        # extract the original select columns
+        return self.query
+
 
     def _split_select(self):
         """
@@ -442,16 +465,13 @@ class GeminiQuery(object):
 
         # iterate through all of the select columns andclear
         # distinguish the genotype-specific columns from the base columns
-        from_loc = self.query.lower().find("from")
-        if from_loc < 1:
-            sys.exit("Malformed query.")
+        if "from" not in self.query.lower():
+            sys.exit("Malformed query: expected a FROM keyword.")
 
-        raw_select_clause = self.query[0:from_loc].rstrip()
-        rest_of_query = self.query[from_loc:len(self.query)]
+        (select_tokens, rest_of_query) = \
+            self._get_select_cols_and_query_remainder()
 
-        for token in raw_select_clause.replace(',', '').split():
-            if token == "SELECT" or token == "select":
-                continue
+        for token in select_tokens:
             if not token.startswith("GT") and not token.startswith("gt"):
                 self.select_columns.append(token)
                 self.all_columns_new.append(token)

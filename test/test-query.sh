@@ -331,3 +331,81 @@ gemini query --header --show-samples -q "select chrom, start, end, ref, alt, gt_
                                         from variants limit 5" test.query.db > obs
 check obs exp
 rm obs exp
+
+####################################################################
+# 18. Test tokenizing a SELECT list using spaces
+####################################################################
+echo "    query.t18...\c"
+echo "chr1	30547	30548	T	G
+chr1	30859	30860	G	C
+chr1	30866	30869	CCT	C
+chr1	30894	30895	T	C
+chr1	30922	30923	G	T
+chr1	69269	69270	A	G
+chr1	69427	69428	T	G
+chr1	69510	69511	A	G
+chr1	69760	69761	A	T
+chr1	69870	69871	G	A" > exp
+gemini query -q "select chrom, start, end, ref, alt from variants limit 10" test.query.db \
+       > obs
+check obs exp
+rm obs exp
+
+####################################################################
+# 19. Test tokenizing a SELECT list using spaces
+####################################################################
+echo "    query.t19...\c"
+echo "chr1	30547	30548	T	G
+chr1	30859	30860	G	C
+chr1	30866	30869	CCT	C
+chr1	30894	30895	T	C
+chr1	30922	30923	G	T
+chr1	69269	69270	A	G
+chr1	69427	69428	T	G
+chr1	69510	69511	A	G
+chr1	69760	69761	A	T
+chr1	69870	69871	G	A" > exp
+gemini query -q "select chrom,start,end,ref,alt from variants limit 10" test.query.db \
+       > obs
+check obs exp
+
+####################################################################
+# 20. Test tokenizing a SELECT list spaces and no spaces
+####################################################################
+echo "    query.t20...\c"
+echo "chr1	30547	30548	T	G
+chr1	30859	30860	G	C
+chr1	30866	30869	CCT	C
+chr1	30894	30895	T	C
+chr1	30922	30923	G	T
+chr1	69269	69270	A	G
+chr1	69427	69428	T	G
+chr1	69510	69511	A	G
+chr1	69760	69761	A	T
+chr1	69870	69871	G	A" > exp
+gemini query -q "select chrom, start,end, ref,alt from variants limit 10" test.query.db \
+       > obs
+check obs exp
+rm obs exp
+
+########################################################################
+# 21. Test tokenizing a SELECT list spaces and no spaces and GT columns
+########################################################################
+echo "    query.t21...\c"
+echo "chr1	30547	30548	T	G	T/T
+chr1	30859	30860	G	C	G/G
+chr1	30866	30869	CCT	C	CCT/CCT
+chr1	30894	30895	T	C	T/T
+chr1	30922	30923	G	T	./.
+chr1	69269	69270	A	G	G/G
+chr1	69427	69428	T	G	T/T
+chr1	69510	69511	A	G	A/G
+chr1	69760	69761	A	T	A/A
+chr1	69870	69871	G	A	G/G" > exp
+gemini query -q "select chrom, start,end, ref,alt,gts.1094PC0018 from variants limit 10" test.query.db \
+       > obs
+check obs exp
+rm obs exp
+
+
+

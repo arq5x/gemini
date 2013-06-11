@@ -1,4 +1,3 @@
-
 ####################################################################
 # 1. Test accessing individual genotype alleles
 ####################################################################
@@ -14,8 +13,8 @@ T/T	T/T	T/T	T/T
 A/A	A/T	A/A	A/A
 ./.	G/G	G/G	G/G" > exp
 gemini query -q "select gts.1094PC0005, gts.1094PC0009, \
-	                    gts.1094PC0012, gts.1094PC0013 \
-	             from variants" test.snpeff.vcf.db \
+				gts.1094PC0012, gts.1094PC0013 \
+				from variants" test.snpeff.vcf.db \
        > obs
 check obs exp
 rm obs exp
