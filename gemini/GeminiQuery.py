@@ -114,6 +114,8 @@ class GeminiQuery(object):
     """
 
     def __init__(self, db):
+        assert os.path.exists(db), "%s does not exist." % db
+
         self.db = db
         self.query_executed = False
         self.for_browser = False
@@ -421,7 +423,7 @@ class GeminiQuery(object):
 
         (select_tokens, rest_of_query) = \
             self._get_select_cols_and_query_remainder()
-        
+
         # remove any GT columns
         select_clause_list = []
         for token in select_tokens:
@@ -435,7 +437,7 @@ class GeminiQuery(object):
         else:
             select_clause = ",".join(select_clause_list) + \
                     " gts, gt_types, gt_phases, gt_depths "
-        
+
         self.query = "select " + select_clause + rest_of_query
 
         # extract the original select columns
