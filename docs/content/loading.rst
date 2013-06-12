@@ -6,9 +6,26 @@ Loading a VCF file into GEMINI
 ==============================
 Annotate with snpEff or VEP
 ==============================
-While not necessary, we suggest that you first annotate your VCF with snpEff or
-VEP prior to loading it into GEMINI.  Instructions for for installing and
-running these tools can be found in the following section:
+.. note::
+	
+	Annotate your VCF with SnpEff/VEP, prior to loading it into GEMINI, otherwise the
+	gene/transcript features would be set to None.
+
+
+GEMINI supports gene/transcript level annotations (we do not use pre-computed values here)
+from snpEff and VEP  and hence we suggest that you first annotate your VCF with either
+of these tools, prior to loading it into GEMINI. The related database columns would be 
+populated, which would otherwise be set to None if an unannotated VCF file is loaded 
+into GEMINI.
+
+
+.. note::
+	Choose the annotator as per your requirement!
+	Some gene/transcript annotations are available with only one tool (e.g. ``Polyphen/Sift`` with VEP 
+	and ``amino_acid length/biotype`` with SnpEff). As such these values would be set to None, if an 
+	alternate annotator is used during the load step.
+
+Instructions for installing and running these tools can be found in the following section:
 
 :doc:`functional_annotation`
 

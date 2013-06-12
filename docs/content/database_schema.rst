@@ -66,22 +66,22 @@ Gene information
 ========================  ========      ==============================================================================================
 gene                      STRING        Corresponding gene name of the highly affected transcript
 transcript                STRING        | The variant transcript that was most severely affected
-                                        | (for two equally affected transcripts, either the first 
-										| one is selected (VEP) or protein_coding biotype considered (snpEff).
+                                        | (for two equally affected transcripts, either the first
+										one is selected (VEP) or the protein_coding biotype is prioritized (snpEff)
 is_exonic                 BOOL          Does the variant affect an exon for >= 1transcript?
 is_coding                 BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
 is_lof                    BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
 exon                      STRING        Exon information for the severely affected transcript
 codon_change              STRING        What is the codon change?
 aa_change                 STRING        What is the amino acid change (for an snp)?
-aa_length                 STRING        The length of CDS in terms of number of amino acids
-biotype                   STRING        The 'type' of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.)
+aa_length                 STRING        The length of CDS in terms of number of amino acids (``only snpEff``)
+biotype                   STRING        The 'type' of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``only snpEff``)
 impact                    STRING        The consequence of the most severely affected transcript
 impact_severity           STRING        Severity of the highest order observed for the variant
-polyphen_pred             STRING        Polyphen predictions for the snps (only with VEP) for the severely affected transcript
-polyphen_score            FLOAT         Polyphen scores for the severely affected transcript
-sift_pred                 STRING        SIFT predictions for the snp's (VEP only) for the most severely affected transcript
-sift_score                FLOAT         SIFT scores for the predictions
+polyphen_pred             STRING        Polyphen predictions for the snps for the severely affected transcript (``only VEP``) 
+polyphen_score            FLOAT         Polyphen scores for the severely affected transcript (``only VEP``)
+sift_pred                 STRING        SIFT predictions for the snp's for the most severely affected transcript (``only VEP``)
+sift_score                FLOAT         SIFT scores for the predictions (``only VEP``)
 pfam_domain               STRING        Pfam protein domain that the variant affects
 ========================  ========      ==============================================================================================
 
@@ -263,16 +263,16 @@ is_lof            BOOL          Based on the value of the impact col, is the var
 exon              STRING        Exon information for the variants that are exonic
 codon_change      STRING        What is the codon change?
 aa_change         STRING        What is the amino acid change?
-aa_length         STRING        The length of CDS in terms of number of amino acids
-biotype           STRING        The type of transcript (e.g.protein-coding, pseudogene, rRNA etc.)
+aa_length         STRING        The length of CDS in terms of number of amino acids (``snpEff only``)
+biotype           STRING        The type of transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``SnpEff only``)
 impact            STRING        Impacts due to variation (ref.impact category)
 impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
-polyphen_pred     STRING        | Impact of the SNP as given by PolyPhen (VEP only) 
+polyphen_pred     STRING        | Impact of the SNP as given by PolyPhen (``VEP only``) 
                                 | benign, possibly_damaging, probably_damaging, unknown
-polyphen_scores   FLOAT         Polyphen score reflecting severity (higher the impact, *higher* the score)
-sift_pred         STRING        | Impact of the SNP as given by SIFT (VEP only)
+polyphen_scores   FLOAT         Polyphen score reflecting severity (higher the impact, *higher* the score) (``VEP only``)
+sift_pred         STRING        | Impact of the SNP as given by SIFT (``VEP only``)
                                 | neutral, deleterious
-sift_scores       FLOAT         SIFT prob. scores reflecting severity (Higher the impact, *lower* the score)
+sift_scores       FLOAT         SIFT prob. scores reflecting severity (Higher the impact, *lower* the score) (``VEP only``)
 ================  ========      ===============================================================================
 
 |
