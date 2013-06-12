@@ -64,6 +64,9 @@ def create_tables(cursor):
                     gt_types blob,                              \
                     gt_phases blob,                             \
                     gt_depths blob,                             \
+                    gt_ref_depths blob,                         \
+                    gt_alt_depths blob,                         \
+                    gt_quals blob,                              \
                     call_rate float,                            \
                     in_dbsnp bool,                              \
                     rs_ids text default NULL,                   \
@@ -221,7 +224,7 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?)', variant)
+                                                             ?,?,?,?,?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -248,7 +251,7 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?)', buffer)
+                                                         ?,?,?,?,?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:

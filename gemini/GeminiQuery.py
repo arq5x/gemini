@@ -17,13 +17,17 @@ import compression
 class GeminiRow(object):
 
     def __init__(self, row, gts=None, gt_types=None,
-                 gt_phases=None, gt_depths=None):
+                 gt_phases=None, gt_depths=None,
+                 gt_ref_depths=None, gt_alt_depths=None,
+                 gt_quals=None):
         self.row = row
         self.gts = gts
         self.gt_types = gt_types
         self.gt_phases = gt_phases
         self.gt_depths = gt_depths
-        self.gt_cols = ['gts', 'gt_types', 'gt_phases', 'gt_depths']
+        self.gt_cols = ['gts', 'gt_types', 'gt_phases', 
+                        'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
+                        'gt_quals']
 
     def __getitem__(self, val):
         if val not in self.gt_cols:
@@ -37,6 +41,12 @@ class GeminiRow(object):
                 return self.gt_phases
             elif val == 'gt_depths':
                 return self.gt_depths
+            elif val == 'gt_quals':
+                return self.gt_quals
+            elif val == 'gt_ref_depths':
+                return self.gt_ref_depths
+            elif val == 'gt_alt_depths':
+                return self.gt_alt_depths
 
     def __iter__(self):
         return self
@@ -229,6 +239,12 @@ class GeminiQuery(object):
                         compression.unpack_genotype_blob(row['gt_phases'])
                     gt_depths = \
                         compression.unpack_genotype_blob(row['gt_depths'])
+                    gt_ref_depths = \
+                        compression.unpack_genotype_blob(row['gt_ref_depths'])
+                    gt_alt_depths = \
+                        compression.unpack_genotype_blob(row['gt_alt_depths'])
+                    gt_quals = \
+                        compression.unpack_genotype_blob(row['gt_quals'])
 
                     # skip the record if it does not meet the user's genotype filter
                     if self.gt_filter and not eval(self.gt_filter):
@@ -260,6 +276,15 @@ class GeminiQuery(object):
                             elif col == "gt_depths":
                                 fields[col] = \
                                     ','.join(str(d) for d in gt_depths)
+                            elif col == "gt_quals":
+                                fields[col] = \
+                                    ','.join(str(d) for d in gt_quals)
+                            elif col == "gt_ref_depths":
+                                fields[col] = \
+                                    ','.join(str(d) for d in gt_ref_depths)
+                            elif col == "gt_alt_depths":
+                                fields[col] = \
+                                    ','.join(str(d) for d in gt_alt_depths)
 
                 if self.show_variant_samples:
                     gt_types = compression.unpack_genotype_blob(row['gt_types'])
@@ -277,7 +302,9 @@ class GeminiQuery(object):
                 if self._query_needs_genotype_info():
                     if not self.for_browser:
                         return GeminiRow(fields,
-                                         gts, gt_types, gt_phases, gt_depths)
+                                         gts, gt_types, gt_phases, 
+                                         gt_depths, gt_ref_depths, gt_alt_depths,
+                                         gt_quals)
                     else:
                         return fields
                 else:
@@ -433,10 +460,12 @@ class GeminiQuery(object):
         # reconstruct the query with the GT* columns added
         if len(select_clause_list) > 0:
             select_clause = ",".join(select_clause_list) + \
-                    ", gts, gt_types, gt_phases, gt_depths "
+                    ", gts, gt_types, gt_phases, gt_depths, \
+                       gt_ref_depths, gt_alt_depths, gt_quals "
         else:
             select_clause = ",".join(select_clause_list) + \
-                    " gts, gt_types, gt_phases, gt_depths "
+                    " gts, gt_types, gt_phases, gt_depths, \
+                      gt_ref_depths, gt_alt_depths, gt_quals "
 
         self.query = "select " + select_clause + rest_of_query
 

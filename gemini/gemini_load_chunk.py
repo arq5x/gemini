@@ -286,6 +286,9 @@ class GeminiLoader(object):
             gt_types = np.array(var.gt_types, np.int8)  # -1, 0, 1, 2
             gt_phases = np.array(var.gt_phases, np.bool)  # T F F
             gt_depths = np.array(var.gt_depths, np.int32)  # 10 37 0
+            gt_ref_depths = np.array(var.gt_ref_depths, np.int32)  # 2 21 0 -1
+            gt_alt_depths = np.array(var.gt_alt_depths, np.int32)  # 8 16 0 -1
+            gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
 
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
@@ -294,6 +297,9 @@ class GeminiLoader(object):
             gt_types = None
             gt_phases = None
             gt_depths = None
+            gt_ref_depths = None
+            gt_alt_depths = None
+            gt_quals = None
 
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
@@ -319,6 +325,8 @@ class GeminiLoader(object):
                    var.QUAL, filter, var.var_type,
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), pack_blob(gt_depths),
+                   pack_blob(gt_ref_depths), pack_blob(gt_alt_depths),
+                   pack_blob(gt_quals),
                    call_rate, in_dbsnp,
                    rs_ids,
                    clinvar_info.clinvar_in_omim,
