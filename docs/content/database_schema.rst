@@ -56,6 +56,9 @@ gts                       BLOB          A compressed binary vector of sample gen
 gt_types                  BLOB          A compressed binary vector of numeric genotype "types" (e.g., 0, 1, 2)
 gt_phases                 BLOB          A compressed binary vector of sample genotype phases (e.g., False, True, False)
 gt_depths                 BLOB          A compressed binary vector of the depth of aligned sequence observed for each sample
+gt_ref_depths             BLOB          A compressed binary vector of the depth of reference alleles observed for each sample
+gt_alt_depths             BLOB          A compressed binary vector of the depth of alternate alleles observed for each sample
+gt_quals                  BLOB          A compressed binary vector of the genotype quality (PHRED scale) estimates for each sample
 ========================  ========      ==============================================================================================
 
 
