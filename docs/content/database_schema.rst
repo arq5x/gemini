@@ -52,13 +52,22 @@ Genotype information
 ........................
 ========================  ========      ==============================================================================================
 ========================  ========      ==============================================================================================
-gts                       BLOB          A compressed binary vector of sample genotypes (e.g., "A/A", "A|G", "G/G")
-gt_types                  BLOB          A compressed binary vector of numeric genotype "types" (e.g., 0, 1, 2)
-gt_phases                 BLOB          A compressed binary vector of sample genotype phases (e.g., False, True, False)
-gt_depths                 BLOB          A compressed binary vector of the depth of aligned sequence observed for each sample
-gt_ref_depths             BLOB          A compressed binary vector of the depth of reference alleles observed for each sample
-gt_alt_depths             BLOB          A compressed binary vector of the depth of alternate alleles observed for each sample
-gt_quals                  BLOB          A compressed binary vector of the genotype quality (PHRED scale) estimates for each sample
+gts                       BLOB          | A compressed binary vector of sample genotypes (e.g., "A/A", "A|G", "G/G")
+                                        | - Extracted from the VCF ``GT`` genotype tag.
+gt_types                  BLOB          | A compressed binary vector of numeric genotype "types" (e.g., 0, 1, 2)
+                                        | - Inferred from the VCF ``GT`` genotype tag.
+gt_phases                 BLOB          | A compressed binary vector of sample genotype phases (e.g., False, True, False)
+                                        | - Extracted from the VCF ``GT`` genotype tag's allele delimiter
+                                        |   e.g., ``A/G`` means an unphased genotype. Value is **FALSE**.
+                                        |   e.g., ``A|G`` means a phased genotype. Value is **TRUE**.
+gt_depths                 BLOB          | A compressed binary vector of the depth of aligned sequence observed for each sample
+                                        | - Extracted from the VCF ``DP`` genotype tag.
+gt_ref_depths             BLOB          | A compressed binary vector of the depth of reference alleles observed for each sample
+                                        | - Extracted from the VCF ``AD`` genotype tag.
+gt_alt_depths             BLOB          | A compressed binary vector of the depth of alternate alleles observed for each sample
+                                        | - Extracted from the VCF ``AD`` genotype tag.
+gt_quals                  BLOB          | A compressed binary vector of the genotype quality (PHRED scale) estimates for each sample
+                                        | - Extracted from the VCF ``GQ`` genotype tag.
 ========================  ========      ==============================================================================================
 
 
