@@ -126,7 +126,17 @@ you'd like to install the necessary data files. The recommended path is
 .. code-block:: bash
 
     $ python gemini/install-data.py /usr/local/share/
+    
+Using previously installed annotation files
+===============================================================
+If you have installed GEMINI with the annotation files on a server and you can NFS mount
+the annotation files, you can tell a local install of GEMINI where those annotation files
+are by making the file ~/.gemini/gemini-config.yaml::
 
+	annotation_dir: /path/to/nfs_mounted/gemini/data
+	versions:
+  	  GRCh37-gms-mappability.vcf.gz: 2
+  	  hg19.rmsk.bed.gz: 2
 
 Running the testing suite
 ===========================
