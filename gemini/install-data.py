@@ -76,6 +76,10 @@ def install_annotation_files(anno_root_dir):
 def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
     """
+    cur_config["annotation_dir"] = os.path.abspath(anno_dir)
+    cur_config["versions"] = anno_versions
+    write_gemini_config(cur_config)
+
     for orig in file_names:
         if orig.endswith(".gz"):
             dls = [orig, "%s.tbi" % orig]
@@ -85,10 +89,6 @@ def _download_anno_files(base_url, file_names, anno_dir, cur_config):
             url = "{base_url}/{fname}".format(fname=dl, base_url=base_url)
             _download_to_dir(url, anno_dir, anno_versions.get(orig, 1),
                              cur_config.get("versions", {}).get(orig, 1))
-
-    cur_config["annotation_dir"] = os.path.abspath(anno_dir)
-    cur_config["versions"] = anno_versions
-    write_gemini_config(cur_config)
 
 def _download_to_dir(url, dirname, version, cur_version):
     """
