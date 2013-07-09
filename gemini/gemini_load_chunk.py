@@ -145,13 +145,21 @@ class GeminiLoader(object):
                 error = ("\nWARNING: VCF is not annotated with snpEff, check documentation at:\n"\
                 "http://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-snpeff\n")
                 sys.exit(error)
+
             # e.g., "SnpEff 3.0a (build 2012-07-08), by Pablo Cingolani"
-            if version_string.startswith('\"SnpEff'):
-                toks = version_string.split(' ')
-                # e.g., make still be something like "3.0a"
-                self.args.raw_version = toks[1]
-                # e.g., 3.0a -> 3
-                self.args.maj_version = int(self.args.raw_version.split('.')[0])
+            # or "3.3c (build XXXX), by Pablo Cingolani"
+
+            version_string = version_string.replace('"', '')  # No quotes
+
+            toks = version_string.split()
+
+            if "SnpEff" in toks[0]:
+                self.args.raw_version = toks[1]  # SnpEff *version*, etc
+            else:
+                self.args.raw_version = toks[0]  # *version*, etc
+            # e.g., 3.0a -> 3
+            self.args.maj_version = int(self.args.raw_version.split('.')[0])
+
         elif self.args.anno_type == "VEP":
             pass
 
@@ -230,8 +238,8 @@ class GeminiLoader(object):
         encode_tfbs = annotations.get_encode_tfbs(var)
         encode_dnaseI = annotations.get_encode_dnase_clusters(var)
         encode_cons_seg = annotations.get_encode_consensus_segs(var)
-        gerp_el = annotations.get_gerp_elements(var) 
-        
+        gerp_el = annotations.get_gerp_elements(var)
+
         # grab the GERP score for this variant if asked.
         gerp_bp = None
         if self.args.load_gerp_bp is True:
@@ -342,7 +350,7 @@ class GeminiLoader(object):
                    clinvar_info.clinvar_on_diag_assay,
                    pfam_domain, cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, gerp_bp, gerp_el,
-                   hom_ref, het, hom_alt, unknown, 
+                   hom_ref, het, hom_alt, unknown,
                    aaf, hwe_p_value, inbreeding_coeff, pi_hat,
                    recomb_rate, gene, transcript,
                    is_exonic, is_coding, is_lof, exon, codon_change,
