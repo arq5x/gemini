@@ -29,7 +29,7 @@ setup(
                           'python-graph-core >= 1.8.2',
                           'python-graph-dot >= 1.8.2',
                           'bottle >= 0.11',
-                          'ipython-cluster-helper >= 0.1.6',
+                          'ipython-cluster-helper >= 0.1.7',
                           'bx-python >= 0.7.1'],
         dependency_links = ['http://github.com/arq5x/cyvcf/tarball/master#egg=cyvcf-0.1.5'],
         requires = ['python (>=2.5, <3.0)'],
