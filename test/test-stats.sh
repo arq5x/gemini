@@ -125,3 +125,28 @@ M10500	6	1	5" > exp
 gemini stats --summarize "select * from variants" test5.snpeff.db > obs
 check obs exp
 rm obs exp
+
+###################################################################
+# 10. Test burden
+###################################################################
+echo "    stat.t10...\c"
+echo "gene	M10475	M10478	M10500	M128215
+WDR37	2	2	2	2
+TGM2	0	0	0	1
+CTBP2	0	0	0	1" > exp
+gemini stats --burden test5.snpeff.db > obs
+check obs exp
+rm obs exp
+
+###################################################################
+# 11. Test calpha
+###################################################################
+echo "    stat.t11...\c"
+echo "gene	T	c	Z	p_value
+SYCE1	-0.5	0.25	-1.0	0.841344746069
+WDR37	-0.5	0.75	-0.57735026919	0.718148569175
+ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
+DHODH	0.0	0.0	nan	nan" > exp
+gemini stats --controls M10475 M10478 --cases M10500 M128214 --calpha test4.snpeff.db > obs
+check obs exp
+rm obs exp

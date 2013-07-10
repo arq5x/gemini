@@ -334,6 +334,30 @@ def main():
             metavar='QUERY_STR',
             default=None,
             help='The query to be issued to the database to summarize')
+    parser_stats.add_argument('--burden',
+                              dest='burden',
+                              action='store_true',
+                              default=False,
+                              help='Calculate per-gene genetic burden.')
+    parser_stats.add_argument('--cases',
+                              dest='cases',
+                              nargs='*',
+                              help=('Space separated list of cases for '
+                                    'association testing.'))
+    parser_stats.add_argument('--controls',
+                              nargs='*',
+                              dest='controls',
+                              help=('Space separated list of controls for '
+                                    'association testing.'))
+    parser_stats.add_argument('--calpha',
+                              action='store_true',
+                              default=False,
+                              help="Run the C-alpha association test.")
+    parser_stats.add_argument('--nonsynonymous',
+                              action='store_true',
+                              default=False,
+                              help=("Output per-gene, per-sample counts of "
+                                    "nonsynonymous variants."))
     parser_stats.set_defaults(func=gemini_stats.stats)
 
     #########################################
