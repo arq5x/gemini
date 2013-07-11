@@ -43,8 +43,19 @@ setup(
         long_description=long_description,
         url="http://gemini.readthedocs.org",
         package_dir = {'gemini': "gemini"},
-        package_data = {'gemini': ['data/gemini.conf']},
+        package_data = {'gemini': [
+            'data/gemini.conf', 
+            'static/css/gemini.css',
+            'static/img/gemini.png', 
+            'static/third_party/bootstrap/css/*',
+            'static/third_party/bootstrap/img/*',
+            'static/third_party/bootstrap/js/*',
+            'static/third_party/jquery/jquery-1.7.1.js',
+            'static/third_party/jquery-ui/jquery-ui.min.js',
+            'views/*'
+            ]},
         zip_safe = False,
+        include_package_data=True,
         scripts = ['gemini/scripts/gemini'],
         author_email="arq5x@virginia.edu",
         classifiers=[
