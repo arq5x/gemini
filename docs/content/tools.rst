@@ -136,14 +136,14 @@ are observed as heterozygotes in the offspring. For example:
 	...
 
 ---------------------
-``-d``
+``-d [30]``
 ---------------------
 
 Unfortunately, inherited variants can often appear to be de novo mutations simply because
 insufficient sequence coverage was available for one of the parents to detect that the
 parent(s) is also a heterozygote (and thus the variant was actually inherited, not
 spontaneous).  One simple way to filter such artifacts is to enforce a minimum sequence
-depth for each sample.  For example, if we require that at least 50 sequence alignments
+depth (default: 30) for each sample.  For example, if we require that at least 50 sequence alignments
 were present for mom, dad and child, two of the above variants will be eliminated
 as candidates:
 
