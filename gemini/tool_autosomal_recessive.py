@@ -22,7 +22,8 @@ def get_auto_recessive_candidates(c):
     for family in families:
 
         query = "SELECT chrom, start, end, ref, alt, gene, \
-                        impact, impact_severity, gt_types, gts \
+                        impact, impact_severity, aaf_1kg_all, aaf_esp_all, \
+                        clinvar_disease_name, gt_types, gts \
                  FROM variants \
                  WHERE impact_severity != 'LOW'"
 
