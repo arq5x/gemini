@@ -51,9 +51,9 @@ restrict the analysis to LoF variants using the ``--only_lof`` option.
 ``--allow-other-hets``
 ----------------------
 By default, the ``comp_hets`` tool will identify candidate pairs of
-heterozygotes that are found in *only one* of the samples in your database.
+heterozygotes where each variant is found in *only one* of the samples in your database.
 Depending on the genetic model, this may be too restrictive.  If you'd like to
-identify candidates where other individuals may also be heterozygous, just use
+include variants for which other individuals may also be heterozygous, just use
 the ``--allow-other-hets`` option
 
 .. code-block:: bash
