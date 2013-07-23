@@ -352,7 +352,6 @@ class GeminiQuery(object):
             # querying the variants table
             self.query = self._add_gt_cols_to_query()
             
-            print self.query
             self._execute_query()
 
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
