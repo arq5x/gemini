@@ -29,8 +29,11 @@ class Subject(object):
         # http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped
         if self.phenotype == 2:
             self.affected = True
-        else:
+        elif self.phenotype == 1:
             self.affected = False
+        # distinguish unknown from known to be unaffected.
+        elif self.phenotype == 0 or self.phenotype == -9:
+            self.affected = None
 
     def __repr__(self):
         return "\t".join([self.name, self.paternal_id,
@@ -97,8 +100,11 @@ class Family(object):
         # if either parent is affected, this family cannot satisfy
         # a recessive model, as the parents should be carriers.
         if self.father.affected == True or self.mother.affected == True:
-            return None
+            return "False"
 
+        # []---()
+        #    |
+        #   (*)
         mask = "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
             str(HET)
@@ -137,27 +143,98 @@ class Family(object):
 
         # identify which samples are the parents in the family.
         self.find_parents()
-
-        mask = "((bool("
-        mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-            str(HET)
-        mask += ") != "
-        mask += 'bool(gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-            str(HET)
-        mask += ")) and "
-        for i, child in enumerate(self.children):
-            if child.affected:
-                mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+        
+        mask = ""
+        
+        if self.father.affected is True and self.mother.affected is True:
+            # doesn't meet an auto. dominant model if both parents are affected
+            # [*]---(*)
+            #     |
+            #    (*)
+            return "False"
+        elif ((self.father.affected is False and self.mother.affected is False) 
+             or
+             (self.father.affected is None and self.mother.affected is None)):
+            # if neither parents are affected, or the affection status is 
+            # unknown for both, we can just screen for variants where one and 
+            # only one of the parents are hets and and the child is also a het
+            # []---()
+            #    |
+            #   (*)
+            mask = "((bool("
+            mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
+                str(HET)
+            mask += ") != "
+            mask += 'bool(gt_types[' + \
+                    str(self.mother.sample_id - 1) + "] == " + \
                     str(HET)
-            else:
-                mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                    str(HOM_REF)
+            mask += ")) and "
+            for i, child in enumerate(self.children):
+                if child.affected:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                        str(HET)
+                else:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                        str(HOM_REF)
 
-            if i < (len(self.children) - 1):
-                mask += " and "
+                if i < (len(self.children) - 1):
+                    mask += " and "
+            mask += ")"
+            return mask
+        elif (self.father.affected is True and 
+              self.mother.affected is not True):
+            # if only Dad is known to be affected, we must enforce
+            # that only the affected child and Dad have the 
+            # same heterozygous genotype.
+            # [*]---()
+            #     |
+            #    (*)
+            mask = "(("
+            mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
+                str(HET)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] != " + \
+                str(HET)
+            mask += ") and "
+            for i, child in enumerate(self.children):
+                if child.affected:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                          str(HET)
+                else:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                          str(HOM_REF)
+                if i < (len(self.children) - 1):
+                    mask += " and "
+            mask += ")"
+            return mask
+        elif (self.father.affected is not True 
+              and self.mother.affected is True):
+            # if only Mom is known to be affected, we must enforce
+            # that only the affected child and Mom have the 
+            # same heterozygous genotype.
+            # []---(*)
+            #    |
+            #   (*)
+            mask = "(("
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
+                str(HET)
+            mask += " and "
+            mask += 'gt_types[' + str(self.father.sample_id - 1) + "] != " + \
+                str(HET)
+            mask += ") and "
+            for i, child in enumerate(self.children):
+                if child.affected:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                          str(HET)
+                else:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                          str(HOM_REF)
+                if i < (len(self.children) - 1):
+                    mask += " and "
+            mask += ")"
+            return mask
 
-        mask += ")"
-        return mask
+
 
     def get_de_novo_filter(self):
         """
@@ -167,6 +244,10 @@ class Family(object):
         '(gt_types[57] == HOM_REF and \  # mom
           gt_types[58] == HOM_REF and \  # dad
           gt_types[11] == HET)'          # affected child
+          
+          # [G/G]---(G/G)
+          #       |
+          #     (A/G)
         """
         # identify which samples are the parents in the family.
         self.find_parents()
