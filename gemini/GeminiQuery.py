@@ -123,13 +123,14 @@ class GeminiQuery(object):
             print row, gts[idx]
     """
 
-    def __init__(self, db):
+    def __init__(self, db, include_gt_cols=False):
         assert os.path.exists(db), "%s does not exist." % db
 
         self.db = db
         self.query_executed = False
         self.for_browser = False
-
+        self.include_gt_cols = include_gt_cols
+        
         self._connect_to_database()
         # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323
         self.sample_to_idx = util.map_samples_to_indicies(self.c)
@@ -230,7 +231,7 @@ class GeminiQuery(object):
         while (1):
             try:
                 row = self.c.next()
-
+                
                 if self._query_needs_genotype_info():
                     gts = compression.unpack_genotype_blob(row['gts'])
                     gt_types = \
@@ -303,8 +304,8 @@ class GeminiQuery(object):
                     if not self.for_browser:
                         return GeminiRow(fields,
                                          gts, gt_types, gt_phases, 
-                                         gt_depths, gt_ref_depths, gt_alt_depths,
-                                         gt_quals)
+                                         gt_depths, gt_ref_depths,
+                                         gt_alt_depths, gt_quals)
                     else:
                         return fields
                 else:
@@ -312,7 +313,8 @@ class GeminiQuery(object):
                         return GeminiRow(fields)
                     else:
                         return fields
-            except:
+            except Exception as e:
+                print e
                 raise StopIteration
 
     def _connect_to_database(self):
@@ -327,11 +329,19 @@ class GeminiQuery(object):
             self.conn.row_factory = sqlite3.Row
             self.c = self.conn.cursor()
 
+    def _execute_query(self):
+        try:
+            self.c.execute(self.query)
+        except sqlite3.OperationalError as e:
+            print "SQLite error: {0}".format(e)
+            sys.exit("The query issued (%s) has a syntax error." % self.query)
+                              
     def _apply_query(self):
         """
         Execute a query. Intercept gt* columns and
         replace sample names with indices where necessary.
         """
+
         if self._query_needs_genotype_info():
             # break up the select statement into individual
             # pieces and replace genotype columns using sample
@@ -341,7 +351,9 @@ class GeminiQuery(object):
             # we only need genotype information if the user is
             # querying the variants table
             self.query = self._add_gt_cols_to_query()
-            self.c.execute(self.query)
+            
+            print self.query
+            self._execute_query()
 
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
                                    if not tuple[0].startswith("gt")]
@@ -357,7 +369,7 @@ class GeminiQuery(object):
         # the query does not involve the variants table
         # and as such, we don't need to do anything fancy.
         else:
-            self.c.execute(self.query)
+            self._execute_query()
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
                                    if not tuple[0].startswith("gt")]
             self.report_cols = self.all_query_cols
@@ -462,6 +474,7 @@ class GeminiQuery(object):
             select_clause = ",".join(select_clause_list) + \
                     ", gts, gt_types, gt_phases, gt_depths, \
                        gt_ref_depths, gt_alt_depths, gt_quals "
+
         else:
             select_clause = ",".join(select_clause_list) + \
                     " gts, gt_types, gt_phases, gt_depths, \
@@ -521,7 +534,9 @@ class GeminiQuery(object):
     def _query_needs_genotype_info(self):
         tokens = self._tokenize_query()
         requested_genotype = "variants" in tokens and any([x.startswith("gt") for x in tokens])
-        return requested_genotype or self.show_variant_samples
+        return requested_genotype or \
+               self.include_gt_cols or \
+               self.show_variant_samples
 
 def flatten(l):
     """
