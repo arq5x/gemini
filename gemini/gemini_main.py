@@ -507,6 +507,19 @@ def main():
     parser_auto_rec.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
+    parser_auto_rec.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_auto_rec.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    parser_auto_rec.add_argument('--gt-filter',
+            dest='gt_filter',
+            metavar='STRING',
+            help='Restrictions to apply to genotype values (Python syntax)')
     parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
 
     #########################################
@@ -518,6 +531,19 @@ def main():
     parser_auto_dom.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
+    parser_auto_dom.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_auto_dom.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    parser_auto_dom.add_argument('--gt-filter',
+            dest='gt_filter',
+            metavar='STRING',
+            help='Restrictions to apply to genotype values (Python syntax)')
     parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
 
     #########################################
@@ -528,13 +554,26 @@ def main():
     parser_de_novo.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
+    parser_de_novo.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_de_novo.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    parser_de_novo.add_argument('--gt-filter',
+            dest='gt_filter',
+            metavar='STRING',
+            help='Restrictions to apply to genotype values (Python syntax)')
     parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
             type=int,
             help="The minimum aligned\
                   sequence depth (genotype DP) req'd for\
-                  each sample",
-            default=20)
+                  each sample (def. = 0)",
+            default=0)
     parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
 
     #########################################
