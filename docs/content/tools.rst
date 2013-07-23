@@ -632,7 +632,7 @@ in dbSNP:
 ===========================================================================
 
 Because of the sheer number of annotations that are stored in gemini, there are
-admittedly too many columns to remember by rote.  If you can recall the name of
+admittedly too many columns to remember by rote.  If you can't recall the name of
 particular column, just use the ``db_info`` tool.  It will report all of the
 tables and all of the columns / types in each table:
 
