@@ -1,12 +1,12 @@
 numpy>=1.7.1
 pyparsing==1.5.7
 pysam==0.7.4
-cyvcf==0.1.6
+cyvcf==0.1.7
 PyYAML==3.10
 pybedtools==0.6.2
 python-graph-core==1.8.2
 python-graph-dot==1.8.2
 bottle==0.11.6
-ipython-cluster-helper==0.1.6
+ipython-cluster-helper==0.1.7
 bx-python>=0.7.1
 git+https://github.com/arq5x/gemini.git

@@ -61,6 +61,7 @@ def get_auto_recessive_candidates(args):
             family_sample_gt_label = family_sample_gt_labels[idx]
             family_sample_gt_cols = family_sample_gt_columns[idx]
 
+
             # skip if the variant doesn't meet a recessive model
             # for this family
             if not eval(family_genotype_mask):

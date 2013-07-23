@@ -51,9 +51,9 @@ restrict the analysis to LoF variants using the ``--only_lof`` option.
 ``--allow-other-hets``
 ----------------------
 By default, the ``comp_hets`` tool will identify candidate pairs of
-heterozygotes that are found in *only one* of the samples in your database.
+heterozygotes where each variant is found in *only one* of the samples in your database.
 Depending on the genetic model, this may be too restrictive.  If you'd like to
-identify candidates where other individuals may also be heterozygous, just use
+include variants for which other individuals may also be heterozygous, just use
 the ``--allow-other-hets`` option
 
 .. code-block:: bash
@@ -136,14 +136,14 @@ are observed as heterozygotes in the offspring. For example:
 	...
 
 ---------------------
-``-d``
+``-d [30]``
 ---------------------
 
 Unfortunately, inherited variants can often appear to be de novo mutations simply because
 insufficient sequence coverage was available for one of the parents to detect that the
 parent(s) is also a heterozygote (and thus the variant was actually inherited, not
 spontaneous).  One simple way to filter such artifacts is to enforce a minimum sequence
-depth for each sample.  For example, if we require that at least 50 sequence alignments
+depth (default: 30) for each sample.  For example, if we require that at least 50 sequence alignments
 were present for mom, dad and child, two of the above variants will be eliminated
 as candidates:
 
@@ -632,7 +632,7 @@ in dbSNP:
 ===========================================================================
 
 Because of the sheer number of annotations that are stored in gemini, there are
-admittedly too many columns to remember by rote.  If you can recall the name of
+admittedly too many columns to remember by rote.  If you can't recall the name of
 particular column, just use the ``db_info`` tool.  It will report all of the
 tables and all of the columns / types in each table:
 
