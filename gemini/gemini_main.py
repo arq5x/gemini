@@ -598,9 +598,11 @@ def main():
     args.func(parser, args)
 
     # make sure database is found
-    if args.db is not None and not os.path.exists(args.db):
-        sys.stderr.write("Requested GEMINI database (%s) not found. "
-                         "Please confirm the provided filename.\n" % args.db)
+    if args.db is not None:
+        if not os.path.exists(args.db):
+            sys.stderr.write("Requested GEMINI database (%s) not found. "
+                             "Please confirm the provided filename.\n" 
+                             % args.db)
 
 if __name__ == "__main__":
     main()
