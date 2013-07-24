@@ -314,7 +314,6 @@ class GeminiQuery(object):
                     else:
                         return fields
             except Exception as e:
-                print e
                 raise StopIteration
 
     def _connect_to_database(self):
