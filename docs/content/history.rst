@@ -2,21 +2,22 @@
 Release History
 #############################
 
+
 0.5.0b (2013-Jul-23)
 =======================================
 1. Tolerate either -9 or 0 for unknown parent or affected status in PED files.
-2. Refine the rules for inheritance and parental affected status for 
-autosomal dominant inheritance models.
-3. The ``autosomal_dominant``, ``autosomal_recessive``, and ``de_novo`` mutation 
-tools have received the following improvements:
-     - improved speed (especially when there are multiple families)
-     - by default, all columns in the variant table are reported and no conditions
+2. Refine the rules for inheritance and parental affected status for autosomal dominant inheritance models.
+3. The ``autosomal_dominant``, ``autosomal_recessive``, and ``de_novo`` mutation tools have received the following improvements.
+
+    -  improved speed (especially when there are multiple families)
+    -  by default, all columns in the variant table are reported and no conditions
        are placed on the returned variants.  That is, as long as the variant meets 
        the inheritance model, it will be reported.
-     - the addition of a ``--columns option allowing one to override the above default
+    -  the addition of a ``--columns`` option allowing one to override the above default
        behavior and report a subset of columns.
-     - the addition of a ``--filter option allowing one to override the above default
+    -  the addition of a ``--filter`` option allowing one to override the above default
        behavior and filter reported variants based on specific criteria.
+
 4. The default minimum aligned sequencing depth for each variant reported by 
 the ``de_novo`` tool is 0.  Greater stringency can be applied with the ``-d``
 option.
