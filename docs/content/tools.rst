@@ -86,7 +86,7 @@ that are *candidates* for compound heterozygotes. Just use the
 ===========================================================================
 .. note::
 
-    This tool requires that you identify familial relationships via a PED file
+    1. This tool requires that you identify familial relationships via a PED file
     when loading your VCF into gemini via:
 
     ``gemini load -v my.vcf -p my.ped my.db``
@@ -120,44 +120,103 @@ your VCF into GEMINI, one can leverage a built-in tool for identifying de novo
 ---------------------
 
 By default, the ``de novo`` tool will report, for each
-family in the database, a list of mutations that are not found in the parents yet
-are observed as heterozygotes in the offspring. For example:
+family in the database, a all columns in the variants table for mutations that 
+are not found in the parents yet are observed as heterozygotes in the offspring. 
+For example:
 
 .. code-block:: bash
 
-	$ gemini de_novo my.db
+    $ gemini de_novo my.db
 
-	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	in_dbsnp	rs_ids		aaf_1kg_all	aaf_esp_all	clinvar_sig	clinvar_disease_name	clinvar_dbsource	sample1(father)	sample2(mother)	sample3(child; affected)	sample1(depth)	sample2(depth)	sample3(depth)
-	1	chr1	17197609	17197610	G	A	BX284668.1	non_syn_coding	MED	1	rs200754171		None	None	None	None	None	G/G	G/G	G/A	104	168	244
-	1	chr1	196763706	196763707	T	C	CFHR3	splice_acceptor	HIGH	1	rs481759		None	None	None	None	None	T/T	T/T	T/C	26	28	34
-	1	chr1	248813541	248813542	G	A	OR2T27	non_syn_coding	MED	1	rs77685347	0.	17	0.180025	None	None	None	G/G	G/G	G/A	21	38	68
-	1	chr2	90060872	90060873	A	T	AC009958.1	non_syn_coding	MED	1	rs202041075		None	None	None	None	None	A/A	A/A	A/T	90	238	234
-	1	chr3	195505789	195505790	G	C	MUC4	non_syn_coding	MED	1	rs11928301		None	None	None	None	None	G/G	G/G	G/C	250	247	248
-	...
+    family_id	family_members	genotypes	depths	chrom	start	end	variant_id	anno_id	ref	alt	qual	filter	type	sub_type	call_rate	in_dbsnp	rs_ids	in_omim	clinvar_sig	clinvar_disease_name	clinvar_dbsource	clinvar_dbsource_id	clinvar_origin	clinvar_dsdb	clinvar_dsdbid	clinvar_disease_acc	clinvar_in_locus_spec_db	clinvar_on_diag_assay	pfam_domain	cyto_band	rmsk	in_cpg_island	in_segdup	is_conserved	gerp_bp_score	gerp_element_pval	num_hom_ref	num_het	num_hom_alt	num_unknown	aaf	hwe	inbreeding_coeff	pi	recomb_rate	gene	transcript	is_exonic	is_coding	is_lof	exon	codon_change	aa_change	aa_length	biotype	impact	impact_severity	polyphen_pred	polyphen_score	sift_pred	sift_score	anc_allele	rms_bq	cigar	depth	strand_bias	rms_map_qual	in_hom_run	num_mapq_zero	num_alleles	num_reads_w_dels	haplotype_score	qual_depth	allele_count	allele_bal	in_hm2	in_hm3	is_somatic	in_esp	aaf_esp_ea	aaf_esp_aa	aaf_esp_all	exome_chip	in_1kg	aaf_1kg_amr	aaf_1kg_asn	aaf_1kg_afr	aaf_1kg_eur	aaf_1kg_all	grc	gms_illumina	gms_solid	gms_iontorrent	in_cse	encode_tfbs	encode_dnaseI_cell_count	encode_dnaseI_cell_list	encode_consensus_gm12878	encode_consensus_h1hesc	encode_consensus_helas3	encode_consensus_hepg2	encode_consensus_huvec	encode_consensus_k562	gts	gt_types	gt_phases	gt_depths	gt_ref_depths	gt_alt_depths	gt_quals
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	AA/AA,AA/AA,AA/A	1,4,7	chr1	10067	10069	1	1	AA	A	113.21	None	indel	del	0.75	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	Simple_repeat_Simple_repeat_(CCCTAA)n;trf;Satellite_telo_TAR1;trf;trf;trf;trf;trf	0	1	0	None	None	6	1	2	3	0.277777777778	0.0300651703342	0.723076923077	0.424836601307	2.981822	WASH7P	ENST00000423562	0	0	0	None	None	None	None	unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	212	None	11.39	1	84	18	None	30.4532	1.55	5	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	91.7	47.1	94.7	0	None	None	None	CTCF	CTCF	unknown	unknown	unknown	CTCF	AA/A,./.,A/A,AA/AA,AA/AA,AA/AA,A/A,AA/AA,AA/AA,./.,AA/AA,./.	1,2,3,0,0,0,3,0,0,2,0,2	False,False,False,False,False,False,False,False,False,False,False,False	7,-1,2,4,1,4,2,2,1,-1,1,-1	33,-1,28,33,11,12,7,23,7,-1,12,-1	1,-1,2,0,0,0,2,0,0,-1,0,-1	26.74,-1.0,6.02,12.04,3.01,11.81,6.02,6.02,3.01,-1.0,3.01,-1.0
+    4	254(father; unknown),255(mother; unknown),253(child; affected)	G/G,G/G,G/A	38,19,21	chr1	13109	13110	4	1	G	A	34.7	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	9	3	0	0	0.125	0.620690717057	-0.142857142857	0.228260869565	2.981822	WASH7	ENST00000423562	0	0	0	None	None	None	None	unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	458	None	30.96	1	14	24	0.0	2.317	0.32	3	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	unknown	R	unknown	T	G/G,G/G,G/G,G/A,G/G,G/G,G/G,G/A,G/G,G/A,G/G,G/G	0,0,0,1,0,0,0,1,0,1,0,0	False,False,False,False,False,False,False,False,False,False,False,False	55,28,101,54,29,53,14,34,12,21,38,19	55,27,97,42,28,51,13,31,12,18,34,16	0,1,4,12,1,2,1,3,0,3,4,3	81.18,11.7,99.0,59.65,51.14,40.46,18.05,24.49,18.04,3.35,69.19,5.41
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	GTTG/GTTG,GTTG/GTTG,GTTG/G	21,59,41	chr1	14398	14402	13	1	GTTG	G	97.43	None	indel	del	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	9	3	0	0	0.125	0.620690717057	-0.142857142857	0.228260869565	2.981822	DDX11L1	ENST00000450305	0	0	0	None	None	None	None	transcribed_unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	2045	None	15.9	0	4	24	None	145.8039	0.13	3	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	0.0	0.0	43.5	0	None	None	None	R	R	CTCF	R	R	T	GTTG/G,GTTG/G,GTTG/GTTG,GTTG/G,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG	1,1,0,1,0,0,0,0,0,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	41,56,69,35,21,59,21,27,8,23,33,15	226,225,235,235,143,214,111,124,115,105,128,101	23,23,15,13,0,1,0,0,0,1,0,5	81.0,36.2,99.0,48.04,63.22,24.03,63.22,81.27,24.08,69.24,48.14,45.15
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	18	1	A	G	1369.37	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	8	0	0	0.333333333333	0.0832645169833	-0.5	0.463768115942	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2095	None	19.42	1	105	24	0.0	0.8894	1.01	8	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/G,A/A,A/G	1,1,0,1,0,0,1,1,1,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	250,247,250,250,152,214,124,171,81,96,124,136	212,231,235,229,144,198,104,162,66,83,114,125	38,16,15,21,8,16,20,9,15,13,10,10	99.0,66.22,99.0,99.0,22.53,26.79,99.0,63.15,99.0,32.64,47.1,99.0    ...
+    ...
+    
+.. note::
+    
+    The output will always start with the family ID, the family members, the
+    observed genotypes, and the observed aligned sequencing depths 
+    for the family members.
 
 ---------------------
-``-d [30]``
+``-d [0]``
 ---------------------
 
 Unfortunately, inherited variants can often appear to be de novo mutations simply because
 insufficient sequence coverage was available for one of the parents to detect that the
 parent(s) is also a heterozygote (and thus the variant was actually inherited, not
 spontaneous).  One simple way to filter such artifacts is to enforce a minimum sequence
-depth (default: 30) for each sample.  For example, if we require that at least 50 sequence alignments
-were present for mom, dad and child, two of the above variants will be eliminated
+depth (default: 0) for each sample.  For example, if we require that at least 50 sequence 
+alignments were present for mom, dad and child, two of the above variants will be eliminated
 as candidates:
 
 .. code-block:: bash
 
-	$ gemini de_novo -d 50 my.db
+    $ gemini de_novo -d 50 my.db
 
-	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	in_dbsnp	rs_ids		aaf_1kg_all	aaf_esp_all	clinvar_sig	clinvar_disease_name	clinvar_dbsource	sample1(father)	sample2(mother)	sample3(child; affected)	sample1(depth)	sample2(depth)	sample3(depth)
-	1	chr1	17197609	17197610	G	A	BX284668.1	non_syn_coding	MED	1	rs200754171		None	None	None	None	None	G/G	G/G	G/A	104	168	244
-	1	chr2	90060872	90060873	A	T	AC009958.1	non_syn_coding	MED	1	rs202041075		None	None	None	None	None	A/A	A/A	A/T	90	238	234
-	1	chr3	195505789	195505790	G	C	MUC4	non_syn_coding	MED	1	rs11928301		None	None	None	None	None	G/G	G/G	G/C	250	247	248
-	...
+    family_id	family_members	family_genotypes	depths	chrom	start	end	variant_id	anno_id	ref	alt	qual	filter	type	sub_type	call_rate	in_dbsnp	rs_ids	in_omim	clinvar_sig	clinvar_disease_name	clinvar_dbsource	clinvar_dbsource_id	clinvar_origin	clinvar_dsdb	clinvar_dsdbid	clinvar_disease_acc	clinvar_in_locus_spec_db	clinvar_on_diag_assay	pfam_domain	cyto_band	rmsk	in_cpg_island	in_segdup	is_conserved	gerp_bp_score	gerp_element_pval	num_hom_ref	num_het	num_hom_alt	num_unknown	aaf	hwe	inbreeding_coeff	pi	recomb_rate	gene	transcript	is_exonic	is_coding	is_lof	exon	codon_change	aa_change	aa_length	biotype	impact	impact_severity	polyphen_pred	polyphen_score	sift_pred	sift_score	anc_allele	rms_bq	cigar	depth	strand_bias	rms_map_qual	in_hom_run	num_mapq_zero	num_alleles	num_reads_w_dels	haplotype_score	qual_depth	allele_count	allele_bal	in_hm2	in_hm3	is_somatic	in_esp	aaf_esp_ea	aaf_esp_aa	aaf_esp_all	exome_chip	in_1kg	aaf_1kg_amr	aaf_1kg_asn	aaf_1kg_afr	aaf_1kg_eur	aaf_1kg_all	grc	gms_illumina	gms_solid	gms_iontorrent	in_cse	encode_tfbs	encode_dnaseI_cell_count	encode_dnaseI_cell_list	encode_consensus_gm12878	encode_consensus_h1hesc	encode_consensus_helas3	encode_consensus_hepg2	encode_consensus_huvec	encode_consensus_k562	gts	gt_types	gt_phases	gt_depths	gt_ref_depths	gt_alt_depths	gt_quals
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	18	1	A	G	1369.37	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	8	0	0	0.333333333333	0.0832645169833	-0.5	0.463768115942	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2095	None	19.42	1	105	24	0.0	0.8894	1.01	8	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/G,A/A,A/G	1,1,0,1,0,0,1,1,1,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	250,247,250,250,152,214,124,171,81,96,124,136	212,231,235,229,144,198,104,162,66,83,114,125	38,16,15,21,8,16,20,9,15,13,10,10	99.0,66.22,99.0,99.0,22.53,26.79,99.0,63.15,99.0,32.64,47.1,99.0
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	189,250,250	chr1	14573	14574	19	1	A	G	723.72	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	6	6	0	0	0.25	0.248213079014	-0.333333333333	0.391304347826	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2233	None	20.21	0	73	24	0.0	1.1058	0.63	6	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/A,A/A,A/A	1,1,0,1,0,0,1,1,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	250,248,250,241,189,250,130,189,92,107,146,141	218,232,237,221,181,232,115,177,76,97,136,134	32,14,13,20,8,17,15,12,16,10,10,7	99.0,31.97,99.0,99.0,96.41,99.0,64.51,35.62,99.0,26.4,65.9,0.76
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	G/G,G/G,G/A	197,247,250	chr1	14589	14590	20	1	G	A	178.22	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	8	4	0	0	0.166666666667	0.488422316764	-0.2	0.289855072464	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2234	None	21.45	0	37	24	0.0	0.9191	0.25	4	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	G/A,G/G,G/G,G/A,G/G,G/G,G/A,G/G,G/A,G/G,G/G,G/G	1,0,0,1,0,0,1,0,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	250,238,250,233,197,247,134,192,97,109,149,137	227,228,239,213,186,227,124,181,84,105,144,128	23,10,11,20,11,20,10,11,13,4,5,9	99.0,99.0,99.0,25.64,99.0,99.0,31.54,19.87,54.49,97.64,99.0,42.52
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	21	1	T	A	44.09	None	snp	tv	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	10	2	0	0	0.0833333333333	0.752823664836	-0.0909090909091	0.159420289855	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2245	None	22.1	0	18	24	0.0	1.1988	0.13	2	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	T/A,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/A,T/T,T/T,T/T	1,0,0,0,0,0,0,0,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	249,237,250,242,195,250,138,209,91,102,148,133	226,229,240,223,187,231,129,198,76,94,140,118	23,8,10,19,8,19,9,11,15,8,8,14	65.38,99.0,99.0,92.74,99.0,99.0,23.58,84.54,30.04,99.0,99.0,45.7    
+    ...
+    
+    
+---------------------
+``--columns``
+---------------------
+
+By default, this tool reports all columns in the ``variants`` table. One may
+choose to report only a subset of the columns using the ``--columns`` option.  For
+example, to report just the ``chrom, start, end, ref``, and ``alt`` columns, one
+would use the following:
+
+.. code-block:: bash
+
+    $ gemini de_novo -d 50 --columns "chrom, start, end, ref, alt" my.db
+
+    family_id	family_members	family_genotypes	depths	chrom	start	end	ref	alt
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	A	G
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	189,250,250	chr1	14573	14574	A	G
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	G/G,G/G,G/A	197,247,250	chr1	14589	14590	G	A
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	T	A    
+    ...
+    
+.. note::
+    
+    The output will always start with the family ID, the family members, the
+    observed genotypes, and the observed aligned sequencing depths 
+    for the family members.
 
 
+---------------------
+``--filter``
+---------------------
+
+By default, this tool will report all variants regardless of their putative
+functional impact.  In order to apply additional constraints on the variants
+returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
+applied with the ``--filter option become WHERE clauses in the query issued to
+the GEMINI database.  For example, if we wanted to restrict candidate variants 
+to solely those with a HIGH predicted functional consequence, we could use the
+following:
+
+.. code-block:: bash
+
+    $ gemini de_novo -d 50 \
+          --columns "chrom, start, end, ref, alt" \
+          --filter "impact_severity = 'HIGH'" \
+          my.db
+    
+    family_id	family_members	family_genotypes	depths	chrom	start	end	ref	alt
+    3	243(father; unknown),244(mother; unknown),242(child; affected)	C/C,C/C,C/A	249,243,250	chr1	17729	17730	C	A
+    4	254(father; unknown),255(mother; unknown),253(child; affected)	A/A,A/A,A/G	86,146,83	chr1	168097	16809	A	G
+    4	254(father; unknown),255(mother; unknown),253(child; affected)	G/G,G/G,G/T	107,182,72	chr1	12854400	12854401	G	T
+    3	243(father; unknown),244(mother; unknown),242(child; affected)	A/A,A/A,A/ATGGTGTTG	211,208,208	chr1	12855995	12855996	A	ATGGTGTTG
+    ...
 
 ============================================================================
 ``autosomal_recessive``: Find variants meeting an autosomal recessive model.
@@ -169,6 +228,10 @@ as candidates:
 
     ``gemini load -v my.vcf -p my.ped my.db``
 
+---------------------
+``default behavior``
+---------------------
+
 Assuming you have defined the familial relationships between samples when loading
 your VCF into GEMINI, one can leverage a built-in tool for identifying variants
 that meet an autosomal recessive inheritance pattern. The reported variants
@@ -177,18 +240,74 @@ function of affecting protein coding transcripts.
 
 .. code-block:: bash
 
-	$ gemini autosomal_recessive my.db | head
+    $ gemini autosomal_recessive my.db
 
-	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	sample1(father)	sample2(mother)	sample3(child; affected)
-	1	chr1	1888192	1888193	C	A	C1orf222	non_syn_coding	MED	C/A	C/A	A/A
-	1	chr1	6162053	6162054	T	C	CHD5	non_syn_coding	MED	T/C	T/C	C/C
-	1	chr1	6646958	6646968	GCCTGCCTTC	G	ZBTB48	inframe_codon_loss	MED	GCCTGCCTTC/G	GCCTGCCTTC/G	G/G
-	1	chr1	11826629	11826630	C	T	C1orf167	non_syn_coding	MED	C/T	C/T	T/T
-	1	chr1	11828237	11828238	G	A	C1orf167	non_syn_coding	MED	G/A	G/A	A/A
-	1	chr1	11828318	11828319	G	A	C1orf167	non_syn_coding	MED	G/A	G/A	A/A
-	1	chr1	11831614	11831615	C	T	C1orf167	non_syn_coding	MED	C/T	C/T	T/T
-	1	chr1	11836627	11836628	T	C	C1orf167	non_syn_coding	MED	T/C	T/C	C/C
-	1	chr1	11836681	11836682	C	T	C1orf167	non_syn_coding	MED	C/T	C/T	T/T	...
+    family_id	family_members	family_genotypes	chrom	start	end	variant_id	anno_id	ref	alt	qual	filter	type	sub_type	call_rate	in_dbsnp	rs_ids	in_omim	clinvar_sig	clinvar_disease_name	clinvar_dbsource	clinvar_dbsource_id	clinvar_origin	clinvar_dsdb	clinvar_dsdbid	clinvar_disease_acc	clinvar_in_locus_spec_db	clinvar_on_diag_assay	pfam_domain	cyto_band	rmsk	in_cpg_island	in_segdup	is_conserved	gerp_bp_score	gerp_element_pval	num_hom_ref	num_het	num_hom_alt	num_unknown	aaf	hwe	inbreeding_coeff	pi	recomb_rate	gene	transcript	is_exonic	is_coding	is_lof	exon	codon_change	aa_change	aa_length	biotype	impact	impact_severity	polyphen_pred	polyphen_score	sift_pred	sift_score	anc_allele	rms_bq	cigar	depth	strand_bias	rms_map_qual	in_hom_run	num_mapq_zero	num_alleles	num_reads_w_dels	haplotype_score	qual_depth	allele_count	allele_bal	in_hm2	in_hm3	is_somatic	in_esp	aaf_esp_ea	aaf_esp_aa	aaf_esp_all	exome_chip	in_1kg	aaf_1kg_amr	aaf_1kg_asn	aaf_1kg_afr	aaf_1kg_eur	aaf_1kg_all	grc	gms_illumina	gms_solid	gms_iontorrent	in_cse	encode_tfbs	encode_dnaseI_cell_count	encode_dnaseI_cell_list	encode_consensus_gm12878	encode_consensus_h1hesc	encode_consensus_helas3	encode_consensus_hepg2	encode_consensus_huvec	encode_consensus_k562	gts	gt_types	gt_phases	gt_depths	gt_ref_depths	gt_alt_depths	gt_quals
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	CAG/C,CAG/C,C/C	chr1	13655	13658	11	12	CAG	C	1113.97	None	indel	del	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	0	10	2	0	0.583333333333	0.0133475753029	-0.714285714286	0.507246376812	2.981822	DDX11L1	ENST00000518655	0	0	0	3	None	None	None	transcribed_unprocessed_pseudogene	splice_donor	HIGH	None	None	None	None	None	None	None	208	None	17.12	0	1	24	None	19.8498	5.36	14	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	0.0	0.0	21.1	0	None	None	None	R	R	unknown	R	unknown	T	CAG/C,CAG/C,CAG/C,CAG/C,CAG/C,CAG/C,CAG/C,CAG/C,C/C,C/C,CAG/C,CAG/C	1,1,1,1,1,1,1,1,3,3,1,1	False,False,False,False,False,False,False,False,False,False,False,False	9,7,19,13,3,5,4,2,1,1,3,4	14,20,28,29,6,7,6,4,5,6,8,12	13,3,4,10,4,7,4,3,7,2,3,3	99.0,27.88,89.69,99.0,20.9,18.78,77.9,42.91,3.0,3.0,39.85,36.89
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	C/G,C/G,G/G	chr1	726943	726944	283	1	C	G	2492.27	None	snp	tv	1.0	1	rs3131979	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	Satellite_Satellite_(GAATG)n;trf;trf;trf;Satellite_Satellite_(GAATG)n;Satellite_Satellite_(GAATG)n;Satellite_Satellite_(GAATG)n;Satellite_Satellite_(GAATG)n;trf	0	1	0	None	None	0	8	4	0	0.666666666667	0.0832645169833	-0.5	0.463768115942	2.671779	AL669831.1	ENST00000358533	0	0	0	None	None	None	168	protein_coding	downstream	LOW	None	None	None	None	None	None	None	116	None	63.69	1	2	24	0.0	5.4008	21.49	16	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	None	None	None	None	None	None	C/G,C/G,G/G,C/G,G/G,C/G,G/G,C/G,C/G,G/G,C/G,C/G	1,1,3,1,3,1,3,1,1,3,1,1	False,False,False,False,False,False,False,False,False,False,False,False	22,13,9,16,6,9,7,8,4,4,6,12	8,1,1,7,0,7,0,1,3,0,2,7	13,12,8,9,5,1,7,7,1,4,4,5	99.0,0.22,4.39,99.0,15.05,16.57,21.05,11.18,24.09,12.04,19.31,99.0
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	T/C,T/C,C/C	chr1	909308	909309	639	6	T	C	575.77	None	snp	ts	1.0	1	rs3829738	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	0	0	None	7.73127e-14	8	3	1	0	0.208333333333	0.401650457515	0.242105263158	0.344202898551	0.952858	PLEKHN1	ENST00000379407	1	1	0	13	Tcc/Ccc	S476P	576	protein_coding	non_syn_coding	MED	None	None	None	None	None	None	None	274	None	69.97	2	0	24	0.0	0.213	10.28	5	None	None	None	None	1	0.170433	0.24261	0.194885	1	1	0.23	0.27	0.21	0.18	0.22	None	None	None	None	0	None	None	None	R	unknown	T	T	R	R	T/T,T/T,T/T,T/T,T/T,T/T,T/C,T/T,T/T,C/C,T/C,T/C	0,0,0,0,0,0,1,0,0,3,1,1	False,False,False,False,False,False,False,False,False,False,False,False	51,22,36,43,13,19,17,17,17,8,14,17	51,22,36,42,12,19,15,16,17,0,7,9	0,0,0,1,0,0,2,1,0,8,7,8	99.0,57.17,84.27,69.02,33.1,51.15,8.66,2.98,42.12,18.05,99.0,99.0
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	GT/G,GT/G,G/G	chr1	970561	970563	770	2	GT	G	370.77	None	indel	del	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	0	0	None	None	1	10	1	0	0.5	0.0209213346218	-0.666666666667	0.521739130435	0.521736	AGRN	ENST00000379370	0	0	0	2	None	None	2045	protein_coding	intron	LOW	None	None	None	None	None	None	None	83	None	70.33	1	0	24	None	31.3087	4.63	12	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	unknown	CTCF	CTCF	T	unknown	unknown	GT/G,GT/G,GT/G,GT/G,GT/G,GT/G,GT/G,GT/GT,GT/G,G/G,GT/G,GT/G	1,1,1,1,1,1,1,0,1,3,1,1	False,False,False,False,False,False,False,False,False,False,False,False	19,7,8,12,4,6,7,3,6,2,3,6	13,4,5,9,4,5,7,3,4,1,2,5	1,0,3,0,0,1,0,0,2,1,1,0	97.36,28.09,77.28,42.55,16.57,24.71,2.62,8.98,52.45,4.56,19.51,16.39
+    ...
+
+.. note::
+    
+    The output will always start with the family ID, the family members, the
+    observed genotypes, and the observed aligned sequencing depths 
+    for the family members.
+
+---------------------
+``--columns``
+---------------------
+
+By default, this tool reports all columns in the ``variants`` table. One may
+choose to report only a subset of the columns using the ``--columns`` option.  For
+example, to report just the ``chrom, start, end, ref``, and ``alt`` columns, one
+would use the following:
+
+.. code-block:: bash
+
+    $ gemini autosomal_recessive --columns "chrom, start, end, ref, alt" my.db
+
+    family_id	family_members	family_genotypes	chrom	start	end	ref	alt
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	CAG/C,CAG/C,C/C	chr1	13655	13658	CAG	C
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	C/G,C/G,G/G	chr1	726943	726944	C	G
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	T/C,T/C,C/C	chr1	909308	909309	T	C
+    4	254(father; unaffected),255(mother; unaffected),253(child; affected)	GT/G,GT/G,G/G	chr1	970561	970563	GT	G
+    ...
+    
+.. note::
+    
+    The output will always start with the family ID, the family members, and the
+    observed genotypes for the family members.
+
+
+---------------------
+``--filter``
+---------------------
+
+By default, this tool will report all variants regardless of their putative
+functional impact.  In order to apply additional constraints on the variants
+returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
+applied with the ``--filter option become WHERE clauses in the query issued to
+the GEMINI database.  For example, if we wanted to restrict candidate variants 
+to solely those with a HIGH predicted functional consequence, we could use the
+following:
+
+.. code-block:: bash
+
+    $ gemini autosomal_recessive \
+          --columns "chrom, start, end, ref, alt" \
+          --filter "impact_severity = 'HIGH'" \
+          my.db
+    
+    family_id	family_members	family_genotypes	impact_severity	chrom	start	end	ref	alt
+    4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	CAG/C,CAG/C,C/C	chr1	13655	13658	CAG	C
+    4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	A/T,A/T,T/T	chr1	5935161	5935162	A	T
+    4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	C/CGT,C/CGT,CGT/CGT	chr1	20020993	20020994	C	CGT
+    4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	G/GTG,G/GTG,GTG/GTG	chr1	20020994	20020995	G	GTG
+    ...    
+
+
 
 
 
@@ -197,10 +316,21 @@ function of affecting protein coding transcripts.
 ===========================================================================
 .. note::
 
-    This tool requires that you identify familial relationships via a PED file
+    1. This tool requires that you identify familial relationships via a PED file
     when loading your VCF into gemini via:
 
     ``gemini load -v my.vcf -p my.ped my.db``
+    
+    2. If neither parent are known to be affected, this tool will report any
+       variant where one and only of the parents is heterozygous and the affected
+       child is also heterozygous.  If one and only one of the parents is affected,
+       the tool will report variants where both the affected child and the affected
+       parent are heterozygous.  If both parents are known to be affected, the
+       tool will report nothing for that family.
+
+---------------------
+``default behavior``
+---------------------
 
 Assuming you have defined the familial relationships between samples when loading
 your VCF into GEMINI, one can leverage a built-in tool for identifying variants
@@ -210,19 +340,64 @@ function of affecting protein coding transcripts.
 
 .. code-block:: bash
 
-	$ gemini autosomal_dominant my.db | head
+    $ gemini autosomal_dominant my.db | head
 
-	family_id	chrom	start	end	ref	alt	gene	impact	impact_severity	sample1(father)	sample2(mother)	sample3(child; affected)
-	1	chr1	16855	16856	A	G	WASH7P	splice_donor	HIGH	A/A	A/G	A/G
-	1	chr1	881917	881918	G	A	NOC2L	non_syn_coding	MED	G/A	G/G	G/A
-	1	chr1	907757	907758	A	G	PLEKHN1	non_syn_coding	MED	A/A	A/G	A/G
-	1	chr1	909237	909238	G	C	PLEKHN1	non_syn_coding	MED	G/C	C/C	G/C
-	1	chr1	916548	916549	A	G	C1orf170	non_syn_coding	MED	A/G	G/G	A/G
-	1	chr1	935221	935222	C	A	HES4	non_syn_coding	MED	C/A	A/A	C/A
-	1	chr1	949607	949608	G	A	ISG15	non_syn_coding	MED	G/A	G/G	G/A
-	1	chr1	979747	979748	A	T	AGRN	non_syn_coding	MED	A/T	A/A	A/T
-	1	chr1	1361529	1361530	C	T	TMEM88B	non_syn_coding	MED	C/T	C/C	C/T
+    family_id	family_members	family_genotypes	chrom	start	end	variant_id	anno_id	ref	alt	qual	filter	type	sub_type	call_rate	in_dbsnp	rs_ids	in_omim	clinvar_sig	clinvar_disease_name	clinvar_dbsource	clinvar_dbsource_id	clinvar_origin	clinvar_dsdb	clinvar_dsdbid	clinvar_disease_acc	clinvar_in_locus_spec_db	clinvar_on_diag_assay	pfam_domain	cyto_band	rmsk	in_cpg_island	in_segdup	is_conserved	gerp_bp_score	gerp_element_pval	num_hom_ref	num_het	num_hom_alt	num_unknown	aaf	hwe	inbreeding_coeff	pi	recomb_rate	gene	transcript	is_exonic	is_coding	is_lof	exon	codon_change	aa_change	aa_length	biotype	impact	impact_severity	polyphen_pred	polyphen_score	sift_pred	sift_score	anc_allele	rms_bq	cigar	depth	strand_bias	rms_map_qual	in_hom_run	num_mapq_zero	num_alleles	num_reads_w_dels	haplotype_score	qual_depth	allele_count	allele_bal	in_hm2	in_hm3	is_somatic	in_esp	aaf_esp_ea	aaf_esp_aa	aaf_esp_all	exome_chip	in_1kg	aaf_1kg_amr	aaf_1kg_asn	aaf_1kg_afr	aaf_1kg_eur	aaf_1kg_all	grc	gms_illumina	gms_solid	gms_iontorrent	in_cse	encode_tfbs	encode_dnaseI_cell_count	encode_dnaseI_cell_list	encode_consensus_gm12878	encode_consensus_h1hesc	encode_consensus_helas3	encode_consensus_hepg2	encode_consensus_huvec	encode_consensus_k562	gts	gt_types	gt_phases	gt_depths	gt_ref_depths	gt_alt_depths	gt_quals
+    4	SMS254(father; unknown),SMS255(mother; unknown),SMS253(child; affected)	G/G,G/C,G/C	chr1	13272	13273	7	1	G	C	1647.92	None	snp	tv	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	4.21522e-07	7	5	0	0	0.208333333333	0.36197632685	-0.263157894737	0.344202898551	2.981822	WASH7	ENST00000423562	0	0	0	None	None	None	None	unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	649	None	24.18	0	18	24	0.0	1.470	7.26	5	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	44.7	45.2	73.8	0	None	None	None	R	R	unknown	R	unknown	T	G/C,G/G,G/G,G/G,G/C,G/C,G/G,G/G,G/G,G/C,G/G,G/C	1,0,0,0,1,1,0,0,0,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	74,63,135,83,39,52,31,43,22,23,45,39	46,62,135,81,29,35,31,42,22,15,43,25	28,1,0,2,10,17,0,0,0,8,1,14	99.0,87.24,99.0,75.19,99.0,99.0,42.12,36.1,12.03,99.0,29.72,99.0
+    2	SMS230(father; unaffected),SMS231(mother; affected),SMS193(child; affected)	C/C,C/T,C/T	chr1	13301	13302	8	1	C	T	39.25	None	snp	ts	1.0	1	rs180734498	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	4.21522e-07	5	7	0	0	0.291666666667	0.15375441881	-0.411764705882	0.43115942029	2.981822	WASH7P	ENST00000423562	0	0	0	None	None	None	None	unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	487	None	30.03	0	13	24	0.0	0.8688	0.15	7	None	None	None	None	0	None	None	None	0	1	0.08	0.02	0.21	0.14	0.11	None	None	None	None	0	None	None	None	R	R	unknown	R	unknown	T	C/T,C/T,C/C,C/T,C/T,C/T,C/C,C/C,C/C,C/T,C/C,C/T	1,1,0,1,1,1,0,0,0,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	56,49,119,55,23,43,23,27,10,18,38,26	36,36,107,28,13,30,16,12,1,12,32,15	20,13,12,27,10,13,7,15,9,6,6,11	4.6,11.62,99.0,0.68,19.06,8.5,33.07,30.07,3.01,22.09,72.16,36.78
+    1	SMS238(father; affected),SMS239(father; unaffected),SMS173(child; affected)	G/A,G/G,G/A	chr1	14975	14976	29	1	G	A	5222.86	None	snp	ts	1.0	1	rs71252251	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	8	0	0	0.333333333333	0.0832645169833	-0.5	0.463768115942	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2993	None	34.6	0	102	24	0.0	3.7036	2.62	8	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	T	G/A,G/A,G/G,G/A,G/A,G/G,G/A,G/G,G/A,G/A,G/G,G/A	1,1,0,1,1,0,1,0,1,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	250,250,250,250,250,250,250,250,248,245,250,250	211,220,245,204,162,250,196,248,209,216,249,210	38,29,5,46,88,0,53,2,39,28,1,40	99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0
 
+
+---------------------
+``--columns``
+---------------------
+
+By default, this tool reports all columns in the ``variants`` table. One may
+choose to report only a subset of the columns using the ``--columns`` option.  For
+example, to report just the ``chrom, start, end, ref``, and ``alt`` columns, one
+would use the following:
+
+.. code-block:: bash
+
+    $ gemini autosomal_dominant --columns "chrom, start, end, ref, alt" my.db
+
+    family_id	family_members	family_genotypes	chrom	start	end	ref	alt
+    4	SMS254(father; unknown),SMS255(mother; unknown),SMS253(child; affected)	G/G,G/C,G/C	chr1	13272	13273	G	C
+    2	SMS230(father; unaffected),SMS231(mother; affected),SMS193(child; affected)	C/C,C/T,C/T	chr1	13301	13302	C	T
+    1	SMS238(father; affected),SMS239(father; unaffected),SMS173(child; affected)	G/A,G/G,G/A	chr1	14975	14976	G	A
+    ...
+    
+.. note::
+    
+    The output will always start with the family ID, the family members, and the
+    observed genotypes for the family members.
+    
+
+---------------------
+``--filter``
+---------------------
+
+By default, this tool will report all variants regardless of their putative
+functional impact.  In order to apply additional constraints on the variants
+returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
+applied with the ``--filter option become WHERE clauses in the query issued to
+the GEMINI database.  For example, if we wanted to restrict candidate variants 
+to solely those with a HIGH predicted functional consequence, we could use the
+following:
+
+.. code-block:: bash
+
+    $ gemini autosomal_dominant \
+          --columns "chrom, start, end, ref, alt" \
+          --filter "impact_severity = 'HIGH'" \
+          my.db
+    
+    family_id	family_members	family_genotypes	impact_severity	chrom	start	end	ref	alt
+    4	SMS254(father; unknown),SMS255(father; unknown),SMS253(child; affected)	TTCT/T,TTCT/TTCT,TTCT/T	chr1	17362	17366	TTCT	T
+    1	SMS238(father; affected),SMS239(father; unaffected),SMS173(child; affected)	G/A,G/G,G/A	chr1	13580	135804	G	A
+    1	SMS238(father; affected),SMS239(father; unaffected),SMS173(child; affected)	G/C,C/C,G/C	chr1	99858	998582	G	C
+    2	SMS230(father; unaffected),SMS231(father; affected),SMS193(child; affected)	C/C,G/C,G/C	chr1	99858    ...
+    ...
 
 
 ===========================================================================
