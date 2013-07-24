@@ -304,13 +304,29 @@ class Family(object):
         Return header genotype labels for the parents and the children.
         """
         subjects = []
-        subjects.append(self.father.name + "(father)")
-        subjects.append(self.mother.name + "(mother)")
+        
+        if self.father.affected is True:
+            subjects.append(self.father.name + "(father; affected)")
+        elif self.father.affected is False:
+            subjects.append(self.father.name + "(father; unaffected)")
+        elif self.father.affected is None:
+            subjects.append(self.father.name + "(father; unknown)")
+            
+        if self.mother.affected is True:
+            subjects.append(self.mother.name + "(father; affected)")
+        elif self.mother.affected is False:
+            subjects.append(self.mother.name + "(father; unaffected)")
+        elif self.mother.affected is None:
+            subjects.append(self.mother.name + "(father; unknown)")
+            
+        # handle the childrem
         for child in self.children:
             if child.affected is True:
                 subjects.append(child.name + "(child; affected)")
-            else:
+            elif child.affected is False:
                 subjects.append(child.name + "(child; unaffected)")
+            elif child.affected is None:
+                subjects.append(child.name + "(child; unknown)")
 
         return subjects
 
