@@ -516,10 +516,10 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
-    parser_auto_rec.add_argument('--gt-filter',
-            dest='gt_filter',
-            metavar='STRING',
-            help='Restrictions to apply to genotype values (Python syntax)')
+    #parser_auto_rec.add_argument('--gt-filter',
+    #        dest='gt_filter',
+    #        metavar='STRING',
+    #        help='Restrictions to apply to genotype values (Python syntax)')
     parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
 
     #########################################
@@ -540,10 +540,10 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
-    parser_auto_dom.add_argument('--gt-filter',
-            dest='gt_filter',
-            metavar='STRING',
-            help='Restrictions to apply to genotype values (Python syntax)')
+    #parser_auto_dom.add_argument('--gt-filter',
+    #        dest='gt_filter',
+    #        metavar='STRING',
+    #        help='Restrictions to apply to genotype values (Python syntax)')
     parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
 
     #########################################
@@ -563,10 +563,10 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
-    parser_de_novo.add_argument('--gt-filter',
-            dest='gt_filter',
-            metavar='STRING',
-            help='Restrictions to apply to genotype values (Python syntax)')
+    #parser_de_novo.add_argument('--gt-filter',
+    #        dest='gt_filter',
+    #        metavar='STRING',
+    #        help='Restrictions to apply to genotype values (Python syntax)')
     parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
             type=int,
