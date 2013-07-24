@@ -48,10 +48,10 @@ def get_de_novo_candidates_2(args):
         family_ids.append(family.family_id)
 
     # run the query applying any genotype filters provided by the user.
-    gq.run(query, args.gt_filter)
+    gq.run(query)
 
     # print a header
-    print "family_id\tfamily_members",
+    print "family_id\tfamily_members\tgenotypes\tdepths\t",
     print gq.header
 
     # yield the resulting variants for this familiy
