@@ -313,11 +313,11 @@ class Family(object):
             subjects.append(self.father.name + "(father; unknown)")
             
         if self.mother.affected is True:
-            subjects.append(self.mother.name + "(father; affected)")
+            subjects.append(self.mother.name + "(mother; affected)")
         elif self.mother.affected is False:
-            subjects.append(self.mother.name + "(father; unaffected)")
+            subjects.append(self.mother.name + "(mother; unaffected)")
         elif self.mother.affected is None:
-            subjects.append(self.mother.name + "(father; unknown)")
+            subjects.append(self.mother.name + "(mother; unknown)")
             
         # handle the childrem
         for child in self.children:
