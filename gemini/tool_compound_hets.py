@@ -53,19 +53,20 @@ def get_compound_hets2(args):
         custom_columns = _add_necessary_columns(args, str(args.columns))        
         query = "SELECT " + custom_columns + \
                 " FROM variants " + \
-                " WHERE is_exonic = 1 or impact_severity != 'LOW'"
+                " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
     else:
         # report the kitchen sink
         query = "SELECT *" + \
                 ", gts, gt_types, gt_phases, gt_depths, \
                 gt_ref_depths, gt_alt_depths, gt_quals" + \
                 " FROM variants " + \
-                " WHERE is_exonic = 1 or impact_severity != 'LOW'"
+                " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
 
     # add any non-genotype column limits to the where clause
     if args.filter:
-        query += " WHERE " + args.filter
+        query += " AND " + args.filter
 
+    print query
     # run the query applying any genotype filters provided by the user.
     gq.run(query)
 
