@@ -406,6 +406,21 @@ def main():
     parser_comp_hets.add_argument('db',
             metavar='db',
             help='The name of the database to be created.')
+    parser_comp_hets.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_comp_hets.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    parser_comp_hets.add_argument('--only-affected',
+            dest='only_affected',
+            action='store_true',
+            help='Report solely those compund heterozygotes impacted a sample \
+                  labeled as affected.',
+            default=False)
     parser_comp_hets.add_argument('--allow-other-hets',
             dest='allow_other_hets',
             action='store_true',
@@ -416,7 +431,7 @@ def main():
             action='store_true',
             help='Only consider variants that are loss of function',
             default=False)
-    parser_comp_hets.add_argument('--ignore_phasing',
+    parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
             help='Ignore phasing when screening for compound hets. \
