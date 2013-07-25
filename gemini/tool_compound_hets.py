@@ -101,13 +101,21 @@ def get_compound_hets(args):
     # step 2.  now, cull the list of candidate heterozygotes for each
     # gene/sample to those het pairs where the alternate alleles
     # were inherited on opposite haplotypes.
+    
+    # track which comp_hets we have seen so far.
+    seen_so_far = {}
     comp_het_id = 1
     for sample in comp_hets:
         for gene in comp_hets[sample]:
             for site1 in comp_hets[sample][gene]:
                 for site2 in comp_hets[sample][gene]:
-                    if site1 == site2:
+                    if site1 == site2 or (site1, site2) in seen_so_far:
                         continue
+                    
+                    # avoid reporting the same comp_het, yet just in the
+                    # opposition order.
+                    seen_so_far[(site1, site2)] = True
+                    seen_so_far[(site2, site1)] = True
 
                     # expand the genotypes for this sample
                     # at each site into it's composite
@@ -149,9 +157,5 @@ def get_compound_hets(args):
 
 def run(parser, args):
     if os.path.exists(args.db):
-        try:
-            get_compound_hets(args)
-        except IOError, e:
-            if e.errno != 32:  # ignore SIGPIPE
-                raise
+        get_compound_hets(args)
         
