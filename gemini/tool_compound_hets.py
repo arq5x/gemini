@@ -122,18 +122,18 @@ def get_compound_hets(args):
                         alleles_site1 = re.split('\||/', site1.gt)
                         alleles_site2 = re.split('\||/', site2.gt)
 
+                    # return the haplotype on which the alternate
+                    # allele was observed for this sample at each
+                    # candidate het. site.
+                    # e.g., if ALT=G and alleles_site1=['A', 'G']
+                    # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
+                    alt_hap_1 = alleles_site1.index(site1.row['alt'])
+                    alt_hap_2 = alleles_site2.index(site2.row['alt'])
+                    
                     # it is only a true compound heterozygote IFF
                     # the alternates are on opposite haplotypes.
-                    if not args.ignore_phasing:
-                        # return the haplotype on which the alternate
-                        # allele was observed for this sample at each
-                        # candidate het. site.
-                        # e.g., if ALT=G and alleles_site1=['A', 'G']
-                        # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
-                        alt_hap_1 = alleles_site1.index(site1.alt)
-                        alt_hap_2 = alleles_site2.index(site2.alt)
-
-                        if alt_hap_1 != alt_hap_2:
+                    if (not args.ignore_phasing and alt_hap_1 != alt_hap_2) \
+                        or args.ignore_phasing:
                             print \
                                "\t".join([str(subjects_dict[sample].family_id), 
                                           sample,
@@ -144,17 +144,6 @@ def get_compound_hets(args):
                                           sample,
                                           str(comp_het_id)]),
                             print site2.row
-                    else:
-                        # user has asked us to not care about phasing
-                        # and report what are comp_het _candidates_
-                        print "\t".join([str(subjects_dict[sample].family_id),
-                                         sample,
-                                         str(comp_het_id)]),
-                        print site1.row
-                        print "\t".join([str(subjects_dict[sample].family_id), 
-                                         sample,
-                                         str(comp_het_id)]),
-                        print site2.row
                     
                     comp_het_id += 1
 
