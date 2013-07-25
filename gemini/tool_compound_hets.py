@@ -160,4 +160,9 @@ def get_compound_hets(args):
 
 def run(parser, args):
     if os.path.exists(args.db):
-        get_compound_hets(args)
+        try:
+            get_compound_hets(args)
+        except IOError, e:
+            if e.errno != 32:  # ignore SIGPIPE
+                raise
+        
