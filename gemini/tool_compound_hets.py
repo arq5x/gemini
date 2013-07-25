@@ -41,7 +41,7 @@ def _add_necessary_columns(args, custom_columns):
         
     return custom_columns
 
-def get_compound_hets2(args):
+def get_compound_hets(args):
     """
     Report candidate compound heterozygous mutations.
     """
@@ -66,7 +66,6 @@ def get_compound_hets2(args):
     if args.filter:
         query += " AND " + args.filter
 
-    print query
     # run the query applying any genotype filters provided by the user.
     gq.run(query)
 
@@ -171,104 +170,6 @@ def get_compound_hets2(args):
                     
                     comp_het_id += 1
 
-
-def get_compound_hets(c, args):
-    """
-    Report candidate compound heterozygous mutations.
-    """
-    # build a mapping of the numpy array index to the appropriate sample name
-    # e.g. 0 == 109400005
-    #     37 == 147800025
-    idx_to_sample = util.map_indicies_to_samples(c)
-
-    comp_hets = collections.defaultdict(lambda: collections.defaultdict(list))
-
-    query = "SELECT * FROM variants \
-             WHERE impact_severity != 'LOW'"  # is_exonic - what about splice?
-    c.execute(query)
-
-    # step 1. collect all candidate heterozygptes for all
-    # genes and samples.  the list will be refined in step 2.
-    for row in c:
-        gt_types = compression.unpack_genotype_blob(row['gt_types'])
-        gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
-        gt_bases = compression.unpack_genotype_blob(row['gts'])
-
-        site = Site(row)
-
-        # filter putative sites that the user doesn't care about
-        if site.num_hets > 1 and not args.allow_other_hets:
-            continue
-        if not site.is_lof and args.only_lof:
-            continue
-
-        # track each sample that is heteroyzgous at this site.
-        for idx, gt_type in enumerate(gt_types):
-            if gt_type == HET:
-                sample = idx_to_sample[idx]
-                # (testing)
-                # sample = "NA19002"
-                sample_site = copy(site)
-                sample_site.phased = gt_phases[idx]
-
-                # require phased genotypes
-                if not sample_site.phased and not args.ignore_phasing:
-                    continue
-
-                sample_site.gt = gt_bases[idx]
-                # add the site to the list of candidates
-                # for this sample/gene
-                comp_hets[sample][site.gene].append(sample_site)
-
-    # header
-    print "sample\tgene\thet1\thet2"
-    # step 2.  now, cull the list of candidate heterozygotes for each
-    # gene/sample to those het pairs where the alternate alleles
-    # were inherited on opposite haplotypes.
-    for sample in comp_hets:
-        for gene in comp_hets[sample]:
-            for site1 in comp_hets[sample][gene]:
-                for site2 in comp_hets[sample][gene]:
-                    if site1 == site2:
-                        continue
-
-                    # expand the genotypes for this sample
-                    # at each site into it's composite
-                    # alleles.  e.g. A|G -> ['A', 'G']
-                    alleles_site1 = []
-                    alleles_site2 = []
-                    if not args.ignore_phasing:
-                        alleles_site1 = site1.gt.split('|')
-                        alleles_site2 = site2.gt.split('|')
-                    else:
-                        # split on phased (|) or unphased (/) genotypes
-                        alleles_site1 = re.split('\||/', site1.gt)
-                        alleles_site2 = re.split('\||/', site2.gt)
-
-                    # it is only a true compound heterozygote iff
-                    # the alternates are on opposite haplotypes.
-                    if not args.ignore_phasing:
-                        # return the haplotype on which the alternate
-                        # allele was observed for this sample at each
-                        # candidate het. site.
-                        # e.g., if ALT=G and alleles_site1=['A', 'G']
-                        # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
-                        alt_hap_1 = alleles_site1.index(site1.alt)
-                        alt_hap_2 = alleles_site2.index(site2.alt)
-
-                        if alt_hap_1 != alt_hap_2:
-                            print "\t".join([sample,
-                                             gene,
-                                             str(site1),
-                                             str(site2)])
-                    else:
-                        # user has asked us to not care about phasing
-                        print "\t".join([sample,
-                                         gene,
-                                         str(site1),
-                                         str(site2)])
-
-
 def run(parser, args):
     if os.path.exists(args.db):
-        get_compound_hets2(args)
+        get_compound_hets(args)
