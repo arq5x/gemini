@@ -421,16 +421,6 @@ def main():
             help='Report solely those compund heterozygotes impacted a sample \
                   labeled as affected.',
             default=False)
-    parser_comp_hets.add_argument('--allow-other-hets',
-            dest='allow_other_hets',
-            action='store_true',
-            help='Allow other het. individuals when screening candidates.',
-            default=False)
-    parser_comp_hets.add_argument('--only_lof',
-            dest='only_lof',
-            action='store_true',
-            help='Only consider variants that are loss of function',
-            default=False)
     parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
@@ -610,14 +600,16 @@ def main():
     # parse the args and call the selected function
     #######################################################
     args = parser.parse_args()
-    args.func(parser, args)
-
-    # make sure database is found
-    if args.db is not None:
-        if not os.path.exists(args.db):
+    
+    # make sure database is found if provided
+    if len(sys.argv) > 2:
+        if args.db is not None and not os.path.exists(args.db):
             sys.stderr.write("Requested GEMINI database (%s) not found. "
                              "Please confirm the provided filename.\n" 
                              % args.db)
+    
+    args.func(parser, args)
+
 
 if __name__ == "__main__":
     main()
