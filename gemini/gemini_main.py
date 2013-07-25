@@ -608,7 +608,11 @@ def main():
                              "Please confirm the provided filename.\n" 
                              % args.db)
     
-    args.func(parser, args)
+    try:
+        args.func(parser, args)
+    except IOError, e:
+        if e.errno != 32:  # ignore SIGPIPE
+            raise
 
 
 if __name__ == "__main__":
