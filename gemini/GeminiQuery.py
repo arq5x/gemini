@@ -387,7 +387,7 @@ class GeminiQuery(object):
             return raw_col.lower()
         elif '.' in raw_col:
             # e.g., "gts.NA12878"
-            (column, sample) = raw_col.split('.')
+            (column, sample) = raw_col.split('.', 1)
             corrected = column.lower() + "[" + str(self.sample_to_idx[sample]).lower() + "]"
         else:
             # e.g. "gts" - do nothing
