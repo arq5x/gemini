@@ -368,3 +368,19 @@ def get_families(c):
         family = Family(families_dict[fam])
         families.append(family)
     return families
+    
+def get_subjects(c):
+    """
+    Query the samples table to return a dict of subjects.
+    
+    
+    """
+    query = "SELECT * FROM samples"
+    c.execute(query)
+
+    samples_dict = {}
+    for row in c:
+        subject = Subject(row)
+        sample_name = subject.name
+        samples_dict[sample_name] = subject
+    return samples_dict
