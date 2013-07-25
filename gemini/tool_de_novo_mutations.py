@@ -10,7 +10,7 @@ import gemini_utils as util
 from gemini_constants import *
 import gemini_subjects as subjects
 
-def get_de_novo_candidates_2(args):
+def get_de_novo_candidates(args):
     """
     Report candidate variants that meet appear to be de novo
     mutations in the child. We cannot distinguish mutations that
@@ -51,7 +51,7 @@ def get_de_novo_candidates_2(args):
     gq.run(query)
 
     # print a header
-    print "family_id\tfamily_members\tgenotypes\tdepths\t",
+    print "family_id\tfamily_members\tfamily_genotypes\tdepths\t",
     print gq.header
 
     # yield the resulting variants for this familiy
@@ -95,5 +95,5 @@ def get_de_novo_candidates_2(args):
 
 def run(parser, args):
     if os.path.exists(args.db):
-        get_de_novo_candidates_2(args)
+        get_de_novo_candidates(args)
 
