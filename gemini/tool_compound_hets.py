@@ -34,10 +34,6 @@ def _add_necessary_columns(args, custom_columns):
         custom_columns += ", gene"
     if custom_columns.find("start") < 0:
         custom_columns += ", start"
-    if not args.allow_other_hets:
-        custom_columns += ", num_het"
-    if args.only_lof:
-        custom_columns += ", is_lof"
         
     return custom_columns
 
@@ -78,14 +74,6 @@ def get_compound_hets(args):
         gt_phases = row['gt_phases']
         
         site = Site(row)
-        
-        # filter putative sites that the user doesn't care about
-        if not args.allow_other_hets:
-            if site.row['num_het'] > 1:
-                continue
-        if args.only_lof:
-            if not site.row['is_lof']: 
-                continue
 
         # track each sample that is heteroyzgous at this site.
         for idx, gt_type in enumerate(gt_types):
