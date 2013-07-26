@@ -105,20 +105,20 @@ def get_compound_hets(args):
     comp_het_id = 1
     for sample in comp_hets:
         # track which comp_hets we have seen so far for this sample.
-        seen = {}
+        #seen = {}
         for gene in comp_hets[sample]:
             for site1 in comp_hets[sample][gene]:
                 for site2 in comp_hets[sample][gene]:
                     if site1 == site2:
                         continue
                     
-                    if (site1, site2) in seen or (site2, site1) in seen:
-                        continue
+                    #if (site1, site2) in seen or (site2, site1) in seen:
+                    #    continue
                     
                     # avoid reporting the same comp_het, yet just in the
                     # opposition order.
-                    seen[(site1, site2)] = True
-                    seen[(site2, site1)] = True
+                    #seen[(site1, site2)] = True
+                    #seen[(site2, site1)] = True
 
                     # expand the genotypes for this sample
                     # at each site into it's composite
