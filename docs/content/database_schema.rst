@@ -320,6 +320,7 @@ HIGH              - exon_deleted
                   - stop_gain
                   - stop_loss
                   - non_synonymous_start
+                  - transcript_codon_change
 MED               - non_syn_coding
                   - inframe_codon_gain
                   - inframe_codon_loss
@@ -354,7 +355,6 @@ LOW               - synonymous_stop
                   - intron_conserved
                   - nc_transcript
                   - NMD_transcript
-                  - transcript_codon_change
                   - incomplete_terminal_codon
                   - nc_exon
                   - transcript_ablation
