@@ -107,11 +107,11 @@ def get_compound_hets(args):
         # track which comp_hets we have seen so far for this sample.
         # seen = {}
         for gene in comp_hets[sample]:
-            for index, site1 in enumerate(comp_hets[sample][gene]):
-                list_size = len(comp_hets[sample][gene])
-                sub_list = comp_hets[sample][gene][index+1: list_size-1]
-                for site2 in comp_hets[sample][gene][index+1]:
-                    
+            list_size = len(comp_hets[sample][gene])
+            for index, site1 in enumerate(comp_hets[sample][gene][0:list_size-1]):
+                for site2 in comp_hets[sample][gene][index+1: list_size]:
+                    # debugging statement; figured out Gemini doesn't support multi-allelic variants
+                    # print("site1=", site1.row, "\n", "site2=", site2.row)
             # for site1 in comp_hets[sample][gene]:
             #     for site2 in comp_hets[sample][gene]:
             #         if site1 == site2:
