@@ -106,7 +106,8 @@ You can also add a header so that you can keep track of who's who:
                               gts.1094PC0009, \
                               gts.1094PC0012, \
                               gts.1094PC0013 \
-                       from variants" test.snpEff.vcf.db
+                       from variants" \
+                       --header test.snpEff.vcf.db
 
     chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
     chr1	30547	30548	T	G	FAM138A	./.	./.	./.	./.
@@ -128,7 +129,7 @@ sample so that we can assess the confidence in the genotype:
 
 	$ gemini query -q "select chrom, start, end, ref, alt, gene,
                               gts.1094PC0005, \
-                              gt_depths.1094PC0005, \
+                              gt_depths.1094PC0005 \
                        from variants" test.snpEff.vcf.db
 
 	chr1	30547	30548	T	G	FAM138A	./.	-1
