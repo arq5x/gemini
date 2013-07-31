@@ -71,7 +71,7 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
         final_script = os.path.join(tooldir, "bin", script)
         ve_script = os.path.join(anaconda["dir"], "bin", script)
         sudo_cmd = ["sudo"] if use_sudo else []
-        if os.path.exists(final_script):
+        if os.path.lexists(final_script):
             subprocess.check_call(sudo_cmd + ["rm", "-f", final_script])
         else:
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
