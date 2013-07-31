@@ -10,11 +10,12 @@ Handles installation of:
 - Gemini application
 - Associated data files
 
-Requires: Python 2.7, git
+Requires: Python 2.7, git, and compilers (gcc, g++)
 
 Run gemini_install.py -h for usage.
 """
 import argparse
+import platform
 import os
 import shutil
 import subprocess
@@ -24,10 +25,10 @@ remotes = {"requirements":
            "https://raw.github.com/arq5x/gemini/master/requirements.txt",
            "cloudbiolinux":
            "https://github.com/chapmanb/cloudbiolinux.git",
-           "virtualenv":
-           "https://raw.github.com/pypa/virtualenv/master/virtualenv.py",
            "gemini":
-           "https://github.com/arq5x/gemini.git"}
+           "https://github.com/arq5x/gemini.git",
+           "anaconda":
+           "http://repo.continuum.io/miniconda/Miniconda-1.6.2-%s-x86_64.sh"}
 
 def main(args):
     check_dependencies()
@@ -35,9 +36,12 @@ def main(args):
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
     os.chdir(work_dir)
-    print "Installing gemini..."
     make_dirs(args)
-    gemini = install_gemini(remotes, args.datadir, args.tooldir, args.sudo)
+    print "Installing isolated base python installation"
+    anaconda = install_anaconda_python(args, remotes)
+    print "Installing gemini..."
+    install_conda_pkgs(anaconda)
+    gemini = install_gemini(anaconda, remotes, args.datadir, args.tooldir, args.sudo)
     cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
     fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir,
                               "ubuntu", args.sudo)
@@ -55,49 +59,62 @@ def main(args):
                                                     os.path.basename(test_script))
     shutil.rmtree(work_dir)
 
-def install_gemini(remotes, datadir, tooldir, use_sudo):
-    """Install a virtualenv containing gemini plus dependencies.
+def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
+    """Install gemini plus python dependencies inside isolated Anaconda environment.
     """
-    virtualenv_dir = os.path.join(datadir, "gemini-virtualenv")
-    if not os.path.exists(virtualenv_dir):
-        subprocess.check_call(["wget", remotes["virtualenv"]])
-        subprocess.check_call([sys.executable, "virtualenv.py", "--no-site-packages",
-                               "--distribute", virtualenv_dir])
-        os.remove("virtualenv.py")
-    pip_cmd = os.path.join(virtualenv_dir, "bin", "pip")
-    ez_cmd = os.path.join(virtualenv_dir, "bin", "easy_install")
-    # work around issue with latest version of pip on MacOSX: https://github.com/pypa/pip/issues/829
-    subprocess.check_call([ez_cmd, "pip==1.2.1"])
-    subprocess.check_call([pip_cmd, "install", "--upgrade", "fabric"])
-    subprocess.check_call([pip_cmd, "install", "--upgrade", "distribute"])
-    subprocess.check_call([pip_cmd, "install", "--upgrade", "cython"])
-    subprocess.check_call([pip_cmd, "install", "--upgrade", "pyyaml"])
-    # Install problem dependencies separately: numpy and bx-python
-    subprocess.check_call([pip_cmd, "install", "numpy==1.7.1"])
-    subprocess.check_call([pip_cmd, "install", "--upgrade",
+    subprocess.check_call([anaconda["pip"], "install", "fabric>=1.7.0"])
+    # Install problem dependency separately: bx-python
+    subprocess.check_call([anaconda["pip"], "install", "--upgrade",
                            "https://bitbucket.org/james_taylor/bx-python/get/tip.tar.bz2"])
-    subprocess.check_call([pip_cmd, "install", "-r", remotes["requirements"]])
+    subprocess.check_call([anaconda["pip"], "install", "-r", remotes["requirements"]])
     for script in ["gemini"]:
         final_script = os.path.join(tooldir, "bin", script)
-        ve_script = os.path.join(virtualenv_dir, "bin", script)
-        if not os.path.exists(final_script):
-            sudo_cmd = ["sudo"] if use_sudo else []
+        ve_script = os.path.join(anaconda["dir"], "bin", script)
+        sudo_cmd = ["sudo"] if use_sudo else []
+        if os.path.exists(final_script):
+            subprocess.check_call(sudo_cmd + ["rm", "-f", final_script])
+        else:
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
-            cmd = ["ln", "-s", ve_script, final_script]
-            subprocess.check_call(sudo_cmd + cmd)
-    _cleanup_problem_files(virtualenv_dir)
-    python_bin = os.path.join(virtualenv_dir, "bin", "python")
+        cmd = ["ln", "-s", ve_script, final_script]
+        subprocess.check_call(sudo_cmd + cmd)
+    _cleanup_problem_files(anaconda["dir"])
+    python_bin = os.path.join(anaconda["dir"], "bin", "python")
     library_loc = subprocess.check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
                                           shell=True)
-    return {"fab": os.path.join(virtualenv_dir, "bin", "fab"),
+    return {"fab": os.path.join(anaconda["dir"], "bin", "fab"),
             "data_script": os.path.join(os.path.dirname(library_loc.strip()), "install-data.py"),
             "python": python_bin}
 
-def _cleanup_problem_files(virtualenv_dir):
+def install_conda_pkgs(anaconda):
+    pkgs = ["cython", "distribute", "ipython", "nose", "numpy",
+            "pip", "pycrypto", "pyparsing", "pysam", "pyyaml", "pyzmq"]
+    subprocess.check_call([anaconda["conda"], "install", "--yes"] + pkgs)
+
+def install_anaconda_python(args, remotes):
+    """Provide isolated installation of Anaconda python.
+    http://docs.continuum.io/anaconda/index.html
+    """
+    anaconda_dir = os.path.join(args.datadir, "anaconda")
+    if platform.mac_ver()[0]:
+        distribution = "macosx"
+    else:
+        distribution = "linux"
+    if not os.path.exists(anaconda_dir):
+        url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux")
+        if not os.path.exists(os.path.basename(url)):
+            subprocess.check_call(["wget", url])
+        subprocess.check_call("echo -e '\nyes\n%s\nno\n' | bash %s" %
+                              (anaconda_dir, os.path.basename(url)), shell=True)
+    bindir = os.path.join(anaconda_dir, "bin")
+    return {"conda": os.path.join(bindir, "conda"),
+            "pip": os.path.join(bindir, "pip"),
+            "dir": anaconda_dir}
+
+def _cleanup_problem_files(venv_dir):
     """Remove problem bottle items in PATH which conflict with site-packages
     """
     for cmd in ["bottle.py", "bottle.pyc"]:
-        bin_cmd = os.path.join(virtualenv_dir, "bin", cmd)
+        bin_cmd = os.path.join(venv_dir, "bin", cmd)
         if os.path.exists(bin_cmd):
             os.remove(bin_cmd)
 
