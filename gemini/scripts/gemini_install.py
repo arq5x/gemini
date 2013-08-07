@@ -48,9 +48,11 @@ def main(args):
     if args.install_tools:
         print "Installing associated tools..."
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
+    os.chdir(work_dir)
     if args.install_data:
         print "Installing gemini data..."
         install_data(gemini["python"], gemini["data_script"], args.datadir)
+    os.chdir(work_dir)
     test_script = install_testbase(args.datadir, remotes["gemini"])
     print "Finished: gemini, tools and data installed"
     print " Tools installed in:\n  %s" % args.tooldir
