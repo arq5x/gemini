@@ -6,75 +6,83 @@ import collections
 import re
 from copy import copy
 
+import GeminiQuery
 import gemini_utils as util
 from gemini_constants import *
-import compression
-
+import gemini_subjects as subjects
 
 class Site(object):
     def __init__(self, row):
-        self.chrom = row['chrom']
-        self.start = row['start']
-        self.end = row['end']
-        self.ref = row['ref']
-        self.alt = row['alt']
-        self.gene = row['gene']
-        self.num_hets = row['num_het']
-        self.exon = row['exon']
-        self.aaf = row['aaf']
-        self.in_dbsnp = row['in_dbsnp']
-        self.impact = row['impact']
-        self.is_lof = row['is_lof']
-        # specific to each sample
+        self.row = row
         self.phased = None
         self.gt = None
 
-    def __repr__(self):
-        return ','.join([self.chrom, str(self.start), str(self.end),
-                         self.ref, self.alt, self.gt or "None",
-                         self.impact or "None",
-                         self.exon or "None", str(self.aaf),
-                         str(self.in_dbsnp)])
-
     def __eq__(self, other):
-        return self.start == other.start
+        return self.row['chrom'] == other.row['chrom'] and \
+               self.row['start'] == other.row['start']
 
 
-def get_compound_hets(c, args):
+def _add_necessary_columns(args, custom_columns):
+    """
+    Convenience function to tack on columns that are necessary for
+    the functionality of the tool but yet have not been specifically
+    requested by the user.
+    """
+    # we need to add the variant's chrom, start and gene if 
+    # not already there.
+    if custom_columns.find("gene") < 0:
+        custom_columns += ", gene"
+    if custom_columns.find("start") < 0:
+        custom_columns += ", start"
+        
+    return custom_columns
+
+def get_compound_hets(args):
     """
     Report candidate compound heterozygous mutations.
     """
-    # build a mapping of the numpy array index to the appropriate sample name
-    # e.g. 0 == 109400005
-    #     37 == 147800025
-    idx_to_sample = util.map_indicies_to_samples(c)
+    gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True)
+    idx_to_sample = gq.idx_to_sample
+    subjects_dict = subjects.get_subjects(gq.c)
+    
+    if args.columns is not None:
+        custom_columns = _add_necessary_columns(args, str(args.columns))        
+        query = "SELECT " + custom_columns + \
+                " FROM variants " + \
+                " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+    else:
+        # report the kitchen sink
+        query = "SELECT *" + \
+                ", gts, gt_types, gt_phases, gt_depths, \
+                gt_ref_depths, gt_alt_depths, gt_quals" + \
+                " FROM variants " + \
+                " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+
+    # add any non-genotype column limits to the where clause
+    if args.filter:
+        query += " AND " + args.filter
+
+    # run the query applying any genotype filters provided by the user.
+    gq.run(query)
 
     comp_hets = collections.defaultdict(lambda: collections.defaultdict(list))
 
-    query = "SELECT * FROM variants \
-             WHERE impact_severity != 'LOW'"  # is_exonic - what about splice?
-    c.execute(query)
-
-    # step 1. collect all candidate heterozygptes for all
-    # genes and samples.  the list will be refined in step 2.
-    for row in c:
-        gt_types = compression.unpack_genotype_blob(row['gt_types'])
-        gt_phases = compression.unpack_genotype_blob(row['gt_phases'])
-        gt_bases = compression.unpack_genotype_blob(row['gts'])
-
+    for row in gq:
+        gt_types = row['gt_types']
+        gts = row['gts']
+        gt_bases = row['gts']
+        gt_phases = row['gt_phases']
+        
         site = Site(row)
-
-        # filter putative sites that the user doesn't care about
-        if site.num_hets > 1 and not args.allow_other_hets:
-            continue
-        if not site.is_lof and args.only_lof:
-            continue
 
         # track each sample that is heteroyzgous at this site.
         for idx, gt_type in enumerate(gt_types):
             if gt_type == HET:
                 sample = idx_to_sample[idx]
-                # (testing)
+                
+                if args.only_affected and not subjects_dict[sample].affected:
+                    continue
+
                 # sample = "NA19002"
                 sample_site = copy(site)
                 sample_site.phased = gt_phases[idx]
@@ -86,19 +94,31 @@ def get_compound_hets(c, args):
                 sample_site.gt = gt_bases[idx]
                 # add the site to the list of candidates
                 # for this sample/gene
-                comp_hets[sample][site.gene].append(sample_site)
+                comp_hets[sample][site.row['gene']].append(sample_site)
 
     # header
-    print "sample\tgene\thet1\thet2"
+    print "family\tsample\tcomp_het_id\t" + str(gq.header)
     # step 2.  now, cull the list of candidate heterozygotes for each
     # gene/sample to those het pairs where the alternate alleles
     # were inherited on opposite haplotypes.
+    
+    comp_het_id = 1
     for sample in comp_hets:
+        # track which comp_hets we have seen so far for this sample.
+        #seen = {}
         for gene in comp_hets[sample]:
             for site1 in comp_hets[sample][gene]:
                 for site2 in comp_hets[sample][gene]:
                     if site1 == site2:
                         continue
+                    
+                    #if (site1, site2) in seen or (site2, site1) in seen:
+                    #    continue
+                    
+                    # avoid reporting the same comp_het, yet just in the
+                    # opposition order.
+                    #seen[(site1, site2)] = True
+                    #seen[(site2, site1)] = True
 
                     # expand the genotypes for this sample
                     # at each site into it's composite
@@ -113,36 +133,32 @@ def get_compound_hets(c, args):
                         alleles_site1 = re.split('\||/', site1.gt)
                         alleles_site2 = re.split('\||/', site2.gt)
 
-                    # it is only a true compound heterozygote iff
+                    # return the haplotype on which the alternate
+                    # allele was observed for this sample at each
+                    # candidate het. site.
+                    # e.g., if ALT=G and alleles_site1=['A', 'G']
+                    # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
+                    alt_hap_1 = alleles_site1.index(site1.row['alt'])
+                    alt_hap_2 = alleles_site2.index(site2.row['alt'])
+                    
+                    # it is only a true compound heterozygote IFF
                     # the alternates are on opposite haplotypes.
-                    if not args.ignore_phasing:
-                        # return the haplotype on which the alternate
-                        # allele was observed for this sample at each
-                        # candidate het. site.
-                        # e.g., if ALT=G and alleles_site1=['A', 'G']
-                        # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
-                        alt_hap_1 = alleles_site1.index(site1.alt)
-                        alt_hap_2 = alleles_site2.index(site2.alt)
+                    if (not args.ignore_phasing and alt_hap_1 != alt_hap_2) \
+                        or args.ignore_phasing:
+                            print \
+                               "\t".join([str(subjects_dict[sample].family_id), 
+                                          sample,
+                                         str(comp_het_id),
+                                         str(site1.row)])
+                            print \
+                               "\t".join([str(subjects_dict[sample].family_id), 
+                                          sample,
+                                          str(comp_het_id),
+                                          str(site2.row)])
 
-                        if alt_hap_1 != alt_hap_2:
-                            print "\t".join([sample,
-                                             gene,
-                                             str(site1),
-                                             str(site2)])
-                    else:
-                        # user has asked us to not care about phasing
-                        print "\t".join([sample,
-                                         gene,
-                                         str(site1),
-                                         str(site2)])
-
+                    comp_het_id += 1
 
 def run(parser, args):
-
     if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        # run the compound het caller
-        get_compound_hets(c, args)
+        get_compound_hets(args)
+        

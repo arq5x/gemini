@@ -22,6 +22,7 @@ setup(
         version=version,
         install_requires=['numpy>=1.6.0',
                           'pyparsing>=1.5.6,<=1.5.7',
+<<<<<<< HEAD
                           'pysam>=0.7.4',
                           'cyvcf>=0.1.6',
                           'PyYAML >= 3.10',
@@ -34,7 +35,18 @@ setup(
                           'ipython-cluster-helper >= 0.1.6',
                           'bx-python >= 0.7.1',
                           'pandas >= 0.11.0',
-                          'scipy' >= '0.12.0'],
+                          'scipy >= 0.12.0'],
+=======
+                          'pysam>=0.6',
+                          'cyvcf>=0.1.7',
+                          'PyYAML >= 3.10',
+                          'pybedtools>=0.6.2',
+                          'python-graph-core >= 1.8.2',
+                          'python-graph-dot >= 1.8.2',
+                          'bottle >= 0.11',
+                          'ipython-cluster-helper >= 0.1.9',
+                          'bx-python >= 0.7.1'],
+>>>>>>> 8ea30f39ef7b109468c4882ca9c2dbb2a558fef3
         dependency_links = ['http://github.com/arq5x/cyvcf/tarball/master#egg=cyvcf-0.1.5'],
         requires = ['python (>=2.5, <3.0)'],
         packages=['gemini',

@@ -3,6 +3,7 @@ import sys
 import os
 import shutil
 import subprocess
+import time
 
 from gemini.config import read_gemini_config, write_gemini_config
 
@@ -98,11 +99,29 @@ def _download_to_dir(url, dirname, version, cur_version):
     stub = os.path.basename(url)
     dest = os.path.join(dirname, stub)
     if not os.path.exists(dest) or version > cur_version:
-        # download data file to pwd
-        cmd = ["curl", "-OL", url]
-        subprocess.check_call(cmd)
+        # download data file to staging directory instead of current
+        # direction which may not have space
+        dl_dir = os.path.join(dirname, "tmpdownload")
+        if not os.path.exists(dl_dir):
+            os.makedirs(dl_dir)
+        orig_dir = os.getcwd()
+        os.chdir(dl_dir)
+        # download file, allowing retries for network errors
+        max_retries = 2
+        retries = 0
+        while 1:
+            try:
+                cmd = ["curl", "-C", "-", "-OL", url]
+                subprocess.check_call(cmd)
+                break
+            except subprocess.CalledProcessError:
+                if retries >= max_retries:
+                    raise
+                time.sleep(10)
+                retries += 1
         # move to system directory (/usr/share/gemini/data) and remove from pwd
         shutil.move(stub, dest)
+        os.chdir(orig_dir)
 
 if __name__ == "__main__":
     anno_dir = sys.argv[1]

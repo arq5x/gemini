@@ -430,17 +430,22 @@ def main():
     parser_comp_hets.add_argument('db',
             metavar='db',
             help='The name of the database to be created.')
-    parser_comp_hets.add_argument('--allow-other-hets',
-            dest='allow_other_hets',
+    parser_comp_hets.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_comp_hets.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    parser_comp_hets.add_argument('--only-affected',
+            dest='only_affected',
             action='store_true',
-            help='Allow other het. individuals when screening candidates.',
+            help='Report solely those compund heterozygotes impacted a sample \
+                  labeled as affected.',
             default=False)
-    parser_comp_hets.add_argument('--only_lof',
-            dest='only_lof',
-            action='store_true',
-            help='Only consider variants that are loss of function',
-            default=False)
-    parser_comp_hets.add_argument('--ignore_phasing',
+    parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
             help='Ignore phasing when screening for compound hets. \
@@ -531,6 +536,19 @@ def main():
     parser_auto_rec.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
+    parser_auto_rec.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_auto_rec.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    #parser_auto_rec.add_argument('--gt-filter',
+    #        dest='gt_filter',
+    #        metavar='STRING',
+    #        help='Restrictions to apply to genotype values (Python syntax)')
     parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
 
     #########################################
@@ -542,6 +560,19 @@ def main():
     parser_auto_dom.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
+    parser_auto_dom.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_auto_dom.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    #parser_auto_dom.add_argument('--gt-filter',
+    #        dest='gt_filter',
+    #        metavar='STRING',
+    #        help='Restrictions to apply to genotype values (Python syntax)')
     parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
 
     #########################################
@@ -552,13 +583,26 @@ def main():
     parser_de_novo.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
+    parser_de_novo.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_de_novo.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    #parser_de_novo.add_argument('--gt-filter',
+    #        dest='gt_filter',
+    #        metavar='STRING',
+    #        help='Restrictions to apply to genotype values (Python syntax)')
     parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
             type=int,
             help="The minimum aligned\
                   sequence depth (genotype DP) req'd for\
-                  each sample",
-            default=20)
+                  each sample (def. = 0)",
+            default=0)
     parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
 
     #########################################
@@ -580,12 +624,21 @@ def main():
     # parse the args and call the selected function
     #######################################################
     args = parser.parse_args()
-    args.func(parser, args)
+    
+    # make sure database is found if provided
+    if len(sys.argv) > 2 and sys.argv[1] not in \
+       ["load", "merge_chunks", "load_chunk"]:
+        if args.db is not None and not os.path.exists(args.db):
+            sys.stderr.write("Requested GEMINI database (%s) not found. "
+                             "Please confirm the provided filename.\n" 
+                             % args.db)
+    
+    try:
+        args.func(parser, args)
+    except IOError, e:
+        if e.errno != 32:  # ignore SIGPIPE
+            raise
 
-    # make sure database is found
-    if args.db is not None and not os.path.exists(args.db):
-        sys.stderr.write("Requested GEMINI database (%s) not found. "
-                         "Please confirm the provided filename.\n" % args.db)
 
 if __name__ == "__main__":
     main()

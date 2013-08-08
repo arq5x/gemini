@@ -10,13 +10,20 @@ def release(parser, args):
     """Update gemini to the latest release, along with associated data files.
     """
     url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
+    # update locally isolated python
     pip_bin = os.path.join(os.path.dirname(sys.executable), "pip")
     activate_bin = os.path.join(os.path.dirname(sys.executable), "activate")
-    if not os.path.exists(activate_bin):
-        raise NotImplementedError("Can only upgrade gemini installed in virtualenv")
+    conda_bin = os.path.join(os.path.dirname(sys.executable), "conda")
+    if os.path.exists(conda_bin):
+        pkgs = ["cython", "distribute", "ipython", "nose", "numpy",
+                "pip", "pycrypto", "pyparsing", "pysam", "pyyaml", "pyzmq"]
+        subprocess.check_call([conda_bin, "install", "--yes"] + pkgs)
+    elif os.path.exists(activate_bin):
+        subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
+    else:
+        raise NotImplementedError("Can only upgrade gemini installed in anaconda or virtualenv")
     # update libraries
-    subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
-    subprocess.check_call([pip_bin, "install", "-r", url])
+    #subprocess.check_call([pip_bin, "install", "-r", url])
     # update datafiles
     config = gemini.config.read_gemini_config()
     install_script = os.path.join(os.path.dirname(__file__), "install-data.py")
