@@ -602,7 +602,8 @@ def main():
     args = parser.parse_args()
     
     # make sure database is found if provided
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 2 and sys.argv[1] not in \
+       ["load", "merge_chunks", "load_chunk"]:
         if args.db is not None and not os.path.exists(args.db):
             sys.stderr.write("Requested GEMINI database (%s) not found. "
                              "Please confirm the provided filename.\n" 

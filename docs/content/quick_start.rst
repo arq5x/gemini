@@ -10,6 +10,23 @@ The basic workflow for working with `gemini` is outlined below.
 Importing VCF files into gemini.
 -------------------------------------------------
 
+Before we can use GEMINI to explore genetic variation, we must first ``load`` our
+VCF file into the GEMINI database framework.  We expect you to have first
+annotated the functional consequence of each variant in your VCF using either
+VEP or snpEff (Note that v3.0+ of snpEff is required to track the amino acid
+length of each impacted transcript). Logically,the loading step is done with
+the ``gemini load`` command.  Below are two examples based on a VCF file that
+we creatively name my.vcf.  The first example assumes that the VCF has been
+pre-annotated with VEP and the second assumes snpEff.
+
+.. code-block:: bash
+
+	# VEP-annotated VCF
+	$ gemini load -v my.vcf -t VEP my.db
+
+	# snpEff-annotated VCF
+	$ gemini load -v my.vcf -t snpEff my.db
+
 Assuming you have a valid VCF file produced by standard variation discovery 
 programs (e.g., GATK, FreeBayes, etc.), one loads the VCF into the gemini 
 framework with the **load** submodule:
@@ -25,7 +42,7 @@ statistics that support downstream analyses. It also stores the genotypes for
 each sample at each variant in an efficient data structure that minimizes the 
 database size.
 
-Loading is by far the slowest aspect of gemini.  Using multiple CPUs can
+Loading is by far the slowest aspect of GEMINI.  Using multiple CPUs can
 greatly speed up this process.
 
 .. code-block:: bash

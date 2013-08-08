@@ -256,16 +256,25 @@ def grabix_index(fname):
     return index_file
 
 def bgzip(fname):
+
     if not which("bgzip"):
         print_cmd_not_found_and_exit("bgzip")
+
     if is_gz_file(fname):
         return fname
+
+    vcf_time = os.path.getmtime(fname)
     bgzip_file = fname + ".gz"
-    if file_exists(bgzip_file):
-        return bgzip_file
-    print "bgzipping {0} into {1}.".format(fname, fname + ".gz")
-    subprocess.check_call("bgzip -c {fname} > {fname}.gz".format(fname=fname),
-                          shell=True)
+    
+    if not file_exists(bgzip_file) or \
+       (file_exists(bgzip_file) and os.path.getmtime(bgzip_file) < vcf_time):
+        print "Bgzipping {0} into {1}.".format(fname, fname + ".gz")
+        subprocess.check_call("bgzip -c {fname} > \
+                              {fname}.gz".format(fname=fname),
+                              shell=True)
+    elif file_exists(bgzip_file) and os.path.getmtime(bgzip_file) > vcf_time:
+        print "Loading with existing bgzip ({0}) version of {1}.".format(fname + ".gz", fname)
+
     return bgzip_file
 
 
