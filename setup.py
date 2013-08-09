@@ -34,7 +34,7 @@ setup(
                           'ipython-cluster-helper >= 0.1.6',
                           'bx-python >= 0.7.1',
                           'pandas >= 0.11.0',
-                          'scipy >= 0.12.0'],
+                          'scipy >= 0.12.0',
                           'pysam>=0.6',
                           'cyvcf>=0.1.7',
                           'PyYAML >= 3.10',

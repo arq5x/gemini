@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import math
 import sqlite3
 import os
 import numpy as np
@@ -7,14 +6,10 @@ import cPickle
 import zlib
 import collections
 from collections import Counter
-import sys
-from pandas import DataFrame
-from scipy.stats import binom, norm
 
 import gemini_utils as util
 from gemini_constants import *
 import GeminiQuery
-import calpha
 
 
 def get_tstv(c, args):
@@ -247,6 +242,23 @@ def get_gtcounts_by_sample(c, args):
                                          row['total']])
 
 
+def summarize_query_by_sample(args):
+    gq = GeminiQuery.GeminiQuery(args.db)
+    gq.run(args.query, show_variant_samples=True)
+    total_counts = Counter()
+    het_counts = Counter()
+    hom_alt_counts = Counter()
+    print "\t".join(["sample", "total", "num_het", "num_hom_alt"])
+    for row in gq:
+        total_counts.update(row["variant_samples"].split(","))
+        het_counts.update(row["HET_samples"].split(","))
+        hom_alt_counts.update(row["HOM_ALT_samples"].split(","))
+    for key in total_counts.keys():
+        count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
+                     hom_alt_counts.get(key, 0)]
+        print "\t".join(map(str, count_row))
+
+
 def stats(parser, args):
 
     if os.path.exists(args.db):
@@ -273,73 +285,3 @@ def stats(parser, args):
             get_mds(c, args)
         elif args.query:
             summarize_query_by_sample(args)
-        elif args.burden:
-            burden_by_gene(args)
-        elif args.calpha:
-            calpha_test(args)
-        elif args.nonsynonymous:
-            nonsynonymous_by_gene(args)
-
-
-def summarize_query_by_sample(args):
-    gq = GeminiQuery.GeminiQuery(args.db)
-    gq.run(args.query, show_variant_samples=True)
-    total_counts = Counter()
-    het_counts = Counter()
-    hom_alt_counts = Counter()
-    print "\t".join(["sample", "total", "num_het", "num_hom_alt"])
-    for row in gq:
-        total_counts.update(row["variant_samples"].split(","))
-        het_counts.update(row["HET_samples"].split(","))
-        hom_alt_counts.update(row["HOM_ALT_samples"].split(","))
-    for key in total_counts.keys():
-        count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
-                     hom_alt_counts.get(key, 0)]
-        print "\t".join(map(str, count_row))
-
-
-def burden_by_gene(args):
-    """
-    calculates per sample the total genetic burden for each gene
-    """
-    query = ("SELECT gene from variants WHERE "
-             "is_coding=1 and (impact_severity = 'HIGH' or "
-             "polyphen_pred = 'probably_damaging')")
-    _summarize_by_gene_and_sample(args, query)
-
-
-def nonsynonymous_by_gene(args):
-    """
-    calculates per sample the total genetic burden for each gene
-    """
-    query = ("SELECT variant_id, gene from variants WHERE "
-             "codon_change != 'None'")
-    _summarize_by_gene_and_sample(args, query)
-
-
-def _summarize_by_gene_and_sample(args, query):
-    gq = GeminiQuery.GeminiQuery(args.db)
-    gq.run(query, show_variant_samples=True)
-    burden = collections.defaultdict(Counter)
-    for row in gq:
-        gene_name = row['gene']
-        if not gene_name:
-            continue
-        new_counts = Counter(row["HET_samples"].split(","))
-        # Counter can't do scalar multiplication
-        new_counts = new_counts + Counter(row["HOM_ALT_samples"].split(","))
-        new_counts = new_counts + Counter(row["HOM_ALT_samples"].split(","))
-
-        del new_counts['']
-        burden[gene_name] += new_counts
-
-    df = DataFrame({})
-    for gene_name, counts in burden.items():
-        df = df.append(DataFrame(counts, columns=counts.keys(),
-                                 index=[gene_name]))
-    df = df.replace(np.NaN, 0)
-    df.to_csv(sys.stdout, float_format="%d", sep="\t", index_label='gene')
-
-
-def calpha_test(args):
-    calpha.calpha(args)
