@@ -783,60 +783,6 @@ and heterozygous variants)
 	M10475	4
 	M10478	6
 
-----------------------
-``burden``
-----------------------
-A set of tools to perform burden summaries on a per-gene, per sample basis are
-also included in the burden tool. Run with no special arguments, it outputs
-a table of gene-wise counts of all high impact variants in coding regions for
-each sample
-
-.. code-block:: bash
-   	$ gemini burden test.burden.db
-	gene	M10475	M10478	M10500	M128215
-	WDR37	2	2	2	2
-	CTBP2	0	0	0	1
-	DHODH	1	0	0	0
-
-If you want to be a little bit less restrictive, you can include all
-non-synonymous variants instead.
-
-.. code-block:: bash
-   	$ gemini burden --nonsynonymous test.burden.db
-	gene	M10475	M10478	M10500	M128215
-	SYCE1	0	1	1	0
-	WDR37	2	2	2	2
-	CTBP2	0	0	0	1
-	ASAH2C	2	1	1	0
-	DHODH	1	0	0	0
-
-If your database has been loaded with a PED file describing case and
-control samples, you can calculate the
-`c-alpha <http://www.plosgenetics.org/article/info%3Adoi%2F10.1371%2Fjournal.pgen.1001322>`_
-statistic for case vs. control.
-
-.. code-block:: bash
-   	$ gemini burden --calpha test.burden.db
-	gene	T	c	Z	p_value
-	SYCE1	-0.5	0.25	-1.0	0.841344746069
-	WDR37	-1.0	1.5	-0.816496580928	0.792891910879
-	CTBP2	0.0	0.0	nan	nan
-	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
-	DHODH	0.0	0.0	nan	nan
-
-If you do not have a PED file loaded, or your PED file does not follow the
-standard `PED phenotype encoding format <http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml>`_
-you can still perform the c-alpha test, but you have to specify which samples
-are the control samples and which are the case samples.
-
-.. code-block:: bash
-	$ gemini burden --controls M10475 M10478 --cases M10500 M128215 --calpha test.burden.db
-	gene	T	c	Z	p_value
-	SYCE1	-0.5	0.25	-1.0	0.841344746069
-	WDR37	-1.0	1.5	-0.816496580928	0.792891910879
-	CTBP2	0.0	0.0	nan	nan
-	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
-	DHODH	0.0	0.0	nan	nan" > exp
 
 ----------------------
 ``--summarize``
@@ -855,6 +801,66 @@ in dbSNP:
 	M128215	1	1	0
 	M10478	2	2	0
 	M10500	2	1	1
+
+======================
+``burden``: perform sample-wise gene-level burden calculations
+======================
+A set of tools to perform burden summaries on a per-gene, per sample basis are
+also included in the burden tool. Run with no special arguments, it outputs
+a table of gene-wise counts of all high impact variants in coding regions for
+each sample:
+
+.. code-block:: bash
+
+	$ gemini burden test.burden.db
+	gene	M10475	M10478	M10500	M128215
+	WDR37	2	2	2	2
+	CTBP2	0	0	0	1
+	DHODH	1	0	0	0
+
+If you want to be a little bit less restrictive, you can include all
+non-synonymous variants instead:
+
+.. code-block:: bash
+
+   	$ gemini burden --nonsynonymous test.burden.db
+	gene	M10475	M10478	M10500	M128215
+	SYCE1	0	1	1	0
+	WDR37	2	2	2	2
+	CTBP2	0	0	0	1
+	ASAH2C	2	1	1	0
+	DHODH	1	0	0	0
+
+If your database has been loaded with a PED file describing case and
+control samples, you can calculate the
+`c-alpha <http://www.plosgenetics.org/article/info%3Adoi%2F10.1371%2Fjournal.pgen.1001322>`_
+statistic for case vs. control:
+
+.. code-block:: bash
+
+   	$ gemini burden --calpha test.burden.db
+	gene	T	c	Z	p_value
+	SYCE1	-0.5	0.25	-1.0	0.841344746069
+	WDR37	-1.0	1.5	-0.816496580928	0.792891910879
+	CTBP2	0.0	0.0	nan	nan
+	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
+	DHODH	0.0	0.0	nan	nan
+
+If you do not have a PED file loaded, or your PED file does not follow the
+standard `PED phenotype encoding format <http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml>`_
+you can still perform the c-alpha test, but you have to specify which samples
+are the control samples and which are the case samples:
+
+.. code-block:: bash
+
+	$ gemini burden --controls M10475 M10478 --cases M10500 M128215 --calpha test.burden.db
+	gene	T	c	Z	p_value
+	SYCE1	-0.5	0.25	-1.0	0.841344746069
+	WDR37	-1.0	1.5	-0.816496580928	0.792891910879
+	CTBP2	0.0	0.0	nan	nan
+	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
+	DHODH	0.0	0.0	nan	nan" > exp
+
 
 ===========================================================================
 ``db_info``: List the gemini database tables and columns
