@@ -13,6 +13,9 @@ cd test
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
 
+# Test burden tests
+bash test-burden.sh
+
 # Test basic functionality
 bash test-columns.sh
 
@@ -66,6 +69,7 @@ bash test-pfam.sh
 
 # Test GERP scores
 bash test-gerp.sh
+
 
 # cleanup
 rm ./*.db
