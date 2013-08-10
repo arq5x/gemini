@@ -28,6 +28,13 @@ def nonsynonymous_by_gene(args):
 
 
 def get_calpha(args):
+    """
+    Calculate the C-alpha statistic for each gene based on the observed
+    counts of variants in cases and controls.
+
+    From Neale et al, PLoS Genetics, 2011.
+    http://www.plosgenetics.org/article/info%3Adoi%2F10.1371%2Fjournal.pgen.1001322
+    """
     db = args.db
     if not (args.controls and args.cases):
         case, control = _get_case_and_control_samples(args)
@@ -38,24 +45,54 @@ def get_calpha(args):
                                 "--cases and --controls are not set.")
 
     samples = control + case
+    # p_0 = the fraction of samples that are cases (used for weighting)
     p_0 = float(len(case)) / float(len(samples))
+
     ns = _nonsynonymous_variants(db)
     variants_in_gene, variants = _calculate_counts(ns, samples)
     header = ["gene", "T", "c", "Z", "p_value"]
     print "\t".join(header)
-    for gene in variants_in_gene:
+    
+    for gene in variants_in_gene:    
         vig = variants_in_gene[gene]
+
+        # m = the number of variants observed for this gene
         m = len(vig.keys())
+
+        # m_n is the number of variants with n copies (i.e., samples with the variant)
         m_n = Counter([len(x) for x in vig.values()])
+
+        # n_i is a list reflecting the total number of samples 
+        # having each variant
         n_i = [len(x) for x in vig.values()]
+
+        # y_i is a list reflecting the total number of __cases__ 
+        # having each variant
         y_i = [len(filter(lambda a: a in case, x)) for x in vig.values()]
+
+        # "The C-alpha test statistic T contrasts the variance of each observed 
+        # count with the expected variance, assuming the binomial distribution."
+        # In other words, given that we have n total samples and p_0 * n of them
+        # are cases, we _expect_ the variant copies to be distributed among the 
+        # samples following a binomal distribution.  The T statistic contrasts
+        # the observed count distributions with the expected:
+        #
+        # T = SUM{i=(1,m)} [(y_i - n_i*p_0)^2 - n_i*p_0(1 - p_0)]
+        #
         T = _calculate_T(m, p_0, n_i, y_i)
+
+        # Calculate the variance of T in order to normalize it
         c = _calculate_c(m_n, p_0)
+        
+        # The final test statistic, Z, id just the original test statistic divided
+        # by its standard deviation. "We reject the null when Z is larger than expected
+        # using a one-tailed standard normal distribution for reference.
         if c == 0:
             Z = np.NaN
         else:
             Z = T / math.sqrt(c)
 
+        # sf is the survival function ... same as 1 - CDF.
         p_value = norm.sf(Z)
         # alternatie p-value 1 - scipy.stats.chi2.cdf(T**2/c, 1)
         print "\t".join([gene, str(T), str(c), str(Z), str(p_value)])
