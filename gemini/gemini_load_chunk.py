@@ -92,7 +92,8 @@ class GeminiLoader(object):
             buffer_count += 1
             # buffer full - time to insert into DB
             if buffer_count >= self.buffer_size:
-                sys.stderr.write(str(self.counter) + " variants processed.\n")
+                sys.stderr.write("pid " + str(os.getpid()) + ": " +
+                                 str(self.counter) + " variants processed.\n")
                 database.insert_variation(self.c, self.var_buffer)
                 database.insert_variation_impacts(self.c,
                                                   self.var_impacts_buffer)
@@ -107,7 +108,8 @@ class GeminiLoader(object):
         self.v_id -= 1
         database.insert_variation(self.c, self.var_buffer)
         database.insert_variation_impacts(self.c, self.var_impacts_buffer)
-        sys.stderr.write(str(self.counter) + " variants processed.\n")
+        sys.stderr.write("pid " + str(os.getpid()) + ": " +
+                         str(self.counter) + " variants processed.\n")
 
     def build_indices_and_disconnect(self):
         """

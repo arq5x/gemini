@@ -3,10 +3,10 @@
 import os.path
 import sys
 import argparse
-import textwrap
 import gemini_load
 import gemini_load_chunk
 import gemini_query
+import gemini_burden
 import \
     gemini_region, gemini_stats, gemini_dump, \
     gemini_annotate, gemini_windower, \
@@ -462,6 +462,39 @@ def main():
     parser_lof_sieve.set_defaults(func=tool_lof_sieve.lof_sieve)
 
     #########################################
+    # $ gemini burden
+    #########################################
+    burden_help = ("Gene-level genetic burden tests. By default counts all "
+                   "variants with high impact in coding regions "
+                   "as contributing to burden.")
+
+    parser_burden = subparsers.add_parser('burden',
+                                          help=burden_help)
+    parser_burden.add_argument('--nonsynonymous', action='store_true',
+                               default=False,
+                               help=("Count all nonsynonymous variants as "
+                                     "contributing burden."))
+    parser_burden.add_argument('--cases',
+                               dest='cases',
+                               nargs='*',
+                               help=('Space separated list of cases for '
+                                     'association testing.'))
+    parser_burden.add_argument('--controls',
+                               nargs='*',
+                               dest='controls',
+                               help=('Space separated list of controls for '
+                                     'association testing.'))
+    parser_burden.add_argument('--calpha',
+                               action='store_true',
+                               default=False,
+                               help="Run the C-alpha association test.")
+    parser_burden.add_argument('db',
+                               metavar='db',
+                               help='The name of the database to be queried.')
+
+    parser_burden.set_defaults(func=gemini_burden.burden)
+
+    #########################################
     # $ gemini interactions
     #########################################
     parser_interaction = subparsers.add_parser('interactions',
@@ -600,15 +633,15 @@ def main():
     # parse the args and call the selected function
     #######################################################
     args = parser.parse_args()
-    
+
     # make sure database is found if provided
     if len(sys.argv) > 2 and sys.argv[1] not in \
        ["load", "merge_chunks", "load_chunk"]:
         if args.db is not None and not os.path.exists(args.db):
             sys.stderr.write("Requested GEMINI database (%s) not found. "
-                             "Please confirm the provided filename.\n" 
+                             "Please confirm the provided filename.\n"
                              % args.db)
-    
+
     try:
         args.func(parser, args)
     except IOError, e:

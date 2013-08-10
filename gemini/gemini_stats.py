@@ -5,11 +5,11 @@ import numpy as np
 import cPickle
 import zlib
 import collections
+from collections import Counter
 
 import gemini_utils as util
 from gemini_constants import *
 import GeminiQuery
-from itertools import izip
 
 
 def get_tstv(c, args):
@@ -35,7 +35,7 @@ def get_tstv(c, args):
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(round(float(ts) / float(tv),4))
+        str(round(float(ts) / float(tv), 4))
 
 
 def get_tstv_coding(c, args):
@@ -63,7 +63,7 @@ def get_tstv_coding(c, args):
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(round(float(ts) / float(tv),4))
+        str(round(float(ts) / float(tv), 4))
 
 
 def get_tstv_noncoding(c, args):
@@ -92,7 +92,7 @@ def get_tstv_noncoding(c, args):
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(round(float(ts) / float(tv),4))
+        str(round(float(ts) / float(tv), 4))
 
 
 def get_snpcounts(c, args):
@@ -193,7 +193,7 @@ def get_mds(c, args):
     # report the pairwise MDS for each sample pair.
     print "sample1\tsample2\tdistance"
     for pair in mds:
-        print "\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair],4))])
+        print "\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair], 4))])
 
 
 def get_variants_by_sample(c, args):
@@ -242,6 +242,23 @@ def get_gtcounts_by_sample(c, args):
                                          row['total']])
 
 
+def summarize_query_by_sample(args):
+    gq = GeminiQuery.GeminiQuery(args.db)
+    gq.run(args.query, show_variant_samples=True)
+    total_counts = Counter()
+    het_counts = Counter()
+    hom_alt_counts = Counter()
+    print "\t".join(["sample", "total", "num_het", "num_hom_alt"])
+    for row in gq:
+        total_counts.update(row["variant_samples"].split(","))
+        het_counts.update(row["HET_samples"].split(","))
+        hom_alt_counts.update(row["HOM_ALT_samples"].split(","))
+    for key in total_counts.keys():
+        count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
+                     hom_alt_counts.get(key, 0)]
+        print "\t".join(map(str, count_row))
+
+
 def stats(parser, args):
 
     if os.path.exists(args.db):
@@ -268,19 +285,3 @@ def stats(parser, args):
             get_mds(c, args)
         elif args.query:
             summarize_query_by_sample(args)
-
-def summarize_query_by_sample(args):
-    gq = GeminiQuery.GeminiQuery(args.db)
-    gq.run(args.query, show_variant_samples=True)
-    total_counts = collections.Counter()
-    het_counts = collections.Counter()
-    hom_alt_counts = collections.Counter()
-    print "\t".join(["sample", "total", "num_het", "num_hom_alt"])
-    for row in gq:
-        total_counts.update(row["variant_samples"].split(","))
-        het_counts.update(row["HET_samples"].split(","))
-        hom_alt_counts.update(row["HOM_ALT_samples"].split(","))
-    for key in total_counts.keys():
-        count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
-                     hom_alt_counts.get(key, 0)]
-        print "\t".join(map(str, count_row))
