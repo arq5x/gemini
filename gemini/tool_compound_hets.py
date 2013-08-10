@@ -21,6 +21,13 @@ class Site(object):
         return self.row['chrom'] == other.row['chrom'] and \
                self.row['start'] == other.row['start']
 
+    def __repr__(self):
+        return ",".join([self.row['chrom'], 
+                         str(self.row['start']), 
+                         str(self.row['end'])])
+
+
+
 
 def _add_necessary_columns(args, custom_columns):
     """
@@ -98,27 +105,28 @@ def get_compound_hets(args):
 
     # header
     print "family\tsample\tcomp_het_id\t" + str(gq.header)
+
     # step 2.  now, cull the list of candidate heterozygotes for each
     # gene/sample to those het pairs where the alternate alleles
-    # were inherited on opposite haplotypes.
-    
+    # were inherited on opposite haplotypes.    
     comp_het_id = 1
     for sample in comp_hets:
         # track which comp_hets we have seen so far for this sample.
-        #seen = {}
+        seen = {}
         for gene in comp_hets[sample]:
             for site1 in comp_hets[sample][gene]:
                 for site2 in comp_hets[sample][gene]:
+                    
                     if site1 == site2:
                         continue
                     
-                    #if (site1, site2) in seen or (site2, site1) in seen:
-                    #    continue
+                    if (site1, site2) in seen or (site2, site1) in seen:
+                        continue
                     
                     # avoid reporting the same comp_het, yet just in the
                     # opposition order.
-                    #seen[(site1, site2)] = True
-                    #seen[(site2, site1)] = True
+                    seen[(site1, site2)] = True
+                    seen[(site2, site1)] = True
 
                     # expand the genotypes for this sample
                     # at each site into it's composite
@@ -132,17 +140,31 @@ def get_compound_hets(args):
                         # split on phased (|) or unphased (/) genotypes
                         alleles_site1 = re.split('\||/', site1.gt)
                         alleles_site2 = re.split('\||/', site2.gt)
-
-                    # return the haplotype on which the alternate
-                    # allele was observed for this sample at each
-                    # candidate het. site.
-                    # e.g., if ALT=G and alleles_site1=['A', 'G']
-                    # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
-                    alt_hap_1 = alleles_site1.index(site1.row['alt'])
-                    alt_hap_2 = alleles_site2.index(site2.row['alt'])
                     
                     # it is only a true compound heterozygote IFF
                     # the alternates are on opposite haplotypes.
+                    if not args.ignore_phasing:
+                        # return the haplotype on which the alternate
+                        # allele was observed for this sample at each
+                        # candidate het. site.
+                        # e.g., if ALT=G and alleles_site1=['A', 'G']
+                        # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
+                        if "," in str(site1.row['alt']) or \
+                           "," in str(site2.row['alt']):
+                            sys.stderr.write("WARNING: Skipping candidate for sample"
+                                             " %s b/c variants with mult. alt."
+                                             " alleles are not yet supported. The sites are:"
+                                             " %s and %s.\n" % (sample, site1, site2))
+                            continue
+
+                        alt_hap_1 = alleles_site1.index(site1.row['alt'])
+                        alt_hap_2 = alleles_site2.index(site2.row['alt'])
+
+                    # report if 
+                    #   1. phasing is considered AND the alt alleles are on
+                    #      different haplotypes
+                    # OR
+                    #   2. the user doesn't care about phasing.
                     if (not args.ignore_phasing and alt_hap_1 != alt_hap_2) \
                         or args.ignore_phasing:
                             print \
