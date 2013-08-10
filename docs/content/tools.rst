@@ -120,8 +120,8 @@ your VCF into GEMINI, one can leverage a built-in tool for identifying de novo
 ---------------------
 
 By default, the ``de novo`` tool will report, for each
-family in the database, a all columns in the variants table for mutations that 
-are not found in the parents yet are observed as heterozygotes in the offspring. 
+family in the database, a all columns in the variants table for mutations that
+are not found in the parents yet are observed as heterozygotes in the offspring.
 For example:
 
 .. code-block:: bash
@@ -134,11 +134,11 @@ For example:
     1	238(father; unknown),239(mother; unknown),173(child; affected)	GTTG/GTTG,GTTG/GTTG,GTTG/G	21,59,41	chr1	14398	14402	13	1	GTTG	G	97.43	None	indel	del	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	9	3	0	0	0.125	0.620690717057	-0.142857142857	0.228260869565	2.981822	DDX11L1	ENST00000450305	0	0	0	None	None	None	None	transcribed_unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	2045	None	15.9	0	4	24	None	145.8039	0.13	3	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	0.0	0.0	43.5	0	None	None	None	R	R	CTCF	R	R	T	GTTG/G,GTTG/G,GTTG/GTTG,GTTG/G,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG	1,1,0,1,0,0,0,0,0,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	41,56,69,35,21,59,21,27,8,23,33,15	226,225,235,235,143,214,111,124,115,105,128,101	23,23,15,13,0,1,0,0,0,1,0,5	81.0,36.2,99.0,48.04,63.22,24.03,63.22,81.27,24.08,69.24,48.14,45.15
     1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	18	1	A	G	1369.37	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	8	0	0	0.333333333333	0.0832645169833	-0.5	0.463768115942	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2095	None	19.42	1	105	24	0.0	0.8894	1.01	8	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/G,A/A,A/G	1,1,0,1,0,0,1,1,1,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	250,247,250,250,152,214,124,171,81,96,124,136	212,231,235,229,144,198,104,162,66,83,114,125	38,16,15,21,8,16,20,9,15,13,10,10	99.0,66.22,99.0,99.0,22.53,26.79,99.0,63.15,99.0,32.64,47.1,99.0    ...
     ...
-    
+
 .. note::
-    
+
     The output will always start with the family ID, the family members, the
-    observed genotypes, and the observed aligned sequencing depths 
+    observed genotypes, and the observed aligned sequencing depths
     for the family members.
 
 ---------------------
@@ -149,7 +149,7 @@ Unfortunately, inherited variants can often appear to be de novo mutations simpl
 insufficient sequence coverage was available for one of the parents to detect that the
 parent(s) is also a heterozygote (and thus the variant was actually inherited, not
 spontaneous).  One simple way to filter such artifacts is to enforce a minimum sequence
-depth (default: 0) for each sample.  For example, if we require that at least 50 sequence 
+depth (default: 0) for each sample.  For example, if we require that at least 50 sequence
 alignments were present for mom, dad and child, two of the above variants will be eliminated
 as candidates:
 
@@ -161,10 +161,10 @@ as candidates:
     1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	18	1	A	G	1369.37	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	8	0	0	0.333333333333	0.0832645169833	-0.5	0.463768115942	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2095	None	19.42	1	105	24	0.0	0.8894	1.01	8	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/G,A/A,A/G	1,1,0,1,0,0,1,1,1,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	250,247,250,250,152,214,124,171,81,96,124,136	212,231,235,229,144,198,104,162,66,83,114,125	38,16,15,21,8,16,20,9,15,13,10,10	99.0,66.22,99.0,99.0,22.53,26.79,99.0,63.15,99.0,32.64,47.1,99.0
     1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	189,250,250	chr1	14573	14574	19	1	A	G	723.72	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	6	6	0	0	0.25	0.248213079014	-0.333333333333	0.391304347826	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2233	None	20.21	0	73	24	0.0	1.1058	0.63	6	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/A,A/A,A/A	1,1,0,1,0,0,1,1,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	250,248,250,241,189,250,130,189,92,107,146,141	218,232,237,221,181,232,115,177,76,97,136,134	32,14,13,20,8,17,15,12,16,10,10,7	99.0,31.97,99.0,99.0,96.41,99.0,64.51,35.62,99.0,26.4,65.9,0.76
     1	238(father; unknown),239(mother; unknown),173(child; affected)	G/G,G/G,G/A	197,247,250	chr1	14589	14590	20	1	G	A	178.22	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	8	4	0	0	0.166666666667	0.488422316764	-0.2	0.289855072464	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2234	None	21.45	0	37	24	0.0	0.9191	0.25	4	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	G/A,G/G,G/G,G/A,G/G,G/G,G/A,G/G,G/A,G/G,G/G,G/G	1,0,0,1,0,0,1,0,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	250,238,250,233,197,247,134,192,97,109,149,137	227,228,239,213,186,227,124,181,84,105,144,128	23,10,11,20,11,20,10,11,13,4,5,9	99.0,99.0,99.0,25.64,99.0,99.0,31.54,19.87,54.49,97.64,99.0,42.52
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	21	1	T	A	44.09	None	snp	tv	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	10	2	0	0	0.0833333333333	0.752823664836	-0.0909090909091	0.159420289855	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2245	None	22.1	0	18	24	0.0	1.1988	0.13	2	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	T/A,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/A,T/T,T/T,T/T	1,0,0,0,0,0,0,0,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	249,237,250,242,195,250,138,209,91,102,148,133	226,229,240,223,187,231,129,198,76,94,140,118	23,8,10,19,8,19,9,11,15,8,8,14	65.38,99.0,99.0,92.74,99.0,99.0,23.58,84.54,30.04,99.0,99.0,45.7    
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	21	1	T	A	44.09	None	snp	tv	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	10	2	0	0	0.0833333333333	0.752823664836	-0.0909090909091	0.159420289855	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2245	None	22.1	0	18	24	0.0	1.1988	0.13	2	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	T/A,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/A,T/T,T/T,T/T	1,0,0,0,0,0,0,0,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	249,237,250,242,195,250,138,209,91,102,148,133	226,229,240,223,187,231,129,198,76,94,140,118	23,8,10,19,8,19,9,11,15,8,8,14	65.38,99.0,99.0,92.74,99.0,99.0,23.58,84.54,30.04,99.0,99.0,45.7
     ...
-    
-    
+
+
 ---------------------
 ``--columns``
 ---------------------
@@ -182,13 +182,13 @@ would use the following:
     1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	A	G
     1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	189,250,250	chr1	14573	14574	A	G
     1	238(father; unknown),239(mother; unknown),173(child; affected)	G/G,G/G,G/A	197,247,250	chr1	14589	14590	G	A
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	T	A    
+    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	T	A
     ...
-    
+
 .. note::
-    
+
     The output will always start with the family ID, the family members, the
-    observed genotypes, and the observed aligned sequencing depths 
+    observed genotypes, and the observed aligned sequencing depths
     for the family members.
 
 
@@ -200,7 +200,7 @@ By default, this tool will report all variants regardless of their putative
 functional impact.  In order to apply additional constraints on the variants
 returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
 applied with the ``--filter option become WHERE clauses in the query issued to
-the GEMINI database.  For example, if we wanted to restrict candidate variants 
+the GEMINI database.  For example, if we wanted to restrict candidate variants
 to solely those with a HIGH predicted functional consequence, we could use the
 following:
 
@@ -210,7 +210,7 @@ following:
           --columns "chrom, start, end, ref, alt" \
           --filter "impact_severity = 'HIGH'" \
           my.db
-    
+
     family_id	family_members	family_genotypes	depths	chrom	start	end	ref	alt
     3	243(father; unknown),244(mother; unknown),242(child; affected)	C/C,C/C,C/A	249,243,250	chr1	17729	17730	C	A
     4	254(father; unknown),255(mother; unknown),253(child; affected)	A/A,A/A,A/G	86,146,83	chr1	168097	16809	A	G
@@ -250,9 +250,9 @@ function of affecting protein coding transcripts.
     ...
 
 .. note::
-    
+
     The output will always start with the family ID, the family members, the
-    observed genotypes, and the observed aligned sequencing depths 
+    observed genotypes, and the observed aligned sequencing depths
     for the family members.
 
 ---------------------
@@ -274,9 +274,9 @@ would use the following:
     4	254(father; unaffected),255(mother; unaffected),253(child; affected)	T/C,T/C,C/C	chr1	909308	909309	T	C
     4	254(father; unaffected),255(mother; unaffected),253(child; affected)	GT/G,GT/G,G/G	chr1	970561	970563	GT	G
     ...
-    
+
 .. note::
-    
+
     The output will always start with the family ID, the family members, and the
     observed genotypes for the family members.
 
@@ -289,7 +289,7 @@ By default, this tool will report all variants regardless of their putative
 functional impact.  In order to apply additional constraints on the variants
 returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
 applied with the ``--filter option become WHERE clauses in the query issued to
-the GEMINI database.  For example, if we wanted to restrict candidate variants 
+the GEMINI database.  For example, if we wanted to restrict candidate variants
 to solely those with a HIGH predicted functional consequence, we could use the
 following:
 
@@ -299,13 +299,13 @@ following:
           --columns "chrom, start, end, ref, alt" \
           --filter "impact_severity = 'HIGH'" \
           my.db
-    
+
     family_id	family_members	family_genotypes	impact_severity	chrom	start	end	ref	alt
     4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	CAG/C,CAG/C,C/C	chr1	13655	13658	CAG	C
     4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	A/T,A/T,T/T	chr1	5935161	5935162	A	T
     4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	C/CGT,C/CGT,CGT/CGT	chr1	20020993	20020994	C	CGT
     4	SMS254(father; unaffected),SMS255(father; unaffected),SMS253(child; affected)	G/GTG,G/GTG,GTG/GTG	chr1	20020994	20020995	G	GTG
-    ...    
+    ...
 
 
 
@@ -320,7 +320,7 @@ following:
     when loading your VCF into gemini via:
 
     ``gemini load -v my.vcf -p my.ped my.db``
-    
+
     2. If neither parent are known to be affected, this tool will report any
        variant where one and only of the parents is heterozygous and the affected
        child is also heterozygous.  If one and only one of the parents is affected,
@@ -366,12 +366,12 @@ would use the following:
     2	SMS230(father; unaffected),SMS231(mother; affected),SMS193(child; affected)	C/C,C/T,C/T	chr1	13301	13302	C	T
     1	SMS238(father; affected),SMS239(father; unaffected),SMS173(child; affected)	G/A,G/G,G/A	chr1	14975	14976	G	A
     ...
-    
+
 .. note::
-    
+
     The output will always start with the family ID, the family members, and the
     observed genotypes for the family members.
-    
+
 
 ---------------------
 ``--filter``
@@ -381,7 +381,7 @@ By default, this tool will report all variants regardless of their putative
 functional impact.  In order to apply additional constraints on the variants
 returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
 applied with the ``--filter option become WHERE clauses in the query issued to
-the GEMINI database.  For example, if we wanted to restrict candidate variants 
+the GEMINI database.  For example, if we wanted to restrict candidate variants
 to solely those with a HIGH predicted functional consequence, we could use the
 following:
 
@@ -391,7 +391,7 @@ following:
           --columns "chrom, start, end, ref, alt" \
           --filter "impact_severity = 'HIGH'" \
           my.db
-    
+
     family_id	family_members	family_genotypes	impact_severity	chrom	start	end	ref	alt
     4	SMS254(father; unknown),SMS255(father; unknown),SMS253(child; affected)	TTCT/T,TTCT/TTCT,TTCT/T	chr1	17362	17366	TTCT	T
     1	SMS238(father; affected),SMS239(father; unaffected),SMS173(child; affected)	G/A,G/G,G/A	chr1	13580	135804	G	A
@@ -782,8 +782,62 @@ and heterozygous variants)
 	sample	total
 	M10475	4
 	M10478	6
-	
-	
+
+----------------------
+``burden``
+----------------------
+A set of tools to perform burden summaries on a per-gene, per sample basis are
+also included in the burden tool. Run with no special arguments, it outputs
+a table of gene-wise counts of all high impact variants in coding regions for
+each sample
+
+.. code-block:: bash
+   	$ gemini burden test.burden.db
+	gene	M10475	M10478	M10500	M128215
+	WDR37	2	2	2	2
+	CTBP2	0	0	0	1
+	DHODH	1	0	0	0
+
+If you want to be a little bit less restrictive, you can include all
+non-synonymous variants instead.
+
+.. code-block:: bash
+   	$ gemini burden --nonsynonymous test.burden.db
+	gene	M10475	M10478	M10500	M128215
+	SYCE1	0	1	1	0
+	WDR37	2	2	2	2
+	CTBP2	0	0	0	1
+	ASAH2C	2	1	1	0
+	DHODH	1	0	0	0
+
+If your database has been loaded with a PED file describing case and
+control samples, you can calculate the
+`c-alpha <http://www.plosgenetics.org/article/info%3Adoi%2F10.1371%2Fjournal.pgen.1001322>`_
+statistic for case vs. control.
+
+.. code-block:: bash
+   	$ gemini burden --calpha test.burden.db
+	gene	T	c	Z	p_value
+	SYCE1	-0.5	0.25	-1.0	0.841344746069
+	WDR37	-1.0	1.5	-0.816496580928	0.792891910879
+	CTBP2	0.0	0.0	nan	nan
+	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
+	DHODH	0.0	0.0	nan	nan
+
+If you do not have a PED file loaded, or your PED file does not follow the
+standard `PED phenotype encoding format <http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml>`_
+you can still perform the c-alpha test, but you have to specify which samples
+are the control samples and which are the case samples.
+
+.. code-block:: bash
+	$ gemini burden --controls M10475 M10478 --cases M10500 M128215 --calpha test.burden.db
+	gene	T	c	Z	p_value
+	SYCE1	-0.5	0.25	-1.0	0.841344746069
+	WDR37	-1.0	1.5	-0.816496580928	0.792891910879
+	CTBP2	0.0	0.0	nan	nan
+	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
+	DHODH	0.0	0.0	nan	nan" > exp
+
 ----------------------
 ``--summarize``
 ----------------------
