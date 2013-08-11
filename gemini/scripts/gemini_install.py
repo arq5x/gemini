@@ -55,9 +55,11 @@ def main(args):
     os.chdir(work_dir)
     test_script = install_testbase(args.datadir, remotes["gemini"])
     print "Finished: gemini, tools and data installed"
-    print " Tools installed in:\n  %s" % args.tooldir
+    print " Tools installed in:\n  %s" % args.tooldir    
     print " Data installed in:\n  %s" % args.datadir
-    print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
+    print " Run tests with:\n  cd %s && bash %s" % 
+(os.path.dirname(test_script),
+    print " NOTE: be sure to add %s to your PATH." % args.tooldir
                                                     os.path.basename(test_script))
     shutil.rmtree(work_dir)
 
