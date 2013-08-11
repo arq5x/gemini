@@ -59,7 +59,7 @@ def main(args):
     print " Data installed in:\n  %s" % args.datadir
     print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
 os.path.basename(test_script))
-    print " NOTE: be sure to add %s to your PATH." % args.tooldir
+    print " NOTE: be sure to add %s/bin to your PATH." % args.tooldir
                                                     
     shutil.rmtree(work_dir)
 
