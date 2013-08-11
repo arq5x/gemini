@@ -13,24 +13,70 @@ and data files.
 
     $ wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
     $ python gemini_install.py /usr/local /usr/local/share/gemini
+    $ export PATH=$PATH:/usr/local/gemini/bin
+    # it would be wise to add the above line to your ``.bashrc`` or ``.bash_profile``
 
 This installs the GEMINI executable as ``/usr/local/bin/gemini``,
 other required third party dependencies in ``/usr/local/bin``, and
-associated data files in ``/usr/local/share/gemini``. It allows easy
-upgrading of GEMINI and data files to the latest released version with:
+associated data files in ``/usr/local/share/gemini``.  **Please note that this
+is merely an example: one can place the GEMINI executables and annotation files
+in any directories one wishes.**
+
+.. note::
+
+  The automated installtion script typically requires ~30 minutes, primarily
+  owing to the time required to download the GEMINI genome annotation files.
+  Also, please note that the annotation files **requires ~15Gb of storage**, 
+  so please ensure that the data directory (``/usr/local/share/gemini`` in 
+  the example above) has sufficient space.
+
+.. tip::
+
+  **Some tips and tricks for installation issues:**
+
+  1. Some older versions of wget have certificate problems with GitHub
+     files. If you run into this problem, you can alternatively download
+     the install script using``wget --no-check-certificates`` or ``curl -O``.
+
+  2. The installation script is idempotent and you can re-run it multiple
+     times without any issues. If you experience internet connectivity or
+     other transient errors during installation, a re-run can often solve
+     the problem (fingers crossed).
+
+
+Dependencies
+-------------------------------
+The installer requires:
+  
+  - Python 2.7.x
+  - git
+  - a working C / C++ compiler such as gcc
+  - zlib (including headers)
+  - the ability to ssh to your local machine. 
+
+These dependencies already exist on most UNIX/LINUX/OS X machines.  However,
+on minimalist machines **such as fresh Amazon Cloud instances**, one may have
+to install these dependencies before running the automated installer. In the
+case of Amazon instances, the following command should take care of all of the
+above dependencies:
 
 .. code-block:: bash
 
-    $ gemini update
+  $ sudo yum -y install python27 git gcc gcc-c++ zlib-devel
 
-The installer requires Python 2.7.x, git, and the ability to ssh to
-your local machine. It also has options to install in "non-root"
-environments:
+
+Installing without root access.
+-------------------------------
+As many users do not have root or sudo access, the automated installer also 
+has options to install in "non-root" environments:
 
 .. code-block:: bash
 
-    $ python gemini_install.py ~/gemini ~/gemini --nosudo
+  $ python gemini_install.py ~/gemini ~/gemini --nosudo
 
+
+Updating your PATH to find the GEMINI executable
+-------------------------------------------------
 At this point, you will have a self-contained installation of GEMINI, 
 including both the software and its associated genome annotations. However,
 if you have done a custom install in a "non-root" enviornment, you will
@@ -38,7 +84,8 @@ first need to update your ``PATH`` environment variable to include the path
 to the bin directory that you just created by running the automated installer.
 
 For example, if, as above, you placed you custom install in ``~/gemini``, you
-would need to update your ``PATH`` as follows:
+would need to update your ``PATH`` as follows. It would be wise to also add this
+to your ``.bashrc`` or ``.bash_profile``:
 
 .. code-block:: bash
 
@@ -56,18 +103,33 @@ on your system:
    $ gemini -v
    gemini 0.3.0b
 
-.. tip::
 
-  **Some tips and tricks for installation issues:**
+Running unit tests
+-------------------------------------------------
+If successfully installed, you should be able to change
+directories into the ``gemini`` directory within the 
+directory into which you installed the GEMINI source code
+and run a script of unit tests that will ensure that GEMINI
+is running appropriately on your system. For example, if, as 
+above, you installed the GEMINI executables to ``~/gemini``, you
+would issue the following commands to run the unit tests:
 
-  1. Some older versions of wget have certificate problems with GitHub
-     files. If you run into this problem, you can alternatively download
-     the install script using``wget --no-check-certificates`` or ``curl -O``.
+.. code-block:: bash
 
-  2. The installation script is idempotent and you can re-run it multiple
-     times without any issues. If you experience internet connectivity or
-     other transient errors during installation, a re-run can often solve
-     the problem (fingers crossed).
+   $ cd ~/gemini/gemini
+   $ bash master-test.sh 
+
+Updating the GEMINI executables and annotations
+-------------------------------------------------
+Once installed with the automated installer, it is easy to upgrade the
+GEMINI programs and associated data files to the latest released 
+version with:
+
+.. code-block:: bash
+
+    $ gemini update
+
+
 
 Software dependencies
 =====================
