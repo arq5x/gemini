@@ -17,8 +17,28 @@ Documentation
 ================
 The official documentation is here: http://gemini.readthedocs.org/en/latest/
 
-Mailing List:
+The following is a video of a high-level talk from SciPy 2013 describing GEMINI.
+
+http://www.youtube.com/watch?v=p-UWmDG6yj4
+
+
+Citation
+================
+If you use GEMINI in your research, please cite the following manuscript:
+
+Paila U, Chapman BA, Kirchner R, Quinlan AR (2013) 
+GEMINI: Integrative Exploration of Genetic Variation and Genome Annotations. 
+PLoS Comput Biol 9(7): e1003153. doi:10.1371/journal.pcbi.1003153
+
+[Manuscript](http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1003153)
+
+
+Mailing List
+================
+Questions and discussion should be directed to the following discussion list:
+
 https://groups.google.com/forum/?fromgroups#!forum/gemini-variation
+
 
 Acknowledgements
 ================
@@ -33,29 +53,9 @@ Installation
 Install ``GEMINI`` using the automated installation script, `gemini_install.py`. This
 script installs GEMINI along with required python libraries, third party tools and data 
 files used for variant annotation. The installation documentation contains additional 
-details on installed files and tools.::
+details on installed files and tools.
 
-    wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
-    python gemini_install.py /usr/local /usr/local/share/gemini
-
-If you don't have administrative (or sudo) priveleges on you machine, use the
-`--nosudo` option::
-
-    python gemini_install.py --nosudo ~/src ~/data/gemini
-
-If using the `--nosudo` option, you will need to add the `gemini/bin` directory
-that was created as part of the installation to your PATH.
-
-The first directory specified (`/usr/local` in the first example above) dictates 
-the directory in which the gemini software should be installed.  The second
-directory specified (`/usr/local/share/gemini` in the first example above) specifies
-the directory in which the gemini annotations files should be installed.  NOTE that
-these are rather large files (some > 1Gb).
-
-The [installation documentation][install] has additional tips and tricks if you
-run into any problems downloading or using the installation script.
-
-[install]: http://gemini.readthedocs.org/en/latest/content/installation.html
+http://gemini.readthedocs.org/en/latest/content/installation.html
 
 License
 ================
