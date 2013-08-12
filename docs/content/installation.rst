@@ -52,7 +52,6 @@ The installer requires:
   - git
   - a working C / C++ compiler such as gcc
   - zlib (including headers)
-  - the ability to ssh to your local machine. 
 
 These dependencies already exist on most UNIX/LINUX/OS X machines.  However,
 on minimalist machines **such as fresh Amazon Cloud instances**, one may have
