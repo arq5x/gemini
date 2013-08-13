@@ -47,6 +47,18 @@ restrict the analysis to LoF variants using the ``--only_lof`` option.
 	NA19002	GTSE1	chr22,46722400,46722401,G,A,G|A,stop_gain,exon_22,0.005,1	chr22,46704499,46704500,C,A,A|C,stop_gain,exon_22,0.005,0
 
 
+---------------
+``--only-affected``
+---------------
+By default, candidate compound heterozygous variants are reported for all
+individuals in the database.  One can restrict the analysis to variants in
+only individuals with an affected phenotype using the ``--only-affected`` option.
+
+.. code-block:: bash
+
+	$ gemini comp_hets --only-affected chr22.low.exome.snpeff.100samples.vcf.db
+
+
 ----------------------
 ``--allow-other-hets``
 ----------------------
