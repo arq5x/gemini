@@ -68,11 +68,11 @@ class Family(object):
         for subject in self.subjects:
             # if mom and dad are found, we know this is the child
             if subject.maternal_id is not None and \
-               subject.maternal_id != -9 and \
-               subject.maternal_id != 0 and \
+               subject.maternal_id != "-9" and \
+               subject.maternal_id != "0" and \
                subject.paternal_id is not None and \
-               subject.paternal_id != -9 and \
-               subject.paternal_id != 0:
+               subject.paternal_id != "-9" and \
+               subject.paternal_id != "0":
                self.father_name = str(subject.paternal_id)
                self.mother_name = str(subject.maternal_id)
                self.children.append(subject)
@@ -145,7 +145,7 @@ class Family(object):
         self.find_parents()
         
         mask = ""
-        
+
         if self.father.affected is True and self.mother.affected is True:
             # doesn't meet an auto. dominant model if both parents are affected
             # [*]---(*)

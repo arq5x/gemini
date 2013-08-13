@@ -182,9 +182,9 @@ def create_tables(cursor):
     cursor.execute('''create table if not exists samples   (  \
                     sample_id integer,                        \
                     name text,                                \
-                    family_id integer default NULL,           \
-                    paternal_id integer default NULL,         \
-                    maternal_id integer default NULL,         \
+                    family_id text default NULL,           \
+                    paternal_id text default NULL,         \
+                    maternal_id text default NULL,         \
                     sex text default NULL,                    \
                     phenotype text default NULL,              \
                     ethnicity text default NULL,              \
