@@ -41,11 +41,13 @@ def get_de_novo_candidates(args):
     family_sample_gt_columns = []
     family_sample_depth_columns = []
     for family in families:
-        family_masks.append(family.get_de_novo_filter())
-        family_sample_gt_labels.append(family.get_subject_genotype_labels())
-        family_sample_gt_columns.append(family.get_subject_genotype_columns())
-        family_sample_depth_columns.append(family.get_subject_depth_columns())
-        family_ids.append(family.family_id)
+        family_filter = family.get_de_novo_filter()
+        if family_filter != "False":
+            family_masks.append(family_filter)
+            family_sample_gt_labels.append(family.get_subject_genotype_labels())
+            family_sample_gt_columns.append(family.get_subject_genotype_columns())
+            family_sample_depth_columns.append(family.get_subject_depth_columns())
+            family_ids.append(family.family_id)
 
     # run the query applying any genotype filters provided by the user.
     gq.run(query)

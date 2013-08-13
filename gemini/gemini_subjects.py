@@ -65,6 +65,8 @@ class Family(object):
 
         NOTE: assumes at most a 2 generation family.
         """
+        self.father_name = None
+        self.mother_name = None
         for subject in self.subjects:
             # if mom and dad are found, we know this is the child
             if subject.maternal_id is not None and \
@@ -79,10 +81,17 @@ class Family(object):
 
         # now track the actual sampleIds for the parents
         for subject in self.subjects:
-            if subject.name == self.father_name:
+            if self.father_name is not None and \
+               subject.name == self.father_name:
                 self.father = subject
-            elif subject.name == self.mother_name:
+            elif self.mother_name is not None and \
+               subject.name == self.mother_name:
                 self.mother = subject
+
+        if self.father is not None and self.mother is not None:
+            return True
+        else:
+            return False
 
     def get_auto_recessive_filter(self):
         """
@@ -95,7 +104,9 @@ class Family(object):
         """
 
         # identify which samples are the parents in the family.
-        self.find_parents()
+        # Fail if both parents are not found
+        if not self.find_parents():
+            return "False"
 
         # if either parent is affected, this family cannot satisfy
         # a recessive model, as the parents should be carriers.
@@ -142,7 +153,9 @@ class Family(object):
         """
 
         # identify which samples are the parents in the family.
-        self.find_parents()
+        # Fail if both parents are not found
+        if not self.find_parents():
+            return "False"
         
         mask = ""
 
@@ -249,8 +262,11 @@ class Family(object):
           #       |
           #     (A/G)
         """
+
         # identify which samples are the parents in the family.
-        self.find_parents()
+        # Fail if both parents are not found
+        if not self.find_parents():
+            return "False"
 
         mask = "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \

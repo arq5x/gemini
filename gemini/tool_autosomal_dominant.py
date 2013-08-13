@@ -35,10 +35,12 @@ def get_auto_dominant_candidates(args):
     family_sample_gt_labels = []
     family_sample_gt_columns = []
     for family in families:
-        family_masks.append(family.get_auto_dominant_filter())
-        family_sample_gt_labels.append(family.get_subject_genotype_labels())
-        family_sample_gt_columns.append(family.get_subject_genotype_columns())
-        family_ids.append(family.family_id)
+        family_filter = family.get_auto_dominant_filter()
+        if family_filter != "False":
+            family_masks.append(family_filter)
+            family_sample_gt_labels.append(family.get_subject_genotype_labels())
+            family_sample_gt_columns.append(family.get_subject_genotype_columns())
+            family_ids.append(family.family_id)
 
     # run the query applying any genotype filters provided by the user.
     gq.run(query)
