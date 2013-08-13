@@ -70,14 +70,14 @@ class Family(object):
         for subject in self.subjects:
             # if mom and dad are found, we know this is the child
             if subject.maternal_id is not None and \
-               subject.maternal_id != "-9" and \
-               subject.maternal_id != "0" and \
-               subject.paternal_id is not None and \
-               subject.paternal_id != "-9" and \
+               str(subject.maternal_id) != "-9" and \
+               str(subject.maternal_id) != "0" and \
+               str(subject.paternal_id) is not None and \
+               str(subject.paternal_id) != "-9" and \
                subject.paternal_id != "0":
-               self.father_name = str(subject.paternal_id)
-               self.mother_name = str(subject.maternal_id)
-               self.children.append(subject)
+                self.father_name = str(subject.paternal_id)
+                self.mother_name = str(subject.maternal_id)
+                self.children.append(subject)
 
         # now track the actual sampleIds for the parents
         for subject in self.subjects:
@@ -276,6 +276,7 @@ class Family(object):
             str(HOM_REF)
         mask += " and "
         for i, child in enumerate(self.children):
+            print child.name
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
                     str(HET)
