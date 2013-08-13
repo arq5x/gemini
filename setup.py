@@ -20,7 +20,7 @@ long_description = """
 setup(
         name="gemini",
         version=version,
-        install_requires=['numpy>=1.7.1',
+        install_requires=['numpy>=1.6.0',
                           'pyparsing>=1.5.6,<=1.5.7',
                           'PyYAML >= 3.10',
                           'cyvcf>=0.1.7',
