@@ -111,22 +111,13 @@ def get_compound_hets(args):
     # were inherited on opposite haplotypes.    
     comp_het_id = 1
     for sample in comp_hets:
-        # track which comp_hets we have seen so far for this sample.
-        seen = {}
         for gene in comp_hets[sample]:
-            for site1 in comp_hets[sample][gene]:
-                for site2 in comp_hets[sample][gene]:
-                    
-                    if site1 == site2:
-                        continue
-                    
-                    if (site1, site2) in seen or (site2, site1) in seen:
-                        continue
-                    
-                    # avoid reporting the same comp_het, yet just in the
-                    # opposition order.
-                    seen[(site1, site2)] = True
-                    seen[(site2, site1)] = True
+
+            # we only care about combinations, not permutations
+            # (e.g. only need site1,site2, not site1,site2 _and site2,site1)
+            # thus we can do this in a ~ linear pass instead of a ~ N^2 pass
+            for idx, site1 in enumerate(comp_hets[sample][gene]):
+                for site2 in comp_hets[sample][gene][idx + 1:]:
 
                     # expand the genotypes for this sample
                     # at each site into it's composite
