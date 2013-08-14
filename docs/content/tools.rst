@@ -47,9 +47,9 @@ restrict the analysis to LoF variants using the ``--only_lof`` option.
 	NA19002	GTSE1	chr22,46722400,46722401,G,A,G|A,stop_gain,exon_22,0.005,1	chr22,46704499,46704500,C,A,A|C,stop_gain,exon_22,0.005,0
 
 
----------------
+--------------------
 ``--only-affected``
----------------
+--------------------
 By default, candidate compound heterozygous variants are reported for all
 individuals in the database.  One can restrict the analysis to variants in
 only individuals with an affected phenotype using the ``--only-affected`` option.
@@ -814,11 +814,11 @@ in dbSNP:
 	M10478	2	2	0
 	M10500	2	1	1
 
-======================
+===============================================================
 ``burden``: perform sample-wise gene-level burden calculations
-======================
-A set of tools to perform burden summaries on a per-gene, per sample basis are
-also included in the burden tool. Run with no special arguments, it outputs
+===============================================================
+The ``burden`` tool provides a set of utilities to perform burden 
+summaries on a per-gene, per sample basis. By default, it outputs
 a table of gene-wise counts of all high impact variants in coding regions for
 each sample:
 
@@ -830,6 +830,9 @@ each sample:
 	CTBP2	0	0	0	1
 	DHODH	1	0	0	0
 
+----------------------
+``--nonsynonymous``
+----------------------
 If you want to be a little bit less restrictive, you can include all
 non-synonymous variants instead:
 
@@ -843,10 +846,13 @@ non-synonymous variants instead:
 	ASAH2C	2	1	1	0
 	DHODH	1	0	0	0
 
+----------------------
+``--calpha``
+----------------------
 If your database has been loaded with a PED file describing case and
 control samples, you can calculate the
 `c-alpha <http://www.plosgenetics.org/article/info%3Adoi%2F10.1371%2Fjournal.pgen.1001322>`_
-statistic for case vs. control:
+statistic for cases vs. control:
 
 .. code-block:: bash
 
@@ -857,6 +863,29 @@ statistic for case vs. control:
 	CTBP2	0.0	0.0	nan	nan
 	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
 	DHODH	0.0	0.0	nan	nan
+
+.. note::
+
+	The ``--calpha`` option merely computes an asymptotic P-value that
+	assumes a normal distribution.  It does not yet perform permutation
+	tests to yield appropriate p-value distributions even in the presence of LD between variants.
+
+------------------------------------------------
+``--min-aaf`` and ``--max-aaf`` for ``--calpha``
+------------------------------------------------
+By default, all variants affecting a given gene will be included in the
+C-alpha computation.  However, one may establish alternate allele frequency
+boundaries for the variants included using the ``--min-aaf`` and 
+``--max-aaf`` options.
+
+.. code-block:: bash
+
+   	$ gemini burden --calpha test.burden.db --min-aaf 0.0 --max-aaf 0.01
+
+
+---------------------------------------------
+``--cases`` and ``--controls for ``--calpha``
+---------------------------------------------
 
 If you do not have a PED file loaded, or your PED file does not follow the
 standard `PED phenotype encoding format <http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml>`_
