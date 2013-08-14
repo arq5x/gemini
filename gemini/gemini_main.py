@@ -6,7 +6,6 @@ import argparse
 import gemini_load
 import gemini_load_chunk
 import gemini_query
-import gemini_burden
 import \
     gemini_region, gemini_stats, gemini_dump, \
     gemini_annotate, gemini_windower, \
@@ -20,6 +19,7 @@ import tool_de_novo_mutations
 import tool_pathways
 import tool_lof_sieve
 import tool_interactions
+import tool_burden_tests
 
 
 def examples(parser, args):
@@ -488,11 +488,24 @@ def main():
                                action='store_true',
                                default=False,
                                help="Run the C-alpha association test.")
+    
+    parser_burden.add_argument('--min-aaf',
+                               dest='min_aaf',
+                               type=float,
+                               default=0.0,
+                               help='The min. alt. allele frequency for a '
+                                     'variant to be included.')
+    parser_burden.add_argument('--max-aaf',
+                               dest='max_aaf',
+                               type=float,
+                               default=1.0,
+                               help='The max. alt. allele frequency for a '
+                                     'variant to be included.')
     parser_burden.add_argument('db',
                                metavar='db',
                                help='The name of the database to be queried.')
 
-    parser_burden.set_defaults(func=gemini_burden.burden)
+    parser_burden.set_defaults(func=tool_burden_tests.burden)
 
     #########################################
     # $ gemini interactions

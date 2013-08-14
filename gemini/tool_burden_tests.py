@@ -26,7 +26,6 @@ def nonsynonymous_by_gene(args):
              "codon_change != 'None'")
     _summarize_by_gene_and_sample(args, query)
 
-
 def get_calpha(args):
     """
     Calculate the C-alpha statistic for each gene based on the observed
@@ -48,7 +47,7 @@ def get_calpha(args):
     # p_0 = the fraction of samples that are cases (used for weighting)
     p_0 = float(len(case)) / float(len(samples))
 
-    ns = _nonsynonymous_variants(db)
+    ns = _medium_or_high_impact_variants(args)
     variants_in_gene, variants = _calculate_counts(ns, samples)
     header = ["gene", "T", "c", "Z", "p_value"]
     print "\t".join(header)
@@ -158,6 +157,16 @@ def _nonsynonymous_variants(db):
     gq.run(query, show_variant_samples=True)
     return gq
 
+def _medium_or_high_impact_variants(args):
+    query = ("SELECT variant_id, gene from variants"
+             " WHERE impact_severity != 'LOW'"
+             " AND aaf >= %s"
+             " AND aaf <= %s" % (str(args.min_aaf), str(args.max_aaf)))
+
+    print query
+    gq = GeminiQuery.GeminiQuery(args.db)
+    gq.run(query, show_variant_samples=True)
+    return gq
 
 def _calculate_counts(gq, samples):
     variants = defaultdict(Counter)
