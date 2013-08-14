@@ -269,14 +269,29 @@ class Family(object):
             return "False"
 
         mask = "("
+
+        mask += "("
         mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
             str(HOM_REF)
         mask += " and "
         mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
             str(HOM_REF)
+        mask += ")"
+
+        mask += " or "
+
+        mask += "("
+        mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
+            str(HOM_ALT)
+        mask += " and "
+        mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
+            str(HOM_ALT)
+        mask += ")"
+
+        mask += ")"
+
         mask += " and "
         for i, child in enumerate(self.children):
-            print child.name
             if child.affected:
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
                     str(HET)
@@ -287,7 +302,6 @@ class Family(object):
             if i < (len(self.children) - 1):
                 mask += " and "
 
-        mask += ")"
         return mask
 
     def get_subject_genotype_columns(self):
