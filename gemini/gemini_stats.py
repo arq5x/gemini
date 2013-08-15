@@ -68,7 +68,7 @@ def get_tstv_coding(c, args):
 
 def get_tstv_noncoding(c, args):
     """
-    Report the transition / transversion ratio in coding regions.
+    Report the transition / transversion ratio in non-coding regions.
     """
     ts_cmd = "SELECT count(1) \
            FROM variants v \
