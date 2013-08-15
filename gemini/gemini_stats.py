@@ -35,7 +35,7 @@ def get_tstv(c, args):
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(round(float(ts) / float(tv), 4))
+        str(tstv(ts,tv))
 
 
 def get_tstv_coding(c, args):
@@ -55,15 +55,17 @@ def get_tstv_coding(c, args):
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
+    
     # get the number of transversions
     c.execute(tv_cmd)
     tv = c.fetchone()[0]
+    
     # report the transitions, transversions, and the ts/tv ratio
     print "ts" + '\t' + \
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(round(float(ts) / float(tv), 4))
+        str(tstv(ts,tv))
 
 
 def get_tstv_noncoding(c, args):
@@ -83,17 +85,27 @@ def get_tstv_noncoding(c, args):
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
+    
     # get the number of transversions
     c.execute(tv_cmd)
-
     tv = c.fetchone()[0]
+    
     # report the transitions, transversions, and the ts/tv ratio
     print "ts" + '\t' + \
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(round(float(ts) / float(tv), 4))
+        str(tstv(ts,tv))
 
+
+def tstv(ts, tv):
+    """
+    Calculate ts/tv, and avoid division by zero error
+    """
+    try:
+        return round(float(ts) / float(tv), 4)
+    except ZeroDivisionError:
+        return 0
 
 def get_snpcounts(c, args):
     """
