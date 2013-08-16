@@ -36,8 +36,8 @@ def main(args):
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
     os.chdir(work_dir)
-    make_dirs(args)
     print "Installing isolated base python installation"
+    make_dirs(args)
     anaconda = install_anaconda_python(args, remotes)
     print "Installing gemini..."
     install_conda_pkgs(anaconda)
@@ -201,11 +201,15 @@ def get_cloudbiolinux(repo):
 def check_dependencies():
     """Ensure required tools for installation are present.
     """
-    print "Checking required dependencies"
-    try:
-        subprocess.check_call(["git", "--version"])
-    except OSError:
-        raise OSError("bcbio-nextgen installer requires Git (http://git-scm.com/)")
+    print "Checking required dependencies..."
+    for cmd, url in [("git", "http://git-scm.com/"),
+                     ("wget", "http://www.gnu.org/software/wget/"),
+                     ("curl", "http://curl.haxx.se/")]:
+        try:
+            subprocess.check_call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            print " %s found" % cmd
+        except OSError:
+            raise OSError("gemini requires %s (%s)" % (cmd, url))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated installer for gemini framework.")

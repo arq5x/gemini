@@ -69,10 +69,22 @@ def install_annotation_files(anno_root_dir):
 
     cur_config = read_gemini_config(allow_missing=True)
 
+    _check_dependencies()
     _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
                          anno_files, anno_dir, cur_config)
     #_download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
     #                     toadd_anno_files, cur_config)
+
+def _check_dependencies():
+    """Ensure required tools for download are present.
+    """
+    print "Checking required dependencies..."
+    for cmd, url in [("curl", "http://curl.haxx.se/")]:
+        try:
+            subprocess.check_call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            print " %s found" % cmd
+        except OSError:
+            raise OSError("gemini requires %s (%s)" % (cmd, url))
 
 def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
