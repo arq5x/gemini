@@ -399,10 +399,11 @@ class GeminiLoader(object):
         self.ped_hash = {}
         if self.args.ped_file is not None:
             for line in open(self.args.ped_file, 'r'):
-                field = line.strip().split("\t")
-                if len(field) > 1 and not field[0].startswith("#"):
-                    ped = pedformat(field)
-                    self.ped_hash[ped.name] = ped
+                if not line.startswith("#"):
+                    field = line.split(None, 7)[:7]
+                    if len(field) > 1:
+                        ped = pedformat(field)
+                        self.ped_hash[ped.name] = ped
 
         sample_list = []
         for sample in self.samples:
