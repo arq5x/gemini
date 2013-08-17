@@ -6,6 +6,7 @@ import sqlite3
 import re
 import itertools
 import collections
+import json
 
 # gemini imports
 import gemini_utils as util
@@ -51,14 +52,20 @@ class GeminiRow(object):
     def __iter__(self):
         return self
 
+    def __repr__(self):
+        return '\t'.join([str(self.row[c]) for c in self.row])
+
     def next(self):
         try:
             return self.row.keys()
         except:
             raise StopIteration
 
-    def __repr__(self):
-        return '\t'.join([str(self.row[c]) for c in self.row])
+    def get_json(self):
+        """Emit a JSON representation of a given row
+        """
+        return json.dumps(self.row)
+
 
 
 class GeminiQuery(object):
