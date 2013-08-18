@@ -21,7 +21,7 @@ If ``wget`` isn't available, you can use ``curl`` instead:
     https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py \
     > gemini_install.py
 
-Once you have downloaded the above installation script, you can proceeds as follows:
+Once you have downloaded the above installation script, you can proceed as follows:
 
 .. code-block:: bash
 
