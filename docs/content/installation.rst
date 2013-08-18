@@ -12,6 +12,19 @@ and data files.
 .. code-block:: bash
 
     $ wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
+
+If ``wget`` isn't available, you can use ``curl`` instead:
+
+.. code-block:: bash
+
+    $ curl \
+    https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py \
+    > gemini_install.py
+
+Once you have downloaded the above installation script, you can proceeds as follows:
+
+.. code-block:: bash
+
     $ python gemini_install.py /usr/local /usr/local/share/gemini
     $ export PATH=$PATH:/usr/local/gemini/bin
     # it would be wise to add the above line to your ``.bashrc`` or ``.bash_profile``
