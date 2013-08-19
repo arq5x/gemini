@@ -26,6 +26,9 @@ class GeminiRow(object):
         self.gt_types = gt_types
         self.gt_phases = gt_phases
         self.gt_depths = gt_depths
+        self.gt_ref_depths = gt_ref_depths
+        self.gt_alt_depths = gt_alt_depths
+        self.gt_quals = gt_quals
         self.gt_cols = ['gts', 'gt_types', 'gt_phases', 
                         'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
                         'gt_quals']
