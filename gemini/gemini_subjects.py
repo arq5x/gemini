@@ -158,7 +158,6 @@ class Family(object):
             return "False"
         
         mask = ""
-
         if self.father.affected is True and self.mother.affected is True:
             # doesn't meet an auto. dominant model if both parents are affected
             # [*]---(*)
