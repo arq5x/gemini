@@ -163,7 +163,6 @@ def _medium_or_high_impact_variants(args):
              " AND aaf >= %s"
              " AND aaf <= %s" % (str(args.min_aaf), str(args.max_aaf)))
 
-    print query
     gq = GeminiQuery.GeminiQuery(args.db)
     gq.run(query, show_variant_samples=True)
     return gq
