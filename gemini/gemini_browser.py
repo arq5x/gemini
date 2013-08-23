@@ -47,6 +47,16 @@ def server_static(filepath):
 def index():
     return template('index.j2')
 
+@app.route('/query_json', method='GET')
+def query_json():
+    query = request.GET.get('query', '').strip()
+    
+    gq = GeminiQuery.GeminiQuery(database)
+    gq._set_gemini_browser(True)
+    gq.run(query)
+    
+    return {'gemini_results': [dict(row) for row in gq]}
+
 
 @app.route('/query', method='GET')
 def query():
@@ -56,9 +66,8 @@ def query():
         gt_filter = request.GET.get('gt_filter', '').strip()
         use_header = request.GET.get('use_header')
         igv_links = request.GET.get('igv_links')
-
         return query, gt_filter, use_header, igv_links
-
+    
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
 
@@ -124,6 +133,8 @@ def query():
     # user did nothing.
     else:
         return template('query.j2', dbfile=database)
+
+
 
 
 @app.route('/de_novo', method='GET')
