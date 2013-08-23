@@ -250,3 +250,45 @@ a variant with the --show-sample-variants flag:
 variant_samples is a list of all of the samples with a variant, HET_samples is the subset
 of those heterozygous for the variant and HOM_ALT_samples is the subset homozygous for
 the variant.
+
+================================================
+--json Reporting query output in JSON format.
+================================================
+Reporting query output in JSON format may enable
+HTML/Javascript apps to query GEMINI and retrieve
+the output in a format that is amenable to web development protocols.
+
+Here is a basic query:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end from variants" my.db | head
+  chr1  10067 10069
+  chr1  10230 10231
+  chr1  12782 12783
+  chr1  13109 13110
+  chr1  13115 13116
+  chr1  13117 13118
+  chr1  13272 13273
+  chr1  13301 13302
+  chr1  13416 13417
+  chr1  13417 13418
+
+To report in JSON format, use the ``--json`` option. For example:
+
+.. code-block:: bash
+
+  $ gemini query --json -q "select chrom, start, end from variants" my.db | head
+  {"chrom": "chr1", "start": 10067, "end": 10069}
+  {"chrom": "chr1", "start": 10230, "end": 10231}
+  {"chrom": "chr1", "start": 12782, "end": 12783}
+  {"chrom": "chr1", "start": 13109, "end": 13110}
+  {"chrom": "chr1", "start": 13115, "end": 13116}
+  {"chrom": "chr1", "start": 13117, "end": 13118}
+  {"chrom": "chr1", "start": 13272, "end": 13273}
+  {"chrom": "chr1", "start": 13301, "end": 13302}
+  {"chrom": "chr1", "start": 13416, "end": 13417}
+  {"chrom": "chr1", "start": 13417, "end": 13418}
+
+
+
