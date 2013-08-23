@@ -19,6 +19,7 @@ def index_variation(cursor):
     cursor.execute('''create index var_coding_idx on variants(is_coding)''')
     cursor.execute('''create index var_lof_idx on variants(is_lof)''')
     cursor.execute('''create index var_depth_idx on variants(depth)''')
+    cursor.execute('''create index var_gene_idx on variants(gene)''')
 
 
 def index_variation_impacts(cursor):
