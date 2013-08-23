@@ -16,11 +16,14 @@ def query(parser, args):
         gq = GeminiQuery.GeminiQuery(args.db)
         gq.run(args.query, args.gt_filter, args.show_variant_samples)
 
-        if args.use_header:
+        if args.use_header and not args.use_json:
             print gq.header
 
         for row in gq:
-            print row
+            if not args.use_json:
+                print row
+            else:
+                print row.get_json()
 
 if __name__ == "__main__":
     main()

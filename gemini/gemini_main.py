@@ -216,6 +216,11 @@ def main():
             action='store_true',
             help='Add a header of column names to the output.',
             default=False)
+    parser_query.add_argument('--json',
+            dest='use_json',
+            action='store_true',
+            help='Report the query output in JSON format.',
+            default=False)
     parser_query.set_defaults(func=gemini_query.query)
 
     #########################################
