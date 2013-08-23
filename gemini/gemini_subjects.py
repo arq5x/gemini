@@ -27,12 +27,12 @@ class Subject(object):
         # 2 = affected
         # 0 or -9 is unknown.
         # http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped
-        if self.phenotype == 2:
+        if str(self.phenotype) == "2":
             self.affected = True
-        elif self.phenotype == 1:
+        elif str(self.phenotype) == "1":
             self.affected = False
         # distinguish unknown from known to be unaffected.
-        elif self.phenotype == 0 or self.phenotype == -9:
+        elif str(self.phenotype) == "0" or str(self.phenotype) == "-9":
             self.affected = None
 
     def __repr__(self):
@@ -304,7 +304,7 @@ class Family(object):
 
         return mask
 
-    def get_subject_genotype_columns(self):
+    def get_genotype_columns(self):
         """
         Return the indices into the gts numpy array for the parents
         and the children.
@@ -317,7 +317,7 @@ class Family(object):
 
         return columns
 
-    def get_subject_depth_columns(self):
+    def get_depth_columns(self):
         """
         Return the indices into the gt_depths numpy array for the parents
         and the children.
@@ -330,7 +330,7 @@ class Family(object):
 
         return columns
 
-    def get_subject_genotype_labels(self):
+    def get_genotype_labels(self):
         """
         Return header genotype labels for the parents and the children.
         """
