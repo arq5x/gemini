@@ -567,6 +567,11 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
+    parser_auto_rec.add_argument('--min-kindreds',
+            dest='min_kindreds',
+            type=int,
+            default=1,
+            help='The min. number of kindreds that must have a candidate variant in a gene.')
     #parser_auto_rec.add_argument('--gt-filter',
     #        dest='gt_filter',
     #        metavar='STRING',
@@ -591,6 +596,11 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
+    parser_auto_dom.add_argument('--min-kindreds',
+            dest='min_kindreds',
+            type=int,
+            default=1,
+            help='The min. number of kindreds that must have a candidate variant in a gene.')
     #parser_auto_dom.add_argument('--gt-filter',
     #        dest='gt_filter',
     #        metavar='STRING',
