@@ -71,9 +71,10 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     subprocess.check_call([anaconda["pip"], "install", "--upgrade",
                            "https://bitbucket.org/james_taylor/bx-python/get/tip.tar.bz2"])
     subprocess.check_call([anaconda["pip"], "install", "-r", remotes["requirements"]])
-    for script in ["gemini"]:
-        final_script = os.path.join(tooldir, "bin", script)
-        ve_script = os.path.join(anaconda["dir"], "bin", script)
+    for final_name, ve_name in [("gemini", "gemini"), ("gemini_python", "python"),
+                                ("gemini_pip", "pip")]:
+        final_script = os.path.join(tooldir, "bin", final_name)
+        ve_script = os.path.join(anaconda["dir"], "bin", ve_name)
         sudo_cmd = ["sudo"] if use_sudo else []
         if os.path.lexists(final_script):
             subprocess.check_call(sudo_cmd + ["rm", "-f", final_script])
