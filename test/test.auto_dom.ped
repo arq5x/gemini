@@ -1,0 +1,9 @@
+1	1_dad	0	0	-1	1
+1	1_mom	0	0	-1	1
+1	1_kid	1_dad	1_mom	-1	2
+2	2_dad	0	0	-1	1
+2	2_mom	0	0	-1	2
+2	2_kid	2_dad	2_mom	-1	2
+3	3_dad	0	0	-1	2
+3	3_mom	0	0	-1	-9
+3	3_kid	3_dad	3_mom	-1	2
