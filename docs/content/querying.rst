@@ -271,9 +271,9 @@ a semi-colon instead of a comma, one would do the following:
   chr1  1221487 1221490 CAA C 1478PC0004  1478PC0004
 
 
-================================================
---json Reporting query output in JSON format.
-================================================
+=================================================
+``--json`` Reporting query output in JSON format.
+=================================================
 Reporting query output in JSON format may enable
 HTML/Javascript apps to query GEMINI and retrieve
 the output in a format that is amenable to web development protocols.
