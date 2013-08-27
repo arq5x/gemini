@@ -55,12 +55,12 @@ def main(args):
     os.chdir(work_dir)
     test_script = install_testbase(args.datadir, remotes["gemini"])
     print "Finished: gemini, tools and data installed"
-    print " Tools installed in:\n  %s" % args.tooldir    
+    print " Tools installed in:\n  %s" % args.tooldir
     print " Data installed in:\n  %s" % args.datadir
     print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
 os.path.basename(test_script))
     print " NOTE: be sure to add %s/bin to your PATH." % args.tooldir
-                                                    
+
     shutil.rmtree(work_dir)
 
 def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
@@ -92,7 +92,7 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
 
 def install_conda_pkgs(anaconda):
     pkgs = ["cython", "distribute", "ipython", "nose", "numpy",
-            "pip", "pycrypto", "pyparsing", "pysam", "pyyaml", 
+            "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
             "pyzmq", "pandas", "scipy"]
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + pkgs)
 
@@ -113,6 +113,7 @@ def install_anaconda_python(args, remotes):
         url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux")
         if not os.path.exists(os.path.basename(url)):
             subprocess.check_call(["wget", url])
+        subprocess.check_call(["sed", "-i", "s/more <<EOF/cat  <<EOF/", os.path.basename(url)])
         subprocess.check_call("echo -e '\nyes\n%s\nno\n' | bash %s" %
                               (anaconda_dir, os.path.basename(url)), shell=True)
     return {"conda": conda,
