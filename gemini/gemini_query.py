@@ -14,7 +14,9 @@ def query(parser, args):
     if os.path.exists(args.db):
 
         gq = GeminiQuery.GeminiQuery(args.db)
-        gq.run(args.query, args.gt_filter, args.show_variant_samples)
+        gq.run(args.query, args.gt_filter, 
+               args.show_variant_samples,
+               args.sample_delim)
 
         if args.use_header and not args.use_json:
             print gq.header

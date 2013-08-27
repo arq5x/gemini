@@ -145,7 +145,7 @@ sample so that we can assess the confidence in the genotype:
 
 
 ===========================================================
-Filtering on genotypes
+``--gt-filter`` Filtering on genotypes
 ===========================================================
 
 Now, we often want to focus only on variants where a given sample has a
@@ -229,9 +229,9 @@ Eh, I changed my mind, let's restrict the above to those variants where sample
 	 chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
 	 chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
 
-================================================
-Finding out which samples have a variant
-================================================
+=============================================================
+``--show-samples`` Finding out which samples have a variant
+=============================================================
 While exploring your data you might hit on a set of interesting variants and want to know
 which of your samples have that variant in them. You can display the samples containing
 a variant with the --show-sample-variants flag:
@@ -250,6 +250,26 @@ a variant with the --show-sample-variants flag:
 variant_samples is a list of all of the samples with a variant, HET_samples is the subset
 of those heterozygous for the variant and HOM_ALT_samples is the subset homozygous for
 the variant.
+
+=============================================================
+``--sample-delim`` Changing the sample list delimiter
+=============================================================
+One can modify the default comma delimiter used by the ``--show-samples``
+option through the use of the ``--sample-delim`` option.  For example, to use
+a semi-colon instead of a comma, one would do the following:
+
+.. code-block:: bash
+
+    $ gemini query --header --show-samples --sample-delim ";" \
+                   -q "select chrom, start, end, ref, alt \
+                       from variants where is_lof=1 limit 5" test.query.db
+
+  chrom start end ref alt variant_samples HET_samples HOM_ALT_samples
+  chr1  874815  874816  C CT  1478PC0006B;1478PC0007B;1478PC0010,1478PC0013B;1478PC0022B;1478PC0023B;1478PC0025;1719PC0007;1719PC0009;1719PC0010;1719PC0022 1478PC0006B;1478PC0007B;1478PC0010;1478PC0013B;1478PC0022B;1478PC0023B;1719PC0007;1719PC0009;1719PC0010 1478PC0025;1719PC0022
+  chr1  1140811 1140813 TC  T 1478PC0011  1478PC0011
+  chr1  1219381 1219382 C G 1719PC0012  1719PC0012
+  chr1  1221487 1221490 CAA C 1478PC0004  1478PC0004
+
 
 ================================================
 --json Reporting query output in JSON format.

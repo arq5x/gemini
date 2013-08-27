@@ -150,7 +150,9 @@ class GeminiQuery(object):
     def _set_gemini_browser(self, for_browser):
         self.for_browser = for_browser
 
-    def run(self, query, gt_filter=None, show_variant_samples=False):
+    def run(self, query, gt_filter=None,
+                  show_variant_samples=False,
+                  variant_samples_delim=','):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -161,6 +163,7 @@ class GeminiQuery(object):
         self.query = query
         self.gt_filter = gt_filter
         self.show_variant_samples = show_variant_samples
+        self.variant_samples_delim = variant_samples_delim
 
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
@@ -302,13 +305,18 @@ class GeminiQuery(object):
                     variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
                                        y == HOM_ALT]
                     variant_names = [self.idx_to_sample[x] for x in variant_samples]
-                    fields["variant_samples"] = ",".join(variant_names)
+                    fields["variant_samples"] = \
+                        self.variant_samples_delim.join(variant_names)
+                    
                     het_samples = [x for x, y in enumerate(gt_types) if y == HET]
                     het_names = [self.idx_to_sample[x] for x in het_samples]
-                    fields["HET_samples"] = ",".join(het_names)
+                    fields["HET_samples"] = \
+                        self.variant_samples_delim.join(het_names)
+                    
                     hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
                     hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
-                    fields["HOM_ALT_samples"] = ",".join(hom_alt_names)
+                    fields["HOM_ALT_samples"] = \
+                        self.variant_samples_delim.join(hom_alt_names)
 
                 if self._query_needs_genotype_info():
                     if not self.for_browser:

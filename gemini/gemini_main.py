@@ -211,6 +211,12 @@ def main():
                               default=False,
                               help=('Add a column of all sample names with a variant to each '
                                     'variant.'))
+    parser_query.add_argument('--sample-delim',
+            dest='sample_delim',
+            metavar='STRING',
+            help='The delimiter to be used with the --show-samples option.',
+            default=',')
+    
     parser_query.add_argument('--header',
             dest='use_header',
             action='store_true',
