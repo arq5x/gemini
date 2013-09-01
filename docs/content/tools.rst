@@ -1041,7 +1041,7 @@ are the control samples and which are the case samples:
 	WDR37	-1.0	1.5	-0.816496580928	0.792891910879
 	CTBP2	0.0	0.0	nan	nan
 	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
-	DHODH	0.0	0.0	nan	nan" > exp
+	DHODH	0.0	0.0	nan	nan
 
 
 ===========================================================================
