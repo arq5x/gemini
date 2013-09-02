@@ -1,29 +1,59 @@
-#!/usr/bin/env python
+    #!/usr/bin/env python
 
 import os
 import sys
 import sqlite3
+from collections import defaultdict
+import numpy as np
+from scipy.stats import mode
 import pysam
 
 from gemini.annotations import annotations_in_region, guess_contig_naming
 
-def add_requested_column(col_name, update_cursor):
+def add_requested_columns(args, update_cursor, col_names, col_types=None):
     """
-    Attempt to add a new, user-defined column to the
-    variants table.  Exit if the column already exists.
+    Attempt to add new, user-defined columns to the
+    variants table.  Warn if the column already exists.
     """
-    try:
-        alter_qry = "ALTER TABLE variants ADD COLUMN " \
-                    + col_name \
-                    + " BOOL DEFAULT NULL"
-        update_cursor.execute(alter_qry)
-    except sqlite3.OperationalError:
-        sys.stderr.write("WARNING: column \"("
-                         + col_name
-                         + ")\" already exists in variants table. Overwriting values.\n")
+
+    if args.anno_type in ["count", "boolean"]:
+
+        col_name = col_names[0]
+        col_type = "integer"
+
+        try:
+            alter_qry = "ALTER TABLE variants ADD COLUMN " \
+                        + col_name \
+                        + " " \
+                        + col_type \
+                        + " " \
+                        + "DEFAULT NULL"
+            update_cursor.execute(alter_qry)
+        except sqlite3.OperationalError:
+            sys.stderr.write("WARNING: Column \"("
+                             + col_name
+                             + ")\" already exists in variants table. Overwriting values.\n")
+    elif args.anno_type == "extract":
+
+        for col_name, col_type in zip(col_names, col_types):
+
+            try:
+                alter_qry = "ALTER TABLE variants ADD COLUMN " \
+                            + col_name \
+                            + " " \
+                            + col_type \
+                            + " " \
+                            + "DEFAULT NULL"
+                update_cursor.execute(alter_qry)
+            except sqlite3.OperationalError:
+                sys.stderr.write("WARNING: Column \"("
+                                 + col_name
+                                 + ")\" already exists in variants table. Overwriting values.\n")
+    else:
+        sys.exit("Unknown annotation type: %s\n" % args.anno_type)
 
 
-def _annotate_variants(args, conn, get_val_fn):
+def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, col_ops=None):
     """Generalized annotation of variants with a new column.
 
     get_val_fn takes a list of annotations in a region and returns
@@ -40,7 +70,7 @@ def _annotate_variants(args, conn, get_val_fn):
     naming = guess_contig_naming(anno)
     select_cursor = conn.cursor()
     update_cursor = conn.cursor()
-    add_requested_column(args.col_name, select_cursor)
+    add_requested_columns(args, select_cursor, col_names, col_types)
 
     last_id = 0
     current_id = 0
@@ -51,18 +81,27 @@ def _annotate_variants(args, conn, get_val_fn):
     select_cursor.execute('''SELECT chrom, start, end, variant_id FROM variants''')
     while True:
         for row in select_cursor.fetchmany(CHUNK_SIZE):
-            to_update.append((get_val_fn(annotations_in_region(row,
-                                                               anno,
-                                                               "tuple",
-                                                               naming)),
-                              str(row["variant_id"])))
+
+            # update_data starts out as a list of the values that should
+            # be used to populate the new columns for the current row.
+            update_data = get_val_fn(annotations_in_region(row,
+                                                    anno,
+                                                    "tuple",
+                                                    naming))
+            # were there any hits for this row?
+            if len(update_data) > 0:
+                # we add the primary key to update_data for the 
+                # where clause in the SQL UPDATE statement.
+                update_data.append(str(row["variant_id"]))
+                to_update.append(tuple(update_data))
+
             current_id = row["variant_id"]
 
         if current_id <= last_id:
             break
         else:
             update_cursor.execute("BEGIN TRANSACTION")
-            _update_variants(to_update, args.col_name, update_cursor)
+            _update_variants(to_update, col_names, update_cursor)
             update_cursor.execute("END TRANSACTION")
 
             total += len(to_update)
@@ -70,30 +109,31 @@ def _annotate_variants(args, conn, get_val_fn):
             last_id = current_id
         to_update = []
 
-def _update_variants(to_update, col_name, cursor):
-        update_qry = "UPDATE variants SET " \
-                     + col_name \
-                     + " = ?" \
-                     + " WHERE variant_id = ?"
+def _update_variants(to_update, col_names, cursor):
+        update_qry = "UPDATE variants SET "
+
+        update_cols = ",".join(col_name + " = ?" for col_name in col_names)
+        update_qry += update_cols
+        update_qry += " WHERE variant_id = ?"
         cursor.executemany(update_qry, to_update)
 
 
-def annotate_variants_bool(args, conn):
+def annotate_variants_bool(args, conn, col_names):
     """
     Populate a new, user-defined column in the variants
     table with a BOOLEAN indicating whether or not
     overlaps were detected between the variant and the
     annotation file.
     """
-    def has_anno_hit(hits):
+    def has_hit(hits):
         for hit in hits:
-            return 1
-        return 0
+            return [1]
+        return [0]
 
-    return _annotate_variants(args, conn, has_anno_hit)
+    return _annotate_variants(args, conn, has_hit, col_names)
 
 
-def annotate_variants_count(args, conn):
+def annotate_variants_count(args, conn, col_names):
     """
     Populate a new, user-defined column in the variants
     table with a INTEGER indicating the count of overlaps
@@ -101,43 +141,118 @@ def annotate_variants_count(args, conn):
     annotation file.
     """
     def get_hit_count(hits):
-        return len(list(hits))
+        return [len(list(hits))]
 
-    return _annotate_variants(args, conn, get_hit_count)
+    return _annotate_variants(args, conn, get_hit_count, col_names)
 
 
-def annotate_variants_list(args, conn):
+def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs):
     """
     Populate a new, user-defined column in the variants
-    table with a INTEGER indicating the count of overlaps
-    between the variant and the
-    annotation file.
+    table based on the value(s) from a specific column.
+    in the annotation file.
     """
-    def get_hit_list(hits):
-        hit_list = []
+
+    def _map_list_types(hit_list, col_type):
+        try:
+            if col_type == "int":
+                return [int(h) for h in hit_list]
+            elif col_type == "float":
+                return [float(h) for h in hit_list]
+        except ValueError:
+            sys.exit('Non-numeric value found in annotation file: %s\n' % (','.join(hit_list)))
+
+    def summarize_hits(hits):
+
+        hits = list(hits)
+        if len(hits) == 0:
+            return []
+
+        hit_list = defaultdict(list)
         for hit in hits:
             try:
-                hit_list.append(hit[int(args.col_extract) - 1])
+                for idx, col_idx in enumerate(col_idxs):
+                    hit_list[idx].append(hit[int(col_idx) - 1])
             except IndexError:
-                sys.exit("Column " + args.col_extract + " exceeds \
-                          the number of columns in your \
-                          annotation file. Exiting.")
-        if len(hit_list) > 0:
-            val = ",".join(hit_list)
-            return '%s' % val
-        else:
-            return None
-    return _annotate_variants(args, conn, get_hit_list)
+                sys.exit("EXITING: Column " + args.col_extracts + " exceeds "
+                          "the number of columns in your "
+                          "annotation file.\n")
+
+        vals = []
+        for idx, op in enumerate(col_ops):
+            # more than one overlap, must summarize
+            if op == "mean":
+                val = np.average(_map_list_types(hit_list[idx], col_types[idx]))
+            elif op == 'list':
+                val = ",".join(hit_list[idx])
+            elif op == 'uniq_list':
+                val = ",".join(set(hit_list[idx]))
+            elif op == 'median':
+                val = np.median(_map_list_types(hit_list[idx], col_types[idx]))
+            elif op == 'min':
+                val = np.min(_map_list_types(hit_list[idx], col_types[idx]))
+            elif op == 'max':
+                val = np.max(_map_list_types(hit_list[idx], col_types[idx]))
+            elif op == 'mode':
+                val = mode(_map_list_types(hit_list[idx], col_types[idx]))[0][0]
+            elif op == 'first':
+                val = hit_list[idx][0]
+            elif op == 'last':
+                val = hit_list[idx][-1]
+            else:
+                sys.exit("EXITING: Operation (-o) \"" + op + "\" not recognized.\n")
+
+            if col_types[idx] == "int":
+                try:
+                    vals.append(int(val))
+                except ValueError:
+                    sys.exit ('Non-integer value found in annotation file: %s\n' % (val))    
+            elif col_types[idx] == "float":
+                try:
+                    vals.append(float(val))
+                except ValueError:
+                    sys.exit ('Non-float value found in annotation file: %s\n' % (val)) 
+            else:
+                vals.append(val)
+
+        return vals
+
+
+    return _annotate_variants(args, conn, summarize_hits,
+                              col_names, col_types, col_ops)
 
 
 
 
 def annotate(parser, args):
 
+    def _validate_args(args):
+        if (args.col_operations or args.col_types or args.col_extracts):
+            sys.exit('EXITING: You may only specify one column name (-c) when using -a boolean\n' % \
+                     (args.col_names, args.col_types, args.col_operations, args.col_extracts))
+
+        col_names = args.col_names.split(',')
+        return col_names
+
+    def _validate_extract_args(args):
+        col_ops = args.col_operations.split(',')
+        col_names = args.col_names.split(',')
+        col_types = args.col_types.split(',')
+        col_idxs  = args.col_extracts.split(',')
+
+        if not (len(col_ops) == len(col_names) == \
+                len(col_types) == len(col_idxs)):
+            sys.exit('EXITING: The number of column names, numbers, types, and '
+                     'operations must match: [%s], [%s], [%s], [%s]\n' % \
+                     (args.col_names, args.col_extracts, args.col_types, args.col_operations))
+
+        return col_names, col_types, col_ops, col_idxs
+
+
+
     if (args.db is None):
         parser.print_help()
-        exit()
-
+        exit(1)
     if not os.path.exists(args.db):
         sys.stderr.write("Error: cannot find database file.")
         exit(1)
@@ -149,15 +264,18 @@ def annotate(parser, args):
     conn.row_factory = sqlite3.Row  # allow us to refer to columns by name
     conn.isolation_level = None
 
-    if args.col_type == "boolean":
-        annotate_variants_bool(args, conn)
-    elif args.col_type == "count":
-        annotate_variants_count(args, conn)
-    elif args.col_type == "list":
-        if args.col_extract is None:
-            sys.exit("You must specify which column to extract (-e) \
-                      from the annotation file.")
+    if args.anno_type == "boolean":
+        col_names = _validate_args(args)
+        annotate_variants_bool(args, conn, col_names)
+    elif args.anno_type == "count":
+        col_names = _validate_args(args)
+        annotate_variants_count(args, conn, col_names)
+    elif args.anno_type == "extract":
+        if args.col_extracts is None:
+            sys.exit("You must specify which column to "
+                     "extract from your annotation file.")
         else:
-            annotate_variants_list(args, conn)
+            col_names, col_types, col_ops, col_idxs = _validate_extract_args(args)
+            annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs)
     else:
         sys.exit("Unknown column type requested. Exiting.")

@@ -691,9 +691,9 @@ affect protein_coding transcripts from processed RNA, etc.
 It is inevitable that researchers will want to enhance the gemini framework with
 their own, custom annotations. ``gemini`` provides a sub-command called
 ``annotate`` for exactly this purpose. As long as you provide a ``tabix``'ed
-annotation file in either BED or VCF format, the annotate tool will, for each
+annotation file in BED format, the ``annotate`` tool will, for each
 variant in the variants table, screen for overlaps in your annotation file and
-update a new column in the variants table that you may specify on the command
+update a one or more new column in the variants table that you may specify on the command
 line. This is best illustrated by example.
 
 Let's assume you have already created a gemini database of a VCF file using
@@ -703,32 +703,38 @@ the ``load`` module.
 
     $ gemini load -v my.vcf -t snpEff my.db
 
-Now, let's imagine you have an annotated file in BED format (``crucial.bed``)
+Now, let's imagine you have an annotated file in BED format (``important.bed``)
 that describes regions of the genome that are particularly relevant to your
 lab's research. You would like to annotate in the gemini database which variants
 overlap these crucial regions. We want to store this knowledge in a new column
-in the ``variants`` table called ``crucial_variant`` that tracks whether a given
+in the ``variants`` table called ``important_variant`` that tracks whether a given
 variant overlapped (1) or did not overlap (0) intervals in your annotation file.
 
 To do this, you must first TABIX your BED file:
 
 .. code-block:: bash
 
-    $ bgzip crucial.bed
-    $ tabix -p bed crucial.bed.gz
+    $ bgzip important.bed
+    $ tabix -p bed important.bed.gz
 
 
 ------------------------------------------------------
-``-t boolean`` Did a variant overlap a region or not?
+``-a boolean`` Did a variant overlap a region or not?
 ------------------------------------------------------
+
+.. note::
+
+    Formerly, the ``-a`` option was the ``-t`` option.
+
+
 Now, you can use this TABIX'ed file to annotate which variants overlap your
-crucial regions.  In the example below, the results will be stored in a new
-column called "crucial".  The ``-t boolean`` option says that you just want to
+important regions.  In the example below, the results will be stored in a new
+column called "important".  The ``-t boolean`` option says that you just want to
 track whether (1) or not (0) the variant overlapped one or more of your regions.
 
 .. code-block:: bash
 
-    $ gemini annotate -f crucial.bed.gz -c crucial -t boolean my.db
+    $ gemini annotate -f important.bed.gz -c important -a boolean my.db
 
 Since a new columns has been created in the database, we can now directly query
 the new column.  In the example results below, the first and third variants
@@ -737,7 +743,7 @@ overlapped a crucial region while the second did not.
 .. code-block:: bash
 
     $ gemini query \
-        -q "select chrom, start, end, variant_id, crucial from variants" \
+        -q "select chrom, start, end, variant_id, important from variants" \
         my.db \
         | head -3
     chr22   100    101    1   1
@@ -746,15 +752,15 @@ overlapped a crucial region while the second did not.
 
 
 -----------------------------------------------------
-``-t count`` How many regions did a variant overlap?
+``-a count`` How many regions did a variant overlap?
 -----------------------------------------------------
 Instead of a simple yes or no, we can use the ``-t count`` option to *count*
-how many crucial regions a variant overlapped.  It turns out that the 3rd
-variant actually overlapped two crucial regions.
+how many important regions a variant overlapped.  It turns out that the 3rd
+variant actually overlapped two important regions.
 
 .. code-block:: bash
 
-    $ gemini annotate -f crucial.bed.gz -c crucial -t count my.db
+    $ gemini annotate -f important.bed.gz -c important -a count my.db
 
     $ gemini query \
         -q "select chrom, start, end, variant_id, crucial from variants" \
@@ -765,36 +771,154 @@ variant actually overlapped two crucial regions.
     chr22   300    500    3   2
 
 
------------------------------------------------------
-``-t list`` Which regions did a variant overlap?
------------------------------------------------------
-Lastly, we can *list* which regions a variant overlapped using the ``-t list``
-option.  Let's imaging that ``crucial.bed`` looks like this:
+-------------------------------------------------------
+``-a extract`` Extract specific values from a BED file
+-------------------------------------------------------
+Lastly, we may also extract values from specific fields in a BED
+file and populate one or more new columns in the database based on
+overlaps with the annotation file and the values of the fields therein.
+To do this, we use the ``-a extract`` option.
+
+This is best described with an example.  To set this up, let's imagine
+that we have a VCF file from a different experiment and we want to annotate
+the variants in our GEMINI database with the allele frequency and depth
+tags from the INFO fields for the same variants in this other VCF file.
+
+First, since the ``annotate`` tool only supports BED files, we must use the
+excellent `vcftools <http://vcftools.sourceforge.net/>`_ package to extract the allele frequency (AF) and 
+depth (DP) tags from the VCF file.
 
 .. code-block:: bash
 
-    chr22   50    150    crucial1
-    chr22   300   400    crucial2
-    chr22   350   450    crucial3
+    # this will create a new file called other.INFO
+    $ vcftools --vcf other.vcf --get-INFO AF --get-INFO DP --out other
 
-When we use ``-t list``, the resulting column can store a comma-separated list
-of the region names (column 4).  You can choose whatever column you want to
-store in the database, but in this example, we will use the 4th column (the
-name).  We specify which column to store in the list with the ``-e`` option.
+    # peek at the output
+    $ head -6 other.INFO
+    CHROM   POS REF ALT AF  DP
+    chr10   1142208 T   C   1.00    122
+    chr10   48003992    C   T   0.50    165
+    chr10   48004992    C   T   0.50    165
+    chr10   135336656   G   A   1.00    2
+    chr10   135369532   T   C   0.25    239
+    
+    # create a BED file from the output of VCFTOOLs.
+    $ awk -v OFS="\t" '{if (NR>1) {print $1,$2-1,$2,$5,$6}}' other.INFO > other.bed
+
+    # peek at the output
+    $ head -5 other.bed
+    chr10   1142207 1142208 1.00    122
+    chr10   48003991    48003992    0.50    165
+    chr10   48004991    48004992    0.50    165
+    chr10   135336655   135336656   1.00    2
+    chr10   135369531   135369532   0.25    239
+
+    # bgzip and tabix for use with the annotate tool.
+    $ bgzip other.bed
+    $ tabix -p bed other.bed.gz
+
+Now that we have a proper TABIX'ed BED file, we can use the ``-a extract`` option to populate new
+columns in the GEMINI database.  In order to do so, we must specify:
+
+    1. the name of the column we want to add (``-c``)
+    
+    2. its type (e.g., text, int, float,)  (``-t``)
+    
+    3. the column in the BED file that we should use to extract data with which to populate the new column (``-e``)
+    
+    4. what operation should be used to summarize the data in the event of multiple overlaps in the annotation file  (``-o``)
+
+For example, let's imagine we want to create a new column called "other_allele_freq" using the
+AF column (that is, the 4th column) in our BED file to populate it.
 
 .. code-block:: bash
 
-    $ gemini annotate -f crucial.bed.gz -c crucial -t list -e 4 my.db
+    $ gemini annotate -f other.bed.gz \
+                      -a extract \
+                      -c other_allele_freq \
+                      -t float \
+                      -e 4 \
+                      -o mean \
+                      my.db
 
-    $ gemini query \
-        -q "select chrom, start, end, variant_id, crucial from variants" \
-        my.db \
-        | head -3
-    chr22   100    101    1   crucial1
-    chr22   200    201    2   0
-    chr22   300    500    3   crucial2,crucial3
+This create a new column in ``my.db`` called ``other_allele_freq`` and this
+new column will be a FLOAT.  In the event of multiple records in the BED
+file overlapping a variant in the database, the average (mean) of the allele
+frequencies values from the BED file will be used.
+
+At this point, one can query the database based on the values of the 
+new ``other_allele_freq`` column:
+
+.. code-block:: bash
+
+    $ gemini query -q "select * from variants where other_allele_freq < 0.01" my.db
 
 
+-------------------------------------------------------------------
+``-t TYPE`` Specifying the column type(s) when using ``-a extract``
+-------------------------------------------------------------------
+
+The ``annotate`` tool will create three different types of columns via the ``-t`` option:
+
+    1. Floating point columns for annotations with decimal precision as above (``-t float``)
+    2. Integer columns for integral annotations (``-t integer``)
+    3. Text columns for string columns such as "valid", "yes", etc. (``-t text``)
+    
+.. note::
+
+    The ``-t`` option is only valid when using the ``-a extract`` option.
+
+----------------------------------------------------------------------------
+``-o OPERATION`` Specifying the summary operations when using ``-a extract``
+----------------------------------------------------------------------------
+
+In the event of multiple overlaps between a variant and records in the annotation
+file, the ``annotate`` tool can summarize the values observed with multiple options:
+
+    1. ``-o mean``.  Compute the average of the values.  **They must be numeric**.
+    2. ``-o median``. Compute the median of the values.  **They must be numeric**.
+    3. ``-o mix``. Compute the minimum of the values.  **They must be numeric**.
+    4. ``-o max``. Compute the maximum of the values.  **They must be numeric**.
+    5. ``-o mode``. Compute the maximum of the values.  **They must be numeric**.
+    6. ``-o first``. Use the value from the **first** record in the annotation file.
+    7. ``-o last``. Use the value from the **last** record in the annotation file.
+    8. ``-o list``. Create a comma-separated list of the observed values.  **-t must be text**
+    9. ``-o uniq_list``. Create a comma-separated list of the **distinct** (i.e., non-redundant) observed values.  **-t must be text**
+
+.. note::
+
+    The ``-o`` option is only valid when using the ``-a extract`` option.
+
+
+-------------------------------------------------------------------
+Extracting and populating multiple columns at once.
+-------------------------------------------------------------------
+One can also extract and populate multiple columns at once by providing
+comma-separated lists (no spaces) of column names (``-c``), types (``-t``), numbers (``-e``),
+and summary operations (``-o``).  For example, recall that in the VCF example above,
+we created a TABIX'ed BED file containg the allele frequency and depth values from
+the INFO field as the 4th and 5th columns in the BED, respectively.
+
+Instead of running the ``annotate`` tool twice (once for eaxh column), we can
+run the tool once and load both columns in the same run.  For example:
+
+.. code-block:: bash
+
+    $ gemini annotate -f other.bed.gz \
+                      -a extract \
+                      -c other_allele_freq,other_depth \
+                      -t float,integer \
+                      -e 4,5 \
+                      -o mean,max \
+                      my.db
+
+We can then use each of the new columns to filter variants with a GEMINI query:
+
+.. code-block:: bash
+
+    $ gemini query -q "select * from variants \
+                       where other_allele_freq < 0.01 \
+                       and other_depth > 100" my.db
 
 
 ===========================================================================

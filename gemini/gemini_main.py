@@ -357,18 +357,29 @@ def main():
             help='The name of the database to be updated.')
     parser_get.add_argument('-f',
             dest='anno_file',
-            help='The BED file containing the annotations')
+            help='The TABIX\'ed BED file containing the annotations')
     parser_get.add_argument('-c',
-            dest='col_name',
-            help='The name of the column to be added to the variant table.')
-    parser_get.add_argument('-t',
-            dest='col_type',
-            help='How the data for the new column (-c) should be stored.',
-            default="append",
-            choices=['boolean', 'count', 'list'])
+            dest='col_names',
+            help='The name(s) of the column(s) to be added to the variant table.')
+    parser_get.add_argument('-a',
+            dest='anno_type',
+            help='How should the annotation file be used? (def. extract)',
+            default="extract",
+            choices=['boolean', 'count', 'extract'])
     parser_get.add_argument('-e',
-            dest='col_extract',
-            help='Column to extract information from for list annotations.')
+            dest='col_extracts',
+            help='Column(s) to extract information from for list annotations.')
+    parser_get.add_argument('-t',
+            dest='col_types',
+            help='What data type(s) should be used to represent the new values '
+                 'in the database? '
+                 'Any of {integer, float, text}')
+    parser_get.add_argument('-o',
+            dest='col_operations',
+            help='Operation(s) to apply to the extract column values '
+                  'in the event that a variant overlaps multiple annotations '
+                  'in your annotation file (-f).'
+                  'Any of {mean, median, min, max, mode, list, uniq_list, first, last}')
     parser_get.set_defaults(func=gemini_annotate.annotate)
 
     #########################################
