@@ -254,7 +254,7 @@ class GeminiLoader(object):
         # anno_id in variants is for the trans. with the most severe impact term
         gene = transcript = exon = codon_change = aa_change = aa_length = \
             biotype = consequence = effect_severity = None
-        is_coding = is_exonic = is_lof = 0
+        is_coding = is_exonic = is_lof = None
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
 
         if self.args.anno_type is not None:
