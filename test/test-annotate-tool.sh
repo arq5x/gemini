@@ -485,7 +485,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-echo "EXITING: The number of column names, numbers, types, and operations must match: [anno23], [4,5], [text,float], [last,mode]\n" > exp
+echo $'EXITING: The number of column names, numbers, types, and operations must match: [anno23], [4,5], [text,float], [last,mode]\n' > exp
 
 gemini annotate -f anno.bed.gz -a extract -c anno23 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db 2> obs
 
@@ -494,9 +494,9 @@ rm obs exp
 rm *.gz*
 
 
-###########################################################################################
+##########################################################################################
 #16. Test annotating variants using the "extract" function
-###########################################################################################
+##########################################################################################
 echo "    annotate-tool.t16...\c"
 
 # make a dunnmy TABIX'ed annotation file
@@ -537,10 +537,10 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-echo "EXITING: Column operation [model] not supported.\n" > exp
+echo $'EXITING: Column operation [model] not supported.\n' > exp
 
 gemini annotate -f anno.bed.gz -a extract -c anno27,anno28 -e 4,5 -t text,float -o last,model  test.snpeff.vcf.db 2> obs
 
 check obs exp
-rm obs exp
+#rm obs exp
 rm *.gz*
