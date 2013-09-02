@@ -240,6 +240,19 @@ def annotate(parser, args):
         col_types = args.col_types.split(',')
         col_idxs  = args.col_extracts.split(',')
 
+        supported_types = ['text', 'float', 'integer']
+        for col_type in col_types:
+            if col_type not in supported_types:
+                sys.exit('EXITING: Column type [%s] not supported.\n' % \
+                         (col_type))
+
+        supported_ops = ['mean', 'median', 'mode', 'min', 'max', 'first', \
+                         'last', 'list', 'uniq_list']
+        for col_op in col_ops:
+            if col_op not in supported_ops:
+                sys.exit('EXITING: Column operation [%s] not supported.\n' % \
+                         (col_op))
+
         if not (len(col_ops) == len(col_names) == \
                 len(col_types) == len(col_idxs)):
             sys.exit('EXITING: The number of column names, numbers, types, and '
