@@ -77,7 +77,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -c anno3 -a extract -e 4 -t string -o list  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -c anno3 -a extract -e 4 -t text -o list  test.snpeff.vcf.db
 
 echo "chr1	30548	a
 chr1	30860	None
@@ -110,7 +110,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno4,anno5 -e 4,5 -t string,float -o list,mean  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno4,anno5 -e 4,5 -t text,float -o list,mean  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -144,7 +144,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno6,anno7 -e 4,5 -t string,float -o list,mean  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno6,anno7 -e 4,5 -t text,float -o list,mean  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -178,7 +178,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno8,anno9 -e 4,5 -t string,float -o uniq_list,mean  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno8,anno9 -e 4,5 -t text,float -o uniq_list,mean  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -212,7 +212,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno10,anno11 -e 4,5 -t string,float -o first,mean  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno10,anno11 -e 4,5 -t text,float -o first,mean  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -245,7 +245,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno12,anno13 -e 4,5 -t string,float -o first,mean  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno12,anno13 -e 4,5 -t text,float -o first,mean  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -278,7 +278,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno14,anno15 -e 4,5 -t string,float -o first,last  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno14,anno15 -e 4,5 -t text,float -o first,last  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -312,7 +312,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno16,anno17 -e 4,5 -t string,float -o last,first  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno16,anno17 -e 4,5 -t text,float -o last,first  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -346,7 +346,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno18,anno19 -e 4,5 -t string,float -o last,max  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno18,anno19 -e 4,5 -t text,float -o last,max  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -380,7 +380,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno20,anno21 -e 4,5 -t string,float -o last,min  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno20,anno21 -e 4,5 -t text,float -o last,min  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -414,7 +414,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno22,anno23 -e 4,5 -t string,float -o last,median  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno22,anno23 -e 4,5 -t text,float -o last,median  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -449,7 +449,7 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-gemini annotate -f anno.bed.gz -a extract -c anno24,anno25 -e 4,5 -t string,float -o last,mode  test.snpeff.vcf.db
+gemini annotate -f anno.bed.gz -a extract -c anno24,anno25 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db
 
 echo "chr1	30548	a	0.23
 chr1	30860	None	None
@@ -485,9 +485,9 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-echo "EXITING: The number of column names, numbers, types, and operations must match: [anno23], [4,5], [string,float], [last,mode]\n" > exp
+echo "EXITING: The number of column names, numbers, types, and operations must match: [anno23], [4,5], [text,float], [last,mode]\n" > exp
 
-gemini annotate -f anno.bed.gz -a extract -c anno23 -e 4,5 -t string,float -o last,mode  test.snpeff.vcf.db 2> obs
+gemini annotate -f anno.bed.gz -a extract -c anno23 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db 2> obs
 
 check obs exp
 rm obs exp
@@ -515,7 +515,7 @@ echo "usage: gemini annotate [-h] [-f ANNO_FILE] [-c COL_NAMES]
                        db
 gemini annotate: error: argument -a: invalid choice: 'distract' (choose from 'boolean', 'count', 'extract')" > exp
 
-gemini annotate -f anno.bed.gz -a distract -c anno23,anno24 -e 4,5 -t string,float -o last,mode  test.snpeff.vcf.db 2> obs
+gemini annotate -f anno.bed.gz -a distract -c anno23,anno24 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db 2> obs
 
 check obs exp
 rm obs exp
@@ -537,9 +537,9 @@ bgzip anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-echo "EXITING: Operation (-o) \"model\" not recognized.\n" > exp
+echo "EXITING: Column operation [model] not supported.\n" > exp
 
-gemini annotate -f anno.bed.gz -a extract -c anno27,anno28 -e 4,5 -t string,float -o last,model  test.snpeff.vcf.db 2> obs
+gemini annotate -f anno.bed.gz -a extract -c anno27,anno28 -e 4,5 -t text,float -o last,model  test.snpeff.vcf.db 2> obs
 
 check obs exp
 rm obs exp
