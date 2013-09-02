@@ -228,10 +228,13 @@ def annotate(parser, args):
 
     def _validate_args(args):
         if (args.col_operations or args.col_types or args.col_extracts):
-            sys.exit('EXITING: You may only specify one column name (-c) when using -a boolean\n' % \
-                     (args.col_names, args.col_types, args.col_operations, args.col_extracts))
+            sys.exit('EXITING: You may only specify a column name (-c) when '
+                     'using \"-a boolean\" or \"-a count\".\n')
 
         col_names = args.col_names.split(',')
+        if len(col_names) > 1:
+            sys.exit('EXITING: You may only specify a single column name (-c) '
+                     'when using \"-a boolean\" or \"-a count\".\n')
         return col_names
 
     def _validate_extract_args(args):
