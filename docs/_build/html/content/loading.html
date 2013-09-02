@@ -1,0 +1,367 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Loading a VCF file into GEMINI</title>
+    
+    <link rel="stylesheet" href="../_static/labibi.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/gemini.png"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="Querying the GEMINI database" href="querying.html" />
+    <link rel="prev" title="Annotation with snpEff or VEP" href="functional_annotation.html" />
+
+
+<script src="../_static/labibi.js"></script>
+
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="querying.html" title="Querying the GEMINI database"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="functional_annotation.html" title="Annotation with snpEff or VEP"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="loading-a-vcf-file-into-gemini">
+<h1>Loading a VCF file into GEMINI<a class="headerlink" href="#loading-a-vcf-file-into-gemini" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="annotate-with-snpeff-or-vep">
+<h2>Annotate with snpEff or VEP<a class="headerlink" href="#annotate-with-snpeff-or-vep" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Annotate your VCF with SnpEff/VEP, prior to loading it into GEMINI, otherwise the
+gene/transcript features would be set to None.</p>
+</div>
+<p>GEMINI supports gene/transcript level annotations (we do not use pre-computed values here)
+from snpEff and VEP  and hence we suggest that you first annotate your VCF with either
+of these tools, prior to loading it into GEMINI. The related database columns would be
+populated, which would otherwise be set to None if an unannotated VCF file is loaded
+into GEMINI.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Choose the annotator as per your requirement!
+Some gene/transcript annotations are available with only one tool (e.g. <tt class="docutils literal"><span class="pre">Polyphen/Sift</span></tt> with VEP
+and <tt class="docutils literal"><span class="pre">amino_acid</span> <span class="pre">length/biotype</span></tt> with SnpEff). As such these values would be set to None, if an
+alternate annotator is used during the load step.</p>
+</div>
+<p>Instructions for installing and running these tools can be found in the following section:</p>
+<p><a class="reference internal" href="functional_annotation.html"><em>Annotation with snpEff or VEP</em></a></p>
+</div>
+<div class="section" id="the-basics">
+<h2>The basics<a class="headerlink" href="#the-basics" title="Permalink to this headline">¶</a></h2>
+<p>Before we can use GEMINI to explore genetic variation, we must first <tt class="docutils literal"><span class="pre">load</span></tt> our
+VCF file into the GEMINI database framework.  We expect you to have first
+annotated the functional consequence of each variant in your VCF using either
+VEP or snpEff (Note that v3.0+ of snpEff is required to track the amino acid
+length of each impacted transcript). Logically,the loading step is done with
+the <tt class="docutils literal"><span class="pre">gemini</span> <span class="pre">load</span></tt> command.  Below are two examples based on a VCF file that
+we creatively name my.vcf.  The first example assumes that the VCF has been
+pre-annotated with VEP and the second assumes snpEff.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># VEP-annotated VCF</span>
+<span class="nv">$ </span>gemini load -v my.vcf -t VEP my.db
+
+<span class="c"># snpEff-annotated VCF</span>
+<span class="nv">$ </span>gemini load -v my.vcf -t snpEff my.db
+</pre></div>
+</div>
+<p>As each variant is loaded into the <tt class="docutils literal"><span class="pre">GEMINI</span></tt> database framework, it is being
+compared against several annotation files that come installed with the software.
+We have developed an annotation framework that leverages
+<a class="reference external" href="http://sourceforge.net/projects/samtools/files/tabix/">tabix</a>,
+<a class="reference external" href="http://bedtools.googlecode.com">bedtools</a>, and
+<a class="reference external" href="http://pythonhosted.org/pybedtools/">pybedtools</a> to make things easy and
+fairly performant. The idea is that, by augmenting VCF files with many
+informative annotations, and converting the information into a <tt class="docutils literal"><span class="pre">sqlite</span></tt>
+database framework, <tt class="docutils literal"><span class="pre">GEMINI</span></tt> provides a flexible
+database-driven API for data exploration, visualization, population genomics
+and medical genomics.  We feel that this ability to integrate variation
+with the growing wealth of genome annotations is the most compelling aspect of
+<tt class="docutils literal"><span class="pre">GEMINI</span></tt>.  Combining this with the ability to explore data with SQL
+using a database design that can scale to 1000s of individuals (genotypes too!)
+makes for a nice, standardized data exploration system.</p>
+</div>
+<div class="section" id="using-multiple-cpus-for-loading">
+<h2>Using multiple CPUS for loading<a class="headerlink" href="#using-multiple-cpus-for-loading" title="Permalink to this headline">¶</a></h2>
+<p>Now, the loading step is very computationally intensive and thus can be very slow
+with just a single core.  However, if you have more CPUs in your arsenal,
+you specify more cores.  This provides a roughly linear increase in speed as a
+function of the number of cores. On our local machine, we are able to load a
+VCF file derived from the exomes of 60 samples in about 10 minutes.  With a
+single core, it takes a few hours.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Using multiple cores requires that you have both the <tt class="docutils literal"><span class="pre">bgzip</span></tt> tool from
+<a class="reference external" href="http://sourceforge.net/projects/samtools/files/tabix/">tabix</a> and the
+<a class="reference external" href="https://github.com/arq5x/grabix">grabix</a> tool installed in your PATH.</p>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini load -v my.vcf -t snpEff --cores 20 my.db
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-lsf-sge-and-torque-clusters">
+<h2>Using LSF, SGE and Torque clusters<a class="headerlink" href="#using-lsf-sge-and-torque-clusters" title="Permalink to this headline">¶</a></h2>
+<p>Thanks to some great work from Brad Chapman and Rory Kirchner, one can also load
+VCF files into GEMINI in parallel using many cores on LSF, SGE or Torque clusters. One
+must simply specify the type of job scheduler your cluster uses and the queue
+name to which your jobs should be submitted.</p>
+<p>For example, let&#8217;s assume you use LSF and a queue named <tt class="docutils literal"><span class="pre">preempt_everyone</span></tt>.
+Here is all you need to do:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini load -v my.vcf <span class="se">\</span>
+         -t snpEff <span class="se">\</span>
+         --cores 50 <span class="se">\</span>
+         --lsf-queue preempt_everyone <span class="se">\</span>
+         my.db
+</pre></div>
+</div>
+<p>If you use SGE, it would look like:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini load -v my.vcf <span class="se">\</span>
+         -t snpEff <span class="se">\</span>
+         --cores 50 <span class="se">\</span>
+         --sge-queue preempt_everyone <span class="se">\</span>
+         my.db
+</pre></div>
+</div>
+<p>If you use Torque, it would look like: (you guessed it):</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini load -v my.vcf <span class="se">\</span>
+         -t snpEff <span class="se">\</span>
+         --cores 50 <span class="se">\</span>
+         --torque-queue preempt_everyone <span class="se">\</span>
+         my.db
+</pre></div>
+</div>
+</div>
+<div class="section" id="describing-samples-with-a-ped-file">
+<h2>Describing samples with a PED file<a class="headerlink" href="#describing-samples-with-a-ped-file" title="Permalink to this headline">¶</a></h2>
+<p>GEMINI also accepts PED files in order to establish the familial relationships
+and phenotypic information of the samples in the VCF file.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini load -v my.vcf -p my.ped -t snpEff my.db
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-gerp-base-pair-conservation-scores">
+<h2>Load GERP base pair conservation scores<a class="headerlink" href="#load-gerp-base-pair-conservation-scores" title="Permalink to this headline">¶</a></h2>
+<p>By default, GERP scores at base pair resolution are not computed owing to the roughly 2X
+increasing in loading time.  However, one can optionally ask GEMINI to compute these scores
+by using the <tt class="docutils literal"><span class="pre">--load-gerp-bp</span></tt> option.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini load -v my.vcf --load-gerp-bp -t snpEff my.db
+</pre></div>
+</div>
+</div>
+<div class="section" id="loading-vcfs-without-genotypes">
+<h2>Loading VCFs without genotypes.<a class="headerlink" href="#loading-vcfs-without-genotypes" title="Permalink to this headline">¶</a></h2>
+<p>To do.</p>
+</div>
+</div>
+
+
+
+
+  
+
+<div id="disqus_thread"></div>
+ <script type="text/javascript">
+     /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+     var disqus_shortname = 'geminidocs'; // required: replace example with your forum shortname
+
+     /* * * DON'T EDIT BELOW THIS LINE * * */
+     (function() {
+         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+ </script>
+ <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+ <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/gemini.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Loading a VCF file into GEMINI</a><ul>
+<li><a class="reference internal" href="#annotate-with-snpeff-or-vep">Annotate with snpEff or VEP</a></li>
+<li><a class="reference internal" href="#the-basics">The basics</a></li>
+<li><a class="reference internal" href="#using-multiple-cpus-for-loading">Using multiple CPUS for loading</a></li>
+<li><a class="reference internal" href="#using-lsf-sge-and-torque-clusters">Using LSF, SGE and Torque clusters</a></li>
+<li><a class="reference internal" href="#describing-samples-with-a-ped-file">Describing samples with a PED file</a></li>
+<li><a class="reference internal" href="#load-gerp-base-pair-conservation-scores">Load GERP base pair conservation scores</a></li>
+<li><a class="reference internal" href="#loading-vcfs-without-genotypes">Loading VCFs without genotypes.</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="functional_annotation.html"
+                        title="previous chapter">Annotation with snpEff or VEP</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="querying.html"
+                        title="next chapter">Querying the GEMINI database</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/loading.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="querying.html" title="Querying the GEMINI database"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="functional_annotation.html" title="Annotation with snpEff or VEP"
+             >previous</a> |</li>
+        <li><a href="../index.html">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012,2013.
+      Last updated on Sep 02, 2013.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+
+
+<div id="editor-trap">
+      <h3>Edit and improve this document!</h3>
+
+      <p>
+        This file can be edited directly through the Web. Anyone can
+        update and fix errors in this document with few clicks --
+        no downloads needed.
+      <p>
+
+      <ol>
+
+        <li>
+          Go to
+        <a href="https://github.com/arq5x/gemini/blob/master/docs/content/loading.rst">
+          Loading a VCF file into GEMINI
+        </a> on GitHub.
+      </li>
+
+        <li>
+        <b>Edit</b> files using GitHub's text editor in your web browser (see the 'Edit' tab on the top right of the file)
+      </li>
+
+      <li>
+        Fill in the <b>Commit message</b> text box at the bottom of the page describing <i>why</i>
+        you made the changes. Press the <b>Propose file change</b> button next to it when done.
+      </li>
+
+      <li>
+        Then click <b>Send a pull request</b>.
+      </li>
+
+      <li>
+        Your changes are now queued for review under the project's <a href="https://github.com/arq5x/gemini/pulls">Pull requests</a> tab on GitHub!
+      </li>
+      </ol>
+
+      <p>
+        For an introduction to the documentation format please see <a href="http://docutils.sourceforge.net/docs/user/rst/quickstart.html">the reST primer</a>.
+      </p>
+
+  </div>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', UA-39150563-1]);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+  </body>
+</html>

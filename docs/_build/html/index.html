@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>GEMINI: a flexible framework for exploring genome variation</title>
+    
+    <link rel="stylesheet" href="_static/labibi.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/gemini.png"/>
+    <link rel="top" title="None" href="#" />
+    <link rel="next" title="Installation" href="content/installation.html" />
+
+
+<script src="_static/labibi.js"></script>
+
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="content/installation.html" title="Installation"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="gemini-a-flexible-framework-for-exploring-genome-variation">
+<h1><strong>GEMINI</strong>: <em>a flexible framework for exploring genome variation</em><a class="headerlink" href="#gemini-a-flexible-framework-for-exploring-genome-variation" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>GEMINI (GEnome MINIng) is designed to be a flexible framework for exploring genetic variation
+in the context of the wealth of genome annotations available for the human genome.
+By placing genetic variants, sample genotypes, and useful genome annotations into
+an integrated database framework, <tt class="docutils literal"><span class="pre">GEMINI</span></tt> provides a simple, flexible, yet
+very powerful system for exploring genetic variation for for disease and
+population genetics.</p>
+<p>Using the GEMINI framework begins by loading a VCF file into a
+database.  Each variant is automatically annotated by comparing it to several
+genome annotations from source such as ENCODE tracks, UCSC tracks, OMIM, dbSNP,
+KEGG, and HPRD.  All of this information is stored in portable
+SQLite database that allows one to explore and interpret both coding and
+non-coding variation using &#8220;off-the-shelf&#8221; tools or an enhanced SQL engine.</p>
+<p>Please also see the original <a class="reference external" href="http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1003153">manuscript</a>.</p>
+<p>This <a class="reference external" href="http://www.youtube.com/watch?v=p-UWmDG6yj4&amp;t=0m40s">video</a> provides more details about GEMINI&#8217;s aims and
+utility.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ol class="last arabic simple">
+<li>GEMINI solely supports human genetic variation mapped to build 37 (aka hg19) of the human genome.</li>
+<li>GEMINI is very strict about adherence to VCF format 4.1.</li>
+<li>For best performance, load and query GEMINI databases on the fastest hard drive to which you have access.</li>
+</ol>
+</div>
+</div>
+<div class="section" id="citation">
+<h1>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h1>
+<p>If you use GEMINI in your research, please cite the following manuscript:</p>
+<div class="highlight-python"><pre>Paila U, Chapman BA, Kirchner R, Quinlan AR (2013)
+GEMINI: Integrative Exploration of Genetic Variation and Genome Annotations.
+PLoS Comput Biol 9(7): e1003153. doi:10.1371/journal.pcbi.1003153</pre>
+</div>
+</div>
+<div class="section" id="table-of-contents">
+<h1>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="content/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/installation.html#automated-installation">Automated installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/installation.html#software-dependencies">Software dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/installation.html#manual-installation">Manual installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/installation.html#installing-annotation-files">Installing annotation files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/installation.html#using-previously-installed-annotation-files">Using previously installed annotation files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/installation.html#running-the-testing-suite">Running the testing suite</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/quick_start.html">Quick start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/quick_start.html#importing-vcf-files-into-gemini">Importing VCF files into gemini.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/quick_start.html#querying-the-gemini-database">Querying the <cite>gemini</cite> database.</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/functional_annotation.html">Annotation with snpEff or VEP</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/functional_annotation.html#stepwise-installation-and-usage-of-vep">Stepwise installation and usage of VEP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/functional_annotation.html#stepwise-installation-and-usage-of-snpeff">Stepwise installation and usage of SnpEff</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/loading.html">Loading a VCF file into GEMINI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/loading.html#annotate-with-snpeff-or-vep">Annotate with snpEff or VEP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/loading.html#the-basics">The basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/loading.html#using-multiple-cpus-for-loading">Using multiple CPUS for loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/loading.html#using-lsf-sge-and-torque-clusters">Using LSF, SGE and Torque clusters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/loading.html#describing-samples-with-a-ped-file">Describing samples with a PED file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/loading.html#load-gerp-base-pair-conservation-scores">Load GERP base pair conservation scores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/loading.html#loading-vcfs-without-genotypes">Loading VCFs without genotypes.</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/querying.html">Querying the GEMINI database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/querying.html#basic-queries">Basic queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/querying.html#selecting-sample-genotypes">Selecting sample genotypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/querying.html#gt-filter-filtering-on-genotypes"><tt class="docutils literal"><span class="pre">--gt-filter</span></tt> Filtering on genotypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/querying.html#show-samples-finding-out-which-samples-have-a-variant"><tt class="docutils literal"><span class="pre">--show-samples</span></tt> Finding out which samples have a variant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/querying.html#sample-delim-changing-the-sample-list-delimiter"><tt class="docutils literal"><span class="pre">--sample-delim</span></tt> Changing the sample list delimiter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/querying.html#json-reporting-query-output-in-json-format"><tt class="docutils literal"><span class="pre">--json</span></tt> Reporting query output in JSON format.</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/tools.html">Built-in analysis tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#comp-hets-identifying-potential-compound-heterozygotes"><tt class="docutils literal"><span class="pre">comp_hets</span></tt>: Identifying potential compound heterozygotes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#de-novo-identifying-potential-de-novo-mutations"><tt class="docutils literal"><span class="pre">de_novo</span></tt>: Identifying potential de novo mutations.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#autosomal-recessive-find-variants-meeting-an-autosomal-recessive-model"><tt class="docutils literal"><span class="pre">autosomal_recessive</span></tt>: Find variants meeting an autosomal recessive model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#autosomal-dominant-find-variants-meeting-an-autosomal-dominant-model"><tt class="docutils literal"><span class="pre">autosomal_dominant</span></tt>: Find variants meeting an autosomal dominant model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#pathways-map-genes-and-variants-to-kegg-pathways"><tt class="docutils literal"><span class="pre">pathways</span></tt>: Map genes and variants to KEGG pathways.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#interactions-find-genes-among-variants-that-are-interacting-partners"><tt class="docutils literal"><span class="pre">interactions</span></tt>: Find genes among variants that are interacting partners.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#lof-sieve-filter-lof-variants-by-transcript-position-and-type"><tt class="docutils literal"><span class="pre">lof_sieve</span></tt>: Filter LoF variants by transcript position and type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#annotate-adding-your-own-custom-annotations"><tt class="docutils literal"><span class="pre">annotate</span></tt>: adding your own custom annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#region-extracting-variants-from-specific-regions-or-genes"><tt class="docutils literal"><span class="pre">region</span></tt>: Extracting variants from specific regions or genes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#windower-conducting-analyses-on-genome-windows"><tt class="docutils literal"><span class="pre">windower</span></tt>: Conducting analyses on genome &#8220;windows&#8221;.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#stats-compute-useful-variant-statistics"><tt class="docutils literal"><span class="pre">stats</span></tt>: Compute useful variant statistics.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#burden-perform-sample-wise-gene-level-burden-calculations"><tt class="docutils literal"><span class="pre">burden</span></tt>: perform sample-wise gene-level burden calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tools.html#db-info-list-the-gemini-database-tables-and-columns"><tt class="docutils literal"><span class="pre">db_info</span></tt>: List the gemini database tables and columns</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/browser.html">The GEMINI browser interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/database_schema.html">The Gemini database schema</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/database_schema.html#the-variants-table">The <tt class="docutils literal"><span class="pre">variants</span></tt> table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/database_schema.html#the-variant-impacts-table">The <tt class="docutils literal"><span class="pre">variant_impacts</span></tt> table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/database_schema.html#the-samples-table">The <tt class="docutils literal"><span class="pre">samples</span></tt> table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/database_schema.html#details-of-the-impact-and-impact-severity-columns">Details of the <tt class="docutils literal"><span class="pre">impact</span></tt> and <tt class="docutils literal"><span class="pre">impact_severity</span></tt> columns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/database_schema.html#the-resources-table">The <tt class="docutils literal"><span class="pre">resources</span></tt> table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/database_schema.html#the-version-table">The <tt class="docutils literal"><span class="pre">version</span></tt> table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/api.html">Using the GEMINI API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/api.html#the-geminiquery-class">The GeminiQuery class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/history.html">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/history.html#sep-02">0.6.0 (2013-Sep-02)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/history.html#b-2013-jul-23">0.5.0b (2013-Jul-23)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/history.html#b-2013-jun-12">0.4.0b (2013-Jun-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/history.html#b">0.3.0b</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/faq.html">F.A.Q.</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/faq.html#does-gemini-work-with-non-human-genomes">Does GEMINI work with non-human genomes?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/faq.html#what-versions-of-the-human-genome-does-gemini-support">What versions of the human genome does GEMINI support?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/faq.html#how-can-i-use-plink-files-with-gemini">How can I use PLINK files with GEMINI?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/other.html">Other information</a></li>
+</ul>
+</div>
+</div>
+
+
+
+
+  
+
+<div id="disqus_thread"></div>
+ <script type="text/javascript">
+     /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+     var disqus_shortname = 'geminidocs'; // required: replace example with your forum shortname
+
+     /* * * DON'T EDIT BELOW THIS LINE * * */
+     (function() {
+         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+ </script>
+ <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+ <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/gemini.png" alt="Logo"/>
+            </a></p><p>
+   GEMINI is a flexible framework for exploring genome variation.
+</p>
+<h3>GEMINI links</h3>
+<ul>
+  <li><a target="_blank" href="https://github.com/arq5x/gemini/issues">Issue Tracker</a></li>
+  <li><a target="_blank" href="https://github.com/arq5x/gemini">Source @ GitHub</a></li>
+  <li><a target="_blank" href="http://groups.google.com/group/gemini-variation">Mailing list @ Google Groups</a></li>
+  <li><a target="_blank" href="http://quinlanlab.org">Quinlan lab @ UVa</a></li>
+
+</ul>
+
+<h3>Sources</h3>
+<p><a href="https://github.com/arq5x/gemini">Browse source @ GitHub</a>.</p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="content/installation.html" title="Installation"
+             >next</a> |</li>
+        <li><a href="#">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012,2013.
+      Last updated on Sep 02, 2013.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+
+
+<div id="editor-trap">
+      <h3>Edit and improve this document!</h3>
+
+      <p>
+        This file can be edited directly through the Web. Anyone can
+        update and fix errors in this document with few clicks --
+        no downloads needed.
+      <p>
+
+      <ol>
+
+        <li>
+          Go to
+        <a href="https://github.com/arq5x/gemini/blob/master/docs/index.rst">
+          <strong>GEMINI</strong>: <em>a flexible framework for exploring genome variation</em>
+        </a> on GitHub.
+      </li>
+
+        <li>
+        <b>Edit</b> files using GitHub's text editor in your web browser (see the 'Edit' tab on the top right of the file)
+      </li>
+
+      <li>
+        Fill in the <b>Commit message</b> text box at the bottom of the page describing <i>why</i>
+        you made the changes. Press the <b>Propose file change</b> button next to it when done.
+      </li>
+
+      <li>
+        Then click <b>Send a pull request</b>.
+      </li>
+
+      <li>
+        Your changes are now queued for review under the project's <a href="https://github.com/arq5x/gemini/pulls">Pull requests</a> tab on GitHub!
+      </li>
+      </ol>
+
+      <p>
+        For an introduction to the documentation format please see <a href="http://docutils.sourceforge.net/docs/user/rst/quickstart.html">the reST primer</a>.
+      </p>
+
+  </div>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', UA-39150563-1]);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+  </body>
+</html>

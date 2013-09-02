@@ -1,0 +1,24 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter G
+  \item gemini (module), \hyperpage{43}
+  \item GeminiQuery (class in gemini), \hyperpage{43}
+
+  \indexspace
+  \bigletter H
+  \item header (gemini.GeminiQuery attribute), \hyperpage{44}
+
+  \indexspace
+  \bigletter I
+  \item index2sample (gemini.GeminiQuery attribute), \hyperpage{44}
+
+  \indexspace
+  \bigletter R
+  \item run() (gemini.GeminiQuery method), \hyperpage{44}
+
+  \indexspace
+  \bigletter S
+  \item sample2index (gemini.GeminiQuery attribute), \hyperpage{44}
+
+\end{theindex}

@@ -1,0 +1,340 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Annotation with snpEff or VEP</title>
+    
+    <link rel="stylesheet" href="../_static/labibi.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/gemini.png"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="Loading a VCF file into GEMINI" href="loading.html" />
+    <link rel="prev" title="Quick start" href="quick_start.html" />
+
+
+<script src="../_static/labibi.js"></script>
+
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="loading.html" title="Loading a VCF file into GEMINI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="quick_start.html" title="Quick start"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="annotation-with-snpeff-or-vep">
+<h1>Annotation with snpEff or VEP<a class="headerlink" href="#annotation-with-snpeff-or-vep" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stepwise-installation-and-usage-of-vep">
+<h2>Stepwise installation and usage of VEP<a class="headerlink" href="#stepwise-installation-and-usage-of-vep" title="Permalink to this headline">¶</a></h2>
+<p>Download the latest version of Variant Effect Predictor &#8220;standalone Perl script&#8221;
+from the <a class="reference external" href="http://useast.ensembl.org/info/docs/variation/vep/index.html">Ensembl CVS server</a>.
+For example:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>open http://useast.ensembl.org/info/docs/variation/vep/index.html
+</pre></div>
+</div>
+<p>Untar the tarball into the current directory.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>tar -zxvf variant_effect_predictor.tar.gz
+</pre></div>
+</div>
+<p>This will create the variant_effect_predictor directory. Now do the following:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd </span>variant_effect_predictor
+<span class="nv">$ </span>perl INSTALL.pl <span class="o">[</span>options<span class="o">]</span>
+</pre></div>
+</div>
+<p>By default this would install the bioperl-1.2.3, the cache files (in the .vep
+sub-directory of the users home directory) and the latest version of the
+Ensembl API (68) (in the <tt class="docutils literal"><span class="pre">variant_effect_predictor</span></tt> directory under a
+sub-directory <tt class="docutils literal"><span class="pre">Bio</span></tt>). This script is useful for those who do not have all the
+modules in their system required by VEP, specifically <cite>DBI</cite> and <cite>DBI::mysql</cite>.
+Use <a class="reference external" href="http://useast.ensembl.org/info/docs/variation/vep/vep_script.html#download">this</a>
+link for alternate options of the installer script.</p>
+<p>Users (e.g mac users) who have a problem installing through this script
+should go for a manual installation of the latest Ensembl API (68) and
+bioperl-1.2.3 and follow all other installation instructions
+<a class="reference external" href="http://useast.ensembl.org/info/docs/api/api_installation.html">here.</a></p>
+<p>The appropriate pre-build caches should be downloaded to the <cite>.vep</cite> directory
+under home from <a class="reference external" href="http://useast.ensembl.org/info/docs/variation/vep/vep_script.html#cache">this</a> link.</p>
+<p>To use the cache, the gzip and <tt class="docutils literal"><span class="pre">zcat</span></tt> utilities are required. VEP uses <tt class="docutils literal"><span class="pre">zcat</span></tt>
+to decompress cached files. For systems where zcat may not be installed or may
+not work, the following option needs to be added along with the <tt class="docutils literal"><span class="pre">--cache</span></tt> option:</p>
+<div class="highlight-bash"><div class="highlight"><pre>--compress <span class="s2">&quot;gunzip -c&quot;</span>
+</pre></div>
+</div>
+<p>You may run the script as:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>perl variant_effect_predictor.pl <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p>We recommend running VEP with the following options as currently we support
+VEP fields specified as below:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>perl variant_effect_predictor.pl -i example.vcf <span class="se">\</span>
+   --cache --compress <span class="s2">&quot;gunzip -c&quot;</span> <span class="se">\</span>
+   --terms so <span class="se">\</span>
+   --sift b <span class="se">\</span>
+   --polyphen b <span class="se">\</span>
+   --hgnc <span class="se">\</span>
+   --numbers <span class="se">\</span>
+   -o output <span class="se">\</span>
+   --vcf <span class="se">\</span>
+   --fields Consequence,Codons,Amino_acids,Gene,HGNC,Feature,EXON,PolyPhen,SIFT
+</pre></div>
+</div>
+<p>A documentation of the specified options for VEP may be found at
+<a class="reference external" href="http://www.ensembl.org/info/docs/variation/vep/vep_script.html">http://www.ensembl.org/info/docs/variation/vep/vep_script.html</a></p>
+</div>
+<div class="section" id="stepwise-installation-and-usage-of-snpeff">
+<h2>Stepwise installation and usage of SnpEff<a class="headerlink" href="#stepwise-installation-and-usage-of-snpeff" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Basic Requirements: Java v1.6 or later; at least 2GB of memory</p>
+</div>
+<p>Go to home directory and download the SnpEff version &gt;=3.0. For example:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>wget http://sourceforge.net/projects/snpeff/files/snpEff_v3_0_core.zip
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">SnpEff should be installed preferably in <tt class="docutils literal"><span class="pre">snpEff</span></tt> directory in your
+home directory. Else, you must update the <tt class="docutils literal"><span class="pre">data_dir</span></tt> parameter in
+your snpEff.config file. For e.g. if the installation of snpEff has been done
+in <tt class="docutils literal"><span class="pre">~/src</span></tt> instead of <tt class="docutils literal"><span class="pre">~/</span></tt> then change the data_dir parameter in
+snpEff.config to <tt class="docutils literal"><span class="pre">data_dir</span> <span class="pre">=</span> <span class="pre">~/src/snpEff/data/</span></tt></p>
+</div>
+<p>Unzip the downloaded package.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>unzip snpEff_v3_0_core.zip
+</pre></div>
+</div>
+<p>Change to the <tt class="docutils literal"><span class="pre">snpEff</span></tt> directory and download the genome database.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd </span>snpEff_v3_0_core
+<span class="nv">$ </span>java -jar snpEff.jar download GRCh37.66
+</pre></div>
+</div>
+<p>Unzip the downloaded genome database. This will create and place the genome
+in the &#8216;data&#8217; directory</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>unzip snpEff_v3_2_GRCh37.66.zip
+</pre></div>
+</div>
+<p>To annotate a vcf using snpEff, use the following command:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Memory options for the run may be specified by <tt class="docutils literal"><span class="pre">-Xmx2G</span></tt> (2GB) or Xmx4G (4GB)
+based on the requirement</p>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>java -Xmx4G -jar snpEff.jar -i vcf -o vcf GRCh37.66 example.vcf &gt; example_snpeff.vcf
+</pre></div>
+</div>
+<p>If running from a directory different from the installation directory, the
+complete path needs to be specified as,  e.g.:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>java -Xmx4G -jar path/to/snpEff/snpEff.jar -c path/to/snpEff/snpEff.config GRCh37.66 path/to/example.vcf &gt; example_snpeff.vcf
+</pre></div>
+</div>
+</div>
+</div>
+
+
+
+
+  
+
+<div id="disqus_thread"></div>
+ <script type="text/javascript">
+     /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+     var disqus_shortname = 'geminidocs'; // required: replace example with your forum shortname
+
+     /* * * DON'T EDIT BELOW THIS LINE * * */
+     (function() {
+         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+ </script>
+ <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+ <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/gemini.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Annotation with snpEff or VEP</a><ul>
+<li><a class="reference internal" href="#stepwise-installation-and-usage-of-vep">Stepwise installation and usage of VEP</a></li>
+<li><a class="reference internal" href="#stepwise-installation-and-usage-of-snpeff">Stepwise installation and usage of SnpEff</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quick_start.html"
+                        title="previous chapter">Quick start</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="loading.html"
+                        title="next chapter">Loading a VCF file into GEMINI</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/functional_annotation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="loading.html" title="Loading a VCF file into GEMINI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="quick_start.html" title="Quick start"
+             >previous</a> |</li>
+        <li><a href="../index.html">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012,2013.
+      Last updated on Sep 02, 2013.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+
+
+<div id="editor-trap">
+      <h3>Edit and improve this document!</h3>
+
+      <p>
+        This file can be edited directly through the Web. Anyone can
+        update and fix errors in this document with few clicks --
+        no downloads needed.
+      <p>
+
+      <ol>
+
+        <li>
+          Go to
+        <a href="https://github.com/arq5x/gemini/blob/master/docs/content/functional_annotation.rst">
+          Annotation with snpEff or VEP
+        </a> on GitHub.
+      </li>
+
+        <li>
+        <b>Edit</b> files using GitHub's text editor in your web browser (see the 'Edit' tab on the top right of the file)
+      </li>
+
+      <li>
+        Fill in the <b>Commit message</b> text box at the bottom of the page describing <i>why</i>
+        you made the changes. Press the <b>Propose file change</b> button next to it when done.
+      </li>
+
+      <li>
+        Then click <b>Send a pull request</b>.
+      </li>
+
+      <li>
+        Your changes are now queued for review under the project's <a href="https://github.com/arq5x/gemini/pulls">Pull requests</a> tab on GitHub!
+      </li>
+      </ol>
+
+      <p>
+        For an introduction to the documentation format please see <a href="http://docutils.sourceforge.net/docs/user/rst/quickstart.html">the reST primer</a>.
+      </p>
+
+  </div>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', UA-39150563-1]);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+  </body>
+</html>

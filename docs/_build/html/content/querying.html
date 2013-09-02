@@ -1,0 +1,509 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Querying the GEMINI database</title>
+    
+    <link rel="stylesheet" href="../_static/labibi.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/gemini.png"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="Built-in analysis tools" href="tools.html" />
+    <link rel="prev" title="Loading a VCF file into GEMINI" href="loading.html" />
+
+
+<script src="../_static/labibi.js"></script>
+
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="Built-in analysis tools"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="loading.html" title="Loading a VCF file into GEMINI"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="querying-the-gemini-database">
+<h1>Querying the GEMINI database<a class="headerlink" href="#querying-the-gemini-database" title="Permalink to this headline">¶</a></h1>
+<p>The real power in the <tt class="docutils literal"><span class="pre">GEMINI</span></tt> framework lies in the fact that all of your
+genetic variants have been stored in a convenient database in the context of a
+wealth of genome annotations that facilitate variant interpretation.  The
+expressive power of SQL allows one to pose intricate questions of one&#8217;s variation
+data.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you are unfamiliar with SQL, <a class="reference external" href="http://sqlzoo.net/">sqlzoo</a> has a decent
+online tutorial describing the basics.  Really all you need to learn is the
+SELECT statement, and the examples below will give you a flavor of how to
+compose base SQL queries against the GEMINI framework.</p>
+</div>
+<div class="section" id="basic-queries">
+<h2>Basic queries<a class="headerlink" href="#basic-queries" title="Permalink to this headline">¶</a></h2>
+<p>GEMINI has a specific tool for querying a gemini database that has been <tt class="docutils literal"><span class="pre">load``ed</span>
+<span class="pre">using</span> <span class="pre">the</span> <span class="pre">``gemini</span> <span class="pre">load</span></tt> command.  That&#8217;s right, the tool is called
+<tt class="docutils literal"><span class="pre">gemini</span> <span class="pre">query</span></tt>. Below are a few basic queries that give you a sense of how to
+interact with the gemini database using the <tt class="docutils literal"><span class="pre">query</span></tt> tool.</p>
+<ol class="arabic simple">
+<li>Extract all transitions with a call rate &gt; 95%</li>
+</ol>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select * from variants \</span>
+<span class="s2">                      where sub_type = &#39;ts&#39; \</span>
+<span class="s2">                      and call_rate &gt;= 0.95&quot;</span> my.db
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Extract all loss-of-function variants with an alternate allele frequency &lt; 1%:</li>
+</ol>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select * from variants \</span>
+<span class="s2">                      where is_lof = 1 \</span>
+<span class="s2">                      and aaf &gt;= 0.01&quot;</span> my.db
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Extract the nucleotide diversity for each variant:</li>
+</ol>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, pi from variants&quot;</span> my.db
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li>Combine <tt class="docutils literal"><span class="pre">GEMINI</span></tt> with <tt class="docutils literal"><span class="pre">bedtools</span></tt> to compute nucleotide diversity estimates across 100kb windows:</li>
+</ol>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, pi from variants \</span>
+<span class="s2">                      order by chrom, start, end&quot;</span> my.db | <span class="se">\</span>
+  bedtools map -a hg19.windows.bed -b - -c 4 -o mean
+</pre></div>
+</div>
+</div>
+<div class="section" id="selecting-sample-genotypes">
+<h2>Selecting sample genotypes<a class="headerlink" href="#selecting-sample-genotypes" title="Permalink to this headline">¶</a></h2>
+<p>The above examples illustrate <em>ad hoc</em> queries that do not request or filter
+upon the genotypes of individual samples.  Since <tt class="docutils literal"><span class="pre">GEMINI</span></tt> stores the genotype
+information for each variant in compressed arrays that are stored as BLOBs
+in the database, standard SQL queries cannot directly access individual
+genotypes. However, we have enhanced the SQL syntax to support such queries
+with C &#8220;struct-like&#8221; access.  For example, to retrieve the alleles for a given
+sample&#8217;s (in this case, sample 1094PC0009), one would add <tt class="docutils literal"><span class="pre">gts.1094PC0009</span></tt>
+to the select statement.</p>
+<p>Here is an example of selecting the genotype alleles for four
+different samples (note the examples below use the test.snpEff.vcf.db
+file that is created in the ./test directory when you run the
+<cite>bash master-test.sh</cite> command as described above):</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, ref, alt, gene, \</span>
+<span class="s2">                          gts.1094PC0005, \</span>
+<span class="s2">                          gts.1094PC0009, \</span>
+<span class="s2">                          gts.1094PC0012, \</span>
+<span class="s2">                          gts.1094PC0013 \</span>
+<span class="s2">                   from variants&quot;</span> test.snpEff.vcf.db
+
+chr1        30547   30548   T       G       FAM138A ./.     ./.     ./.     ./.
+chr1        30859   30860   G       C       FAM138A G/G     G/G     G/G     G/G
+chr1        30866   30869   CCT     C       FAM138A CCT/CCT CCT/CCT CCT/C   CCT/CCT
+chr1        30894   30895   T       C       FAM138A T/C     T/C     T/T     T/T
+chr1        30922   30923   G       T       FAM138A ./.     ./.     ./.     ./.
+chr1        69269   69270   A       G       OR4F5   ./.     ./.     G/G     G/G
+chr1        69427   69428   T       G       OR4F5   T/T     T/T     T/T     T/T
+chr1        69510   69511   A       G       OR4F5   ./.     ./.     A/G     A/G
+chr1        69760   69761   A       T       OR4F5   A/A     A/T     A/A     A/A
+chr1        69870   69871   G       A       OR4F5   ./.     G/G     G/G     G/G
+</pre></div>
+</div>
+<p>You can also add a header so that you can keep track of who&#8217;s who:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, ref, alt, gene, \</span>
+<span class="s2">                          gts.1094PC0005, \</span>
+<span class="s2">                          gts.1094PC0009, \</span>
+<span class="s2">                          gts.1094PC0012, \</span>
+<span class="s2">                          gts.1094PC0013 \</span>
+<span class="s2">                   from variants&quot;</span> <span class="se">\</span>
+                   --header test.snpEff.vcf.db
+
+chrom       start   end     ref     alt     gene gts.1094PC0005     gts.1094PC0009  gts.1094PC0012  gts.1094PC0013
+chr1        30547   30548   T       G       FAM138A ./.     ./.     ./.     ./.
+chr1        30859   30860   G       C       FAM138A G/G     G/G     G/G     G/G
+chr1        30866   30869   CCT     C       FAM138A CCT/CCT CCT/CCT CCT/C   CCT/CCT
+chr1        30894   30895   T       C       FAM138A T/C     T/C     T/T     T/T
+chr1        30922   30923   G       T       FAM138A ./.     ./.     ./.     ./.
+chr1        69269   69270   A       G       OR4F5   ./.     ./.     G/G     G/G
+chr1        69427   69428   T       G       OR4F5   T/T     T/T     T/T     T/T
+chr1        69510   69511   A       G       OR4F5   ./.     ./.     A/G     A/G
+chr1        69760   69761   A       T       OR4F5   A/A     A/T     A/A     A/A
+chr1        69870   69871   G       A       OR4F5   ./.     G/G     G/G     G/G
+</pre></div>
+</div>
+<p>Let&#8217;s now get the genotype and the depth of aligned sequence observed for a
+sample so that we can assess the confidence in the genotype:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, ref, alt, gene,</span>
+<span class="s2">                      gts.1094PC0005, \</span>
+<span class="s2">                      gt_depths.1094PC0005 \</span>
+<span class="s2">               from variants&quot;</span> test.snpEff.vcf.db
+
+chr1    30547   30548   T       G       FAM138A ./.     -1
+chr1    30859   30860   G       C       FAM138A G/G     7
+chr1    30866   30869   CCT     C       FAM138A CCT/CCT 8
+chr1    30894   30895   T       C       FAM138A T/C     8
+chr1    30922   30923   G       T       FAM138A ./.     -1
+chr1    69269   69270   A       G       OR4F5   ./.     -1
+chr1    69427   69428   T       G       OR4F5   T/T     2
+chr1    69510   69511   A       G       OR4F5   ./.     -1
+chr1    69760   69761   A       T       OR4F5   A/A     1
+chr1    69870   69871   G       A       OR4F5   ./.     -1
+</pre></div>
+</div>
+</div>
+<div class="section" id="gt-filter-filtering-on-genotypes">
+<h2><tt class="docutils literal"><span class="pre">--gt-filter</span></tt> Filtering on genotypes<a class="headerlink" href="#gt-filter-filtering-on-genotypes" title="Permalink to this headline">¶</a></h2>
+<p>Now, we often want to focus only on variants where a given sample has a
+specific genotype (e.g., looking for homozygous variants in family trios).
+Unfortunately, we cannot directly do this in the SQL query, but the <cite>gemini query</cite>
+tool has an option called <cite>&#8211;gt-filter</cite> that allows one to specify filters to
+apply to the returned rows.  The rules followed in the <cite>&#8211;gt-filter</cite> option
+follow Python syntax.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">As you will see from the examples below, appropriate use of the &#8211;gt-filter
+option will allow you to compose queries that return variants meeting
+inheritance patterns that are relevant to the disease model of interest
+in your study.</p>
+</div>
+<p>As an example, let&#8217;s only return rows where sample
+1094PC0012 is heterozygous.  In order to do this, we apply a filter to the
+<cite>gt_types</cite> columns for this individual:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, ref, alt, gene,</span>
+<span class="s2">                      gts.1094PC0005, \</span>
+<span class="s2">                      gts.1094PC0009, \</span>
+<span class="s2">                      gts.1094PC0012, \</span>
+<span class="s2">                      gts.1094PC0013 \</span>
+<span class="s2">               from variants&quot;</span> <span class="se">\</span>
+               --gt-filter <span class="s2">&quot;gt_types.1094PC0012 == HET&quot;</span> <span class="se">\</span>
+               --header <span class="se">\</span>
+               test.snpEff.vcf.db
+
+chrom   start   end     ref     alt     gene gts.1094PC0005     gts.1094PC0009  gts.1094PC0012  gts.1094PC0013
+chr1    30866   30869   CCT     C       FAM138A CCT/CCT CCT/CCT CCT/C   CCT/CCT
+chr1    69510   69511   A       G       OR4F5   ./.     ./.     A/G     A/G
+</pre></div>
+</div>
+<p>Now let&#8217;s be a bit less restrictive and return variants where either sample
+1094PC0012 is heterozygous or sample 1094PC0005 is homozygous for the reference
+allele:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, ref, alt, gene,</span>
+<span class="s2">                      gts.1094PC0005, \</span>
+<span class="s2">                      gts.1094PC0009, \</span>
+<span class="s2">                      gts.1094PC0012, \</span>
+<span class="s2">                      gts.1094PC0013 \</span>
+<span class="s2">               from variants&quot;</span> <span class="se">\</span>
+               --gt-filter <span class="s2">&quot;gt_types.1094PC0012 == HET or \</span>
+<span class="s2">               gt_types.1094PC0005 == HOM_REF&quot;</span> <span class="se">\</span>
+               --header <span class="se">\</span>
+               test.snpEff.vcf.db
+
+chrom   start   end     ref     alt     gene gts.1094PC0005     gts.1094PC0009  gts.1094PC0012  gts.1094PC0013
+chr1    30859   30860   G       C       FAM138A G/G     G/G     G/G     G/G
+chr1    30866   30869   CCT     C       FAM138A CCT/CCT CCT/CCT CCT/C   CCT/CCT
+chr1    69427   69428   T       G       OR4F5   T/T     T/T     T/T     T/T
+chr1    69510   69511   A       G       OR4F5   ./.     ./.     A/G     A/G
+chr1    69760   69761   A       T       OR4F5   A/A     A/T     A/A     A/A
+</pre></div>
+</div>
+<p>Eh, I changed my mind, let&#8217;s restrict the above to those variants where sample
+1094PC0012 must also be heterozygous:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end, ref, alt, gene,</span>
+<span class="s2">                      gts.1094PC0005, \</span>
+<span class="s2">                      gts.1094PC0009, \</span>
+<span class="s2">                      gts.1094PC0012, \</span>
+<span class="s2">                      gts.1094PC0013 \</span>
+<span class="s2">               from variants&quot;</span> <span class="se">\</span>
+               --gt-filter <span class="s2">&quot;(gt_types.1094PC0012 == HET or \</span>
+<span class="s2">               gt_types.1094PC0005 == HOM_REF) \</span>
+<span class="s2">               and \</span>
+<span class="s2">               (gt_types.1094PC0013 == HET)&quot;</span> <span class="se">\</span>
+               --header <span class="se">\</span>
+               test.snpEff.vcf.db
+
+ chrom  start   end     ref     alt     gene gts.1094PC0005     gts.1094PC0009  gts.1094PC0012  gts.1094PC0013
+ chr1   69510   69511   A       G       OR4F5   ./.     ./.     A/G     A/G
+</pre></div>
+</div>
+</div>
+<div class="section" id="show-samples-finding-out-which-samples-have-a-variant">
+<h2><tt class="docutils literal"><span class="pre">--show-samples</span></tt> Finding out which samples have a variant<a class="headerlink" href="#show-samples-finding-out-which-samples-have-a-variant" title="Permalink to this headline">¶</a></h2>
+<p>While exploring your data you might hit on a set of interesting variants and want to know
+which of your samples have that variant in them. You can display the samples containing
+a variant with the &#8211;show-sample-variants flag:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query --header --show-samples -q <span class="s2">&quot;select chrom, start, end, ref, alt \</span>
+<span class="s2">                                from variants where is_lof=1 limit 5&quot;</span> test.query.db
+
+chrom   start   end     ref     alt     variant_samples HET_samples     HOM_ALT_samples
+chr1    874815  874816  C       CT      1478PC0006B,1478PC0007B,1478PC0010,1478PC0013B,1478PC0022B,1478PC0023B,1478PC0025,1719PC0007,1719PC0009,1719PC0010,1719PC0022   1478PC0006B,1478PC0007B,1478PC0010,1478PC0013B,1478PC0022B,1478PC0023B,1719PC0007,1719PC0009,1719PC0010 1478PC0025,1719PC0022
+chr1    1140811 1140813 TC      T       1478PC0011      1478PC0011
+chr1    1219381 1219382 C       G       1719PC0012      1719PC0012
+chr1    1221487 1221490 CAA     C       1478PC0004      1478PC0004
+</pre></div>
+</div>
+<p>variant_samples is a list of all of the samples with a variant, HET_samples is the subset
+of those heterozygous for the variant and HOM_ALT_samples is the subset homozygous for
+the variant.</p>
+</div>
+<div class="section" id="sample-delim-changing-the-sample-list-delimiter">
+<h2><tt class="docutils literal"><span class="pre">--sample-delim</span></tt> Changing the sample list delimiter<a class="headerlink" href="#sample-delim-changing-the-sample-list-delimiter" title="Permalink to this headline">¶</a></h2>
+<p>One can modify the default comma delimiter used by the <tt class="docutils literal"><span class="pre">--show-samples</span></tt>
+option through the use of the <tt class="docutils literal"><span class="pre">--sample-delim</span></tt> option.  For example, to use
+a semi-colon instead of a comma, one would do the following:</p>
+<div class="highlight-bash"><div class="highlight"><pre>  <span class="nv">$ </span>gemini query --header --show-samples --sample-delim <span class="s2">&quot;;&quot;</span> <span class="se">\</span>
+                 -q <span class="s2">&quot;select chrom, start, end, ref, alt \</span>
+<span class="s2">                     from variants where is_lof=1 limit 5&quot;</span> test.query.db
+
+chrom start end ref alt variant_samples HET_samples HOM_ALT_samples
+chr1  874815  874816  C CT  1478PC0006B;1478PC0007B;1478PC0010,1478PC0013B;1478PC0022B;1478PC0023B;1478PC0025;1719PC0007;1719PC0009;1719PC0010;1719PC0022 1478PC0006B;1478PC0007B;1478PC0010;1478PC0013B;1478PC0022B;1478PC0023B;1719PC0007;1719PC0009;1719PC0010 1478PC0025;1719PC0022
+chr1  1140811 1140813 TC  T 1478PC0011  1478PC0011
+chr1  1219381 1219382 C G 1719PC0012  1719PC0012
+chr1  1221487 1221490 CAA C 1478PC0004  1478PC0004
+</pre></div>
+</div>
+</div>
+<div class="section" id="json-reporting-query-output-in-json-format">
+<h2><tt class="docutils literal"><span class="pre">--json</span></tt> Reporting query output in JSON format.<a class="headerlink" href="#json-reporting-query-output-in-json-format" title="Permalink to this headline">¶</a></h2>
+<p>Reporting query output in JSON format may enable
+HTML/Javascript apps to query GEMINI and retrieve
+the output in a format that is amenable to web development protocols.</p>
+<p>Here is a basic query:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query -q <span class="s2">&quot;select chrom, start, end from variants&quot;</span> my.db | head
+chr1  10067 10069
+chr1  10230 10231
+chr1  12782 12783
+chr1  13109 13110
+chr1  13115 13116
+chr1  13117 13118
+chr1  13272 13273
+chr1  13301 13302
+chr1  13416 13417
+chr1  13417 13418
+</pre></div>
+</div>
+<p>To report in JSON format, use the <tt class="docutils literal"><span class="pre">--json</span></tt> option. For example:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gemini query --json -q <span class="s2">&quot;select chrom, start, end from variants&quot;</span> my.db | head
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 10067, <span class="s2">&quot;end&quot;</span>: 10069<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 10230, <span class="s2">&quot;end&quot;</span>: 10231<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 12782, <span class="s2">&quot;end&quot;</span>: 12783<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 13109, <span class="s2">&quot;end&quot;</span>: 13110<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 13115, <span class="s2">&quot;end&quot;</span>: 13116<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 13117, <span class="s2">&quot;end&quot;</span>: 13118<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 13272, <span class="s2">&quot;end&quot;</span>: 13273<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 13301, <span class="s2">&quot;end&quot;</span>: 13302<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 13416, <span class="s2">&quot;end&quot;</span>: 13417<span class="o">}</span>
+<span class="o">{</span><span class="s2">&quot;chrom&quot;</span>: <span class="s2">&quot;chr1&quot;</span>, <span class="s2">&quot;start&quot;</span>: 13417, <span class="s2">&quot;end&quot;</span>: 13418<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+
+
+  
+
+<div id="disqus_thread"></div>
+ <script type="text/javascript">
+     /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+     var disqus_shortname = 'geminidocs'; // required: replace example with your forum shortname
+
+     /* * * DON'T EDIT BELOW THIS LINE * * */
+     (function() {
+         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+ </script>
+ <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+ <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/gemini.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Querying the GEMINI database</a><ul>
+<li><a class="reference internal" href="#basic-queries">Basic queries</a></li>
+<li><a class="reference internal" href="#selecting-sample-genotypes">Selecting sample genotypes</a></li>
+<li><a class="reference internal" href="#gt-filter-filtering-on-genotypes"><tt class="docutils literal"><span class="pre">--gt-filter</span></tt> Filtering on genotypes</a></li>
+<li><a class="reference internal" href="#show-samples-finding-out-which-samples-have-a-variant"><tt class="docutils literal"><span class="pre">--show-samples</span></tt> Finding out which samples have a variant</a></li>
+<li><a class="reference internal" href="#sample-delim-changing-the-sample-list-delimiter"><tt class="docutils literal"><span class="pre">--sample-delim</span></tt> Changing the sample list delimiter</a></li>
+<li><a class="reference internal" href="#json-reporting-query-output-in-json-format"><tt class="docutils literal"><span class="pre">--json</span></tt> Reporting query output in JSON format.</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="loading.html"
+                        title="previous chapter">Loading a VCF file into GEMINI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tools.html"
+                        title="next chapter">Built-in analysis tools</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/querying.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="Built-in analysis tools"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="loading.html" title="Loading a VCF file into GEMINI"
+             >previous</a> |</li>
+        <li><a href="../index.html">gemini v0.6.0</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012,2013.
+      Last updated on Sep 02, 2013.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+
+
+<div id="editor-trap">
+      <h3>Edit and improve this document!</h3>
+
+      <p>
+        This file can be edited directly through the Web. Anyone can
+        update and fix errors in this document with few clicks --
+        no downloads needed.
+      <p>
+
+      <ol>
+
+        <li>
+          Go to
+        <a href="https://github.com/arq5x/gemini/blob/master/docs/content/querying.rst">
+          Querying the GEMINI database
+        </a> on GitHub.
+      </li>
+
+        <li>
+        <b>Edit</b> files using GitHub's text editor in your web browser (see the 'Edit' tab on the top right of the file)
+      </li>
+
+      <li>
+        Fill in the <b>Commit message</b> text box at the bottom of the page describing <i>why</i>
+        you made the changes. Press the <b>Propose file change</b> button next to it when done.
+      </li>
+
+      <li>
+        Then click <b>Send a pull request</b>.
+      </li>
+
+      <li>
+        Your changes are now queued for review under the project's <a href="https://github.com/arq5x/gemini/pulls">Pull requests</a> tab on GitHub!
+      </li>
+      </ol>
+
+      <p>
+        For an introduction to the documentation format please see <a href="http://docutils.sourceforge.net/docs/user/rst/quickstart.html">the reST primer</a>.
+      </p>
+
+  </div>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', UA-39150563-1]);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+  </body>
+</html>
