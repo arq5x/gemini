@@ -944,6 +944,65 @@ Or, one can extract variants based on a specific gene name.
 
 	$ gemini region --gene PTPN22 my.db
 
+---------------------
+``--columns``
+---------------------
+
+By default, this tool reports all columns in the ``variants`` table. One may
+choose to report only a subset of the columns using the ``--columns`` option.  For
+example, to report just the ``gene, chrom, start, end, ref, alt, impact``, and ``impact_severity`` columns, one
+would use the following:
+
+.. code-block:: bash
+
+    $ gemini region --gene DHODH \
+                    --columns "chrom, start, end, ref, alt, gene, impact" \
+                    my.db
+
+    chr16   72057281    72057282    A   G   DHODH   intron
+    chr16   72057434    72057435    C   T   DHODH   non_syn_coding
+    chr16   72059268    72059269    T   C   DHODH   downstream
+
+---------------------
+``--filter``
+---------------------
+
+By default, this tool will report all variants regardless of their putative
+functional impact.  In order to apply additional constraints on the variants
+returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
+applied with the ``--filter option become WHERE clauses in the query issued to
+the GEMINI database.  For example, if we wanted to restrict candidate variants
+to solely those with a HIGH predicted functional consequence, we could use the
+following:
+
+.. code-block:: bash
+
+    $ gemini region --gene DHODH \
+                    --columns "chrom, start, end, ref, alt, gene, impact" \
+                    --filter "alt='G'"
+                    my.db
+
+    chr16   72057281    72057282    A   G   DHODH   intron
+
+---------------------
+``--json`` 
+---------------------
+Reporting query output in JSON format may enable
+HTML/Javascript apps to query GEMINI and retrieve
+the output in a format that is amenable to web development protocols.
+
+To report in JSON format, use the ``--json`` option. For example:
+
+.. code-block:: bash
+
+    $ gemini region --gene DHODH \
+                    --columns "chrom, start, end, ref, alt, gene, impact" \
+                    --filter "alt='G'"
+                    my.db
+
+    {"chrom": "chr16", "start": 72057281, "end": 72057282, "ref": "A", "alt": "G", "gene": "DHODH"}
+
+
 
 ===========================================================================
 ``windower``: Conducting analyses on genome "windows".

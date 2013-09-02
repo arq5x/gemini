@@ -285,11 +285,20 @@ def main():
             action='store_true',
             help='Add a header of column names to the output.',
             default=False)
-    parser_region.add_argument('--sep',
-            dest='separator',
+    parser_region.add_argument('--columns',
+            dest='columns',
             metavar='STRING',
-            help='Output column separator',
-            default="\t")
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser_region.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    parser_region.add_argument('--json',
+            dest='use_json',
+            action='store_true',
+            help='Report the query output in JSON format.',
+            default=False)
     parser_region.set_defaults(func=gemini_region.region)
 
     #########################################

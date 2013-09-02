@@ -3,10 +3,23 @@ import sqlite3
 import re
 import os
 import sys
-import gemini_utils as util
+
+import GeminiQuery
+
+def _report_results(args, query, gq):
+    # report the results of the region query
+    gq.run(query)
+    if args.use_header and not args.use_json:
+        print gq.header
+
+    for row in gq:
+        if not args.use_json:
+            print row
+        else:
+            print row.get_json()
 
 
-def get_region(c, args):
+def get_region(args, gq):
     region_regex = re.compile("(\S+):(\d+)-(\d+)")
 
     try:
@@ -21,60 +34,55 @@ def get_region(c, args):
     start = region[1]
     end = region[2]
 
-    query = "SELECT * \
-             FROM variants v \
-             WHERE v.chrom = " + "'" + chrom + "'" + \
-        " AND ((v.start BETWEEN " + start + " AND " + end + ")" +\
-        " OR (v.end BETWEEN " + start + " AND " + end + "))" + \
-        "ORDER BY chrom, start"
-    c.execute(query)
+    if args.columns is not None:
+        query = "SELECT " + str(args.columns) + \
+                    " FROM variants "
+    else:
+        query = "SELECT * FROM variants "
 
-    # build a list of all the column indices that are NOT
-    # gt_* columns.  These will be the columns reported
-    (col_names, non_gt_idxs) = \
-        util.get_col_names_and_indices(c.description, ignore_gt_cols=True)
+    query += "WHERE chrom = " + "'" + chrom + "'" + \
+        " AND ((start BETWEEN " + start + " AND " + end + ")" +\
+        " OR (end BETWEEN " + start + " AND " + end + "))"
 
-    if args.use_header:
-        print args.separator.join(col for col in col_names)
-    for row in c:
-        print args.separator.join(str(row[i]) if row[i] is not None else "."
-                                  for i in non_gt_idxs)
+    if args.filter:
+        query += " AND " + args.filter
+
+    query += " ORDER BY chrom, start" 
+    
+    _report_results(args, query, gq)
 
 
-def get_gene(c, args):
+
+def get_gene(args, gq):
     """
     Report all variants in a specific gene.
     """
-    query = "SELECT * \
-    FROM variants v \
-    WHERE v.gene = " + "'" + args.gene + "' " \
-        "ORDER BY chrom, start"
-    c.execute(query)
+    if args.columns is not None:
+        query = "SELECT " + str(args.columns) + \
+                    " FROM variants "
+    else:
+        query = "SELECT * FROM variants "
+    
+    query += "WHERE gene = " + "'" + args.gene + "' "
 
-    # build a list of all the column indices that are NOT
-    # gt_* columns.  These will be the columns reported
-    (col_names, non_gt_idxs) = \
-        util.get_col_names_and_indices(c.description, ignore_gt_cols=True)
+    if args.filter:
+        query += " AND " + args.filter
 
-    if args.use_header:
-        print args.separator.join(col for col in col_names)
+    query += " ORDER BY chrom, start" 
+    
+    _report_results(args, query, gq)
 
-    for row in c:
-        print args.separator.join(str(row[i]) if row[i] is not None else "."
-                                  for i in non_gt_idxs)
 
 
 def region(parser, args):
 
     if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
+
+        gq = GeminiQuery.GeminiQuery(args.db)
 
         if args.region is not None and args.gene is not None:
-            sys.exit('Choose either --reg or --gene, not both')
+            sys.exit('EXITING: Choose either --reg or --gene, not both.\n')
         elif args.region is not None:
-            get_region(c, args)
+            get_region(args, gq)
         elif args.gene is not None:
-            get_gene(c, args)
+            get_gene(args, gq)
