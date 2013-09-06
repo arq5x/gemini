@@ -296,6 +296,7 @@ Here is a basic query:
 
 To report in JSON format, use the ``--json`` option. For example:
 
+
 .. code-block:: bash
 
   $ gemini query --json -q "select chrom, start, end from variants" my.db | head
@@ -311,4 +312,35 @@ To report in JSON format, use the ``--json`` option. For example:
   {"chrom": "chr1", "start": 13417, "end": 13418}
 
 
+=================================================
+``--tped`` Reporting query output in TPED format
+=================================================
+If you would to use tools such as PLINK that use
+the PED format, you can dump out a set of variants
+matching any query in TPED (Transposed PED) format
+by adding the ``--tped``flag to your query:
 
+.. code-block:: bash
+
+    $ gemini query --tped -q "select * from variants where chrom=10" test4.snpeff.db
+    10 rs10794716 0 1142207 C/C C/C C/C C/C
+    10 rs142685947 0 48003991 T/T C/T C/T C/C
+    10 rs2842123 0 52004314 ./. ./. C/C C/C
+    10 rs4935178 0 52497528 ./. C/C C/C ./.
+    16 rs201947120 0 72057434 C/T C/C C/C C/C
+    10 rs73373169 0 126678091 G/G G/G G/G G/A
+    10 rs2265637 0 135210790 T/T C/C C/C T/T
+    10 rs6537611 0 135336655 ./. A/A ./. A/A
+    10 rs3747881 0 135369531 T/T T/C T/C T/T
+
+You can pass --header to get a header to see which samples have which
+variant. To use the TPED format you also need to generate a corresponing TFAM
+file from your data as well:
+
+.. code-block:: bash
+
+    $ gemini dump  --tfam test4.snpeff.db > obs
+    None    M10475  None    None    None    None
+    None    M10478  None    None    None    None
+    None    M10500  None    None    None    None
+    None    M128215 None    None    None    None

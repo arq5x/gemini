@@ -216,7 +216,7 @@ def main():
             metavar='STRING',
             help='The delimiter to be used with the --show-samples option.',
             default=',')
-    
+
     parser_query.add_argument('--header',
             dest='use_header',
             action='store_true',
@@ -227,6 +227,12 @@ def main():
             action='store_true',
             help='Report the query output in JSON format.',
             default=False)
+    parser_query.add_argument('--tped',
+                              dest='tped',
+                              action='store_true',
+                              default=False,
+                              help=('Report the query output in transposed PED '
+                                    'format.'))
     parser_query.set_defaults(func=gemini_query.query)
 
     #########################################
@@ -262,6 +268,11 @@ def main():
             metavar='STRING',
             help='Output column separator',
             default="\t")
+    parser_dump.add_argument('--tfam',
+                             dest='tfam',
+                             action='store_true',
+                             default=False,
+                             help='Output sample information to TFAM format.')
     parser_dump.set_defaults(func=gemini_dump.dump)
 
     #########################################
@@ -519,7 +530,7 @@ def main():
                                action='store_true',
                                default=False,
                                help="Run the C-alpha association test.")
-    
+
     parser_burden.add_argument('--min-aaf',
                                dest='min_aaf',
                                type=float,
