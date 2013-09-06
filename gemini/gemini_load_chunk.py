@@ -413,6 +413,9 @@ class GeminiLoader(object):
                 sample_list = [i, sample, ped.family, ped.paternal,
                                ped.maternal, ped.sex, ped.phenotype,
                                ped.ethnicity]
+            elif len(self.ped_hash) > 0:
+                sys.exit("EXITING: sample %s found in the VCF but "
+                                 "not in the PED file.\n" % (sample))
             else:
                 sample_list = [i, sample, None, None, None, None, None, None]
             database.insert_sample(self.c, sample_list)
