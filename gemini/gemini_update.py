@@ -24,7 +24,7 @@ def release(parser, args):
     else:
         raise NotImplementedError("Can only upgrade gemini installed in anaconda or virtualenv")
     # update libraries
-    #subprocess.check_call([pip_bin, "install", "-r", url])
+    subprocess.check_call([pip_bin, "install", "-r", url])
     # update datafiles
     config = gemini.config.read_gemini_config()
     install_script = os.path.join(os.path.dirname(__file__), "install-data.py")
