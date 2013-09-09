@@ -35,16 +35,19 @@ class GeminiInheritanceModelFactory(object):
         if len(num_families) >= self.args.min_kindreds:
 
             for (gene, family_id) in self.candidates:
-                for (row, family_gt_label, family_gt_cols) \
+                for (row, family_gt_label, family_gt_cols, family_dp_cols) \
                     in self.candidates[(gene, family_id)]:
 
                     gt_types = row['gt_types']
                     gts = row['gts']
+                    gt_depths = row['gt_depths']
 
                     print str(family_id) + "\t" + \
                         ",".join([str(s) for s in family_gt_label]) + \
                         "\t", \
                         ",".join([str(eval(s)) for s in family_gt_cols]) + \
+                        "\t", \
+                        ",".join([str(eval(s)) for s in family_dp_cols]) + \
                         "\t",
                     print row
 
@@ -58,6 +61,7 @@ class GeminiInheritanceModelFactory(object):
         self.family_masks = []
         self.family_gt_labels = []
         self.family_gt_columns = []
+        self.family_dp_columns = []
         for family in families:
 
             family_filter = None
@@ -73,6 +77,7 @@ class GeminiInheritanceModelFactory(object):
                 self.family_masks.append(family_filter)
                 self.family_gt_labels.append(family.get_genotype_labels())
                 self.family_gt_columns.append(family.get_genotype_columns())
+                self.family_dp_columns.append(family.get_genotype_depths())
                 self.family_ids.append(family.family_id)
 
     def _construct_query(self):
@@ -114,7 +119,7 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query)
 
         # print a header
-        print "family_id\tfamily_members\tfamily_genotypes\t",
+        print "family_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
         print self.gq.header
 
         # yield the resulting variants for this familiy
@@ -135,23 +140,36 @@ class GeminiInheritanceModelFactory(object):
                 family_genotype_mask = self.family_masks[idx]
                 family_gt_labels = self.family_gt_labels[idx]
                 family_gt_cols = self.family_gt_columns[idx]
+                family_dp_cols = self.family_dp_columns[idx]
 
                 # interrogate the genotypes present in each family member to 
                 # conforming to the genetic model being tested
                 gt_types = row['gt_types']
                 gts = row['gts']
+                gt_depths = row['gt_depths']
 
                 # skip if the variant doesn't meet a recessive model
                 # for this family
                 if not eval(family_genotype_mask):
                     continue
-                    
+
+                # make sure each sample's genotype had sufficient coverage.
+                # otherwise, ignore
+                insufficient_depth = False
+                for col in family_dp_cols:
+                    depth = int(eval(col))
+                    if depth < self.args.min_sample_depth:
+                        insufficient_depth = True
+                        break
+                if insufficient_depth is True:
+                    continue
 
                 # if it meets a recessive model, add it to the list
                 # of candidates for this gene.
                 self.candidates[(curr_gene, fam_id)].append((row,
                                                         family_gt_labels, 
-                                                        family_gt_cols))
+                                                        family_gt_cols,
+                                                        family_dp_cols))
 
             prev_gene = curr_gene
     
@@ -174,7 +192,7 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query)
 
         # print a header
-        print "family_id\tfamily_members\tfamily_genotypes\t",
+        print "family_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
         print self.gq.header
 
         for row in self.gq:
@@ -184,20 +202,35 @@ class GeminiInheritanceModelFactory(object):
                 family_genotype_mask = self.family_masks[idx]
                 family_gt_labels = self.family_gt_labels[idx]
                 family_gt_cols = self.family_gt_columns[idx]
+                family_dp_cols = self.family_dp_columns[idx]
 
                 # interrogate the genotypes present in each family member to 
                 # conforming to the genetic model being tested
                 gt_types = row['gt_types']
                 gts = row['gts']
+                gt_depths = row['gt_depths']
 
                 # skip if the variant doesn't meet a recessive model
                 # for this family
                 if not eval(family_genotype_mask):
                     continue
 
-                print str(family_id) + "\t" + \
-                    ",".join([str(s) for s in family_gt_label]) + \
+                # make sure each sample's genotype had sufficient coverage.
+                # otherwise, ignore
+                insufficient_depth = False
+                for col in family_dp_cols:
+                    depth = int(eval(col))
+                    if depth < self.args.min_sample_depth:
+                        insufficient_depth = True
+                        break
+                if insufficient_depth is True:
+                    continue
+
+                print str(fam_id) + "\t" + \
+                    ",".join([str(s) for s in family_gt_labels]) + \
                     "\t", \
                     ",".join([str(eval(s)) for s in family_gt_cols]) + \
+                    "\t", \
+                    ",".join([str(eval(s)) for s in family_dp_cols]) + \
                     "\t",
                 print row

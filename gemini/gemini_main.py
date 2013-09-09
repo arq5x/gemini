@@ -603,6 +603,13 @@ def main():
             type=int,
             default=1,
             help='The min. number of kindreds that must have a candidate variant in a gene.')
+    parser_auto_rec.add_argument('-d',
+            dest='min_sample_depth',
+            type=int,
+            help="The minimum aligned\
+              sequence depth (genotype DP) req'd for\
+              each sample (def. = 0)",
+            default=0)
     #parser_auto_rec.add_argument('--gt-filter',
     #        dest='gt_filter',
     #        metavar='STRING',
@@ -632,6 +639,13 @@ def main():
             type=int,
             default=1,
             help='The min. number of kindreds that must have a candidate variant in a gene.')
+    parser_auto_dom.add_argument('-d',
+            dest='min_sample_depth',
+            type=int,
+            help="The minimum aligned\
+              sequence depth (genotype DP) req'd for\
+              each sample (def. = 0)",
+            default=0)
     #parser_auto_dom.add_argument('--gt-filter',
     #        dest='gt_filter',
     #        metavar='STRING',
