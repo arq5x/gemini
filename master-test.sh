@@ -13,6 +13,9 @@ cd test
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
 
+# Test database dumping
+bash test-dump.sh
+
 # Test burden tests
 bash test-burden.sh
 
