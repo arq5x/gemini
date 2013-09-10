@@ -9,14 +9,11 @@ import GeminiQuery
 def _report_results(args, query, gq):
     # report the results of the region query
     gq.run(query)
-    if args.use_header and not args.use_json:
+    if args.use_header and gq.header:
         print gq.header
 
     for row in gq:
-        if not args.use_json:
-            print row
-        else:
-            print row.get_json()
+        print row
 
 
 def get_region(args, gq):
@@ -47,8 +44,8 @@ def get_region(args, gq):
     if args.filter:
         query += " AND " + args.filter
 
-    query += " ORDER BY chrom, start" 
-    
+    query += " ORDER BY chrom, start"
+
     _report_results(args, query, gq)
 
 
@@ -62,14 +59,14 @@ def get_gene(args, gq):
                     " FROM variants "
     else:
         query = "SELECT * FROM variants "
-    
+
     query += "WHERE gene = " + "'" + args.gene + "' "
 
     if args.filter:
         query += " AND " + args.filter
 
-    query += " ORDER BY chrom, start" 
-    
+    query += " ORDER BY chrom, start"
+
     _report_results(args, query, gq)
 
 
@@ -78,7 +75,7 @@ def region(parser, args):
 
     if os.path.exists(args.db):
 
-        gq = GeminiQuery.GeminiQuery(args.db)
+        gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
 
         if args.region is not None and args.gene is not None:
             sys.exit('EXITING: Choose either --reg or --gene, not both.\n')

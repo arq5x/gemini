@@ -49,6 +49,6 @@ rm obs exp
 echo "    region.t05...\c"
 echo "{\"chrom\": \"chr16\", \"start\": 72057281, \"end\": 72057282, \"ref\": \"A\", \"alt\": \"G\", \"gene\": \"DHODH\"}" > exp
 
-gemini region --gene DHODH --columns "chrom, start, end, ref, alt, gene" --filter "alt='G'" --json test.region.db > obs
+gemini region --format json --gene DHODH --columns "chrom, start, end, ref, alt, gene" --filter "alt='G'" test.region.db > obs
 check obs exp
 rm obs exp

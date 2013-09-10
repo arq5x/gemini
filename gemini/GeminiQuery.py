@@ -7,12 +7,84 @@ import re
 import itertools
 import collections
 import json
+import abc
 
 # gemini imports
 import gemini_utils as util
 from gemini_constants import *
-from gemini_utils import OrderedSet, OrderedDict
+from gemini_utils import OrderedSet, OrderedDict, itersubclasses
 import compression
+from sql_utils import ensure_columns, get_select_cols_and_rest
+
+
+class RowFormat:
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractproperty
+    def name(self):
+        return
+
+    @abc.abstractmethod
+    def format(self, row):
+        """ return a string representation of a GeminiRow object
+        """
+        return
+
+    @abc.abstractmethod
+    def format_query(self, query):
+        """ augment the query with columns necessary for the format or else just
+        return the untouched query
+        """
+        return
+
+
+class DefaultRowFormat(RowFormat):
+
+    name = "default"
+
+    @classmethod
+    def format(self, row):
+        return '\t'.join([str(row[c]) for c in row])
+
+    @classmethod
+    def format_query(self, query):
+        return query
+
+
+class TPEDRowFormat(RowFormat):
+
+    name = "tped"
+
+    @classmethod
+    def format(self, row):
+        VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
+        chrom = row['chrom'].split("chr")[1]
+        chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
+        name = row['rs_ids'] if row['rs_ids'] else "."
+        start = str(row['start'])
+        genotypes = " ".join(row['gts'].split(","))
+        return " ".join([chrom, name, "0", start, genotypes])
+
+    @classmethod
+    def format_query(self, query):
+        NEED_COLUMNS = ["chrom", "rs_ids", "start", "gts"]
+        return ensure_columns(query, NEED_COLUMNS)
+
+
+class JSONRowFormat(RowFormat):
+
+    name = "json"
+
+    @classmethod
+    def format(self, row):
+        """Emit a JSON representation of a given row
+        """
+        return json.dumps(row)
+
+    @classmethod
+    def format_query(self, query):
+        return query
 
 
 class GeminiRow(object):
@@ -20,7 +92,7 @@ class GeminiRow(object):
     def __init__(self, row, gts=None, gt_types=None,
                  gt_phases=None, gt_depths=None,
                  gt_ref_depths=None, gt_alt_depths=None,
-                 gt_quals=None):
+                 gt_quals=None, formatter=DefaultRowFormat):
         self.row = row
         self.gts = gts
         self.gt_types = gt_types
@@ -32,6 +104,7 @@ class GeminiRow(object):
         self.gt_cols = ['gts', 'gt_types', 'gt_phases',
                         'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
                         'gt_quals']
+        self.formatter = formatter
 
     def __getitem__(self, val):
         if val not in self.gt_cols:
@@ -52,22 +125,18 @@ class GeminiRow(object):
             elif val == 'gt_alt_depths':
                 return self.gt_alt_depths
 
+
     def __iter__(self):
         return self
 
     def __repr__(self):
-        return '\t'.join([str(self.row[c]) for c in self.row])
+        return self.formatter.format(self.row)
 
     def next(self):
         try:
             return self.row.keys()
         except:
             raise StopIteration
-
-    def get_json(self):
-        """Emit a JSON representation of a given row
-        """
-        return json.dumps(self.row)
 
 
 class GeminiQuery(object):
@@ -84,7 +153,7 @@ class GeminiQuery(object):
     We can then issue a query against the database and iterate through
     the results by using the ``run()`` method::
 
-        gq.run("select chrom, start, end from variants")
+
         for row in gq:
             print row
 
@@ -132,7 +201,7 @@ class GeminiQuery(object):
             print row, gts[idx]
     """
 
-    def __init__(self, db, include_gt_cols=False):
+    def __init__(self, db, include_gt_cols=False, out_format="default"):
         assert os.path.exists(db), "%s does not exist." % db
 
         self.db = db
@@ -145,6 +214,19 @@ class GeminiQuery(object):
         self.sample_to_idx = util.map_samples_to_indicies(self.c)
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
         self.idx_to_sample = util.map_indicies_to_samples(self.c)
+        self.formatter = self._set_formatter(out_format.lower())
+
+
+    def _set_formatter(self, out_format):
+        SUPPORTED_FORMATS = {x.name.lower(): x for x in itersubclasses(RowFormat)}
+
+        if not out_format in SUPPORTED_FORMATS:
+            raise NotImplementedError("Conversion to %s not supported. Valid "
+                                      "formats are %s."
+                                      % (out_format, SUPPORTED_FORMATS))
+        else:
+            return SUPPORTED_FORMATS[out_format]
+
 
     def _set_gemini_browser(self, for_browser):
         self.for_browser = for_browser
@@ -159,7 +241,7 @@ class GeminiQuery(object):
             1. (reqd.) an SQL `query`.
             2. (opt.) a genotype filter.
         """
-        self.query = query
+        self.query = self.formatter.format_query(query)
         self.gt_filter = gt_filter
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
@@ -192,6 +274,8 @@ class GeminiQuery(object):
         Return a header describing the columns that
         were selected in the query issued to a GeminiQuery object.
         """
+        if self.formatter.name in ["json"]:
+            return None
 
         if self.query_type == "no-genotypes":
             h = [col for col in self.all_query_cols]
@@ -201,7 +285,8 @@ class GeminiQuery(object):
                  - OrderedSet(self.select_columns)]
         if self.show_variant_samples:
             h += ["variant_samples", "HET_samples", "HOM_ALT_samples"]
-        return GeminiRow(OrderedDict(itertools.izip(h, h)))
+        return GeminiRow(OrderedDict(itertools.izip(h, h)),
+                         formatter=self.formatter)
 
     @property
     def sample2index(self):
@@ -317,19 +402,10 @@ class GeminiQuery(object):
                     fields["HOM_ALT_samples"] = \
                         self.variant_samples_delim.join(hom_alt_names)
 
-                if self._query_needs_genotype_info():
-                    if not self.for_browser:
-                        return GeminiRow(fields,
-                                         gts, gt_types, gt_phases,
-                                         gt_depths, gt_ref_depths,
-                                         gt_alt_depths, gt_quals)
-                    else:
-                        return fields
+                if not self.for_browser:
+                    return GeminiRow(fields, formatter=self.formatter)
                 else:
-                    if not self.for_browser:
-                        return GeminiRow(fields)
-                    else:
-                        return fields
+                    return fields
             except Exception as e:
                 raise StopIteration
 
@@ -372,7 +448,6 @@ class GeminiQuery(object):
 
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
                                    if not tuple[0].startswith("gt")]
-
             if "*" in self.select_columns:
                 self.select_columns.remove("*")
                 self.all_columns_orig.remove("*")
@@ -435,48 +510,6 @@ class GeminiQuery(object):
         return " ".join(corrected_gt_filter)
 
 
-    def ensure_columns(self, query, cols):
-        """
-        if a query is missing any of these list of columns, add them
-        and return the new query string
-        """
-        sel_cols, rest = self._get_select_cols_and_query_remainder(query)
-        sel_cols = [x.lower() for x in sel_cols]
-        for c in cols:
-            c = c.lower()
-            if c not in sel_cols:
-                sel_cols += [c]
-
-        sel_string = ", ".join(sel_cols)
-        return "select {sel_string} {rest}".format(**locals())
-
-
-    def _get_select_cols_and_query_remainder(self, query=None):
-        """
-        Separate the a list of selected columns from
-        the rest of the query
-
-        Returns:
-            1. a list of the selected columns
-            2. a string of the rest of the query after the SELECT
-        """
-        if not query:
-            query = self.query
-        from_loc = query.lower().find("from")
-
-        raw_select_clause = query[0:from_loc].rstrip()
-        rest_of_query = query[from_loc:len(query)]
-
-        # remove the SELECT keyword from the query
-        select_pattern = re.compile("select", re.IGNORECASE)
-        raw_select_clause = select_pattern.sub('', raw_select_clause)
-
-        # now create and iterate through a list of of the SELECT'ed columns
-        selected_columns = raw_select_clause.replace(' ', '').split(',')
-        selected_columns = [c.strip() for c in selected_columns]
-
-        return selected_columns, rest_of_query
-
     def _add_gt_cols_to_query(self):
         """
         We have to modify the raw query to select the genotype
@@ -494,8 +527,7 @@ class GeminiQuery(object):
         if "from" not in self.query.lower():
             sys.exit("Malformed query: expected a FROM keyword.")
 
-        (select_tokens, rest_of_query) = \
-            self._get_select_cols_and_query_remainder()
+        (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
         # remove any GT columns
         select_clause_list = []
@@ -546,8 +578,7 @@ class GeminiQuery(object):
         if "from" not in self.query.lower():
             sys.exit("Malformed query: expected a FROM keyword.")
 
-        (select_tokens, rest_of_query) = \
-            self._get_select_cols_and_query_remainder()
+        (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
         for token in select_tokens:
             if not token.startswith("GT") and not token.startswith("gt"):

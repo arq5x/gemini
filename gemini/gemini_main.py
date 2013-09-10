@@ -222,17 +222,16 @@ def main():
             action='store_true',
             help='Add a header of column names to the output.',
             default=False)
-    parser_query.add_argument('--json',
-            dest='use_json',
-            action='store_true',
-            help='Report the query output in JSON format.',
-            default=False)
-    parser_query.add_argument('--tped',
-                              dest='tped',
+    parser_query.add_argument('--format',
+                              dest='format',
+                              default='default',
+                              help='Format of output (JSON, TPED or default)')
+    parser_query.add_argument('--affected',
+                              dest='affected',
                               action='store_true',
                               default=False,
-                              help=('Report the query output in transposed PED '
-                                    'format.'))
+                              help=('Keep variants only in affected samples.'))
+
     parser_query.set_defaults(func=gemini_query.query)
 
     #########################################
@@ -305,11 +304,10 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
-    parser_region.add_argument('--json',
-            dest='use_json',
-            action='store_true',
-            help='Report the query output in JSON format.',
-            default=False)
+    parser_region.add_argument('--format',
+                              dest='format',
+                              default='default',
+                              help='Format of output (JSON, TPED or default)')
     parser_region.set_defaults(func=gemini_region.region)
 
     #########################################

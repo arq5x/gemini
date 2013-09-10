@@ -419,7 +419,6 @@ echo "10 rs10794716 0 1142207 C/C C/C C/C C/C
 10 rs2265637 0 135210790 T/T C/C C/C T/T
 10 rs6537611 0 135336655 ./. A/A ./. A/A
 10 rs3747881 0 135369531 T/T T/C T/C T/T" > exp
-gemini query --tped -q "select * from variants" test4.snpeff.db > obs
+gemini query --format tped -q "select * from variants" test4.snpeff.db > obs
 check obs exp
 rm obs exp
-

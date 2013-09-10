@@ -5,6 +5,28 @@ import sys
 
 # gemini imports
 import GeminiQuery
+from gemini_subjects import get_subjects
+
+
+def affected(args):
+    """
+    output the results of a query, displaying only variants which occur
+    only in affected individuals and not un unaffected individuals
+    as specified by the phenotype status
+    """
+    gq = GeminiQuery.GeminiQuery(args.db)
+    subjects = get_subjects(gq.c).values()
+    affected = [s.name for s in filter(lambda x: x.affected, subjects)]
+
+    gq.run(args.query, show_variant_samples=True)
+    processed = 0
+    for row in gq:
+        processed = 1
+        if processed % 10000 == 0:
+            sys.stderr.write("%d variants processed.\n" % (processed))
+        if not all(map(lambda x: x in affected, row.gts)):
+            continue
+        print row
 
 
 def tped(args):
@@ -19,7 +41,6 @@ def tped(args):
 
     gq.run("select name from samples")
     sample_names = [row['name'] for row in gq]
-    sample_ids = [gq.sample_to_idx[x] for x in sample_names]
 
     gq = GeminiQuery.GeminiQuery(args.db)
     query = gq.ensure_columns(args.query, NEED_COLUMNS)
@@ -39,19 +60,17 @@ def tped(args):
 
 
 def run_query(args):
-    gq = GeminiQuery.GeminiQuery(args.db)
+
+    gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     gq.run(args.query, args.gt_filter,
            args.show_variant_samples,
            args.sample_delim)
 
-    if args.use_header and not args.use_json:
+    if args.use_header and gq.header:
         print gq.header
 
     for row in gq:
-        if args.use_json:
-            print row.get_json()
-        else:
-            print row
+        print row
 
 def query(parser, args):
 
@@ -59,8 +78,8 @@ def query(parser, args):
         parser.print_help()
 
     if os.path.exists(args.db):
-        if args.tped:
-            tped(args)
+        if args.affected:
+            affected(args)
         else:
             run_query(args)
 
