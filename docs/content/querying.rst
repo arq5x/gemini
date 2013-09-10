@@ -271,9 +271,13 @@ a semi-colon instead of a comma, one would do the following:
   chr1  1221487 1221490 CAA C 1478PC0004  1478PC0004
 
 
-=================================================
-``--json`` Reporting query output in JSON format.
-=================================================
+===========================================================
+``--format`` Reporting query output in an alternate format.
+===========================================================
+The results of GEMINI queries can automatically be formatted for use with
+other programs using the --format command. Supported alternative
+formats are JSON and TPED (Transposed PED) format.
+
 Reporting query output in JSON format may enable
 HTML/Javascript apps to query GEMINI and retrieve
 the output in a format that is amenable to web development protocols.
@@ -294,12 +298,12 @@ Here is a basic query:
   chr1  13416 13417
   chr1  13417 13418
 
-To report in JSON format, use the ``--json`` option. For example:
+To report in JSON format, use the ``--format json`` option. For example:
 
 
 .. code-block:: bash
 
-  $ gemini query --json -q "select chrom, start, end from variants" my.db | head
+  $ gemini query --format --json -q "select chrom, start, end from variants" my.db | head
   {"chrom": "chr1", "start": 10067, "end": 10069}
   {"chrom": "chr1", "start": 10230, "end": 10231}
   {"chrom": "chr1", "start": 12782, "end": 12783}
@@ -312,9 +316,6 @@ To report in JSON format, use the ``--json`` option. For example:
   {"chrom": "chr1", "start": 13417, "end": 13418}
 
 
-=================================================
-``--tped`` Reporting query output in TPED format
-=================================================
 If you would to use tools such as PLINK that use
 the PED format, you can dump out a set of variants
 matching any query in TPED (Transposed PED) format
@@ -322,7 +323,7 @@ by adding the ``--tped``flag to your query:
 
 .. code-block:: bash
 
-    $ gemini query --tped -q "select * from variants where chrom=10" test4.snpeff.db
+    $ gemini query --format tped -q "select * from variants where chrom=10" test4.snpeff.db
     10 rs10794716 0 1142207 C/C C/C C/C C/C
     10 rs142685947 0 48003991 T/T C/T C/T C/C
     10 rs2842123 0 52004314 ./. ./. C/C C/C
@@ -335,7 +336,7 @@ by adding the ``--tped``flag to your query:
 
 You can pass --header to get a header to see which samples have which
 variant. To use the TPED format you also need to generate a corresponing TFAM
-file from your data as well:
+file from your data as well, which you can get from the GEMINI dump tool:
 
 .. code-block:: bash
 
