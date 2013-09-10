@@ -65,7 +65,7 @@ rm obs exp
 ###################################################################
 # 5. Test with a filter and minimum of 1 kindreds, min depth 40
 ###################################################################
-echo "    auto_dom.t4...\c"
+echo "    auto_dom.t5...\c"
 echo "family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
