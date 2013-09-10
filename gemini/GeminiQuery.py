@@ -18,6 +18,11 @@ from sql_utils import ensure_columns, get_select_cols_and_rest
 
 
 class RowFormat:
+    """A row formatter to output rows in a custom format.  To provide
+    a new output format 'foo', implement both class methods and set the
+    name field to foo.  This will automatically add support for 'foo' to
+    anything accepting the --format option via --format foo.
+    """
 
     __metaclass__ = abc.ABCMeta
 
