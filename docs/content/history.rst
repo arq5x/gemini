@@ -2,6 +2,12 @@
 Release History
 #############################
 
+0.6.2 (in development)
+=======================================
+1. Moved --tped and --json options into the more generic --format option.
+2. Fixed bug in handling missing phenotypes in the sample table.
+
+
 0.6.1 (2013-Sep-09)
 =======================================
 1. Corrected bug in de_novo tool that was undetected in 0.6.0.  Unit tests have been added to head this off in the future. Thanks to **Jessica Chong**
@@ -34,12 +40,12 @@ Release History
 3. The ``autosomal_dominant``, ``autosomal_recessive``, and ``de_novo`` mutation tools have received the following improvements.
 
     -  improved speed (especially when there are multiple families)
-    -  by default, all columns in the variant table are reported and no conditions are placed on the returned variants.  That is, as long as the variant meets 
+    -  by default, all columns in the variant table are reported and no conditions are placed on the returned variants.  That is, as long as the variant meets
        the inheritance model, it will be reported.
     -  the addition of a ``--columns`` option allowing one to override the above default behavior and report a subset of columns.
     -  the addition of a ``--filter`` option allowing one to override the above default behavior and filter reported variants based on specific criteria.
 
-4. The default minimum aligned sequencing depth for each variant reported by 
+4. The default minimum aligned sequencing depth for each variant reported by
 the ``de_novo`` tool is 0.  Greater stringency can be applied with the ``-d``
 option.
 
