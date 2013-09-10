@@ -20,7 +20,7 @@ class Subject(object):
         self.paternal_id = row['paternal_id']
         self.maternal_id = row['maternal_id']
         self.sex = row['sex']
-        self.phenotype = int(row['phenotype'])
+        self.phenotype = int(row['phenotype']) if row['phenotype'] else None
         self.ethnicity = row['ethnicity']
 
         # 1 = unaffected
@@ -32,12 +32,12 @@ class Subject(object):
         elif str(self.phenotype) == "1":
             self.affected = False
         # distinguish unknown from known to be unaffected.
-        elif str(self.phenotype) == "0" or str(self.phenotype) == "-9":
+        else:
             self.affected = None
 
     def __repr__(self):
-        return "\t".join([self.name, self.paternal_id,
-                          self.maternal_id, str(self.phenotype)])
+        return "\t".join(map(str, [self.name, self.paternal_id,
+                                   self.maternal_id, self.phenotype]))
 
     def set_father(self):
         self.father = True
@@ -156,7 +156,7 @@ class Family(object):
         # Fail if both parents are not found
         if not self.find_parents():
             return "False"
-        
+
         mask = ""
         if self.father.affected is True and self.mother.affected is True:
             # doesn't meet an auto. dominant model if both parents are affected
@@ -164,11 +164,11 @@ class Family(object):
             #     |
             #    (*)
             return "False"
-        elif ((self.father.affected is False and self.mother.affected is False) 
+        elif ((self.father.affected is False and self.mother.affected is False)
              or
              (self.father.affected is None and self.mother.affected is None)):
-            # if neither parents are affected, or the affection status is 
-            # unknown for both, we can just screen for variants where one and 
+            # if neither parents are affected, or the affection status is
+            # unknown for both, we can just screen for variants where one and
             # only one of the parents are hets and and the child is also a het
             # []---()
             #    |
@@ -193,10 +193,10 @@ class Family(object):
                     mask += " and "
             mask += ")"
             return mask
-        elif (self.father.affected is True and 
+        elif (self.father.affected is True and
               self.mother.affected is not True):
             # if only Dad is known to be affected, we must enforce
-            # that only the affected child and Dad have the 
+            # that only the affected child and Dad have the
             # same heterozygous genotype.
             # [*]---()
             #     |
@@ -219,10 +219,10 @@ class Family(object):
                     mask += " and "
             mask += ")"
             return mask
-        elif (self.father.affected is not True 
+        elif (self.father.affected is not True
               and self.mother.affected is True):
             # if only Mom is known to be affected, we must enforce
-            # that only the affected child and Mom have the 
+            # that only the affected child and Mom have the
             # same heterozygous genotype.
             # []---(*)
             #    |
@@ -256,7 +256,7 @@ class Family(object):
         '(gt_types[57] == HOM_REF and \  # mom
           gt_types[58] == HOM_REF and \  # dad
           gt_types[11] == HET)'          # affected child
-          
+
           # [G/G]---(G/G)
           #       |
           #     (A/G)
@@ -334,21 +334,21 @@ class Family(object):
         Return header genotype labels for the parents and the children.
         """
         subjects = []
-        
+
         if self.father.affected is True:
             subjects.append(self.father.name + "(father; affected)")
         elif self.father.affected is False:
             subjects.append(self.father.name + "(father; unaffected)")
         elif self.father.affected is None:
             subjects.append(self.father.name + "(father; unknown)")
-            
+
         if self.mother.affected is True:
             subjects.append(self.mother.name + "(mother; affected)")
         elif self.mother.affected is False:
             subjects.append(self.mother.name + "(mother; unaffected)")
         elif self.mother.affected is None:
             subjects.append(self.mother.name + "(mother; unknown)")
-            
+
         # handle the childrem
         for child in self.children:
             if child.affected is True:
@@ -398,12 +398,12 @@ def get_families(c):
         family = Family(families_dict[fam])
         families.append(family)
     return families
-    
+
 def get_subjects(c):
     """
     Query the samples table to return a dict of subjects.
-    
-    
+
+
     """
     query = "SELECT * FROM samples"
     c.execute(query)
