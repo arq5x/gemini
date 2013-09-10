@@ -303,7 +303,7 @@ To report in JSON format, use the ``--format json`` option. For example:
 
 .. code-block:: bash
 
-  $ gemini query --format --json -q "select chrom, start, end from variants" my.db | head
+  $ gemini query --format json -q "select chrom, start, end from variants" my.db | head
   {"chrom": "chr1", "start": 10067, "end": 10069}
   {"chrom": "chr1", "start": 10230, "end": 10231}
   {"chrom": "chr1", "start": 12782, "end": 12783}
