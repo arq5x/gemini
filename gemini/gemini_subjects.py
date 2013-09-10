@@ -316,7 +316,7 @@ class Family(object):
 
         return columns
 
-    def get_depth_columns(self):
+    def get_genotype_depths(self):
         """
         Return the indices into the gt_depths numpy array for the parents
         and the children.
