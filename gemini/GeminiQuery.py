@@ -63,12 +63,17 @@ class TPEDRowFormat(RowFormat):
 
     @classmethod
     def format(self, row):
+        NULL_GENOTYPES = ["."]
         VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
         chrom = row['chrom'].split("chr")[1]
         chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
         name = row['rs_ids'] if row['rs_ids'] else "."
         start = str(row['start'])
-        genotypes = " ".join(row['gts'].split(","))
+        geno = [x.split("/") for x in row['gts'].split(",")]
+        geno = [["0", "0"] if any([y in NULL_GENOTYPES for y in x])
+                else x for x in geno]
+        genotypes = " ".join(list(flatten(geno)))
+
         return " ".join([chrom, name, "0", start, genotypes])
 
     @classmethod

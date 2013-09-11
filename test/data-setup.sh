@@ -13,3 +13,4 @@ gemini load -v test.burden.vcf -t VEP -p test.burden.ped test.burden.db
 gemini load -v test.auto_dom.vcf -t snpEff -p test.auto_dom.ped test.auto_dom.db
 gemini load -v test.auto_rec.vcf -t snpEff -p test.auto_rec.ped test.auto_rec.db
 gemini load -v test.de_novo.vcf -t snpEff -p test.de_novo.ped test.de_novo.db
+gemini load -p test4.snpeff.ped -v test4.vep.snpeff.vcf -t snpEff test4.snpeff.ped.db

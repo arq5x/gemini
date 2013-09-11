@@ -410,15 +410,15 @@ rm obs exp
 ########################################################################
 # 22. Test transposed ped (TPED) query format
 ########################################################################
-echo "10 rs10794716 0 1142207 C/C C/C C/C C/C
-10 rs142685947 0 48003991 T/T C/T C/T C/C
-10 rs2842123 0 52004314 ./. ./. C/C C/C
-10 rs4935178 0 52497528 ./. C/C C/C ./.
-16 rs201947120 0 72057434 C/T C/C C/C C/C
-10 rs73373169 0 126678091 G/G G/G G/G G/A
-10 rs2265637 0 135210790 T/T C/C C/C T/T
-10 rs6537611 0 135336655 ./. A/A ./. A/A
-10 rs3747881 0 135369531 T/T T/C T/C T/T" > exp
-gemini query --format tped -q "select * from variants" test4.snpeff.db > obs
+echo "10 rs10794716 0 1142207 C C C C C C C C
+10 rs142685947 0 48003991 T T C T C T C C
+10 rs2842123 0 52004314 0 0 0 0 C C C C
+10 rs4935178 0 52497528 0 0 C C C C 0 0
+16 rs201947120 0 72057434 C T C C C C C C
+10 rs73373169 0 126678091 G G G G G G G A
+10 rs2265637 0 135210790 T T C C C C T T
+10 rs6537611 0 135336655 0 0 A A 0 0 A A
+10 rs3747881 0 135369531 T T T C T C T T" > exp
+gemini query --format tped -q "select * from variants" test4.snpeff.ped.db > obs
 check obs exp
 rm obs exp

@@ -6,7 +6,7 @@ Release History
 =======================================
 1. Moved --tped and --json options into the more generic --format option.
 2. Fixed bug in handling missing phenotypes in the sample table.
-
+3. Fixed --tped output formatting error.
 
 0.6.1 (2013-Sep-09)
 =======================================
