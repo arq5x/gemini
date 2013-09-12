@@ -3,9 +3,9 @@
 ####################################################################
 echo "    dump.t01...\c"
 echo "1 M10475 None None 1 1
-1 M10478 M10475 M10500 1 2
+1 M10478 M10475 M10500 2 2
 1 M10500 None None 2 2
-1 M128215 M10475 M10500 2 1" > exp
+1 M128215 M10475 M10500 1 1" > exp
 gemini dump --tfam test4.snpeff.ped.db > obs
 check obs exp
 rm obs exp
