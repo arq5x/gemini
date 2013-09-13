@@ -8,6 +8,7 @@ import itertools
 import collections
 import json
 import abc
+import re
 
 # gemini imports
 import gemini_utils as util
@@ -19,7 +20,7 @@ from sql_utils import ensure_columns, get_select_cols_and_rest
 
 class RowFormat:
     """A row formatter to output rows in a custom format.  To provide
-    a new output format 'foo', implement both class methods and set the
+    a new output format 'foo', implement the class methods and set the
     name field to foo.  This will automatically add support for 'foo' to
     anything accepting the --format option via --format foo.
     """
@@ -34,14 +35,20 @@ class RowFormat:
     def format(self, row):
         """ return a string representation of a GeminiRow object
         """
-        return
+        return '\t'.join([str(row[c]) for c in row])
 
     @abc.abstractmethod
     def format_query(self, query):
         """ augment the query with columns necessary for the format or else just
         return the untouched query
         """
-        return
+        return query
+
+    @abc.abstractmethod
+    def predicate(self, row):
+        """ the row must pass this additional predicate to be output. Just
+        return True if there is no additional predicate"""
+        return True
 
 
 class DefaultRowFormat(RowFormat):
@@ -56,30 +63,45 @@ class DefaultRowFormat(RowFormat):
     def format_query(self, query):
         return query
 
+    @classmethod
+    def predicate(self, row):
+        return True
+
 
 class TPEDRowFormat(RowFormat):
 
     name = "tped"
+    NULL_GENOTYPES = ["."]
 
     @classmethod
     def format(self, row):
-        NULL_GENOTYPES = ["."]
         VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
         chrom = row['chrom'].split("chr")[1]
         chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
-        name = row['rs_ids'] if row['rs_ids'] else "."
         start = str(row['start'])
-        geno = [x.split("/") for x in row['gts'].split(",")]
-        geno = [["0", "0"] if any([y in NULL_GENOTYPES for y in x])
+        end = str(row['end'])
+        #name = row['rs_ids'] if row['rs_ids'] else "."
+        #name = str(row['variant_id'])
+        geno = [re.split('\||/', x) for x in row['gts'].split(",")]
+        geno = [["0", "0"] if any([y in self.NULL_GENOTYPES for y in x])
                 else x for x in geno]
         genotypes = " ".join(list(flatten(geno)))
-
+        alleles = "|".join(set(list(flatten(geno))).difference("0"))
+        name = chrom + ":" +  start + "-" + end + ":" + alleles
         return " ".join([chrom, name, "0", start, genotypes])
 
     @classmethod
     def format_query(self, query):
-        NEED_COLUMNS = ["chrom", "rs_ids", "start", "gts"]
+        NEED_COLUMNS = ["chrom", "rs_ids", "start", "gts", "type", "variant_id"]
         return ensure_columns(query, NEED_COLUMNS)
+
+    @classmethod
+    def predicate(self, row):
+        #geno = [re.split('\||/', x) for x in row['gts'].split(",")]
+        geno = [re.split("\||/", x) for x in row['gts']]
+        geno = list(flatten(geno))
+        num_alleles = len(set(geno).difference(self.NULL_GENOTYPES))
+        return num_alleles > 0 and num_alleles <= 2 and row['type'] != "sv"
 
 
 class JSONRowFormat(RowFormat):
@@ -95,6 +117,10 @@ class JSONRowFormat(RowFormat):
     @classmethod
     def format_query(self, query):
         return query
+
+    @classmethod
+    def predicate(self, row):
+        return True
 
 
 class GeminiRow(object):
@@ -338,86 +364,99 @@ class GeminiQuery(object):
         while (1):
             try:
                 row = self.c.next()
-
-                if self._query_needs_genotype_info():
-                    gts = compression.unpack_genotype_blob(row['gts'])
-                    gt_types = \
-                        compression.unpack_genotype_blob(row['gt_types'])
-                    gt_phases = \
-                        compression.unpack_genotype_blob(row['gt_phases'])
-                    gt_depths = \
-                        compression.unpack_genotype_blob(row['gt_depths'])
-                    gt_ref_depths = \
-                        compression.unpack_genotype_blob(row['gt_ref_depths'])
-                    gt_alt_depths = \
-                        compression.unpack_genotype_blob(row['gt_alt_depths'])
-                    gt_quals = \
-                        compression.unpack_genotype_blob(row['gt_quals'])
-
-                    # skip the record if it does not meet the user's genotype filter
-                    if self.gt_filter and not eval(self.gt_filter):
-                        continue
-
-                fields = OrderedDict()
-
-                for idx, col in enumerate(self.report_cols):
-                    if col == "*":
-                        continue
-                    if not col.startswith("gt") and not col.startswith("GT"):
-                        fields[col] = row[col]
-                    else:
-                        # reuse the original column anme user requested
-                        # e.g. replace gts[1085] with gts.NA20814
-                        if '[' in col:
-                            orig_col = self.gt_idx_to_name_map[col]
-                            fields[orig_col] = eval(col.strip())
-                        else:
-                            # asked for "gts" or "gt_types", e.g.
-                            if col == "gts":
-                                fields[col] = ','.join(gts)
-                            elif col == "gt_types":
-                                fields[col] = \
-                                    ','.join(str(t) for t in gt_types)
-                            elif col == "gt_phases":
-                                fields[col] = \
-                                    ','.join(str(p) for p in gt_phases)
-                            elif col == "gt_depths":
-                                fields[col] = \
-                                    ','.join(str(d) for d in gt_depths)
-                            elif col == "gt_quals":
-                                fields[col] = \
-                                    ','.join(str(d) for d in gt_quals)
-                            elif col == "gt_ref_depths":
-                                fields[col] = \
-                                    ','.join(str(d) for d in gt_ref_depths)
-                            elif col == "gt_alt_depths":
-                                fields[col] = \
-                                    ','.join(str(d) for d in gt_alt_depths)
-
-                if self.show_variant_samples:
-                    gt_types = compression.unpack_genotype_blob(row['gt_types'])
-                    variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
-                                       y == HOM_ALT]
-                    variant_names = [self.idx_to_sample[x] for x in variant_samples]
-                    fields["variant_samples"] = \
-                        self.variant_samples_delim.join(variant_names)
-
-                    het_samples = [x for x, y in enumerate(gt_types) if y == HET]
-                    het_names = [self.idx_to_sample[x] for x in het_samples]
-                    fields["HET_samples"] = \
-                        self.variant_samples_delim.join(het_names)
-
-                    hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
-                    hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
-                    fields["HOM_ALT_samples"] = \
-                        self.variant_samples_delim.join(hom_alt_names)
-
-                if not self.for_browser:
-                    return GeminiRow(fields, formatter=self.formatter)
-                else:
-                    return fields
             except Exception as e:
                 raise StopIteration
+            gts = None
+            gt_types = None
+            gt_phases = None
+            gt_depths = None
+            gt_ref_depths = None
+            gt_alt_depths = None
+            gt_quals = None
+
+            if self._query_needs_genotype_info():
+                gts = compression.unpack_genotype_blob(row['gts'])
+                gt_types = \
+                    compression.unpack_genotype_blob(row['gt_types'])
+                gt_phases = \
+                    compression.unpack_genotype_blob(row['gt_phases'])
+                gt_depths = \
+                    compression.unpack_genotype_blob(row['gt_depths'])
+                gt_ref_depths = \
+                    compression.unpack_genotype_blob(row['gt_ref_depths'])
+                gt_alt_depths = \
+                    compression.unpack_genotype_blob(row['gt_alt_depths'])
+                gt_quals = \
+                    compression.unpack_genotype_blob(row['gt_quals'])
+
+                # skip the record if it does not meet the user's genotype filter
+                if self.gt_filter and not eval(self.gt_filter):
+                    continue
+
+            fields = OrderedDict()
+
+            for idx, col in enumerate(self.report_cols):
+                if col == "*":
+                    continue
+                if not col.startswith("gt") and not col.startswith("GT"):
+                    fields[col] = row[col]
+                else:
+                    # reuse the original column anme user requested
+                    # e.g. replace gts[1085] with gts.NA20814
+                    if '[' in col:
+                        orig_col = self.gt_idx_to_name_map[col]
+                        fields[orig_col] = eval(col.strip())
+                    else:
+                        # asked for "gts" or "gt_types", e.g.
+                        if col == "gts":
+                            fields[col] = ','.join(gts)
+                        elif col == "gt_types":
+                            fields[col] = \
+                                ','.join(str(t) for t in gt_types)
+                        elif col == "gt_phases":
+                            fields[col] = \
+                                ','.join(str(p) for p in gt_phases)
+                        elif col == "gt_depths":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_depths)
+                        elif col == "gt_quals":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_quals)
+                        elif col == "gt_ref_depths":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_ref_depths)
+                        elif col == "gt_alt_depths":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_alt_depths)
+
+            if self.show_variant_samples:
+                gt_types = compression.unpack_genotype_blob(row['gt_types'])
+                variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
+                                   y == HOM_ALT]
+                variant_names = [self.idx_to_sample[x] for x in variant_samples]
+                fields["variant_samples"] = \
+                    self.variant_samples_delim.join(variant_names)
+
+                het_samples = [x for x, y in enumerate(gt_types) if y == HET]
+                het_names = [self.idx_to_sample[x] for x in het_samples]
+                fields["HET_samples"] = \
+                    self.variant_samples_delim.join(het_names)
+
+                hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
+                hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
+                fields["HOM_ALT_samples"] = \
+                    self.variant_samples_delim.join(hom_alt_names)
+
+            gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
+                                   gt_depths, gt_ref_depths, gt_alt_depths,
+                                   gt_quals, formatter=self.formatter)
+            if not self.formatter.predicate(gemini_row):
+                continue
+
+            if not self.for_browser:
+                return gemini_row
+            else:
+                return fields
 
     def _connect_to_database(self):
         """

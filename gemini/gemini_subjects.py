@@ -3,6 +3,7 @@ import sqlite3
 import os
 import sys
 import numpy as np
+from collections import defaultdict
 
 import gemini_utils as util
 from gemini_constants import *
@@ -414,3 +415,11 @@ def get_subjects(c):
         sample_name = subject.name
         samples_dict[sample_name] = subject
     return samples_dict
+
+def get_family_dict(c):
+    families = defaultdict(list)
+    subjects = get_subjects(c)
+    for subject in subjects.values():
+        families[subject.family_id].append(subject)
+
+    return families

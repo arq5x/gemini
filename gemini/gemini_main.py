@@ -231,6 +231,24 @@ def main():
                               action='store_true',
                               default=False,
                               help=('Keep variants only in affected samples.'))
+    parser_query.add_argument('--family-affected',
+                              dest='family_affected',
+                              action='store_true',
+                              default=False,
+                              help=('Keep variants only in all affected '
+                                    'in at least one family.'))
+    parser_query.add_argument('--affected-threshold',
+                              dest='affected_threshold',
+                              type=int,
+                              help=('Tag a family as having a variant if at '
+                                    'least this many family members have the '
+                                    'variant.'))
+    parser_query.add_argument('--min-families',
+                              dest='min_families',
+                              type=int,
+                              default=1,
+                              help=('Report a variant if at least this many families '
+                                    'have the variant.'))
 
     parser_query.set_defaults(func=gemini_query.query)
 
