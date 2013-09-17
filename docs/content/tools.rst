@@ -1032,6 +1032,7 @@ To report in JSON format, use the ``--json`` option. For example:
     $ gemini region --gene DHODH \
                     --columns "chrom, start, end, ref, alt, gene, impact" \
                     --filter "alt='G'"
+                    --json
                     my.db
 
     {"chrom": "chr16", "start": 72057281, "end": 72057282, "ref": "A", "alt": "G", "gene": "DHODH"}
