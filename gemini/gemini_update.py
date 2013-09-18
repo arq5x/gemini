@@ -1,6 +1,7 @@
 """Perform in-place updates of gemini and databases when installed into virtualenv.
 """
 import os
+import shutil
 import subprocess
 import sys
 
@@ -10,6 +11,7 @@ def release(parser, args):
     """Update gemini to the latest release, along with associated data files.
     """
     url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
+    repo = "https://github.com/arq5x/gemini.git"
     # update locally isolated python
     pip_bin = os.path.join(os.path.dirname(sys.executable), "pip")
     activate_bin = os.path.join(os.path.dirname(sys.executable), "activate")
@@ -33,7 +35,21 @@ def release(parser, args):
     # update tests
     test_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(pip_bin))),
                             "gemini")
-    if os.path.exists(test_dir) and os.path.exists(os.path.join(test_dir, "master-test.sh")):
-        os.chdir(test_dir)
-        subprocess.check_call(["git", "pull", "origin", "master"])
-        print "Run test suite with: cd %s && bash master-test.sh" % test_dir
+    _update_testbase(test_dir, repo)
+    print "Run test suite with: cd %s && bash master-test.sh" % test_dir
+
+def _update_testbase(repo_dir, repo):
+    cur_dir = os.getcwd()
+    needs_git = True
+    if os.path.exists(repo_dir):
+        os.chdir(repo_dir)
+        try:
+            subprocess.check_call(["git", "pull", "origin", "master"])
+            needs_git = False
+        except:
+            os.chdir(cur_dir)
+            shutil.rmtree(repo_dir)
+    if needs_git:
+        os.chdir(os.path.split(repo_dir)[0])
+        subprocess.check_call(["git", "clone", repo])
+    os.chdir(cur_dir)

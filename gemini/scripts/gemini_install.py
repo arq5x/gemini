@@ -158,12 +158,18 @@ def install_testbase(datadir, repo):
     """
     gemini_dir = os.path.join(datadir, "gemini")
     cur_dir = os.getcwd()
-    if not os.path.exists(gemini_dir):
+    needs_git = True
+    if os.path.exists(gemini_dir):
+        os.chdir(gemini_dir)
+        try:
+            subprocess.check_call(["git", "pull", "origin", "master"])
+            needs_git = False
+        except:
+            os.chdir(cur_dir)
+            shutil.rmtree(gemini_dir)
+    if needs_git:
         os.chdir(os.path.split(gemini_dir)[0])
         subprocess.check_call(["git", "clone", repo])
-    else:
-        os.chdir(gemini_dir)
-        subprocess.check_call(["git", "pull", "origin", "master"])
     os.chdir(cur_dir)
     return os.path.join(gemini_dir, "master-test.sh")
 
