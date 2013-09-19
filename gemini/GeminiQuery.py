@@ -251,6 +251,7 @@ class GeminiQuery(object):
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
         self.idx_to_sample = util.map_indicies_to_samples(self.c)
         self.formatter = self._set_formatter(out_format.lower())
+        self.predicates = [self.formatter.predicate]
 
 
     def _set_formatter(self, out_format):
@@ -267,9 +268,8 @@ class GeminiQuery(object):
     def _set_gemini_browser(self, for_browser):
         self.for_browser = for_browser
 
-    def run(self, query, gt_filter=None,
-                  show_variant_samples=False,
-                  variant_samples_delim=','):
+    def run(self, query, gt_filter=None, show_variant_samples=False,
+                  variant_samples_delim=',', predicates=None):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -281,6 +281,8 @@ class GeminiQuery(object):
         self.gt_filter = gt_filter
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
+        if predicates:
+            self.predicates += predicates
 
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
@@ -450,7 +452,8 @@ class GeminiQuery(object):
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
                                    gt_depths, gt_ref_depths, gt_alt_depths,
                                    gt_quals, formatter=self.formatter)
-            if not self.formatter.predicate(gemini_row):
+
+            if not all([predicate(gemini_row) for predicate in self.predicates]):
                 continue
 
             if not self.for_browser:
