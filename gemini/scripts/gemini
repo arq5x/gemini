@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -E
 
 import gemini.scripts
 import gemini.gemini_main
