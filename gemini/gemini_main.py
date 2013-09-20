@@ -226,11 +226,18 @@ def main():
                               dest='format',
                               default='default',
                               help='Format of output (JSON, TPED or default)')
-    parser_query.add_argument('--affected',
-                              dest='affected',
-                              action='store_true',
-                              default=False,
-                              help=('Keep variants only in affected samples.'))
+    parser_query.add_argument('--phenotype',
+                              dest='phenotype',
+                              default=None,
+                              help=('Keep variants which appear only in samples '
+                                    'with this phenotype '
+                                    '(HOM_REF/HOM_ALT/HET/UNKNOWN)'))
+    parser_query.add_argument('--exclude-phenotype',
+                              dest='exclude_phenotype',
+                              default=None,
+                              help=('Keep variants which do not appear in samples '
+                                    'with this phenotype '
+                                    '(HOM_REF/HOM_ALT/HET/UNKNOWN)'))
 
     parser_query.set_defaults(func=gemini_query.query)
 

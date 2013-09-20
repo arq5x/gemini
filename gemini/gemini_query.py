@@ -9,30 +9,45 @@ import GeminiQuery
 from gemini_subjects import get_subjects
 
 
-
-def variant_exclusive_to_affected(args):
+def variant_only_in_phenotype(args):
     """ returns a predicate that returns True if, for a variant,
-    the only samples that have the variant have an affected
-    phenotype
+    the only samples that have the variant have a given phenotype
     """
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     subjects = get_subjects(gq.c).values()
-    affected =  [y.name for y in filter(lambda x: x.affected, subjects)]
+    have_phenotype = [y.name for y in
+                      filter(lambda x: x.phenotype == args.phenotype, subjects)]
     def predicate(row):
-        return all(map(lambda x: x in affected, samples_with_variant(row)))
+        return all(map(lambda x: x in have_phenotype, samples_with_variant(row)))
     return predicate
+
+def variant_not_in_phenotype(args):
+    """ returns a predicate that returns True if, for a variant,
+    the only samples that have the variant don't have a given phenotype
+    """
+    gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
+    subjects = get_subjects(gq.c).values()
+    have_phenotype = [y.name for y in
+                      filter(lambda x: x.phenotype == args.phenotype, subjects)]
+    def predicate(row):
+        return not any(map(lambda x: x in have_phenotype, samples_with_variant(row)))
+    return predicate
+
 
 def get_samples_with_variant(row):
    return row['variant_samples'].split(',')
 
 def get_predicates(args):
     predicates = []
-    if args.affected:
-        predicates.append(variant_exclusive_to_affected)
+    if args.phenotype:
+        predicates.append(variant_only_in_phenotype)
+    if args.exclude_phenotype:
+        predicates.append(variant_not_in_phenotype)
+
     return predicates
 
 def needs_samples(args):
-    return args.show_variant_samples or args.affected or args.format == "tped"
+    return args.show_variant_samples or args.phenotype or args.format == "tped"
 
 def run_query(args):
 
