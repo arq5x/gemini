@@ -7,6 +7,13 @@ Release History
 1. Moved --tped and --json options into the more generic --format option.
 2. Fixed bug in handling missing phenotypes in the sample table.
 3. Fixed --tped output formatting error.
+4. API change: GeminiQuery.run takes an optional list of predicates that a row
+   must pass to be returned
+5. --phenotype option added to gemini query which restricts variants returned to only
+   variants in which all the individuals with the variant have the given phenotype.
+6. --exclude-phenotype option added to gemini query which restricts variants returned
+   to only variants in which none of the individuals with the variant have the
+   given phenotype.
 
 0.6.1 (2013-Sep-09)
 =======================================
@@ -25,7 +32,7 @@ Release History
 4. Enhancements to the ``annotate`` tool allowing one to create new database columns from values in custom BED+ annotation files.  Thanks to **Jessica Chong** and **Graham Ritchie**.
 5. Addition of the ``--column``, ``--filter``, and ``--json`` options to the ``region`` tool.
 6. Improvements to unit tests.
-7. Allow alternate sample deleimiters in the ``query`` tool via the ``--sample-delim`` option.  Thanks to **Jessica Chong**.
+7. Allow alternate sample delimiters in the ``query`` tool via the ``--sample-delim`` option.  Thanks to **Jessica Chong**.
 8. Provide a REST-like interface to the gemini browser.  In support of future visualization tools.
 9. Allow the ``query`` tool to report results in JSON format via the ``--json`` option.
 10. Various minor improvements and bug fixes.
