@@ -410,6 +410,7 @@ rm obs exp
 ########################################################################
 # 22. Test transposed ped (TPED) query format
 ########################################################################
+echo "    query.t22...\c"
 echo "10 10:1142207-1142208:C 0 1142207 C C C C C C C C
 10 10:48003991-48003992:C|T 0 48003991 T T C T C T C C
 10 10:52004314-52004315:C 0 52004314 0 0 0 0 C C C C
@@ -420,5 +421,26 @@ echo "10 10:1142207-1142208:C 0 1142207 C C C C C C C C
 10 10:135336655-135336656:A 0 135336655 0 0 A A 0 0 A A
 10 10:135369531-135369532:C|T 0 135369531 T T T C T C T T" > exp
 gemini query --format tped -q "select * from variants" test4.snpeff.ped.db > obs
+check obs exp
+rm obs exp
+
+########################################################################
+# 23. Test phenotype query
+########################################################################
+echo "    query.t23...\c"
+echo "C/T,C/C,C/C,C/C	1,0,0,0	M10475	M10475	
+G/G,G/G,G/G,G/A	0,0,0,1	M128215	M128215	" > exp
+gemini query --exclude-phenotype affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
+check obs exp
+rm obs exp
+
+########################################################################
+# 24. Test phenotype query
+########################################################################
+echo "    query.t24...\c"
+echo "./.,C/C,C/C,./.	2,3,3,2	M10478,M10500		M10478,M10500
+T/T,C/C,C/C,T/T	0,3,3,0	M10478,M10500		M10478,M10500
+T/T,T/C,T/C,T/T	0,1,1,0	M10478,M10500	M10478,M10500	" > exp
+gemini query --phenotype affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
 check obs exp
 rm obs exp
