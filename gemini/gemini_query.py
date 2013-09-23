@@ -7,6 +7,7 @@ from itertools import tee, ifilterfalse
 # gemini imports
 import GeminiQuery
 from gemini_subjects import get_subjects
+from gemini_constants import *
 
 
 def variant_only_in_phenotype(args):
@@ -16,7 +17,8 @@ def variant_only_in_phenotype(args):
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     subjects = get_subjects(gq.c).values()
     have_phenotype = [y.name for y in
-                      filter(lambda x: x.phenotype == args.phenotype, subjects)]
+                      filter(lambda x: x.phenotype == eval(args.phenotype),
+                             subjects)]
     def predicate(row):
         return all(map(lambda x: x in have_phenotype, samples_with_variant(row)))
     return predicate
@@ -28,26 +30,28 @@ def variant_not_in_phenotype(args):
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     subjects = get_subjects(gq.c).values()
     have_phenotype = [y.name for y in
-                      filter(lambda x: x.phenotype == args.phenotype, subjects)]
+                      filter(lambda x: x.phenotype == eval(args.exclude_phenotype),
+                             subjects)]
     def predicate(row):
         return not any(map(lambda x: x in have_phenotype, samples_with_variant(row)))
     return predicate
 
 
-def get_samples_with_variant(row):
+def samples_with_variant(row):
    return row['variant_samples'].split(',')
 
 def get_predicates(args):
     predicates = []
     if args.phenotype:
-        predicates.append(variant_only_in_phenotype)
+        predicates.append(variant_only_in_phenotype(args))
     if args.exclude_phenotype:
-        predicates.append(variant_not_in_phenotype)
+        predicates.append(variant_not_in_phenotype(args))
 
     return predicates
 
 def needs_samples(args):
-    return args.show_variant_samples or args.phenotype or args.format == "tped"
+    return (args.show_variant_samples or args.phenotype or args.format == "tped"
+            or args.exclude_phenotype)
 
 def run_query(args):
 
@@ -63,7 +67,16 @@ def run_query(args):
     for row in gq:
         print row
 
+def uppercase_arguments(args):
+    if args.phenotype:
+        args.phenotype = args.phenotype.upper()
+    if args.exclude_phenotype:
+        args.exclude_phenotype = args.exclude_phenotype.upper()
+    return args
+
 def query(parser, args):
+
+    uppercase_arguments(args)
 
     if (args.db is None):
         parser.print_help()
