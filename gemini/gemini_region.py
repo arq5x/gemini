@@ -85,11 +85,23 @@ def add_region_to_query(args):
     start = region[1]
     end = region[2]
 
-    where_clause = " WHERE chrom = " + "'" + chrom + "'" + \
+    where_clause = " chrom = " + "'" + chrom + "'" + \
         " AND ((start BETWEEN " + start + " AND " + end + ")" +\
         " OR (end BETWEEN " + start + " AND " + end + "))"
 
-    args.query += where_clause
+    args.query = _add_to_where_clause(args.query, where_clause)
+
+
+def _add_to_where_clause(query, where_clause):
+    where_index = query.lower().find("where")
+    prefix = query[0:where_index]
+    suffix = query[where_index + len("where"):]
+    if where_index == -1:
+        query += " WHERE " + where_clause
+    else:
+        query = "{0} WHERE ({1}) AND ({2})".format(prefix, suffix, where_clause)
+    return query
+
 
 
 def region(parser, args):
