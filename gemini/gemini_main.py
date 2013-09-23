@@ -230,14 +230,16 @@ def main():
                               dest='phenotype',
                               default=None,
                               help=('Keep variants which appear only in samples '
-                                    'with this phenotype '
-                                    '(HOM_REF/HOM_ALT/HET/UNKNOWN)'))
+                                    'with this phenotype.'),
+                              choices=['UNKNOWN', 'AFFECTED', 'UNAFFECTED',
+                                       "unknown", "affected", "unaffected"])
     parser_query.add_argument('--exclude-phenotype',
                               dest='exclude_phenotype',
                               default=None,
                               help=('Keep variants which do not appear in samples '
-                                    'with this phenotype '
-                                    '(HOM_REF/HOM_ALT/HET/UNKNOWN)'))
+                                    'with this phenotype '),
+                              choices=['UNKNOWN', 'AFFECTED', 'UNAFFECTED',
+                                       "unknown", "affected", "unaffected"])
 
     parser_query.set_defaults(func=gemini_query.query)
 
