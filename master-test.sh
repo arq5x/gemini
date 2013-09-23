@@ -73,6 +73,10 @@ bash test-pfam.sh
 # Test GERP scores
 bash test-gerp.sh
 
+bash test-auto-dom.sh
+
+bash test-auto-rec.sh
+bash test-de-novo.sh
 
 # cleanup
 rm ./*.db
