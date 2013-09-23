@@ -10,8 +10,12 @@ export -f check
 
 cd test
 
+
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
+
+# Test query tool
+bash test-query.sh
 
 # Test database dumping
 bash test-dump.sh
@@ -54,9 +58,6 @@ bash test-pathtool.sh
 
 # Test interaction tool
 bash test-interactions.sh
-
-# Test query tool
-bash test-query.sh
 
 # Test stats tool
 bash test-stats.sh

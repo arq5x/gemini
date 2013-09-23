@@ -8,6 +8,7 @@ from itertools import tee, ifilterfalse
 import GeminiQuery
 from gemini_subjects import get_subjects
 from gemini_constants import *
+from gemini_region import add_region_to_query
 
 
 def variant_only_in_phenotype(args):
@@ -53,10 +54,15 @@ def needs_samples(args):
     return (args.show_variant_samples or args.phenotype or args.format == "tped"
             or args.exclude_phenotype)
 
+def modify_query(args):
+    if args.region:
+        add_region_to_query(args)
+
+
 def run_query(args):
 
-
     predicates = get_predicates(args)
+    modify_query(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     gq.run(args.query, args.gt_filter, needs_samples(args),
            args.sample_delim, predicates)

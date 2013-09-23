@@ -69,6 +69,27 @@ def get_gene(args, gq):
 
     _report_results(args, query, gq)
 
+def add_region_to_query(args):
+    region_regex = re.compile("(\S+):(\d+)-(\d+)")
+
+
+    try:
+        region = region_regex.findall(args.region)[0]
+    except IndexError:
+        sys.exit("Malformed region (--reg) string")
+
+    if len(region) != 3:
+        sys.exit("Malformed region (--reg) string")
+
+    chrom = region[0]
+    start = region[1]
+    end = region[2]
+
+    where_clause = " WHERE chrom = " + "'" + chrom + "'" + \
+        " AND ((start BETWEEN " + start + " AND " + end + ")" +\
+        " OR (end BETWEEN " + start + " AND " + end + "))"
+
+    args.query += where_clause
 
 
 def region(parser, args):

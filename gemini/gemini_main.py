@@ -240,6 +240,11 @@ def main():
                                     'with this phenotype '),
                               choices=['UNKNOWN', 'AFFECTED', 'UNAFFECTED',
                                        "unknown", "affected", "unaffected"])
+    parser_query.add_argument('--region',
+                              dest='region',
+                              default=None,
+                              help=('Restrict query to this region, '
+                                    'e.g. chr1:10-20.'))
 
     parser_query.set_defaults(func=gemini_query.query)
 

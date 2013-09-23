@@ -251,6 +251,18 @@ variant_samples is a list of all of the samples with a variant, HET_samples is t
 of those heterozygous for the variant and HOM_ALT_samples is the subset homozygous for
 the variant.
 
+===================================================
+``--region`` Restrict a query to a specified region
+===================================================
+If you are only interested in a specific region, you can restrict queries to
+that region using the ``--region`` tool.
+
+.. code-block:: bash
+
+   $ gemini query --region chr1:30859-30900 -q "select chrom, start, end, ref, alt \
+                from variants"  test1.snpeff.db
+   chr1	30859	G	30860	C
+
 =============================================================
 ``--sample-delim`` Changing the sample list delimiter
 =============================================================

@@ -425,7 +425,7 @@ check obs exp
 rm obs exp
 
 ########################################################################
-# 23. Test phenotype query
+# 23. Test exclude-phenotype query
 ########################################################################
 echo "    query.t23...\c"
 echo "C/T,C/C,C/C,C/C	1,0,0,0	M10475	M10475	
@@ -442,5 +442,14 @@ echo "./.,C/C,C/C,./.	2,3,3,2	M10478,M10500		M10478,M10500
 T/T,C/C,C/C,T/T	0,3,3,0	M10478,M10500		M10478,M10500
 T/T,T/C,T/C,T/T	0,1,1,0	M10478,M10500	M10478,M10500	" > exp
 gemini query --phenotype affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
+check obs exp
+rm obs exp
+
+########################################################################
+# 25. Test region specific query
+########################################################################
+echo "    query.t25...\c"
+echo "chr1	30859	G	30860	C" > exp
+gemini query --region chr1:30859-30900 -q "select chrom, start, ref, end, alt from variants"  test1.snpeff.db > obs
 check obs exp
 rm obs exp
