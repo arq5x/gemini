@@ -260,3 +260,19 @@ gemini query -q "select num_mapq_zero from variants" test.snpeff.vcf.db \
 check obs exp
 rm obs exp
 
+
+##############################################################################
+#14. Test the ID column
+##############################################################################
+echo "    columns.t14...\c"
+echo "None
+rs1234
+None
+rs567,rs89
+None
+foo
+777" > exp
+gemini query -q "select vcf_id from variants" test.vcf_id.snpeff.vcf.db \
+ > obs
+check obs exp
+rm obs exp
