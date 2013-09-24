@@ -13,15 +13,16 @@ Core VCF fields
 ========================  ========      ==============================================================================================
 column_name               type          notes
 ========================  ========      ==============================================================================================
-chrom                     STRING        The chromosome on which the variant resides
-start                     INTEGER       The 0-based start position. 
-end                       INTEGER       The 1-based end position.
+chrom                     STRING        The chromosome on which the variant resides (from VCF ``CHROM`` field).
+start                     INTEGER       The 0-based start position. (from VCF ``POS`` field, but converted to 0-based coordinates)
+end                       INTEGER       The 1-based end position. (from VCF ``POS`` field, yet inferred based on the size of the variant)
+vcf_id                    STRING        The VCF ``ID`` field.
 variant_id                INTEGER       PRIMARY_KEY
 anno_id                   INTEGER       Variant transcript number for the most severely affected transcript
-ref                       STRING        Reference allele
-alt                       STRING        Alternate alele for the variant
-qual                      INTEGER       Quality score for the assertion made in ALT
-filter                    STRING        A string of filters passed/failed in variant calling
+ref                       STRING        Reference allele (from VCF ``REF`` field)
+alt                       STRING        Alternate alele for the variant (from VCF ``ALT`` field)
+qual                      INTEGER       Quality score for the assertion made in ALT (from VCF ``QUAL`` field)
+filter                    STRING        A string of filters passed/failed in variant calling (from VCF ``FILTER`` field)
 ========================  ========      ==============================================================================================
 
 
