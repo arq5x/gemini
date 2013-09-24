@@ -17,11 +17,11 @@ def variant_only_in_phenotype(args):
     """
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     subjects = get_subjects(gq.c).values()
-    have_phenotype = [y.name for y in
-                      filter(lambda x: x.phenotype == eval(args.phenotype),
-                             subjects)]
+    have_phenotype = set([y.name for y in
+                          filter(lambda x: x.phenotype == eval(args.phenotype),
+                                 subjects)])
     def predicate(row):
-        return all(map(lambda x: x in have_phenotype, samples_with_variant(row)))
+        return have_phenotype.issuperset(samples_with_variant(row))
     return predicate
 
 def variant_not_in_phenotype(args):
@@ -30,11 +30,11 @@ def variant_not_in_phenotype(args):
     """
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     subjects = get_subjects(gq.c).values()
-    have_phenotype = [y.name for y in
-                      filter(lambda x: x.phenotype == eval(args.exclude_phenotype),
-                             subjects)]
+    have_phenotype = set([y.name for y in
+                          filter(lambda x: x.phenotype == eval(args.exclude_phenotype),
+                                 subjects)])
     def predicate(row):
-        return not any(map(lambda x: x in have_phenotype, samples_with_variant(row)))
+        return have_phenotype.intersection(samples_with_variant(row))
     return predicate
 
 
