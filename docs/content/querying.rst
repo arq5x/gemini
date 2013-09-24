@@ -261,7 +261,7 @@ that region using the ``--region`` tool.
 
    $ gemini query --region chr1:30859-30900 -q "select chrom, start, end, ref, alt \
                 from variants"  test1.snpeff.db
-   chr1	30859	G	30860	C
+   chr1	30859	30860	G	C
 
 =============================================================
 ``--sample-delim`` Changing the sample list delimiter
