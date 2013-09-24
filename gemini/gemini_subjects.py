@@ -107,6 +107,10 @@ class Family(object):
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
         if not self.find_parents():
+            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
+                             "GEMINI is currently only able to identify candidates "
+                             "from two generational families.\n" 
+                             % self.family_id)
             return "False"
 
         # if either parent is affected, this family cannot satisfy
@@ -156,6 +160,11 @@ class Family(object):
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
         if not self.find_parents():
+            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
+                             "GEMINI is currently only able to identify candidates "
+                             "from two generational families.\n" 
+                             % self.family_id)
+
             return "False"
 
         mask = ""
@@ -266,6 +275,10 @@ class Family(object):
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
         if not self.find_parents():
+            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
+                 "GEMINI is currently only able to identify candidates "
+                 "from two generational families.\n" 
+                 % self.family_id)
             return "False"
 
         mask = "("
