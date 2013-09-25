@@ -211,6 +211,18 @@ def main():
                               default=False,
                               help=('Add a column of all sample names with a variant to each '
                                     'variant.'))
+    parser_query.add_argument('--family-wise',
+                              dest='family_wise',
+                              default=False,
+                              action='store_true',
+                              help=('Perform phenotype and exclude-phenotype on a family-wise '
+                                    'basis.'))
+    parser_query.add_argument('--min-families',
+                              dest='min_families',
+                              default=1,
+                              type=int,
+                              help=('Minimum number of families for a variant passing '
+                                    'a family-wise filter to be in.'))
     parser_query.add_argument('--sample-delim',
             dest='sample_delim',
             metavar='STRING',
@@ -231,15 +243,15 @@ def main():
                               default=None,
                               help=('Keep variants which appear only in samples '
                                     'with this phenotype.'),
-                              choices=['UNKNOWN', 'AFFECTED', 'UNAFFECTED',
-                                       "unknown", "affected", "unaffected"])
+                              choices=['MISSING', 'AFFECTED', 'UNAFFECTED',
+                                       "missing", "affected", "unaffected"])
     parser_query.add_argument('--exclude-phenotype',
                               dest='exclude_phenotype',
                               default=None,
                               help=('Keep variants which do not appear in samples '
                                     'with this phenotype '),
-                              choices=['UNKNOWN', 'AFFECTED', 'UNAFFECTED',
-                                       "unknown", "affected", "unaffected"])
+                              choices=['MISSING', 'AFFECTED', 'UNAFFECTED',
+                                       "missing", "affected", "unaffected"])
     parser_query.add_argument('--region',
                               dest='region',
                               default=None,

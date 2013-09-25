@@ -453,3 +453,27 @@ echo "chr1	30859	G	30860	C" > exp
 gemini query --region chr1:30859-30900 -q "select chrom, start, ref, end, alt from variants"  test1.snpeff.db > obs
 check obs exp
 rm obs exp
+
+########################################################################
+# 26. Test family-wise phenotype query
+########################################################################
+echo "    query.t26...\c"
+echo "T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
+C/T,C/T,T/T,C/C,C/C,C/T,C/T,C/T,C/T	1,1,3,0,0,1,1,1,1	1_dad,1_mom,1_kid,2_kid,3_dad,3_mom,3_kid	1_dad,1_mom,2_kid,3_dad,3_mom,3_kid	1_kid
+C/T,C/T,C/T,C/T,C/T,T/T,C/C,C/C,C/T	1,1,1,1,1,3,0,0,1	1_dad,1_mom,1_kid,2_dad,2_mom,2_kid,3_kid	1_dad,1_mom,1_kid,2_dad,2_mom,3_kid	2_kid
+G/G,G/G,G/A,G/G,G/G,G/A,G/A,G/A,G/A	0,0,1,0,0,1,1,1,1	1_kid,2_kid,3_dad,3_mom,3_kid	1_kid,2_kid,3_dad,3_mom,3_kid	
+T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid	" > exp
+gemini query  --min-families 2 --family-wise --phenotype affected -q "select gts, gt_types from variants" test.family.db > obs
+check obs exp
+rm obs exp
+
+########################################################################
+# 27. Test family-wise phenotype exclusion query
+########################################################################
+echo "    query.t27...\c"
+echo "T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
+T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid	
+T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C	0,0,0,0,0,0,0,0,1	3_kid	3_kid	" > exp
+gemini query  --exclude-phenotype unaffected -q "select gts, gt_types from variants" test.family.db > obs
+check obs exp
+rm obs exp
