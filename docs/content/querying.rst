@@ -263,6 +263,66 @@ that region using the ``--region`` tool.
                 from variants"  test1.snpeff.db
    chr1	30859	30860	G	C
 
+===================================================
+``--phenotype`` Restrict a query to variants only appearing in a phenotype
+===================================================
+The ``--phenotype`` option will only return a variant that matches a query
+if the variant is exclusive to subjects with the given phenotype. The
+``--exclude-phenotype`` option only returns a variant if it does not appear
+in any subjects with the given phenotype.
+
+So for example if you wanted to find a variant which only appeared in
+affected phenotypes:
+
+.. code-block:: bash
+
+   $ gemini query --phenotype affected -q "select gts, gt_types from variants" test.family.db
+   T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
+   T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
+   T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C	0,0,0,0,0,0,0,0,1	3_kid	3_kid
+
+
+===================================================
+``--family-wise`` Consider phenotype queries on a family-wise basis
+===================================================
+If you have family structure to your data, you can ask for variants which pass the
+phenotype queries on a family-wise basis. For example if you are interested in
+all of the variants that only appear in affected members of families, you
+can do that like this:
+
+.. code-block:: bash
+
+   $ gemini query --family-wise --phenotype affected -q "select gts, gt_types from variants" test.family.db
+   T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
+   C/T,C/T,T/T,C/C,C/C,C/T,C/T,C/T,C/T	1,1,3,0,0,1,1,1,1	1_dad,1_mom,1_kid,2_kid,3_dad,3_mom,3_kid	1_dad,1_mom,2_kid,3_dad,3_mom,3_kid	1_kid
+   C/T,C/T,C/T,C/T,C/T,T/T,C/C,C/C,C/T	1,1,1,1,1,3,0,0,1	1_dad,1_mom,1_kid,2_dad,2_mom,2_kid,3_kid	1_dad,1_mom,1_kid,2_dad,2_mom,3_kid	2_kid
+   G/G,G/G,G/A,G/G,G/G,G/A,G/A,G/A,G/A	0,0,1,0,0,1,1,1,1	1_kid,2_kid,3_dad,3_mom,3_kid	1_kid,2_kid,3_dad,3_mom,3_kid
+   T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
+   T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C	0,0,0,0,0,0,0,0,1	3_kid	3_kid
+   T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C,T/C	0,0,0,0,0,0,0,1,1	3_mom,3_kid	3_mom,3_kid
+
+
+Important note: this will ignore families that do not have at least a
+single member with a phenotype different than the one you are
+querying. The reason for this is if a family only has only one
+phenotype then every variant in the family will pass this filter, which is not
+usually what you want.
+
+You can also specify that a variant passes this filter in multiple families with
+the --min-families option. So if you want a variant that is only in affected members of
+at least two families:
+
+.. code-block:: bash
+
+   $ gemini query --min-families 2 --family-wise --phenotype affected -q "select gts, gt_types from variants" test.family.db
+   T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
+   C/T,C/T,T/T,C/C,C/C,C/T,C/T,C/T,C/T	1,1,3,0,0,1,1,1,1	1_dad,1_mom,1_kid,2_kid,3_dad,3_mom,3_kid	1_dad,1_mom,2_kid,3_dad,3_mom,3_kid	1_kid
+   C/T,C/T,C/T,C/T,C/T,T/T,C/C,C/C,C/T	1,1,1,1,1,3,0,0,1	1_dad,1_mom,1_kid,2_dad,2_mom,2_kid,3_kid	1_dad,1_mom,1_kid,2_dad,2_mom,3_kid	2_kid
+   G/G,G/G,G/A,G/G,G/G,G/A,G/A,G/A,G/A	0,0,1,0,0,1,1,1,1	1_kid,2_kid,3_dad,3_mom,3_kid	1_kid,2_kid,3_dad,3_mom,3_kid
+   T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
+
+These queries also work for the --exclude-family filter.
+
 =============================================================
 ``--sample-delim`` Changing the sample list delimiter
 =============================================================
