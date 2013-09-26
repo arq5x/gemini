@@ -288,6 +288,10 @@ class GeminiLoader(object):
             else:
                 filter = var.FILTER
 
+        vcf_id = None
+        if var.ID is not None and var.ID != ".":
+            vcf_id = var.ID
+
         # build up numpy arrays for the genotype information.
         # these arrays will be pickled-to-binary, compressed,
         # and loaded as SqlLite BLOB values (see compression.pack_blob)
@@ -331,7 +335,7 @@ class GeminiLoader(object):
         # 1 row per variant to VARIANTS table
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
-                   self.v_id, anno_id, var.REF, ','.join(var.ALT),
+                   vcf_id, self.v_id, anno_id, var.REF, ','.join(var.ALT),
                    var.QUAL, filter, var.var_type,
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), pack_blob(gt_depths),
