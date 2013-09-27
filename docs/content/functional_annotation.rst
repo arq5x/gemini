@@ -1,26 +1,36 @@
 #############################
 Annotation with snpEff or VEP
 #############################
-
+.. note::
+	
+	Version support: VEP versions 2.4 through 73 and core SnpEff
+	versions 3.0 through 3.3
+	
+.. note::
+ 	
+	Version support would be subsequently updated here, as we test along 
+	and add or edit changes available with the latest version of these tools.
 
 Stepwise installation and usage of VEP
 =======================================
 
-Download the latest version of Variant Effect Predictor "standalone Perl script"
-from the `Ensembl CVS server <http://useast.ensembl.org/info/docs/variation/vep/index.html>`_.
-For example:
+Download the Variant Effect Predictor "standalone perl script" from 
+`Ensembl <http://www.ensembl.org/info/docs/tools/vep/script/vep_download.html>`_. 
+You can choose a specific version of VEP to download here
+
+Example:
 
 .. code-block:: bash
+	
+	Download version 71
 
-    $ open http://useast.ensembl.org/info/docs/variation/vep/index.html
-    
-Untar the tarball into the current directory.
+Untar the tarball into the current directory
 
 .. code-block:: bash
     
     $ tar -zxvf variant_effect_predictor.tar.gz
 
-This will create the variant_effect_predictor directory. Now do the following:
+This will create the variant_effect_predictor directory. Now do the following for install:
 
 .. code-block:: bash
 
@@ -28,24 +38,39 @@ This will create the variant_effect_predictor directory. Now do the following:
     $ perl INSTALL.pl [options]
 
 
-By default this would install the bioperl-1.2.3, the cache files (in the .vep 
-sub-directory of the users home directory) and the latest version of the 
-Ensembl API (68) (in the ``variant_effect_predictor`` directory under a 
-sub-directory ``Bio``). This script is useful for those who do not have all the 
-modules in their system required by VEP, specifically `DBI` and `DBI::mysql`. 
-Use `this <http://useast.ensembl.org/info/docs/variation/vep/vep_script.html#download>`_ 
-link for alternate options of the installer script.
+By default this would install the API's, bioperl-1.2.3 and the cache files (in 
+the $HOME/.vep directory).
 
+Manual installation of VEP
+--------------------------
 
-Users (e.g mac users) who have a problem installing through this script 
-should go for a manual installation of the latest Ensembl API (68) and 
-bioperl-1.2.3 and follow all other installation instructions 
-`here. <http://useast.ensembl.org/info/docs/api/api_installation.html>`_
+For those (e.g mac users) who have a problem installing through this install script, try a 
+manual installation of the API's, BioPerl-1.2.3 and set all pre-requisites for running VEP 
+(``DBI`` and ``DBD::mysql`` modules required). The appropriate pre-build caches should be 
+downloaded for Human to the ``$HOME/.vep`` directory and then untar.
 
-The appropriate pre-build caches should be downloaded to the `.vep` directory 
-under home from `this <http://useast.ensembl.org/info/docs/variation/vep/vep_script.html#cache>`_ link.
+You may follow instructions at http://www.ensembl.org/info/docs/api/api_installation.html
+which provides alternate options for the API installation and additional tips for windows/mac 
+users. It also has information for setting up your environment to run VEP.
 
-To use the cache, the gzip and ``zcat`` utilities are required. VEP uses ``zcat`` 
+Example download of the cache files
+
+.. code-block:: bash
+
+	
+	$ wget ftp://ftp.ensembl.org/pub/release-73/variation/VEP/homo_sapiens_vep_73.tar.gz
+	
+You may change the release date in this example to get the appropriate cache files for your version
+of VEP that you have installed.
+
+Example
+
+.. code-block:: bash
+	
+	
+	$ wget ftp://ftp.ensembl.org/pub/release-71/variation/VEP/homo_sapiens_vep_71.tar.gz
+
+Cache requires the ``gzip`` and ``zcat`` utilities. VEP uses ``zcat`` 
 to decompress cached files. For systems where zcat may not be installed or may 
 not work, the following option needs to be added along with the ``--cache`` option:
 
@@ -53,7 +78,9 @@ not work, the following option needs to be added along with the ``--cache`` opti
 
     --compress "gunzip -c"
 
-You may run the script as:
+Running VEP
+-----------
+You may now run VEP as:
 
 .. code-block:: bash
 
@@ -68,7 +95,7 @@ VEP fields specified as below:
 .. code-block:: bash
 
     $ perl variant_effect_predictor.pl -i example.vcf \
-       --cache --compress "gunzip -c" \
+       --cache \
        --terms so \
        --sift b \
        --polyphen b \
@@ -77,9 +104,12 @@ VEP fields specified as below:
        -o output \
        --vcf \
        --fields Consequence,Codons,Amino_acids,Gene,HGNC,Feature,EXON,PolyPhen,SIFT
+		
+	N.B. For VEP version 73, replace "--hgnc" with "--symbol" & "HGNC" in --fields to "SYMBOL"
+		
     
-A documentation of the specified options for VEP may be found at 
-http://www.ensembl.org/info/docs/variation/vep/vep_script.html
+A documentation for the above specified options may be found at 
+http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
 
 
 Stepwise installation and usage of SnpEff
@@ -91,7 +121,9 @@ Stepwise installation and usage of SnpEff
     Basic Requirements: Java v1.6 or later; at least 2GB of memory
 
 
-Go to home directory and download the SnpEff version >=3.0. For example:
+Download the supported versions of SnpEff from http://snpeff.sourceforge.net/download.html 
+
+Example:
 
 .. code-block:: bash
 
@@ -122,14 +154,14 @@ Change to the ``snpEff`` directory and download the genome database.
 
 
 Unzip the downloaded genome database. This will create and place the genome 
-in the 'data' directory
+in the 'data' directory                                                                                  
 
 .. code-block:: bash
 
-    $ unzip snpEff_v3_2_GRCh37.66.zip
+    $ unzip snpEff_v3_0_GRCh37.66.zip
 
-
-To annotate a vcf using snpEff, use the following command:
+                                                                                            
+To annotate a vcf using snpEff, use the ``default`` options as below:
 
 .. note::
 
@@ -149,3 +181,4 @@ complete path needs to be specified as,  e.g.:
     $ java -Xmx4G -jar path/to/snpEff/snpEff.jar -c path/to/snpEff/snpEff.config GRCh37.66 path/to/example.vcf > example_snpeff.vcf
 
 
+                                                                                                                                                                                                  

@@ -18,7 +18,7 @@ class EffectDetails(object):
         self.anno_id = counter
         self.effect_severity = severity
         self.impact = fields[1] if fields[1] != '' else None
-        self.codon_change = fields[2] if fields[2] != '' else None
+        self.codon = fields[2] if fields[2] != '' else None
         self.aa_change = fields[3] if fields[3] != '' else None
 
         # snpEff >= v3.0 includes aa_length
@@ -43,6 +43,12 @@ class EffectDetails(object):
             if len(fields) > 8:
                 self.warnings = fields[8]
 
+        # Handling only codon change and not distance(snpEff v3.3)
+        if self.effect_name not in ("DOWNSTREAM", "UPSTREAM"):
+            self.codon_change = self.codon
+        else:
+            self.codon_change =  None
+        
         # rules for being exonic.
         # 1. must be protein_coding
         # 2. the impact must be in a list of impacts
