@@ -320,6 +320,7 @@ HIGH              - exon_deleted
                   - stop_gain
                   - stop_loss
                   - non_synonymous_start
+                  - transcript_codon_change
 MED               - non_syn_coding
                   - inframe_codon_gain
                   - inframe_codon_loss
