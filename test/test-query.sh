@@ -430,7 +430,8 @@ rm obs exp
 echo "    query.t23...\c"
 echo "C/T,C/C,C/C,C/C	1,0,0,0	M10475	M10475	
 G/G,G/G,G/G,G/A	0,0,0,1	M128215	M128215	" > exp
-gemini query --exclude-phenotype affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
+gemini query --sample-filter "phenotype!=2" --in only -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
+#gemini query --exclude-phenotype affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
 check obs exp
 rm obs exp
 
@@ -441,7 +442,8 @@ echo "    query.t24...\c"
 echo "./.,C/C,C/C,./.	2,3,3,2	M10478,M10500		M10478,M10500
 T/T,C/C,C/C,T/T	0,3,3,0	M10478,M10500		M10478,M10500
 T/T,T/C,T/C,T/T	0,1,1,0	M10478,M10500	M10478,M10500	" > exp
-gemini query --phenotype affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
+gemini query --sample-filter "phenotype=2" --in only all -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
+#gemini query -- affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
 check obs exp
 rm obs exp
 
@@ -455,7 +457,7 @@ check obs exp
 rm obs exp
 
 ########################################################################
-# 26. Test family-wise phenotype query
+# 26. Test family-wise query
 ########################################################################
 echo "    query.t26...\c"
 echo "T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
@@ -463,7 +465,7 @@ C/T,C/T,T/T,C/C,C/C,C/T,C/T,C/T,C/T	1,1,3,0,0,1,1,1,1	1_dad,1_mom,1_kid,2_kid,3_
 C/T,C/T,C/T,C/T,C/T,T/T,C/C,C/C,C/T	1,1,1,1,1,3,0,0,1	1_dad,1_mom,1_kid,2_dad,2_mom,2_kid,3_kid	1_dad,1_mom,1_kid,2_dad,2_mom,3_kid	2_kid
 G/G,G/G,G/A,G/G,G/G,G/A,G/A,G/A,G/A	0,0,1,0,0,1,1,1,1	1_kid,2_kid,3_dad,3_mom,3_kid	1_kid,2_kid,3_dad,3_mom,3_kid	
 T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid	" > exp
-gemini query  --min-families 2 --family-wise --phenotype affected -q "select gts, gt_types from variants" test.family.db > obs
+gemini query  --min-families 2 --family-wise --sample-filter "phenotype=2" --in all -q "select gts, gt_types from variants" test.family.db > obs
 check obs exp
 rm obs exp
 
@@ -472,8 +474,8 @@ rm obs exp
 ########################################################################
 echo "    query.t27...\c"
 echo "T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
-T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid	
+T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
 T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C	0,0,0,0,0,0,0,0,1	3_kid	3_kid	" > exp
-gemini query  --exclude-phenotype unaffected -q "select gts, gt_types from variants" test.family.db > obs
+gemini query  --in none --sample-filter "phenotype=1" -q "select gts, gt_types from variants" test.family.db > obs
 check obs exp
 rm obs exp
