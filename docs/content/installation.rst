@@ -227,13 +227,13 @@ Functional annotation tools
 ---------------------------
 `GEMINI` depends upon external tools to predict the functional consequence of variants in a VCF file.
 We currently support annotations produced by both `SnpEff <http://snpeff.sourceforge.net/>`_
-and `VEP <http://useast.ensembl.org/info/docs/variation/vep/index.html>`_.
+and `VEP <http://www.ensembl.org/info/docs/variation/vep/index.html>`_.
 Recommended instructions for annotating existing VCF files with these tools are available here.
 In addition, we have attempted to standardize the terms used to describe the functional consequence of a given variant,
 as each annotation tool uses different vocabulary.
 
 
-The variant consequence columns in the variant table are populated either by `snpEff` or `VEP` as defined by the user using the `-t` option while running pop load
+The variant consequence columns in the variant table are populated either by `snpEff` or `VEP` as defined by the user using the `-t` option while running gemini load
 (To populate these columns the input VCF file should have been annotated either by `snpEff` or `VEP`):
 
 .. code-block:: bash
@@ -278,6 +278,7 @@ frame_shift                                         FRAME_SHIFT                 
 start_loss                                          START_LOST                             null                                                      HIGH
 exon_deleted                                        EXON_DELETED                           null                                                      HIGH
 non_synonymous_start                                NON_SYNONYMOUS_START                   null                                                      HIGH
+transcript_codon_change                             null                                   initiator_codon_variant                                   HIGH
 non_syn_coding                                      NON_SYNONYMOUS_CODING                  missense_variant                                          MED
 inframe_codon_gain                                  CODON_INSERTION                        inframe_insertion                                         MED
 inframe_codon_loss                                  CODON_DELETION                         inframe_deletion                                          MED
@@ -312,7 +313,6 @@ synonymous_start                                    SYNONYMOUS_START            
 intron_conserved                                    INTRON_CONSERVED                       null                                                      LOW
 nc_transcript                                       null                                   nc_transcript_variant                                     LOW
 NMD_transcript                                      null                                   NMD_transcript_variant                                    LOW
-transcript_codon_change                             null                                   initiator_codon_variant                                   LOW
 incomplete_terminal_codon                           null                                   incomplete_terminal_codon_variant                         LOW
 nc_exon                                             null                                   non_coding_exon_variant                                   LOW
 transcript_ablation                                 null                                   transcript_ablation                                       LOW
