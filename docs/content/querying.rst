@@ -309,6 +309,16 @@ such that at least three families have to pass the filter:
    T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
 
 
+If the PED file you loaded has extra fields in it, those will also work with the
+``--sample-filter`` option. For example if you had a ``hair_color`` extended field,
+you could query on that as well as phenotype:
+
+.. code-block:: bash
+
+   $ gemini query  --in only all --sample-filter "phenotype=1 and hair_color='blue'" -q "select gts, gt_types from variants" extended_ped.db
+   G/G,G/G,G/G,G/A	0,0,0,1	M128215	M128215
+
+
 =============================================================
 ``--sample-delim`` Changing the sample list delimiter
 =============================================================

@@ -22,7 +22,6 @@ class Subject(object):
         self.maternal_id = row['maternal_id']
         self.sex = row['sex']
         self.phenotype = int(row['phenotype']) if row['phenotype'] else None
-        self.ethnicity = row['ethnicity']
 
         # 1 = unaffected
         # 2 = affected
@@ -109,7 +108,7 @@ class Family(object):
         if not self.find_parents():
             sys.stderr.write("WARNING: Unable to find parents for family (%s). "
                              "GEMINI is currently only able to identify candidates "
-                             "from two generational families.\n" 
+                             "from two generational families.\n"
                              % self.family_id)
             return "False"
 
@@ -162,7 +161,7 @@ class Family(object):
         if not self.find_parents():
             sys.stderr.write("WARNING: Unable to find parents for family (%s). "
                              "GEMINI is currently only able to identify candidates "
-                             "from two generational families.\n" 
+                             "from two generational families.\n"
                              % self.family_id)
 
             return "False"
@@ -277,7 +276,7 @@ class Family(object):
         if not self.find_parents():
             sys.stderr.write("WARNING: Unable to find parents for family (%s). "
                  "GEMINI is currently only able to identify candidates "
-                 "from two generational families.\n" 
+                 "from two generational families.\n"
                  % self.family_id)
             return "False"
 

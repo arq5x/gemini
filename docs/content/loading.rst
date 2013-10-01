@@ -7,22 +7,22 @@ Loading a VCF file into GEMINI
 Annotate with snpEff or VEP
 ==============================
 .. note::
-	
+
 	Annotate your VCF with SnpEff/VEP, prior to loading it into GEMINI, otherwise the
 	gene/transcript features would be set to None.
 
 
 GEMINI supports gene/transcript level annotations (we do not use pre-computed values here)
 from snpEff and VEP  and hence we suggest that you first annotate your VCF with either
-of these tools, prior to loading it into GEMINI. The related database columns would be 
-populated, which would otherwise be set to None if an unannotated VCF file is loaded 
+of these tools, prior to loading it into GEMINI. The related database columns would be
+populated, which would otherwise be set to None if an unannotated VCF file is loaded
 into GEMINI.
 
 
 .. note::
 	Choose the annotator as per your requirement!
-	Some gene/transcript annotations are available with only one tool (e.g. ``Polyphen/Sift`` with VEP 
-	and ``amino_acid length/biotype`` with SnpEff). As such these values would be set to None, if an 
+	Some gene/transcript annotations are available with only one tool (e.g. ``Polyphen/Sift`` with VEP
+	and ``amino_acid length/biotype`` with SnpEff). As such these values would be set to None, if an
 	alternate annotator is used during the load step.
 
 Instructions for installing and running these tools can be found in the following section:
@@ -139,8 +139,30 @@ and phenotypic information of the samples in the VCF file.
 
     $ gemini load -v my.vcf -p my.ped -t snpEff my.db
 
+The PED file format is documented here: PED_. An example PED file looks like this:
+
+    1 M10475    None None  1    1
+    1 M10478     M10475  M10500    2    2
+    1 M10500     None    None    2    2
+    1 M128215    M10475  M10500    1    1
+
+The columns are family_id, name, paternal_id, maternal_id, sex and phenotype.
+
+You can also provide a PED file with a heading starting with #, and include extra
+fields, like this:
+
+    #family_id name paternal_id maternal_id sex phenotype hair_color
+    1 M10475    None None  1    1 brown
+    1 M10478     M10475  M10500    2    2 brown
+    1 M10500     None    None    2    2 black
+    1 M128215    M10475  M10500    1    1 blue
+
+This will add the extra columns to the ``samples`` table and allow for you to
+use those extra columns during queries.
+
+
 =======================================
-Load GERP base pair conservation scores 
+Load GERP base pair conservation scores
 =======================================
 By default, GERP scores at base pair resolution are not computed owing to the roughly 2X
 increasing in loading time.  However, one can optionally ask GEMINI to compute these scores
@@ -155,3 +177,5 @@ by using the ``--load-gerp-bp`` option.
 Loading VCFs without genotypes.
 ===================================
 To do.
+
+.. _PED: http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped

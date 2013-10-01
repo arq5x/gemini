@@ -4,16 +4,17 @@ Release History
 
 0.6.2 (in development)
 =======================================
-1. Moved --tped and --json options into the more generic --format option.
+1. Moved `--tped` and `--json` options into the more generic `--format` option.
 2. Fixed bug in handling missing phenotypes in the sample table.
-3. Fixed --tped output formatting error.
+3. Fixed `--tped` output formatting error.
 4. API change: GeminiQuery.run takes an optional list of predicates that a row
    must pass to be returned
-5. --phenotype option added to gemini query which restricts variants returned to only
-   variants in which all the individuals with the variant have the given phenotype.
-6. --exclude-phenotype option added to gemini query which restricts variants returned
-   to only variants in which none of the individuals with the variant have the
-   given phenotype.
+5. `--sample-filter` option added to allow for restricting variants to samples that
+pass the given sample query.
+6. ethnicity removed as a default PED field
+7. PED file format extended to allow for extra columns to be added to the samples table
+under the column named in the header.
+
 
 0.6.1 (2013-Sep-09)
 =======================================
