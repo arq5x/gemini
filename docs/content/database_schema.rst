@@ -356,7 +356,6 @@ LOW               - synonymous_stop
                   - intron_conserved
                   - nc_transcript
                   - NMD_transcript
-                  - transcript_codon_change
                   - incomplete_terminal_codon
                   - nc_exon
                   - transcript_ablation
