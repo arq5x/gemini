@@ -215,7 +215,7 @@ def main():
                               dest='family_wise',
                               default=False,
                               action='store_true',
-                              help=('Perform phenotype and exclude-phenotype on a family-wise '
+                              help=('Perform the sample-filter on a family-wise '
                                     'basis.'))
     parser_query.add_argument('--min-kindreds',
                               dest='min_kindreds',
@@ -249,20 +249,6 @@ def main():
                               dest='format',
                               default='default',
                               help='Format of output (JSON, TPED or default)')
-    parser_query.add_argument('--phenotype',
-                              dest='phenotype',
-                              default=None,
-                              help=('Keep variants which appear only in samples '
-                                    'with this phenotype.'),
-                              choices=['MISSING', 'AFFECTED', 'UNAFFECTED',
-                                       "missing", "affected", "unaffected"])
-    parser_query.add_argument('--exclude-phenotype',
-                              dest='exclude_phenotype',
-                              default=None,
-                              help=('Keep variants which do not appear in samples '
-                                    'with this phenotype '),
-                              choices=['MISSING', 'AFFECTED', 'UNAFFECTED',
-                                       "missing", "affected", "unaffected"])
     parser_query.add_argument('--region',
                               dest='region',
                               default=None,
