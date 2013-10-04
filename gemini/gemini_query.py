@@ -99,7 +99,7 @@ def variant_not_in_subjects(subjects):
 
 
 def samples_with_variant(row):
-    return row['variant_samples'].split(',')
+    return row['variant_samples']
 
 def queries_variants(query):
     return "variants" in query.lower()
@@ -112,7 +112,8 @@ def get_predicates(args):
         predicates.append(all_samples_predicate(args))
     return predicates
 
-def needs_samples(args):
+
+def needs_genotypes(args):
     return args.show_variant_samples or args.family_wise or args.sample_filter
 
 def modify_query(args):
@@ -124,8 +125,8 @@ def run_query(args):
     predicates = get_predicates(args)
     modify_query(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
-    gq.run(args.query, args.gt_filter, needs_samples(args),
-           args.sample_delim, predicates)
+    gq.run(args.query, args.gt_filter, args.show_variant_samples,
+           args.sample_delim, predicates, needs_genotypes(args))
 
     if args.use_header and gq.header:
         print gq.header

@@ -55,11 +55,11 @@ def get_tstv_coding(c, args):
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
-    
+
     # get the number of transversions
     c.execute(tv_cmd)
     tv = c.fetchone()[0]
-    
+
     # report the transitions, transversions, and the ts/tv ratio
     print "ts" + '\t' + \
           "tv" + '\t' + "ts/tv"
@@ -85,11 +85,11 @@ def get_tstv_noncoding(c, args):
     # get the number of transitions
     c.execute(ts_cmd)
     ts = c.fetchone()[0]
-    
+
     # get the number of transversions
     c.execute(tv_cmd)
     tv = c.fetchone()[0]
-    
+
     # report the transitions, transversions, and the ts/tv ratio
     print "ts" + '\t' + \
           "tv" + '\t' + "ts/tv"
@@ -262,9 +262,9 @@ def summarize_query_by_sample(args):
     hom_alt_counts = Counter()
     print "\t".join(["sample", "total", "num_het", "num_hom_alt"])
     for row in gq:
-        total_counts.update(row["variant_samples"].split(","))
-        het_counts.update(row["HET_samples"].split(","))
-        hom_alt_counts.update(row["HOM_ALT_samples"].split(","))
+        total_counts.update(row["variant_samples"])
+        het_counts.update(row["HET_samples"])
+        hom_alt_counts.update(row["HOM_ALT_samples"])
     for key in total_counts.keys():
         count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
                      hom_alt_counts.get(key, 0)]
