@@ -50,7 +50,6 @@ def get_subjects(args):
     """
     return a dictionary of subjects, optionally using the
     subjects_query argument to filter them.
-
     """
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     query = "SELECT * FROM samples"
@@ -97,14 +96,17 @@ def variant_not_in_subjects(subjects):
         return subjects.intersection(samples_with_variant(row)) == set()
     return predicate
 
-
 def samples_with_variant(row):
     return row['variant_samples']
 
 def queries_variants(query):
     return "variants" in query.lower()
 
-def get_predicates(args):
+def get_row_predicates(args):
+    """
+    generate a list of predicates a row must pass in order to be
+    returned from a query
+    """
     predicates = []
     if args.family_wise:
         predicates.append(family_wise_predicate(args))
@@ -116,14 +118,13 @@ def get_predicates(args):
 def needs_genotypes(args):
     return args.show_variant_samples or args.family_wise or args.sample_filter
 
-def modify_query(args):
+def add_required_columns_to_query(args):
     if args.region:
         add_region_to_query(args)
 
 def run_query(args):
-
-    predicates = get_predicates(args)
-    modify_query(args)
+    predicates = get_row_predicates(args)
+    add_required_columns_to_query(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, needs_genotypes(args))
@@ -141,12 +142,6 @@ def query(parser, args):
 
     if os.path.exists(args.db):
         run_query(args)
-
-def partition(pred, iterable):
-    'Use a predicate to partition entries into false entries and true entries'
-    # partition(is_odd, range(10)) --> 0 2 4 6 8   and  1 3 5 7 9
-    t1, t2 = tee(iterable)
-    return ifilterfalse(pred, t1), filter(pred, t2)
 
 if __name__ == "__main__":
     main()
