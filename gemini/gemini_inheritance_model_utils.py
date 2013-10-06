@@ -4,6 +4,7 @@ import os
 import sys
 from collections import defaultdict
 import GeminiQuery
+import sql_utils
 from gemini_constants import *
 import gemini_subjects as subjects
 
@@ -102,6 +103,9 @@ class GeminiInheritanceModelFactory(object):
         # auto_rec and auto_dom candidates should be limited to
         # variants affecting genes.
         if self.model == "auto_rec" or self.model == "auto_dom":
+
+            # we require the "gene" column for the auto_* tools
+            self.query = sql_utils.ensure_columns(self.query, ['gene'])
             if self.args.filter:
                 self.query += " AND gene is not NULL ORDER BY gene"
             else:

@@ -58,6 +58,17 @@ class Family(object):
         self.mother = None
         self.family_id = self.subjects[0].family_id
         self.children = []
+        self.is_constructed = False
+
+    def has_an_affected(self):
+        """
+        Return True if the Family has at least one affected individual.
+        Otherwise return False. 
+        """
+        for subject in self.subjects:
+            if subject.affected:
+                return True
+        return False
 
     def find_parents(self):
         """
@@ -66,28 +77,35 @@ class Family(object):
 
         NOTE: assumes at most a 2 generation family.
         """
-        self.father_name = None
-        self.mother_name = None
-        for subject in self.subjects:
-            # if mom and dad are found, we know this is the child
-            if subject.maternal_id is not None and \
-               str(subject.maternal_id) != "-9" and \
-               str(subject.maternal_id) != "0" and \
-               str(subject.paternal_id) is not None and \
-               str(subject.paternal_id) != "-9" and \
-               subject.paternal_id != "0":
-                self.father_name = str(subject.paternal_id)
-                self.mother_name = str(subject.maternal_id)
-                self.children.append(subject)
 
-        # now track the actual sampleIds for the parents
-        for subject in self.subjects:
-            if self.father_name is not None and \
-               subject.name == self.father_name:
-                self.father = subject
-            elif self.mother_name is not None and \
-               subject.name == self.mother_name:
-                self.mother = subject
+        # build only if the family has not already been built.
+        if self.is_constructed is False:
+
+            self.father_name = None
+            self.mother_name = None
+            for subject in self.subjects:
+                # if mom and dad are found, we know this is the child
+                if subject.maternal_id is not None and \
+                   str(subject.maternal_id) != "-9" and \
+                   str(subject.maternal_id) != "0" and \
+                   str(subject.paternal_id) is not None and \
+                   str(subject.paternal_id) != "-9" and \
+                   subject.paternal_id != "0":
+                    self.father_name = str(subject.paternal_id)
+                    self.mother_name = str(subject.maternal_id)
+                    self.children.append(subject)
+
+            # now track the actual sampleIds for the parents
+            for subject in self.subjects:
+                if self.father_name is not None and \
+                   subject.name == self.father_name:
+                    self.father = subject
+                elif self.mother_name is not None and \
+                   subject.name == self.mother_name:
+                    self.mother = subject
+
+            # prevent reconstructing family every time function is called.
+            self.is_constructed = True
 
         if self.father is not None and self.mother is not None:
             return True
@@ -104,43 +122,67 @@ class Family(object):
           gt_types[11] == HOM_ALT)'  # affected child
         """
 
-        # identify which samples are the parents in the family.
-        # Fail if both parents are not found
-        if not self.find_parents():
-            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
-                             "GEMINI is currently only able to identify candidates "
-                             "from two generational families.\n" 
+        parents_found = self.find_parents()
+        affected_found = self.has_an_affected()
+
+        if not parents_found and not affected_found:
+            sys.stderr.write("WARNING: Unable to identify at least one "
+                             "affected individual for family (%s). "
+                             "Consequently, GEMINI will not screen for "
+                             "variants in this family.\n" 
+                 % self.family_id)
+            return "False"
+
+        elif not parents_found and affected_found:
+            sys.stderr.write("WARNING: Unable to identify parents for family (%s). "
+                             "Consequently, GEMINI will solely place genotype "
+                             "requirements on subjects based on their phenotype.\n" 
                              % self.family_id)
-            return "False"
 
-        # if either parent is affected, this family cannot satisfy
-        # a recessive model, as the parents should be carriers.
-        if self.father.affected == True or self.mother.affected == True:
-            return "False"
+            mask = "("
+            for i, subject in enumerate(self.subjects):
+                if subject.affected:
+                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + \
+                        str(HOM_ALT)
+                else:
+                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] != " + \
+                        str(HOM_ALT)
 
-        # []---()
-        #    |
-        #   (*)
-        mask = "("
-        mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-            str(HET)
-        mask += " and "
-        mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-            str(HET)
-        mask += " and "
-        for i, child in enumerate(self.children):
-            if child.affected:
-                mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                    str(HOM_ALT)
-            else:
-                mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
-                    str(HOM_ALT)
+                if i < (len(self.subjects) - 1):
+                    mask += " and "
+            mask += ")"
+            
+            return mask
 
-            if i < (len(self.children) - 1):
-                mask += " and "
+        elif parents_found:
+            # if either parent is affected, this family cannot satisfy
+            # a recessive model, as the parents should be carriers.
+            if self.father.affected == True or self.mother.affected == True:
+                return "False"
 
-        mask += ")"
-        return mask
+            # []---()
+            #    |
+            #   (*)
+            mask = "("
+            mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
+                str(HET)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
+                str(HET)
+            mask += " and "
+            for i, child in enumerate(self.children):
+                if child.affected:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                        str(HOM_ALT)
+                else:
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
+                        str(HOM_ALT)
+
+                if i < (len(self.children) - 1):
+                    mask += " and "
+
+            mask += ")"
+            return mask
 
     def get_auto_dominant_filter(self):
         """
@@ -157,104 +199,127 @@ class Family(object):
         only one of the parents is heterozygous
         """
 
-        # identify which samples are the parents in the family.
-        # Fail if both parents are not found
-        if not self.find_parents():
-            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
-                             "GEMINI is currently only able to identify candidates "
-                             "from two generational families.\n" 
+        parents_found = self.find_parents()
+        affected_found = self.has_an_affected()
+
+        if not parents_found and not affected_found:
+            sys.stderr.write("WARNING: Unable to identify at least one "
+                             "affected individual for family (%s). "
+                             "Consequently, GEMINI will not screen for "
+                             "variants in this family.\n" 
+                 % self.family_id)
+            return "False"
+
+        elif not parents_found and affected_found:
+            sys.stderr.write("WARNING: Unable to identify parents for family (%s). "
+                             "Consequently, GEMINI will solely place genotype "
+                             "requirements on subjects based on their phenotype.\n" 
                              % self.family_id)
 
-            return "False"
-
-        mask = ""
-        if self.father.affected is True and self.mother.affected is True:
-            # doesn't meet an auto. dominant model if both parents are affected
-            # [*]---(*)
-            #     |
-            #    (*)
-            return "False"
-        elif ((self.father.affected is False and self.mother.affected is False)
-             or
-             (self.father.affected is None and self.mother.affected is None)):
-            # if neither parents are affected, or the affection status is
-            # unknown for both, we can just screen for variants where one and
-            # only one of the parents are hets and and the child is also a het
-            # []---()
-            #    |
-            #   (*)
-            mask = "((bool("
-            mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                str(HET)
-            mask += ") != "
-            mask += 'bool(gt_types[' + \
-                    str(self.mother.sample_id - 1) + "] == " + \
-                    str(HET)
-            mask += ")) and "
-            for i, child in enumerate(self.children):
-                if child.affected:
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+            mask = "("
+            for i, subject in enumerate(self.subjects):
+                if subject.affected:
+                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + \
                         str(HET)
                 else:
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + \
                         str(HOM_REF)
 
-                if i < (len(self.children) - 1):
+                if i < (len(self.subjects) - 1):
                     mask += " and "
             mask += ")"
+            
             return mask
-        elif (self.father.affected is True and
-              self.mother.affected is not True):
-            # if only Dad is known to be affected, we must enforce
-            # that only the affected child and Dad have the
-            # same heterozygous genotype.
-            # [*]---()
-            #     |
-            #    (*)
-            mask = "(("
-            mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
-                str(HET)
-            mask += " and "
-            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] != " + \
-                str(HET)
-            mask += ") and "
-            for i, child in enumerate(self.children):
-                if child.affected:
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                          str(HET)
-                else:
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                          str(HOM_REF)
-                if i < (len(self.children) - 1):
-                    mask += " and "
-            mask += ")"
-            return mask
-        elif (self.father.affected is not True
-              and self.mother.affected is True):
-            # if only Mom is known to be affected, we must enforce
-            # that only the affected child and Mom have the
-            # same heterozygous genotype.
-            # []---(*)
-            #    |
-            #   (*)
-            mask = "(("
-            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
-                str(HET)
-            mask += " and "
-            mask += 'gt_types[' + str(self.father.sample_id - 1) + "] != " + \
-                str(HET)
-            mask += ") and "
-            for i, child in enumerate(self.children):
-                if child.affected:
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                          str(HET)
-                else:
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                          str(HOM_REF)
-                if i < (len(self.children) - 1):
-                    mask += " and "
-            mask += ")"
-            return mask
+
+        elif parents_found:
+            mask = ""
+            if self.father.affected is True and self.mother.affected is True:
+                # doesn't meet an auto. dominant model if both parents are affected
+                # [*]---(*)
+                #     |
+                #    (*)
+                return "False"
+            elif ((self.father.affected is False and self.mother.affected is False)
+                 or
+                 (self.father.affected is None and self.mother.affected is None)):
+                # if neither parents are affected, or the affection status is
+                # unknown for both, we can just screen for variants where one and
+                # only one of the parents are hets and and the child is also a het
+                # []---()
+                #    |
+                #   (*)
+                mask = "((bool("
+                mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
+                    str(HET)
+                mask += ") != "
+                mask += 'bool(gt_types[' + \
+                        str(self.mother.sample_id - 1) + "] == " + \
+                        str(HET)
+                mask += ")) and "
+                for i, child in enumerate(self.children):
+                    if child.affected:
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                            str(HET)
+                    else:
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                            str(HOM_REF)
+
+                    if i < (len(self.children) - 1):
+                        mask += " and "
+                mask += ")"
+                return mask
+            elif (self.father.affected is True and
+                  self.mother.affected is not True):
+                # if only Dad is known to be affected, we must enforce
+                # that only the affected child and Dad have the
+                # same heterozygous genotype.
+                # [*]---()
+                #     |
+                #    (*)
+                mask = "(("
+                mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
+                    str(HET)
+                mask += " and "
+                mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] != " + \
+                    str(HET)
+                mask += ") and "
+                for i, child in enumerate(self.children):
+                    if child.affected:
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                              str(HET)
+                    else:
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                              str(HOM_REF)
+                    if i < (len(self.children) - 1):
+                        mask += " and "
+                mask += ")"
+                return mask
+            elif (self.father.affected is not True
+                  and self.mother.affected is True):
+                # if only Mom is known to be affected, we must enforce
+                # that only the affected child and Mom have the
+                # same heterozygous genotype.
+                # []---(*)
+                #    |
+                #   (*)
+                mask = "(("
+                mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
+                    str(HET)
+                mask += " and "
+                mask += 'gt_types[' + str(self.father.sample_id - 1) + "] != " + \
+                    str(HET)
+                mask += ") and "
+                for i, child in enumerate(self.children):
+                    if child.affected:
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                              str(HET)
+                    else:
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                              str(HOM_REF)
+                    if i < (len(self.children) - 1):
+                        mask += " and "
+                mask += ")"
+                return mask
 
 
 
@@ -323,10 +388,15 @@ class Family(object):
         and the children.
         """
         columns = []
-        columns.append('gts[' + str(self.father.sample_id - 1) + ']')
-        columns.append('gts[' + str(self.mother.sample_id - 1) + ']')
-        for child in self.children:
-            columns.append('gts[' + str(child.sample_id - 1) + ']')
+
+        if not self.find_parents():
+            for subject in self.subjects:
+                columns.append('gts[' + str(subject.sample_id - 1) + ']')
+        else:
+            columns.append('gts[' + str(self.father.sample_id - 1) + ']')
+            columns.append('gts[' + str(self.mother.sample_id - 1) + ']')
+            for child in self.children:
+                columns.append('gts[' + str(child.sample_id - 1) + ']')
 
         return columns
 
@@ -336,10 +406,14 @@ class Family(object):
         and the children.
         """
         columns = []
-        columns.append('gt_depths[' + str(self.father.sample_id - 1) + ']')
-        columns.append('gt_depths[' + str(self.mother.sample_id - 1) + ']')
-        for child in self.children:
-            columns.append('gt_depths[' + str(child.sample_id - 1) + ']')
+        if not self.find_parents():
+            for subject in self.subjects:
+                columns.append('gt_depths[' + str(subject.sample_id - 1) + ']')
+        else:
+            columns.append('gt_depths[' + str(self.father.sample_id - 1) + ']')
+            columns.append('gt_depths[' + str(self.mother.sample_id - 1) + ']')
+            for child in self.children:
+                columns.append('gt_depths[' + str(child.sample_id - 1) + ']')
 
         return columns
 
@@ -347,32 +421,44 @@ class Family(object):
         """
         Return header genotype labels for the parents and the children.
         """
-        subjects = []
+        labels = []
 
-        if self.father.affected is True:
-            subjects.append(self.father.name + "(father; affected)")
-        elif self.father.affected is False:
-            subjects.append(self.father.name + "(father; unaffected)")
-        elif self.father.affected is None:
-            subjects.append(self.father.name + "(father; unknown)")
+        # these are just anonymous affected and unaffected i
+        # individuals in the same family
+        if not self.find_parents():
+            for subject in self.subjects:
+                if subject.affected is True:
+                    labels.append(subject.name + "(affected)")
+                elif subject.affected is False:
+                    labels.append(subject.name + "(unaffected)")
+                elif subject.affected is None:
+                    labels.append(subject.name + "(unknown)")
+        else:
 
-        if self.mother.affected is True:
-            subjects.append(self.mother.name + "(mother; affected)")
-        elif self.mother.affected is False:
-            subjects.append(self.mother.name + "(mother; unaffected)")
-        elif self.mother.affected is None:
-            subjects.append(self.mother.name + "(mother; unknown)")
+            if self.father.affected is True:
+                labels.append(self.father.name + "(father; affected)")
+            elif self.father.affected is False:
+                labels.append(self.father.name + "(father; unaffected)")
+            elif self.father.affected is None:
+                labels.append(self.father.name + "(father; unknown)")
 
-        # handle the childrem
-        for child in self.children:
-            if child.affected is True:
-                subjects.append(child.name + "(child; affected)")
-            elif child.affected is False:
-                subjects.append(child.name + "(child; unaffected)")
-            elif child.affected is None:
-                subjects.append(child.name + "(child; unknown)")
+            if self.mother.affected is True:
+                labels.append(self.mother.name + "(mother; affected)")
+            elif self.mother.affected is False:
+                labels.append(self.mother.name + "(mother; unaffected)")
+            elif self.mother.affected is None:
+                labels.append(self.mother.name + "(mother; unknown)")
 
-        return subjects
+            # handle the childrem
+            for child in self.children:
+                if child.affected is True:
+                    labels.append(child.name + "(child; affected)")
+                elif child.affected is False:
+                    labels.append(child.name + "(child; unaffected)")
+                elif child.affected is None:
+                    labels.append(child.name + "(child; unknown)")
+
+        return labels
 
     def get_subject_depth_labels(self):
         """
