@@ -127,7 +127,7 @@ Population information
 ........................
 ========================  ========      ==============================================================================================
 ========================  ========      ==============================================================================================
-in_dbsnp                  BOOL          | Is this variant found in dbSnp (build 135)?
+in_dbsnp                  BOOL          | Is this variant found in dbSnp (build 137)?
                                         | 0 : Absence of the variant in dbsnp
                                         | 1 : Presence of the variant in dbsnp
 rs_ids                    STRING        | A comma-separated list of rs ids for variants present in dbsnp
@@ -321,6 +321,7 @@ HIGH              - exon_deleted
                   - stop_gain
                   - stop_loss
                   - non_synonymous_start
+                  - transcript_codon_change
 MED               - non_syn_coding
                   - inframe_codon_gain
                   - inframe_codon_loss

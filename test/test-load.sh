@@ -45,3 +45,17 @@ gemini query -q "select chrom, start, ref, alt, gene from variants limit 10" \
 	1000G.snippet.snpEff.db > obs
 check obs exp
 rm obs exp
+
+###########################################################################################
+#3. Test loading an extended ped file
+###########################################################################################
+gemini load -p test_extended_ped.ped -v test4.vep.snpeff.vcf -t snpEff extended_ped_test.db
+echo "    load.t3...\c"
+echo "sample_id	family_id	name	paternal_id	maternal_id	sex	phenotype	ethnicity	hair_color
+1	1	M10475	None	None	1	1	None	brown
+2	1	M10478	M10475	M10500	2	2	None	brown
+3	1	M10500	None	None	2	2	None	purple
+4	1	M128215	M10475	M10500	1	1	None	blue" > exp
+gemini query --header -q "select * from samples" extended_ped_test.db > obs
+check obs exp
+rm obs exp

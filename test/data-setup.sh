@@ -25,3 +25,5 @@ gemini load -v test.auto_rec.no_parents.5.vcf -t snpEff -p test.auto_rec.no_pare
 gemini load -v test.de_novo.vcf -t snpEff -p test.de_novo.ped test.de_novo.db
 gemini load -p test4.snpeff.ped -v test4.vep.snpeff.vcf -t snpEff test4.snpeff.ped.db
 gemini load -v test.vcf_id.snpeff.vcf -t snpEff test.vcf_id.snpeff.vcf.db
+gemini load -p test.de_novo.ped -v test.family.vcf -t snpEff test.family.db
+gemini load -p test_extended_ped.ped -v test4.vep.snpeff.vcf -t snpEff extended_ped.db

@@ -215,10 +215,10 @@ def main():
                               dest='family_wise',
                               default=False,
                               action='store_true',
-                              help=('Perform phenotype and exclude-phenotype on a family-wise '
+                              help=('Perform the sample-filter on a family-wise '
                                     'basis.'))
-    parser_query.add_argument('--min-families',
-                              dest='min_families',
+    parser_query.add_argument('--min-kindreds',
+                              dest='min_kindreds',
                               default=1,
                               type=int,
                               help=('Minimum number of families for a variant passing '
@@ -234,24 +234,21 @@ def main():
             action='store_true',
             help='Add a header of column names to the output.',
             default=False)
+    parser_query.add_argument('--sample-filter',
+                              dest='sample_filter',
+                              help='SQL filter to use to filter the sample table',
+                              default=None)
+    parser_query.add_argument('--in',
+                              dest='in_subject',
+                              nargs='*',
+                              help=('A variant must be in either all, none or any '
+                                    'samples passing the --sample-query filter.'),
+                              choices=['all', 'none', 'any', 'only'],
+                              default=['any'])
     parser_query.add_argument('--format',
                               dest='format',
                               default='default',
                               help='Format of output (JSON, TPED or default)')
-    parser_query.add_argument('--phenotype',
-                              dest='phenotype',
-                              default=None,
-                              help=('Keep variants which appear only in samples '
-                                    'with this phenotype.'),
-                              choices=['MISSING', 'AFFECTED', 'UNAFFECTED',
-                                       "missing", "affected", "unaffected"])
-    parser_query.add_argument('--exclude-phenotype',
-                              dest='exclude_phenotype',
-                              default=None,
-                              help=('Keep variants which do not appear in samples '
-                                    'with this phenotype '),
-                              choices=['MISSING', 'AFFECTED', 'UNAFFECTED',
-                                       "missing", "affected", "unaffected"])
     parser_query.add_argument('--region',
                               dest='region',
                               default=None,

@@ -51,8 +51,8 @@ def get_calpha(args):
     variants_in_gene, variants = _calculate_counts(ns, samples)
     header = ["gene", "T", "c", "Z", "p_value"]
     print "\t".join(header)
-    
-    for gene in variants_in_gene:    
+
+    for gene in variants_in_gene:
         vig = variants_in_gene[gene]
 
         # m = the number of variants observed for this gene
@@ -61,18 +61,18 @@ def get_calpha(args):
         # m_n is the number of variants with n copies (i.e., samples with the variant)
         m_n = Counter([len(x) for x in vig.values()])
 
-        # n_i is a list reflecting the total number of samples 
+        # n_i is a list reflecting the total number of samples
         # having each variant
         n_i = [len(x) for x in vig.values()]
 
-        # y_i is a list reflecting the total number of __cases__ 
+        # y_i is a list reflecting the total number of __cases__
         # having each variant
         y_i = [len(filter(lambda a: a in case, x)) for x in vig.values()]
 
-        # "The C-alpha test statistic T contrasts the variance of each observed 
+        # "The C-alpha test statistic T contrasts the variance of each observed
         # count with the expected variance, assuming the binomial distribution."
         # In other words, given that we have n total samples and p_0 * n of them
-        # are cases, we _expect_ the variant copies to be distributed among the 
+        # are cases, we _expect_ the variant copies to be distributed among the
         # samples following a binomal distribution.  The T statistic contrasts
         # the observed count distributions with the expected:
         #
@@ -82,7 +82,7 @@ def get_calpha(args):
 
         # Calculate the variance of T in order to normalize it
         c = _calculate_c(m_n, p_0)
-        
+
         # The final test statistic, Z, id just the original test statistic divided
         # by its standard deviation. "We reject the null when Z is larger than expected
         # using a one-tailed standard normal distribution for reference.
@@ -172,7 +172,7 @@ def _calculate_counts(gq, samples):
     variants_in_gene = defaultdict(defaultdict)
     for row in gq:
         gene_name = row['gene']
-        samples_with_variant = [x for x in row["variant_samples"].split(",") if
+        samples_with_variant = [x for x in row["variant_samples"] if
                                 x in samples]
         if not gene_name or not samples_with_variant:
             continue
@@ -192,10 +192,10 @@ def _summarize_by_gene_and_sample(args, query):
         gene_name = row['gene']
         if not gene_name:
             continue
-        new_counts = Counter(row["HET_samples"].split(","))
+        new_counts = Counter(row["HET_samples"])
         # Counter can't do scalar multiplication
-        new_counts = new_counts + Counter(row["HOM_ALT_samples"].split(","))
-        new_counts = new_counts + Counter(row["HOM_ALT_samples"].split(","))
+        new_counts = new_counts + Counter(row["HOM_ALT_samples"])
+        new_counts = new_counts + Counter(row["HOM_ALT_samples"])
 
         del new_counts['']
         burden[gene_name] += new_counts

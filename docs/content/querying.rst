@@ -227,7 +227,7 @@ Eh, I changed my mind, let's restrict the above to those variants where sample
                        test.snpEff.vcf.db
 
 	 chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
-	 chr1	69510	69511	A	G	OR4F5	./.	./.	A/G	A/G
+
 
 =============================================================
 ``--show-samples`` Finding out which samples have a variant
@@ -264,64 +264,60 @@ that region using the ``--region`` tool.
    chr1	30859	30860	G	C
 
 ===================================================
-``--phenotype`` Restrict a query to variants only appearing in a phenotype
+``--sample-filter`` Restrict a query to specified samples
 ===================================================
-The ``--phenotype`` option will only return a variant that matches a query
-if the variant is exclusive to subjects with the given phenotype. The
-``--exclude-phenotype`` option only returns a variant if it does not appear
-in any subjects with the given phenotype.
-
-So for example if you wanted to find a variant which only appeared in
-affected phenotypes:
+The ``--sample-filter`` option allows you to select samples that a variant
+must be in by doing a SQL query on the samples table. For example if you
+wanted to show the set of variants that appear in all samples with
+a phenotype status of 2, you could do that query with:
 
 .. code-block:: bash
 
-   $ gemini query --phenotype affected -q "select gts, gt_types from variants" test.family.db
+   $ gemini query --sample-filter "phenotype=2" -q "select gts, gt_types from variants" test.family.db
    T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
    T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
    T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C	0,0,0,0,0,0,0,0,1	3_kid	3_kid
 
+By default --sample-filter will show the variant if at least one sample contains the
+variant. You can change this behavior by using the ``--in`` option along with
+``--sample-filter``. ``--in all`` will return a variant if all samples matching
+the query have the variant. ``in none`` will return a variant if the variant
+does not appear in any of the matching samples. ``--in only`` will return a variant
+if the variant is only in the matching samples and not in any of the non-matching
+samples. ``--in only all`` will show all of the variant which are in all of the
+matching samples and not in any of the non-matching samples.
 
-===================================================
-``--family-wise`` Consider phenotype queries on a family-wise basis
-===================================================
-If you have family structure to your data, you can ask for variants which pass the
-phenotype queries on a family-wise basis. For example if you are interested in
-all of the variants that only appear in affected members of families, you
-can do that like this:
+The ``--family-wise`` flag applies the ``--sample-filter`` and ``--in`` behavior
+on a family-wise basis. For example to show all variants that are only in samples
+with a phenotype status of 2 in at least one family:
 
 .. code-block:: bash
 
-   $ gemini query --family-wise --phenotype affected -q "select gts, gt_types from variants" test.family.db
+   $ gemini query --family-wise --in only all --sample-filter "phenotype=2" -q "select gts, gt_types from variants" test.family.db
    T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
-   C/T,C/T,T/T,C/C,C/C,C/T,C/T,C/T,C/T	1,1,3,0,0,1,1,1,1	1_dad,1_mom,1_kid,2_kid,3_dad,3_mom,3_kid	1_dad,1_mom,2_kid,3_dad,3_mom,3_kid	1_kid
-   C/T,C/T,C/T,C/T,C/T,T/T,C/C,C/C,C/T	1,1,1,1,1,3,0,0,1	1_dad,1_mom,1_kid,2_dad,2_mom,2_kid,3_kid	1_dad,1_mom,1_kid,2_dad,2_mom,3_kid	2_kid
-   G/G,G/G,G/A,G/G,G/G,G/A,G/A,G/A,G/A	0,0,1,0,0,1,1,1,1	1_kid,2_kid,3_dad,3_mom,3_kid	1_kid,2_kid,3_dad,3_mom,3_kid
    T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
    T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C	0,0,0,0,0,0,0,0,1	3_kid	3_kid
-   T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/C,T/C	0,0,0,0,0,0,0,1,1	3_mom,3_kid	3_mom,3_kid
 
-
-Important note: this will ignore families that do not have at least a
-single member with a phenotype different than the one you are
-querying. The reason for this is if a family only has only one
-phenotype then every variant in the family will pass this filter, which is not
-usually what you want.
 
 You can also specify that a variant passes this filter in multiple families with
-the --min-families option. So if you want a variant that is only in affected members of
-at least two families:
+the ``--min-kindreds`` option. So if you want to do the same query above, but restrict it
+such that at least three families have to pass the filter:
 
 .. code-block:: bash
 
-   $ gemini query --min-families 2 --family-wise --phenotype affected -q "select gts, gt_types from variants" test.family.db
-   T/T,T/T,T/C,T/T,T/T,T/T,T/T,T/T,C/C	0,0,1,0,0,0,0,0,3	1_kid,3_kid	1_kid	3_kid
-   C/T,C/T,T/T,C/C,C/C,C/T,C/T,C/T,C/T	1,1,3,0,0,1,1,1,1	1_dad,1_mom,1_kid,2_kid,3_dad,3_mom,3_kid	1_dad,1_mom,2_kid,3_dad,3_mom,3_kid	1_kid
-   C/T,C/T,C/T,C/T,C/T,T/T,C/C,C/C,C/T	1,1,1,1,1,3,0,0,1	1_dad,1_mom,1_kid,2_dad,2_mom,2_kid,3_kid	1_dad,1_mom,1_kid,2_dad,2_mom,3_kid	2_kid
-   G/G,G/G,G/A,G/G,G/G,G/A,G/A,G/A,G/A	0,0,1,0,0,1,1,1,1	1_kid,2_kid,3_dad,3_mom,3_kid	1_kid,2_kid,3_dad,3_mom,3_kid
+   $ gemini query --min-kindreds 3 --family-wise --in only all --sample-filter "phenotype=2" -q "select gts, gt_types from variants" test.family.db
    T/T,T/T,T/C,T/T,T/T,T/C,T/T,T/T,T/C	0,0,1,0,0,1,0,0,1	1_kid,2_kid,3_kid	1_kid,2_kid,3_kid
 
-These queries also work for the --exclude-family filter.
+
+If the PED file you loaded has extra fields in it, those will also work with the
+``--sample-filter`` option. For example if you had a ``hair_color`` extended field,
+you could query on that as well as phenotype:
+
+.. code-block:: bash
+
+   $ gemini query  --in only all --sample-filter "phenotype=1 and hair_color='blue'" -q "select gts, gt_types from variants" extended_ped.db
+   G/G,G/G,G/G,G/A	0,0,0,1	M128215	M128215
+
 
 =============================================================
 ``--sample-delim`` Changing the sample list delimiter

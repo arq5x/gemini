@@ -5,13 +5,14 @@ import os.path
 import sys
 import sqlite3
 import numpy as np
+from itertools import repeat
 
 # third-party imports
 import cyvcf as vcf
 
 # gemini modules
 import version
-from ped import pedformat
+from ped import get_ped_fields, default_ped_fields
 import infotag
 import database
 import annotations
@@ -192,6 +193,7 @@ class GeminiLoader(object):
         self.c.execute('PRAGMA journal_mode=MEMORY')
         # create the gemini database tables for the new DB
         database.create_tables(self.c)
+        database.create_sample_table(self.c, self.args)
 
     def _prepare_variation(self, var):
         """
@@ -402,26 +404,28 @@ class GeminiLoader(object):
 
         self.ped_hash = {}
         if self.args.ped_file is not None:
+            header = get_ped_fields(self.args.ped_file)
             for line in open(self.args.ped_file, 'r'):
-                if not line.startswith("#"):
-                    field = line.split(None, 7)[:7]
-                    if len(field) > 1:
-                        ped = pedformat(field)
-                        self.ped_hash[ped.name] = ped
+                if line.startswith("#"):
+                    continue
+                fields = line.split()
+                linedict = dict(zip(header, line.split()))
+                self.ped_hash[fields[1]] = fields
 
         sample_list = []
         for sample in self.samples:
             i = self.sample_to_id[sample]
             if sample in self.ped_hash:
-                ped = self.ped_hash[sample]
-                sample_list = [i, sample, ped.family, ped.paternal,
-                               ped.maternal, ped.sex, ped.phenotype,
-                               ped.ethnicity]
+                fields = self.ped_hash[sample]
+                sample_list = [i] + fields
             elif len(self.ped_hash) > 0:
                 sys.exit("EXITING: sample %s found in the VCF but "
                                  "not in the PED file.\n" % (sample))
             else:
-                sample_list = [i, sample, None, None, None, None, None, None]
+                # if there is no ped file given, just fill in the name and
+                # sample_id and set the other required fields to None
+                sample_list = [i, None, sample]
+                sample_list += list(repeat(None, len(default_ped_fields) - 2))
             database.insert_sample(self.c, sample_list)
 
     def _init_sample_gt_counts(self):

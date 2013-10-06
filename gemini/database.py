@@ -2,6 +2,9 @@
 
 import sqlite3
 import sys
+from itertools import repeat
+
+from ped import get_ped_fields, default_ped_fields
 
 
 def index_variation(cursor):
@@ -181,17 +184,6 @@ def create_tables(cursor):
                     sift_score float,                                 \
                     PRIMARY KEY(variant_id ASC, anno_id ASC))''')
 
-    cursor.execute('''create table if not exists samples   (  \
-                    sample_id integer,                        \
-                    name text,                                \
-                    family_id text default NULL,           \
-                    paternal_id text default NULL,         \
-                    maternal_id text default NULL,         \
-                    sex text default NULL,                    \
-                    phenotype text default NULL,              \
-                    ethnicity text default NULL,              \
-                    PRIMARY KEY(sample_id ASC))''')
-
     cursor.execute('''create table if not exists sample_genotypes (  \
                     sample_id integer,                               \
                     gt_types BLOB,                                   \
@@ -204,13 +196,24 @@ def create_tables(cursor):
                      num_hom_alt integer,                                 \
                      num_unknown integer,                                 \
                      PRIMARY KEY(sample_id ASC))''')
-    
+
     cursor.execute('''create table if not exists resources ( \
                      name text,                              \
                      resource text)''')
 
     cursor.execute('''create table if not exists version (version text)''')
 
+def create_sample_table(cursor, args):
+    NUM_BUILT_IN = 6
+    fields = get_ped_fields(args.ped_file)
+    required = "sample_id integer"
+    optional_fields = ["family_id", "name", "paternal_id", "maternal_id",
+                       "sex", "phenotype"]
+    optional_fields += fields[NUM_BUILT_IN:] + ["PRIMARY KEY(sample_id ASC)"]
+    optional = " text default NULL,".join(optional_fields)
+    structure = '''{0}, {1}'''.format(required, optional)
+    creation = "create table if not exists samples ({0})".format(structure)
+    cursor.execute(creation)
 
 def _insert_variation_one_per_transaction(cursor, buffer):
     for variant in buffer:
@@ -278,10 +281,13 @@ def insert_sample(cursor, sample_list):
     Populate the samples with sample ids, names, and
     other indicative information.
     """
+    placeholders = ",".join(list(repeat("?", len(sample_list))))
     cursor.execute("BEGIN TRANSACTION")
-    cursor.execute('''insert into samples values \
-                                  (?,?,?,?,?,?,?,?)''', sample_list)
+    cursor.execute("insert into samples values "
+                   "({0})".format(placeholders), sample_list)
     cursor.execute("END")
+    #                               (?,?,?,?,?,?,?,?)''', sample_list)
+    # cursor.execute("END")
 
 
 def insert_resources(cursor, resources):
@@ -292,7 +298,7 @@ def insert_resources(cursor, resources):
     cursor.execute("END")
 
 def insert_version(cursor, version):
-    """Populate table of documenting which 
+    """Populate table of documenting which
     gemini version was used for this database.
     """
     cursor.execute("BEGIN TRANSACTION")

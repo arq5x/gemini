@@ -22,7 +22,6 @@ class Subject(object):
         self.maternal_id = row['maternal_id']
         self.sex = row['sex']
         self.phenotype = int(row['phenotype']) if row['phenotype'] else None
-        self.ethnicity = row['ethnicity']
 
         # 1 = unaffected
         # 2 = affected
@@ -137,6 +136,14 @@ class Family(object):
 
         parents_found = self.find_parents()
         affected_found = self.has_an_affected()
+        # identify which samples are the parents in the family.
+        # Fail if both parents are not found
+        if not self.find_parents():
+            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
+                             "GEMINI is currently only able to identify candidates "
+                             "from two generational families.\n"
+                             % self.family_id)
+            return "False"
 
         if not parents_found and not affected_found:
             sys.stderr.write("WARNING: Unable to identify at least one "
@@ -223,6 +230,14 @@ class Family(object):
 
         parents_found = self.find_parents()
         affected_found = self.has_an_affected()
+
+        # identify which samples are the parents in the family.
+        # Fail if both parents are not found
+        if not self.find_parents():
+            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
+                             "GEMINI is currently only able to identify candidates "
+                             "from two generational families.\n"
+                             % self.family_id)
 
         if not parents_found and not affected_found:
             sys.stderr.write("WARNING: Unable to identify at least one "
@@ -364,7 +379,7 @@ class Family(object):
         if not self.find_parents():
             sys.stderr.write("WARNING: Unable to find parents for family (%s). "
                  "GEMINI is currently only able to identify candidates "
-                 "from two generational families.\n" 
+                 "from two generational families.\n"
                  % self.family_id)
             return "False"
 

@@ -80,8 +80,6 @@ class TPEDRowFormat(RowFormat):
         chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
         start = str(row['start'])
         end = str(row['end'])
-        #name = row['rs_ids'] if row['rs_ids'] else "."
-        #name = str(row['variant_id'])
         geno = [re.split('\||/', x) for x in row['gts'].split(",")]
         geno = [["0", "0"] if any([y in self.NULL_GENOTYPES for y in x])
                 else x for x in geno]
@@ -97,7 +95,6 @@ class TPEDRowFormat(RowFormat):
 
     @classmethod
     def predicate(self, row):
-        #geno = [re.split('\||/', x) for x in row['gts'].split(",")]
         geno = [re.split("\||/", x) for x in row['gts']]
         geno = list(flatten(geno))
         num_alleles = len(set(geno).difference(self.NULL_GENOTYPES))
@@ -128,7 +125,9 @@ class GeminiRow(object):
     def __init__(self, row, gts=None, gt_types=None,
                  gt_phases=None, gt_depths=None,
                  gt_ref_depths=None, gt_alt_depths=None,
-                 gt_quals=None, formatter=DefaultRowFormat):
+                 gt_quals=None, variant_samples=None,
+                 HET_samples=None, HOM_ALT_samples=None,
+                 formatter=DefaultRowFormat):
         self.row = row
         self.gts = gts
         self.gt_types = gt_types
@@ -139,28 +138,17 @@ class GeminiRow(object):
         self.gt_quals = gt_quals
         self.gt_cols = ['gts', 'gt_types', 'gt_phases',
                         'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
-                        'gt_quals']
+                        'gt_quals', "variant_samples", "HET_samples", "HOM_ALT_samples"]
         self.formatter = formatter
+        self.variant_samples = variant_samples
+        self.HET_samples = HET_samples
+        self.HOM_ALT_samples = HOM_ALT_samples
 
     def __getitem__(self, val):
         if val not in self.gt_cols:
             return self.row[val]
         else:
-            if val == 'gts':
-                return self.gts
-            elif val == 'gt_types':
-                return self.gt_types
-            elif val == 'gt_phases':
-                return self.gt_phases
-            elif val == 'gt_depths':
-                return self.gt_depths
-            elif val == 'gt_quals':
-                return self.gt_quals
-            elif val == 'gt_ref_depths':
-                return self.gt_ref_depths
-            elif val == 'gt_alt_depths':
-                return self.gt_alt_depths
-
+            return getattr(self, val)
 
     def __iter__(self):
         return self
@@ -269,7 +257,8 @@ class GeminiQuery(object):
         self.for_browser = for_browser
 
     def run(self, query, gt_filter=None, show_variant_samples=False,
-                  variant_samples_delim=',', predicates=None):
+            variant_samples_delim=',', predicates=None,
+            needs_genotypes=False):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -375,6 +364,9 @@ class GeminiQuery(object):
             gt_ref_depths = None
             gt_alt_depths = None
             gt_quals = None
+            variant_names = []
+            het_names = []
+            hom_alt_names = []
 
             if self._query_needs_genotype_info():
                 gts = compression.unpack_genotype_blob(row['gts'])
@@ -390,6 +382,13 @@ class GeminiQuery(object):
                     compression.unpack_genotype_blob(row['gt_alt_depths'])
                 gt_quals = \
                     compression.unpack_genotype_blob(row['gt_quals'])
+                variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
+                                   y == HOM_ALT]
+                variant_names = [self.idx_to_sample[x] for x in variant_samples]
+                het_samples = [x for x, y in enumerate(gt_types) if y == HET]
+                het_names = [self.idx_to_sample[x] for x in het_samples]
+                hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
+                hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
 
                 # skip the record if it does not meet the user's genotype filter
                 if self.gt_filter and not eval(self.gt_filter):
@@ -432,26 +431,17 @@ class GeminiQuery(object):
                                 ','.join(str(d) for d in gt_alt_depths)
 
             if self.show_variant_samples:
-                gt_types = compression.unpack_genotype_blob(row['gt_types'])
-                variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
-                                   y == HOM_ALT]
-                variant_names = [self.idx_to_sample[x] for x in variant_samples]
                 fields["variant_samples"] = \
                     self.variant_samples_delim.join(variant_names)
-
-                het_samples = [x for x, y in enumerate(gt_types) if y == HET]
-                het_names = [self.idx_to_sample[x] for x in het_samples]
                 fields["HET_samples"] = \
                     self.variant_samples_delim.join(het_names)
-
-                hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
-                hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
                 fields["HOM_ALT_samples"] = \
                     self.variant_samples_delim.join(hom_alt_names)
 
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
                                    gt_depths, gt_ref_depths, gt_alt_depths,
-                                   gt_quals, formatter=self.formatter)
+                                   gt_quals, variant_names, het_names, hom_alt_names,
+                                   formatter=self.formatter)
 
             if not all([predicate(gemini_row) for predicate in self.predicates]):
                 continue
