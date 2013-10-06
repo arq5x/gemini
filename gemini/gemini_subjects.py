@@ -138,13 +138,6 @@ class Family(object):
         affected_found = self.has_an_affected()
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
-        if not self.find_parents():
-            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
-                             "GEMINI is currently only able to identify candidates "
-                             "from two generational families.\n"
-                             % self.family_id)
-            return "False"
-
         if not parents_found and not affected_found:
             sys.stderr.write("WARNING: Unable to identify at least one "
                              "affected individual for family (%s). "
@@ -233,12 +226,6 @@ class Family(object):
 
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
-        if not self.find_parents():
-            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
-                             "GEMINI is currently only able to identify candidates "
-                             "from two generational families.\n"
-                             % self.family_id)
-
         if not parents_found and not affected_found:
             sys.stderr.write("WARNING: Unable to identify at least one "
                              "affected individual for family (%s). "
