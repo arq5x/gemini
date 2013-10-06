@@ -1,12 +1,3 @@
-check()
-{
-    if diff $1 $2; then
-        echo ok
-    else
-        echo fail
-    fi
-}
-export -f check
 ###################################################################
 # 1. Test basic auto_dominant functionality
 ###################################################################

@@ -70,6 +70,19 @@ class Family(object):
                 return True
         return False
 
+    def has_an_affected_child(self):
+        """
+        Return True if the Family has at least one affected child.
+        Otherwise return False. 
+        """
+        if not self.is_constructed:
+            self.find_parents()
+
+        for child in self.children:
+            if child.affected:
+                return True
+        return False
+
     def find_parents(self):
         """
         Screen for children with parental ids so that
@@ -160,26 +173,35 @@ class Family(object):
             if self.father.affected == True or self.mother.affected == True:
                 return "False"
 
-            # []---()
-            #    |
-            #   (*)
+
             mask = "("
             mask += 'gt_types[' + str(self.father.sample_id - 1) + "] == " + \
                 str(HET)
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
                 str(HET)
-            mask += " and "
-            for i, child in enumerate(self.children):
-                if child.affected:
+
+            if self.has_an_affected_child():                
+                for i, child in enumerate(self.children):
+                    if child.affected is True:
+                        mask += " and "
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                            str(HOM_ALT)
+                    # only allow an unaffected if there are other affected children
+                    elif child.affected is False and self.has_an_affected_child():
+                        mask += " and "
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
+                            str(HOM_ALT)
+                    elif child.affected is None:
+                        # assume just testing for inheritance patterns
+                        mask += " and "
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                            str(HOM_ALT)
+            else:
+                for i, child in enumerate(self.children):
+                    mask += " and "
                     mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
                         str(HOM_ALT)
-                else:
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
-                        str(HOM_ALT)
-
-                if i < (len(self.children) - 1):
-                    mask += " and "
 
             mask += ")"
             return mask

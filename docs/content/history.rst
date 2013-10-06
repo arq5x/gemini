@@ -14,6 +14,8 @@ Release History
 6. --exclude-phenotype option added to gemini query which restricts variants returned
    to only variants in which none of the individuals with the variant have the
    given phenotype.
+7. The autosomal_recessive and autosomal_dominat tools now warn, but all for variants
+   to be detected in the absence of known parent/child relationships.
 
 0.6.1 (2013-Sep-09)
 =======================================

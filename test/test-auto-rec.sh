@@ -250,4 +250,22 @@ check obs exp
 rm obs exp
 
 
+###################################################################
+# 16. Test with three family lacking parents and no one affected.
+###################################################################
+echo "    auto_rec.t16...\c"
+echo "family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; unaffected)	C/T,C/T,T/T	39,29,24	ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED
+1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	C/T,C/T,T/T	39,29,24	ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED
+3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; unknown)	T/C,T/C,C/C	39,29,24	SYCE1	chr10	135369531	135369532	T	C	non_syn_coding	MED
+1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/C,T/C,C/C	39,29,24	WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; unaffected)	T/C,T/C,C/C	59,49,64	WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH" > exp
+gemini autosomal_recessive  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+    --min-kindreds 1 \
+    test.auto_rec.no_parents.5.db &> obs
+check obs exp
+rm obs exp
+
+
 
