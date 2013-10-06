@@ -281,12 +281,16 @@ following:
 ============================================================================
 ``autosomal_recessive``: Find variants meeting an autosomal recessive model.
 ============================================================================
-.. note::
+.. warning::
 
-    This tool requires that you identify familial relationships via a PED file
-    when loading your VCF into gemini via:
+    By default, this tool requires that you identify familial relationships 
+    via a PED file when loading your VCF into GEMINI.  For example:
 
     ``gemini load -v my.vcf -p my.ped my.db``
+
+    However, in the absence of established parent/child relationships in the PED
+    file, GEMINI will issue a WARNING, yet will attempt to identify autosomal
+    recessive candidates for all samples marked as "affected".
 
 ---------------------
 ``default behavior``
@@ -429,19 +433,22 @@ depth (default: 0) for each sample:
 ===========================================================================
 ``autosomal_dominant``: Find variants meeting an autosomal dominant model.
 ===========================================================================
-.. note::
 
-    1. This tool requires that you identify familial relationships via a PED file
-    when loading your VCF into gemini via:
+.. warning::
+
+    1. By default, this tool requires that you identify familial relationships 
+    via a PED file when loading your VCF into GEMINI.  For example:
 
     ``gemini load -v my.vcf -p my.ped my.db``
 
-    2. If neither parent are known to be affected, this tool will report any
+    2. However, if neither parent is known to be affected, this tool will report any
        variant where one and only of the parents is heterozygous and the affected
        child is also heterozygous.  If one and only one of the parents is affected,
        the tool will report variants where both the affected child and the affected
        parent are heterozygous.  If both parents are known to be affected, the
-       tool will report nothing for that family.
+       tool will report nothing for that family.  If parents are unknown, the tool
+       will report variants where an affected individual is heterozygous and 
+       all unaffected individuals are homozygous for the reference allele.
 
 ---------------------
 ``default behavior``
