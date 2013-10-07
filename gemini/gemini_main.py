@@ -727,6 +727,8 @@ def main():
     # $ gemini update
     #########################################
     parser_update = subparsers.add_parser("update", help="Update gemini software and data files.")
+    parser_update.add_argument("--devel", help="Get the latest development version instead of the release",
+                               action="store_true", default=False)
     parser_update.set_defaults(func=gemini_update.release)
 
     #######################################################
@@ -737,7 +739,7 @@ def main():
     # make sure database is found if provided
     if len(sys.argv) > 2 and sys.argv[1] not in \
        ["load", "merge_chunks", "load_chunk"]:
-        if args.db is not None and not os.path.exists(args.db):
+        if hasattr(args, "db") and args.db is not None and not os.path.exists(args.db):
             sys.stderr.write("Requested GEMINI database (%s) not found. "
                              "Please confirm the provided filename.\n"
                              % args.db)

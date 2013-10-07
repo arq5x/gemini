@@ -27,16 +27,26 @@ def release(parser, args):
         raise NotImplementedError("Can only upgrade gemini installed in anaconda or virtualenv")
     # update libraries
     subprocess.check_call([pip_bin, "install", "-r", url])
+    if args.devel:
+        print("Installing latest GEMINI development version")
+        subprocess.check_call([pip_bin, "install", "--upgrade", "--no-deps",
+                               "git+%s" % repo])
     # update datafiles
     config = gemini.config.read_gemini_config()
-    install_script = os.path.join(os.path.dirname(__file__), "install-data.py")
-    subprocess.check_call([sys.executable, install_script, config["annotation_dir"]])
+    subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]])
     print "Gemini upgraded to latest version"
     # update tests
     test_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(pip_bin))),
                             "gemini")
     _update_testbase(test_dir, repo)
     print "Run test suite with: cd %s && bash master-test.sh" % test_dir
+
+def _get_install_script():
+    try:
+        import pkg_resources
+        return pkg_resources.resource_filename(__name__, "install-data.py")
+    except ImportError:
+        return os.path.join(os.path.dirname(__file__), "install-data.py")
 
 def _update_testbase(repo_dir, repo):
     cur_dir = os.getcwd()
