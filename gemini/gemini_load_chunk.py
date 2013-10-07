@@ -171,10 +171,14 @@ class GeminiLoader(object):
         Test whether the VCF header meets expectations for
         proper execution of VEP for use with Gemini.
         """
+        #support versions >2.4<73
         format = "Consequence|Codons|Amino_acids|Gene|HGNC|Feature|EXON|PolyPhen|SIFT".upper()
+        #support version 73
+        format73 = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT".upper()
 
         if 'CSQ' in self.vcf_reader.infos and \
-                format in str(self.vcf_reader.infos['CSQ']).upper():
+                (format in str(self.vcf_reader.infos['CSQ']).upper() or \
+                format73 in str(self.vcf_reader.infos['CSQ']).upper()):
             return True
         return False
 
