@@ -7,15 +7,11 @@ Release History
 1. Moved `--tped` and `--json` options into the more generic `--format` option.
 2. Fixed bug in handling missing phenotypes in the sample table.
 3. Fixed `--tped` output formatting error.
-4. API change: GeminiQuery.run takes an optional list of predicates that a row
-   must pass to be returned
-5. `--sample-filter` option added to allow for restricting variants to samples that
-pass the given sample query.
-6. ethnicity removed as a default PED field
-7. PED file format extended to allow for extra columns to be added to the samples table
-under the column named in the header.
-8. The autosomal_recessive and autosomal_dominant tools now warn, but allow for variants
-   to be detected in the absence of known parent/child relationships.
+4. API change: GeminiQuery.run takes an optional list of predicates that a row must pass to be returned.
+5. `--sample-filter` option added to allow for restricting variants to samples that pass the given sample query.
+6. ethnicity removed as a default PED field.
+7. PED file format extended to allow for extra columns to be added to the samples table under the column named in the header.
+8. The autosomal_recessive and autosomal_dominant tools now warn, but allow for variants to be detected in the absence of known parent/child relationships.
 
 
 0.6.1 (2013-Sep-09)
