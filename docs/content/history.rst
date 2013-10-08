@@ -2,7 +2,7 @@
 Release History
 #############################
 
-0.6.2 (in development)
+0.6.2 (2013-Oct-7)
 =======================================
 1. Moved `--tped` and `--json` options into the more generic `--format` option.
 2. Fixed bug in handling missing phenotypes in the sample table.
@@ -16,6 +16,7 @@ pass the given sample query.
 under the column named in the header.
 8. The autosomal_recessive and autosomal_dominant tools now warn, but allow for variants
    to be detected in the absence of known parent/child relationships.
+
 
 0.6.1 (2013-Sep-09)
 =======================================
