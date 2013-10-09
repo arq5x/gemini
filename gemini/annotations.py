@@ -204,7 +204,10 @@ def _get_bw_summary(coords, annotation):
     """Return summary of BigWig scores in an interval
     """
     chrom, start, end = coords
-    return annotation.summarize(str(chrom), start, end, end-start).min_val[0]
+    try:
+        return annotation.summarize(str(chrom), start, end, end-start).min_val[0]
+    except AttributeError:
+        return None
 
 
 def _get_chr_as_grch37(chrom):
