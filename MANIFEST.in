@@ -1,0 +1,13 @@
+include *.txt
+include *.md
+include *.py
+include *.sh
+include LICENSE
+include MANIFEST.in
+graft gemini/annotation_provenance
+graft gemini/data
+graft gemini/scripts
+graft gemini/static
+graft gemini/views
+graft docs
+graft test

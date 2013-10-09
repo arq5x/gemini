@@ -551,7 +551,11 @@ def main():
                                action='store_true',
                                default=False,
                                help="Run the C-alpha association test.")
-
+    parser_burden.add_argument('--permutations',
+                               default=0,
+                               type=int,
+                               help=("Number of permutations to run for the "
+                                     "C-alpha test (try 1000 to start)."))
     parser_burden.add_argument('--min-aaf',
                                dest='min_aaf',
                                type=float,
