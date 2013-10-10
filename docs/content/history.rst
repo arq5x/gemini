@@ -2,6 +2,10 @@
 Release History
 #############################
 
+0.6.3 (in development)
+=======================================
+1. Added permutation testing to the c-alpha test via the ``--permutations`` option.
+
 0.6.2 (2013-Oct-7)
 =======================================
 1. Moved `--tped` and `--json` options into the more generic `--format` option.

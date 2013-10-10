@@ -33,13 +33,13 @@ Example usage with default parameters:
 .. note::
 
     Each pair of consecutive lines in the output represent the two variants
-    for a compound heterozygote in a give sample.  The third column, 
+    for a compound heterozygote in a give sample.  The third column,
     `comp_het_id`, tracks the distinct compound heterozygote variant pairs.
 
 .. code-block:: bash
 
     $ gemini comp_hets my.db
-    
+
     family  sample  comp_het_id     chrom   start   end     variant_id      anno_id ref     alt     qual    filter  type    sub_type        call_rate       in_dbsnp        rs_ids  in_omim clinvar_sig     clinvar_disease_name    clinvar_dbsource        clinvar_dbsource_id     clinvar_origin  clinvar_dsdb    clinvar_dsdbid  clinvar_disease_acc     clinvar_in_locus_spec_db        clinvar_on_diag_assay   pfam_domain     cyto_band       rmsk    in_cpg_island   in_segdup       is_conserved    gerp_bp_score   gerp_element_pval       num_hom_ref     num_het num_hom_alt     num_unknown     aaf     hwe     inbreeding_coeff        pi      recomb_rate     gene    transcript      is_exonic       is_coding       is_lof  exon    codon_change    aa_change       aa_length       biotype impact  impact_severity polyphen_pred   polyphen_score  sift_pred       sift_score      anc_allele      rms_bq  cigar   depth   strand_bias     rms_map_qual    in_hom_run      num_mapq_zero   num_alleles     num_reads_w_dels        haplotype_score qual_depth      allele_count    allele_bal      in_hm2  in_hm3  is_somatic      in_esp  aaf_esp_ea      aaf_esp_aa      aaf_esp_all     exome_chip      in_1kg  aaf_1kg_amr     aaf_1kg_asn     aaf_1kg_afr     aaf_1kg_eur     aaf_1kg_all     grc     gms_illumina    gms_solid       gms_iontorrent  in_cse  encode_tfbs     encode_dnaseI_cell_count        encode_dnaseI_cell_list encode_consensus_gm12878        encode_consensus_h1hesc encode_consensus_helas3 encode_consensus_hepg2  encode_consensus_huvec  encode_consensus_k562   gts     gt_types        gt_phases       gt_depths       gt_ref_depths   gt_alt_depths   gt_quals
     1       SMS173  1       chr1    100336360       100336361       60429   1       C       T       25701.56        None    snp     ts      1.0     1       rs2230306       None    None    None    None    None    None    None    None    None    None    None    None    chr1p21.2       None    0       0       1       None    2.24376e-65     2       6       4       0       0.583333333333  0.921158650238  -0.0285714285714        0.507246376812  0.274757        AGL     ENST00000361522 1       1       0       5       ctC/ctT L281    1515    protein_coding  synonymous_coding       LOW     None    None    None    None    None    None    None    1452    None    70.01   1       0       24      0.0     1.3604  19.85   14      None    None    None    None    1       0.304251        0.091728        0.232894        0       1       0.7     0.68    0.95    0.67    0.74    None    None    None    None    0       CEBPB_1 2       HCM;HCPEpiC     T       R       T       R       T       R       C|T,T|T,C|T,C||T,C|T,T|T,T|T,C|T,T|T,C|C,C|C,C|T 1,3,1,1,1,3,3,1,3,0,0,1 False,False,False,False,False,False,False,False,False,False,False,False 161,151,131,168,115,132,103,122,106,74,83,106   81,3,66,82,62,1,1,59,4,70,80,48 80,148,65,86,53,130,102,63,102,4,3,58   99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,80.05,99.0,99.0
     1       SMS173  1       chr1    100358102       100358103       60456   1       C       T       9734.77 None    snp     ts      1.0     1       rs3753494       None    None    None    None    None    None    None    None    None    None    None    GDE_C   chr1p21.2       None    0       0       1       None    2.26616e-55     8       3       1       0       0.208333333333  0.401650457515  0.242105263158  0.344202898551  0.243448        AGL     ENST00000361522 1       1       0       22      Cct|Tct P1050S  1515    protein_coding  non_syn_coding  MED     None    None    None    None    None    None    None    1476    None    70.03   0       0       24      0.0     1.8167  16.42   5       None    None    None    None    1       0.146163        0.126419        0.139474        1       1       0.12    0.02    0.14    0.15    0.11    None    None    None    None    0       None    None    None    T       R       T       T       R       T       C|T,C|C,C|C,C|C,C|C,T|T,C|T,C|T,C|C,C|C,C|C,C|C 1,0,0,0,0,3,1,1,0,0,0,0 False,False,False,False,False,False,False,False,False,False,False,False 213,122,152,169,114,143,119,118,106,69,55,96    108,119,152,166,113,7,59,64,104,67,53,92        105,3,0,3,1,136,60,54,2,2,2,4   99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0
@@ -136,7 +136,7 @@ following:
     1	SMS173	5	AL355149.1	chr1	16862565	16862566	G	A	stop_gain	HIGH
     1	SMS173	5	AL355149.1	chr1	16863313	16863314	A	ACCCCTTTCTGCTG	frame_shift	HIGH
 
-    
+
 
 
 ===========================================================================
@@ -283,7 +283,7 @@ following:
 ============================================================================
 .. warning::
 
-    By default, this tool requires that you identify familial relationships 
+    By default, this tool requires that you identify familial relationships
     via a PED file when loading your VCF into GEMINI.  For example:
 
     ``gemini load -v my.vcf -p my.ped my.db``
@@ -296,10 +296,10 @@ following:
 ``default behavior``
 ---------------------
 
-Assuming you have defined the familial relationships between samples when 
-loading your VCF into GEMINI, one can leverage a built-in tool for 
-identifying variants that meet an autosomal recessive inheritance pattern. 
-The reported variants will be restricted to those variants having the 
+Assuming you have defined the familial relationships between samples when
+loading your VCF into GEMINI, one can leverage a built-in tool for
+identifying variants that meet an autosomal recessive inheritance pattern.
+The reported variants will be restricted to those variants having the
 potential to impact the function of affecting protein coding transcripts.
 
 For the following examples, let's assume we have a PED file for 3 different
@@ -382,7 +382,7 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
     1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  C/T,C/T,T/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
     1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  T/C,T/C,C/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
     2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  T/C,T/C,C/C 59,49,64    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    
+
 ---------------------
 ``--filter``
 ---------------------
@@ -436,7 +436,7 @@ depth (default: 0) for each sample:
 
 .. warning::
 
-    1. By default, this tool requires that you identify familial relationships 
+    1. By default, this tool requires that you identify familial relationships
     via a PED file when loading your VCF into GEMINI.  For example:
 
     ``gemini load -v my.vcf -p my.ped my.db``
@@ -447,7 +447,7 @@ depth (default: 0) for each sample:
        the tool will report variants where both the affected child and the affected
        parent are heterozygous.  If both parents are known to be affected, the
        tool will report nothing for that family.  If parents are unknown, the tool
-       will report variants where an affected individual is heterozygous and 
+       will report variants where an affected individual is heterozygous and
        all unaffected individuals are homozygous for the reference allele.
 
 ---------------------
@@ -540,14 +540,14 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
         --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
         --min-kindreds 2 \
         my.db
-    
+
     family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
     3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
     3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
     2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
     2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
     2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    T/T,T/C,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH    
+    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
 
 ---------------------
 ``--filter``
@@ -826,7 +826,7 @@ the variants in our GEMINI database with the allele frequency and depth
 tags from the INFO fields for the same variants in this other VCF file.
 
 First, since the ``annotate`` tool only supports BED files, we must use the
-excellent `vcftools <http://vcftools.sourceforge.net/>`_ package to extract the allele frequency (AF) and 
+excellent `vcftools <http://vcftools.sourceforge.net/>`_ package to extract the allele frequency (AF) and
 depth (DP) tags from the VCF file.
 
 .. code-block:: bash
@@ -842,7 +842,7 @@ depth (DP) tags from the VCF file.
     chr10   48004992    C   T   0.50    165
     chr10   135336656   G   A   1.00    2
     chr10   135369532   T   C   0.25    239
-    
+
     # create a BED file from the output of VCFTOOLs.
     $ awk -v OFS="\t" '{if (NR>1) {print $1,$2-1,$2,$5,$6}}' other.INFO > other.bed
 
@@ -862,11 +862,11 @@ Now that we have a proper TABIX'ed BED file, we can use the ``-a extract`` optio
 columns in the GEMINI database.  In order to do so, we must specify:
 
     1. the name of the column we want to add (``-c``)
-    
+
     2. its type (e.g., text, int, float,)  (``-t``)
-    
+
     3. the column in the BED file that we should use to extract data with which to populate the new column (``-e``)
-    
+
     4. what operation should be used to summarize the data in the event of multiple overlaps in the annotation file  (``-o``)
 
 For example, let's imagine we want to create a new column called "other_allele_freq" using the
@@ -887,7 +887,7 @@ new column will be a FLOAT.  In the event of multiple records in the BED
 file overlapping a variant in the database, the average (mean) of the allele
 frequencies values from the BED file will be used.
 
-At this point, one can query the database based on the values of the 
+At this point, one can query the database based on the values of the
 new ``other_allele_freq`` column:
 
 .. code-block:: bash
@@ -904,7 +904,7 @@ The ``annotate`` tool will create three different types of columns via the ``-t`
     1. Floating point columns for annotations with decimal precision as above (``-t float``)
     2. Integer columns for integral annotations (``-t integer``)
     3. Text columns for string columns such as "valid", "yes", etc. (``-t text``)
-    
+
 .. note::
 
     The ``-t`` option is only valid when using the ``-a extract`` option.
@@ -1026,7 +1026,7 @@ following:
     chr16   72057281    72057282    A   G   DHODH   intron
 
 ---------------------
-``--json`` 
+``--json``
 ---------------------
 Reporting query output in JSON format may enable
 HTML/Javascript apps to query GEMINI and retrieve
@@ -1183,7 +1183,7 @@ in dbSNP:
 ===============================================================
 ``burden``: perform sample-wise gene-level burden calculations
 ===============================================================
-The ``burden`` tool provides a set of utilities to perform burden 
+The ``burden`` tool provides a set of utilities to perform burden
 summaries on a per-gene, per sample basis. By default, it outputs
 a table of gene-wise counts of all high impact variants in coding regions for
 each sample:
@@ -1230,18 +1230,15 @@ statistic for cases vs. control:
 	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
 	DHODH	0.0	0.0	nan	nan
 
-.. note::
-
-	The ``--calpha`` option merely computes an asymptotic P-value that
-	assumes a normal distribution.  It does not yet perform permutation
-	tests to yield appropriate p-value distributions even in the presence of LD between variants.
+To calculate the P-value using a permutation test, use the ``--permutations`` option,
+specifying the number of permutations of the case/control labels you want to use.
 
 ------------------------------------------------
 ``--min-aaf`` and ``--max-aaf`` for ``--calpha``
 ------------------------------------------------
 By default, all variants affecting a given gene will be included in the
 C-alpha computation.  However, one may establish alternate allele frequency
-boundaries for the variants included using the ``--min-aaf`` and 
+boundaries for the variants included using the ``--min-aaf`` and
 ``--max-aaf`` options.
 
 .. code-block:: bash
