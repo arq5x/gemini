@@ -130,10 +130,15 @@ def load_chunks_multicore(grabix_file, args):
     no_load_genotypes = ""
     if args.no_load_genotypes is True:
         no_load_genotypes = "--no-load-genotypes"
-        
+
     load_gerp_bp = ""
     if args.load_gerp_bp is True:
         load_gerp_bp = "--load-gerp-bp"
+
+    passonly = ""
+    if args.passonly is True:
+        passonly = "--passonly"
+
 
     submit_command = get_submit_command(args)
     vcf, _ = os.path.splitext(grabix_file)
@@ -175,10 +180,15 @@ def load_chunks_ipython(grabix_file, args, view):
     no_load_genotypes = ""
     if args.no_load_genotypes is True:
         no_load_genotypes = "--no-load-genotypes"
-        
+
     load_gerp_bp = ""
     if args.load_gerp_bp is True:
         load_gerp_bp = "--load-gerp-bp"
+
+    passonly = ""
+    if args.passonly is True:
+        passonly = "--passonly"
+
 
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
@@ -190,7 +200,8 @@ def load_chunks_ipython(grabix_file, args, view):
                  "grabix_file": grabix_file,
                  "no_genotypes": no_genotypes,
                  "no_load_genotypes": no_load_genotypes,
-                 "load_gerp_bp": load_gerp_bp}
+                 "load_gerp_bp": load_gerp_bp,
+                 "passonly": passonly}
     chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
 
     print "Done loading variants in {0} chunks.".format(total_chunks)
@@ -216,7 +227,7 @@ def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
-                       " {load_gerp_bp}"
+                       " {load_gerp_bp} {passonly}"
                        " -o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
 
@@ -265,7 +276,7 @@ def bgzip(fname):
 
     vcf_time = os.path.getmtime(fname)
     bgzip_file = fname + ".gz"
-    
+
     if not file_exists(bgzip_file) or \
        (file_exists(bgzip_file) and os.path.getmtime(bgzip_file) < vcf_time):
         print "Bgzipping {0} into {1}.".format(fname, fname + ".gz")

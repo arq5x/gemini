@@ -127,6 +127,11 @@ def main():
     parser_load.add_argument('--torque-queue',
                              dest='torque_queue',
                              help="Queue name to use for a Torque based scheduler")
+    parser_load.add_argument('--passonly',
+                             dest='passonly',
+                             default=False,
+                             action='store_true',
+                             help="Keep only variants that pass all filters.")
 
     parser_load.set_defaults(func=gemini_load.load)
 
@@ -172,6 +177,11 @@ def main():
                                   action='store_true',
                                   help='Load GERP scores at base pair resolution. Slow. Off by default.',
                                   default=False)
+    parser_loadchunk.add_argument('--passonly',
+                                  dest='passonly',
+                                  default=False,
+                                  action='store_true',
+                                  help="Keep only variants that pass all filters.")
     parser_loadchunk.set_defaults(func=gemini_load_chunk.load)
 
     #########################################

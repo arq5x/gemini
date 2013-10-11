@@ -80,9 +80,13 @@ class GeminiLoader(object):
         self.var_buffer = []
         self.var_impacts_buffer = []
         buffer_count = 0
+        self.skipped = 0
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
+            if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
+                self.skipped += 1
+                continue
             (variant, variant_impacts) = self._prepare_variation(var)
             # add the core variant info to the variant buffer
             self.var_buffer.append(variant)
@@ -111,6 +115,11 @@ class GeminiLoader(object):
         database.insert_variation_impacts(self.c, self.var_impacts_buffer)
         sys.stderr.write("pid " + str(os.getpid()) + ": " +
                          str(self.counter) + " variants processed.\n")
+        if self.args.passonly:
+            sys.stderr.write("pid " + str(os.getpid()) + ": " +
+                             str(self.skipped) + " skipped due to having the "
+                             "FILTER field set.\n")
+
 
     def build_indices_and_disconnect(self):
         """

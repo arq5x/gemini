@@ -59,3 +59,13 @@ echo "sample_id	family_id	name	paternal_id	maternal_id	sex	phenotype	ethnicity	h
 gemini query --header -q "select * from samples" extended_ped_test.db > obs
 check obs exp
 rm obs exp
+
+###########################################################################################
+#4. Test --passonly on loading
+###########################################################################################
+gemini load  --passonly -v test.passonly.vcf -t snpEff passonly.db
+echo "    load.t4...\c"
+echo "chr1	1334051	CTAGAG	C" > exp
+gemini query -q "select chrom, start, ref, alt from variants" passonly.db > obs
+check obs exp
+rm obs exp
