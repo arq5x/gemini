@@ -66,6 +66,12 @@ with the growing wealth of genome annotations is the most compelling aspect of
 using a database design that can scale to 1000s of individuals (genotypes too!)
 makes for a nice, standardized data exploration system.
 
+Many variant callers set filter flags in the VCF file to flag possible problem
+variants. By default GEMINI will leave these variants in the database during
+loading but they can be filtered out during the loading step by passing the
+``--passonly`` flag to load.
+
+
 ================================
 Using multiple CPUS for loading
 ================================

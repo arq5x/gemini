@@ -4,7 +4,8 @@ Release History
 
 0.6.3 (in development)
 =======================================
-1. Added permutation testing to the c-alpha test via the ``--permutations`` option.
+1. Addition permutation testing to the c-alpha test via the ``--permutations`` option.
+2. Addition of the ``--passonly`` option during loading to filter out all variants with a filter flag set.
 
 0.6.2 (2013-Oct-7)
 =======================================
