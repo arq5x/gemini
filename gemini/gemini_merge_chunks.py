@@ -48,6 +48,9 @@ def append_sample_info(main_curr, chunk_db):
     cmd = "attach ? as toMerge"
     main_curr.execute(cmd, (chunk_db, ))
 
+    cmd = "create table samples as select * from toMerge.samples where 1=0"
+    main_curr.execute(cmd)
+
     cmd = "INSERT INTO samples SELECT * FROM toMerge.samples"
     main_curr.execute(cmd)
 
