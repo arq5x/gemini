@@ -16,7 +16,11 @@ CONFIG_FILE = "gemini-config.yaml"
 
 def get_config_dirs():
     virtualenv_loc = __file__.find("gemini-virtualenv")
-    if virtualenv_loc >= 0:
+    anaconda_loc = __file__.find("anaconda")
+    if anaconda_loc >= 0:
+        base = __file__[:anaconda_loc]
+        dirs = [os.path.join(base), os.path.join(base, "gemini")]
+    elif virtualenv_loc >= 0:
         base = __file__[:virtualenv_loc]
         dirs = [os.path.join(base), os.path.join(base, "gemini")]
     else:
