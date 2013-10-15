@@ -96,12 +96,12 @@ single core, it takes a few hours.
 
 
 ================================
-Using LSF, SGE and Torque clusters
+Using LSF, SGE, SLURM and Torque schedulers
 ================================
-Thanks to some great work from Brad Chapman and Rory Kirchner, one can also load
-VCF files into GEMINI in parallel using many cores on LSF, SGE or Torque clusters. One
-must simply specify the type of job scheduler your cluster uses and the queue
-name to which your jobs should be submitted.
+One can load VCF files into GEMINI in parallel using many cores on
+LSF, SGE, SLURM or Torque clusters. One must simply specify the type of job
+scheduler your cluster uses and the queue name to which your jobs
+should be submitted.
 
 For example, let's assume you use LSF and a queue named ``preempt_everyone``.
 Here is all you need to do:

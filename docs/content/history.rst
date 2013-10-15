@@ -7,6 +7,7 @@ Release History
 1. Addition permutation testing to the c-alpha test via the ``--permutations`` option.
 2. Addition of the ``--passonly`` option during loading to filter out all variants with a filter flag set.
 3. Fixed bug with parallel loading using the extended sample table format.
+4. SLURM support added.
 
 0.6.2 (2013-Oct-7)
 =======================================
