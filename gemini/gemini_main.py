@@ -127,6 +127,9 @@ def main():
     parser_load.add_argument('--torque-queue',
                              dest='torque_queue',
                              help="Queue name to use for a Torque based scheduler")
+    parser_load.add_argument('--slurm-queue',
+                             dest='slurm_queue',
+                             help="Queue name to use for a SLURM based scheduler")
     parser_load.add_argument('--passonly',
                              dest='passonly',
                              default=False,

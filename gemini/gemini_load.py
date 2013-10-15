@@ -140,7 +140,7 @@ def load_chunks_multicore(grabix_file, args):
         passonly = "--passonly"
 
 
-    submit_command = get_submit_command(args)
+    submit_command = "{cmd}"
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
     chunk_vcfs = []
@@ -149,7 +149,7 @@ def load_chunks_multicore(grabix_file, args):
 
     for chunk_num, chunk in chunk_steps:
         start, stop = chunk
-        print "Loading chunk " + str(chunk_num) + "." + ped_file
+        print "Loading chunk " + str(chunk_num) + "."
         gemini_load = gemini_pipe_load_cmd().format(**locals())
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
@@ -297,13 +297,8 @@ def is_gz_file(fname):
         return False
 
 def get_submit_command(args):
-    if args.lsf_queue:
-        return get_lsf_command(args.lsf_queue)
-    else:
-        return "{cmd}"
+    return "{cmd}"
 
-def get_lsf_command(queue):
-    return "bsub -K -q %s {cmd}" % (queue)
 
 def file_exists(fname):
     """Check if a file exists and is non-empty.
@@ -340,6 +335,8 @@ def get_ipython_args(args):
         return ("sge", args.sge_queue, args.cores)
     elif args.torque_queue:
         return ("torque", args.torque_queue, args.cores)
+    elif args.slurm_queue:
+        return ("slurm", args.slurm_queue, args.cores)
     else:
         raise ValueError("ipython argument parsing failed for some reason.")
 
@@ -349,7 +346,7 @@ def print_cmd_not_found_and_exit(cmd):
     exit(1)
 
 def use_scheduler(args):
-    if any([args.lsf_queue, args.sge_queue, args.torque_queue]):
+    if any([args.lsf_queue, args.sge_queue, args.torque_queue, args.slurm_queue]):
         return True
     else:
         return False
