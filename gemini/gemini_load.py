@@ -16,9 +16,6 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
-    if args.anno_type not in ['snpEff', 'VEP', None]:
-        parser.print_help()
-        exit("\nERROR: Unsupported selection for -t\n")
 
     # collect of the the add'l annotation files
     annotations.load_annos()
