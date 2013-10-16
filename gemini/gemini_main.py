@@ -115,18 +115,12 @@ def main():
                              default=1,
                              type=int,
                              help="Number of cores to use to load in parallel.")
-    parser_load.add_argument('--lsf-queue',
-                             dest='lsf_queue',
-                             help="Queue name to use for Platform LSF.")
-    parser_load.add_argument('--sge-queue',
-                             dest='sge_queue',
-                             help="Queue name to use for Sun Grid Engine.")
-    parser_load.add_argument('--torque-queue',
-                             dest='torque_queue',
-                             help="Queue name to use for a Torque based scheduler")
-    parser_load.add_argument('--slurm-queue',
-                             dest='slurm_queue',
-                             help="Queue name to use for a SLURM based scheduler")
+    parser_load.add_argument('--scheduler', dest='scheduler', default=None,
+                             choices=["lsf", "sge", "slurm", "torque"],
+                             action=IPythonAction,
+                             help='Cluster scheduler to use.')
+    parser_load.add_argument('--queue', dest='queue',
+                             default=None, help='Cluster queue to use.')
     parser_load.add_argument('--passonly',
                              dest='passonly',
                              default=False,
@@ -763,6 +757,17 @@ def main():
     except IOError, e:
         if e.errno != 32:  # ignore SIGPIPE
             raise
+
+class IPythonAction(argparse.Action):
+    def __call__(self, parser, args, values, option = None):
+        args.scheduler = values
+        if xor(args.scheduler, args.queue):
+            parser.error("If you are using the IPython parallel loading, you "
+                         "must specify both a scheduler with --scheduler and a "
+                         "queue to use with --queue.")
+
+def xor(arg1, arg2):
+    return bool(arg1) ^ bool(arg2)
 
 
 if __name__ == "__main__":

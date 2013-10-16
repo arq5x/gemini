@@ -111,29 +111,9 @@ Here is all you need to do:
     $ gemini load -v my.vcf \
              -t snpEff \
              --cores 50 \
-             --lsf-queue preempt_everyone \
+             --queue preempt_everyone \
+             --scheduler lsf \
              my.db
-
-If you use SGE, it would look like:
-
-.. code-block:: bash
-
-    $ gemini load -v my.vcf \
-             -t snpEff \
-             --cores 50 \
-             --sge-queue preempt_everyone \
-             my.db
-
-If you use Torque, it would look like: (you guessed it):
-
-.. code-block:: bash
-
-    $ gemini load -v my.vcf \
-             -t snpEff \
-             --cores 50 \
-             --torque-queue preempt_everyone \
-             my.db
-
 
 ===================================
 Describing samples with a PED file

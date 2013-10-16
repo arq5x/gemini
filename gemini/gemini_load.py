@@ -20,7 +20,7 @@ def load(parser, args):
     # collect of the the add'l annotation files
     annotations.load_annos()
 
-    if use_scheduler(args):
+    if args.scheduler:
         load_ipython(args)
     elif args.cores > 1:
         load_multicore(args)
@@ -326,16 +326,7 @@ def combine_dicts(d1, d2):
     return dict(d1.items() + d2.items())
 
 def get_ipython_args(args):
-    if args.lsf_queue:
-        return ("lsf", args.lsf_queue, args.cores)
-    elif args.sge_queue:
-        return ("sge", args.sge_queue, args.cores)
-    elif args.torque_queue:
-        return ("torque", args.torque_queue, args.cores)
-    elif args.slurm_queue:
-        return ("slurm", args.slurm_queue, args.cores)
-    else:
-        raise ValueError("ipython argument parsing failed for some reason.")
+    return (args.scheduler, args.queue, args.cores)
 
 def print_cmd_not_found_and_exit(cmd):
     sys.stderr.write("Cannot find {cmd}, install it or put it in your "
@@ -343,7 +334,4 @@ def print_cmd_not_found_and_exit(cmd):
     exit(1)
 
 def use_scheduler(args):
-    if any([args.lsf_queue, args.sge_queue, args.torque_queue, args.slurm_queue]):
-        return True
-    else:
-        return False
+    return bool(args.scheduler)
