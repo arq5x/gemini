@@ -79,9 +79,8 @@ would use the following:
 
 .. note::
 
-    The output will always start with the family ID, the family members, the
-    observed genotypes, and the observed aligned sequencing depths
-    for the family members.
+    The output will always start with the family ID, the sample name, and
+    the compound heterozygote identification number.
 
 --------------------
 ``--only-affected``
