@@ -9,6 +9,7 @@ import collections
 import json
 import abc
 import re
+import numpy as np
 
 # gemini imports
 import gemini_utils as util
@@ -485,7 +486,13 @@ class GeminiQuery(object):
                     # e.g. replace gts[1085] with gts.NA20814
                     if '[' in col:
                         orig_col = self.gt_idx_to_name_map[col]
-                        fields[orig_col] = eval(col.strip())
+                        val = eval(col.strip())
+                        if type(val) in [np.int8, np.int32, np.bool_]:
+                            fields[orig_col] = int(val)
+                        elif type(val) in [np.float32]:
+                            fields[orig_col] = float(val)
+                        else:
+                            fields[orig_col] = val
                     else:
                         # asked for "gts" or "gt_types", e.g.
                         if col == "gts":
