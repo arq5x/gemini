@@ -487,3 +487,21 @@ echo "G/G,G/G,G/G,G/A	0,0,0,1" > exp
 gemini query  --in only all --sample-filter "phenotype=1 and hair_color='blue'" -q "select gts, gt_types from variants" extended_ped.db > obs
 check obs exp
 rm obs exp
+
+########################################################################
+# 29. Test the carrier/noncarrier column summary
+########################################################################
+echo "    query.t29...\c"
+echo "chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	unaffected_carrier	affected_carrier	unaffected_noncarrier	affected_noncarrier	unknown
+chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	2	2	0	0	0
+chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	1	2	1	0	0
+chr10	52004314	T	C	2,2,3,3	M10500,M128215		M10500,M128215	1	1	0	0	2
+chr10	52497528	G	C	2,3,3,2	M10478,M10500		M10478,M10500	0	2	0	0	2
+chr16	72057434	C	T	1,0,0,0	M10475	M10475		1	0	1	2	0
+chr10	126678091	G	A	0,0,0,1	M128215	M128215		1	0	1	2	0
+chr10	135210790	T	C	0,3,3,0	M10478,M10500		M10478,M10500	0	2	2	0	0
+chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	2
+chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	2	2	0	0" > exp
+gemini query --show-samples --column-summary affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db > obs
+check obs exp
+rm obs exp

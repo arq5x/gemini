@@ -258,6 +258,12 @@ def main():
                               default=None,
                               help=('Restrict query to this region, '
                                     'e.g. chr1:10-20.'))
+    parser_query.add_argument('--carrier-summary-by-phenotype',
+                              dest='carrier_summary',
+                              default=None,
+                              help=('Output columns of counts of carriers and '
+                                    'non-carriers stratified by the given '
+                                    'sample phenotype column'))
 
     parser_query.set_defaults(func=gemini_query.query)
 

@@ -413,3 +413,44 @@ file from your data as well, which you can get from the GEMINI dump tool:
     None    M10478  None    None    None    None
     None    M10500  None    None    None    None
     None    M128215 None    None    None    None
+
+===========================================================
+``--carrier-summary-by-phenotype`` Summarize carrier status
+===========================================================
+For prioritizing variants sometimes it is useful to have summary counts of
+the carrier status for all samples with a variant stratified across a phenotype.
+``--carrier-summary-by-phenotype`` takes a column in the samples table that you
+want to summarize the carrier status of and adds a set of counts of
+carrier/non-carrier status for each phenotype in the given column. For example,
+to get a summary of how a set of variants segregate with affected status:
+
+.. code-block:: bash
+
+   $ gemini query --show-samples --column-summary affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped_test.db
+   chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	unaffected_carrier	affected_carrier	unaffected_noncarrier	affected_noncarrier	unknown
+chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	2	2	0	0	0
+chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	1	2	1	0	0
+chr10	52004314	T	C	2,2,3,3	M10500,M128215		M10500,M128215	1	1	0	0	2
+chr10	52497528	G	C	2,3,3,2	M10478,M10500		M10478,M10500	0	2	0	0	2
+chr16	72057434	C	T	1,0,0,0	M10475	M10475		1	0	1	2	0
+chr10	126678091	G	A	0,0,0,1	M128215	M128215		1	0	1	2	0
+chr10	135210790	T	C	0,3,3,0	M10478,M10500		M10478,M10500	0	2	2	0	0
+chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	2
+chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	2	2	0	0
+
+Or if you have another phenotypic feature you are interested in summarizing,
+like hair color:
+
+.. code-block:: bash
+
+   $ gemini query --show-samples --column-summary hair_color --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db
+chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	blue_carrier	brown_carrier	purple_carrier	blue_noncarrier	brown_noncarrier	purple_noncarrier	unknown
+chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	1	2	1	0	0	0	0
+chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	0	2	1	1	0	0	0
+chr10	52004314	T	C	2,2,3,3	M10500,M128215		M10500,M128215	1	0	1	0	0	0	2
+chr10	52497528	G	C	2,3,3,2	M10478,M10500		M10478,M10500	0	1	1	0	0	0	2
+chr16	72057434	C	T	1,0,0,0	M10475	M10475		0	1	0	1	1	1	0
+chr10	126678091	G	A	0,0,0,1	M128215	M128215		1	0	0	0	2	1	0
+chr10	135210790	T	C	0,3,3,0	M10478,M10500		M10478,M10500	0	1	1	1	1	0	0
+chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	0	0	2
+chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	1	1	1	1	0	0

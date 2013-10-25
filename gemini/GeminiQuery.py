@@ -13,9 +13,10 @@ import re
 # gemini imports
 import gemini_utils as util
 from gemini_constants import *
-from gemini_utils import OrderedSet, OrderedDict, itersubclasses
+from gemini_utils import OrderedSet, OrderedDict, itersubclasses, partition
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
+from gemini_subjects import get_subjects
 
 
 class RowFormat:
@@ -35,7 +36,7 @@ class RowFormat:
     def format(self, row):
         """ return a string representation of a GeminiRow object
         """
-        return '\t'.join([str(row[c]) for c in row])
+        return '\t'.join([str(row.row[c]) for c in row.row])
 
     @abc.abstractmethod
     def format_query(self, query):
@@ -50,22 +51,96 @@ class RowFormat:
         return True if there is no additional predicate"""
         return True
 
+    @abc.abstractmethod
+    def header(self, fields):
+        """ return a header for the row """
+        return "\t".join(fields)
+
 
 class DefaultRowFormat(RowFormat):
 
     name = "default"
 
-    @classmethod
-    def format(self, row):
-        return '\t'.join([str(row[c]) for c in row])
+    def __init__(self, args):
+        pass
 
-    @classmethod
+    def format(self, row):
+        return '\t'.join([str(row.row[c]) for c in row.row])
+
     def format_query(self, query):
         return query
 
-    @classmethod
     def predicate(self, row):
         return True
+
+    def header(self, fields):
+        """ return a header for the row """
+        return "\t".join(fields)
+
+class CarrierSummary(RowFormat):
+    """
+    Generates a count of the carrier/noncarrier status of each feature in a given
+    column of the sample table
+
+    Assumes None == unknown.
+    """
+    name = "column_summary"
+
+    def __init__(self, args):
+        subjects = get_subjects(args)
+        self.carrier_summary = args.carrier_summary
+
+        self.column_types = list(set([getattr(x, self.carrier_summary)
+                                      for x in subjects.values()]))
+        self.column_counters = {None: set()}
+        for ct in self.column_types:
+            self.column_counters[ct] = set([k for (k, v) in subjects.items() if
+                                            getattr(v, self.carrier_summary) == ct])
+
+
+    def format(self, row):
+        have_variant = set(row.variant_samples)
+        have_reference = set(row.HOM_REF_samples)
+        unknown = len(set(row.UNKNOWN_samples).union(self.column_counters[None]))
+        carrier_counts = []
+        for ct in self.column_types:
+            counts = len(self.column_counters[ct].intersection(have_variant))
+            carrier_counts.append(counts)
+        for ct in self.column_types:
+            counts = len(self.column_counters[ct].intersection(have_reference))
+            carrier_counts.append(counts)
+
+        carrier_counts.append(unknown)
+        carrier_counts = map(str, carrier_counts)
+        return '\t'.join([str(row.row[c]) for c in row.row] + carrier_counts)
+
+    def format_query(self, query):
+        return query
+
+    def predicate(self, row):
+        return True
+
+    def header(self, fields):
+        """ return a header for the row """
+        header_columns = self.column_types
+        if self.carrier_summary == "affected":
+            header_columns = self._rename_affected()
+        carriers = [x + "_carrier" for x in map(str, header_columns)]
+        noncarriers = [ x + "_noncarrier" for x in map(str, header_columns)]
+        fields += carriers
+        fields += noncarriers
+        fields += ["unknown"]
+        return "\t".join(fields)
+
+    def _rename_affected(self):
+        header_columns = []
+        for ct in self.column_types:
+            if ct == True:
+                header_columns.append("affected")
+            elif ct == False:
+                header_columns.append("unaffected")
+        return header_columns
+
 
 
 class TPEDRowFormat(RowFormat):
@@ -73,14 +148,16 @@ class TPEDRowFormat(RowFormat):
     name = "tped"
     NULL_GENOTYPES = ["."]
 
-    @classmethod
+    def __init__(self, args):
+        pass
+
     def format(self, row):
         VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
         chrom = row['chrom'].split("chr")[1]
         chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
-        start = str(row['start'])
-        end = str(row['end'])
-        geno = [re.split('\||/', x) for x in row['gts'].split(",")]
+        start = str(row.row['start'])
+        end = str(row.row['end'])
+        geno = [re.split('\||/', x) for x in row.row['gts'].split(",")]
         geno = [["0", "0"] if any([y in self.NULL_GENOTYPES for y in x])
                 else x for x in geno]
         genotypes = " ".join(list(flatten(geno)))
@@ -88,36 +165,40 @@ class TPEDRowFormat(RowFormat):
         name = chrom + ":" +  start + "-" + end + ":" + alleles
         return " ".join([chrom, name, "0", start, genotypes])
 
-    @classmethod
     def format_query(self, query):
         NEED_COLUMNS = ["chrom", "rs_ids", "start", "gts", "type", "variant_id"]
         return ensure_columns(query, NEED_COLUMNS)
 
-    @classmethod
     def predicate(self, row):
         geno = [re.split("\||/", x) for x in row['gts']]
         geno = list(flatten(geno))
         num_alleles = len(set(geno).difference(self.NULL_GENOTYPES))
         return num_alleles > 0 and num_alleles <= 2 and row['type'] != "sv"
 
+    def header(self, fields):
+        return None
+
 
 class JSONRowFormat(RowFormat):
 
     name = "json"
 
-    @classmethod
+    def __init__(self, args):
+        pass
+
     def format(self, row):
         """Emit a JSON representation of a given row
         """
         return json.dumps(row)
 
-    @classmethod
     def format_query(self, query):
         return query
 
-    @classmethod
     def predicate(self, row):
         return True
+
+    def header(self, fields):
+        return None
 
 
 class GeminiRow(object):
@@ -127,7 +208,8 @@ class GeminiRow(object):
                  gt_ref_depths=None, gt_alt_depths=None,
                  gt_quals=None, variant_samples=None,
                  HET_samples=None, HOM_ALT_samples=None,
-                 formatter=DefaultRowFormat):
+                 HOM_REF_samples=None, UNKNOWN_samples=None,
+                 formatter=DefaultRowFormat(None)):
         self.row = row
         self.gts = gts
         self.gt_types = gt_types
@@ -143,6 +225,8 @@ class GeminiRow(object):
         self.variant_samples = variant_samples
         self.HET_samples = HET_samples
         self.HOM_ALT_samples = HOM_ALT_samples
+        self.HOM_REF_samples = HOM_REF_samples
+        self.UNKNOWN_samples = UNKNOWN_samples
 
     def __getitem__(self, val):
         if val not in self.gt_cols:
@@ -154,7 +238,7 @@ class GeminiRow(object):
         return self
 
     def __repr__(self):
-        return self.formatter.format(self.row)
+        return self.formatter.format(self)
 
     def next(self):
         try:
@@ -225,7 +309,8 @@ class GeminiQuery(object):
             print row, gts[idx]
     """
 
-    def __init__(self, db, include_gt_cols=False, out_format="default"):
+    def __init__(self, db, include_gt_cols=False,
+                 out_format=DefaultRowFormat(None)):
         assert os.path.exists(db), "%s does not exist." % db
 
         self.db = db
@@ -238,19 +323,8 @@ class GeminiQuery(object):
         self.sample_to_idx = util.map_samples_to_indicies(self.c)
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
         self.idx_to_sample = util.map_indicies_to_samples(self.c)
-        self.formatter = self._set_formatter(out_format.lower())
+        self.formatter = out_format
         self.predicates = [self.formatter.predicate]
-
-
-    def _set_formatter(self, out_format):
-        SUPPORTED_FORMATS = {x.name.lower(): x for x in itersubclasses(RowFormat)}
-
-        if not out_format in SUPPORTED_FORMATS:
-            raise NotImplementedError("Conversion to %s not supported. Valid "
-                                      "formats are %s."
-                                      % (out_format, SUPPORTED_FORMATS))
-        else:
-            return SUPPORTED_FORMATS[out_format]
 
 
     def _set_gemini_browser(self, for_browser):
@@ -270,6 +344,7 @@ class GeminiQuery(object):
         self.gt_filter = gt_filter
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
+        self.needs_genotypes = needs_genotypes
         if predicates:
             self.predicates += predicates
 
@@ -301,9 +376,6 @@ class GeminiQuery(object):
         Return a header describing the columns that
         were selected in the query issued to a GeminiQuery object.
         """
-        if self.formatter.name in ["json"]:
-            return None
-
         if self.query_type == "no-genotypes":
             h = [col for col in self.all_query_cols]
         else:
@@ -312,8 +384,7 @@ class GeminiQuery(object):
                  - OrderedSet(self.select_columns)]
         if self.show_variant_samples:
             h += ["variant_samples", "HET_samples", "HOM_ALT_samples"]
-        return GeminiRow(OrderedDict(itertools.izip(h, h)),
-                         formatter=self.formatter)
+        return self.formatter.header(h)
 
     @property
     def sample2index(self):
@@ -356,6 +427,7 @@ class GeminiQuery(object):
             try:
                 row = self.c.next()
             except Exception as e:
+                self.conn.close()
                 raise StopIteration
             gts = None
             gt_types = None
@@ -367,6 +439,9 @@ class GeminiQuery(object):
             variant_names = []
             het_names = []
             hom_alt_names = []
+            hom_ref_names = []
+            unknown_names = []
+
 
             if self._query_needs_genotype_info():
                 gts = compression.unpack_genotype_blob(row['gts'])
@@ -389,6 +464,10 @@ class GeminiQuery(object):
                 het_names = [self.idx_to_sample[x] for x in het_samples]
                 hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
                 hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
+                hom_ref_samples = [x for x, y in enumerate(gt_types) if y == HOM_REF]
+                hom_ref_names = [self.idx_to_sample[x] for x in hom_ref_samples]
+                unknown_samples = [x for x, y in enumerate(gt_types) if y == UNKNOWN]
+                unknown_names = [self.idx_to_sample[x] for x in unknown_samples]
 
                 # skip the record if it does not meet the user's genotype filter
                 if self.gt_filter and not eval(self.gt_filter):
@@ -441,6 +520,7 @@ class GeminiQuery(object):
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
                                    gt_depths, gt_ref_depths, gt_alt_depths,
                                    gt_quals, variant_names, het_names, hom_alt_names,
+                                   hom_ref_names, unknown_names,
                                    formatter=self.formatter)
 
             if not all([predicate(gemini_row) for predicate in self.predicates]):
@@ -643,7 +723,7 @@ class GeminiQuery(object):
         requested_genotype = "variants" in tokens and any([x.startswith("gt") for x in tokens])
         return requested_genotype or \
                self.include_gt_cols or \
-               self.show_variant_samples
+               self.show_variant_samples or self.needs_genotypes
 
 def flatten(l):
     """

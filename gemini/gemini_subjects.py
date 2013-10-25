@@ -7,6 +7,8 @@ from collections import defaultdict
 
 import gemini_utils as util
 from gemini_constants import *
+import GeminiQuery
+
 
 
 class Subject(object):
@@ -15,14 +17,24 @@ class Subject(object):
     Describe a single subject in the the samples table.
     """
     def __init__(self, row):
-        self.sample_id = row['sample_id']
-        self.name = row['name']
-        self.family_id = row['family_id']
-        self.paternal_id = row['paternal_id']
-        self.maternal_id = row['maternal_id']
-        self.sex = row['sex']
-        self.phenotype = int(row['phenotype']) if row['phenotype'] else None
+        self._set_fields_from_row(row)
 
+    def __repr__(self):
+        return "\t".join(map(str, [self.name, self.paternal_id,
+                                   self.maternal_id, self.phenotype]))
+
+    def set_father(self):
+        self.father = True
+
+    def set_mother(self):
+        self.mother = True
+
+    def _set_fields_from_row(self, row):
+        [setattr(self, k, v) for (k, v) in zip(row.keys(), list(row))]
+        self.phenotype = int(row['phenotype']) if row['phenotype'] else None
+        self._set_affected_status(row)
+
+    def _set_affected_status(self, row):
         # 1 = unaffected
         # 2 = affected
         # 0 or -9 is unknown.
@@ -34,16 +46,6 @@ class Subject(object):
         # distinguish unknown from known to be unaffected.
         else:
             self.affected = None
-
-    def __repr__(self):
-        return "\t".join(map(str, [self.name, self.paternal_id,
-                                   self.maternal_id, self.phenotype]))
-
-    def set_father(self):
-        self.father = True
-
-    def set_mother(self):
-        self.mother = True
 
 
 class Family(object):
@@ -62,7 +64,7 @@ class Family(object):
     def has_an_affected(self):
         """
         Return True if the Family has at least one affected individual.
-        Otherwise return False. 
+        Otherwise return False.
         """
         for subject in self.subjects:
             if subject.affected:
@@ -72,7 +74,7 @@ class Family(object):
     def has_an_affected_child(self):
         """
         Return True if the Family has at least one affected child.
-        Otherwise return False. 
+        Otherwise return False.
         """
         if not self.is_constructed:
             self.find_parents()
@@ -142,14 +144,14 @@ class Family(object):
             sys.stderr.write("WARNING: Unable to identify at least one "
                              "affected individual for family (%s). "
                              "Consequently, GEMINI will not screen for "
-                             "variants in this family.\n" 
+                             "variants in this family.\n"
                  % self.family_id)
             return "False"
 
         elif not parents_found and affected_found:
             sys.stderr.write("WARNING: Unable to identify parents for family (%s). "
                              "Consequently, GEMINI will solely place genotype "
-                             "requirements on subjects based on their phenotype.\n" 
+                             "requirements on subjects based on their phenotype.\n"
                              % self.family_id)
 
             mask = "("
@@ -164,7 +166,7 @@ class Family(object):
                 if i < (len(self.subjects) - 1):
                     mask += " and "
             mask += ")"
-            
+
             return mask
 
         elif parents_found:
@@ -181,7 +183,7 @@ class Family(object):
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
                 str(HET)
 
-            if self.has_an_affected_child():                
+            if self.has_an_affected_child():
                 for i, child in enumerate(self.children):
                     if child.affected is True:
                         mask += " and "
@@ -230,14 +232,14 @@ class Family(object):
             sys.stderr.write("WARNING: Unable to identify at least one "
                              "affected individual for family (%s). "
                              "Consequently, GEMINI will not screen for "
-                             "variants in this family.\n" 
+                             "variants in this family.\n"
                  % self.family_id)
             return "False"
 
         elif not parents_found and affected_found:
             sys.stderr.write("WARNING: Unable to identify parents for family (%s). "
                              "Consequently, GEMINI will solely place genotype "
-                             "requirements on subjects based on their phenotype.\n" 
+                             "requirements on subjects based on their phenotype.\n"
                              % self.family_id)
 
             mask = "("
@@ -252,7 +254,7 @@ class Family(object):
                 if i < (len(self.subjects) - 1):
                     mask += " and "
             mask += ")"
-            
+
             return mask
 
         elif parents_found:
@@ -523,26 +525,36 @@ def get_families(c):
         families.append(family)
     return families
 
-def get_subjects(c):
-    """
-    Query the samples table to return a dict of subjects.
 
-
-    """
-    query = "SELECT * FROM samples"
-    c.execute(query)
-
-    samples_dict = {}
-    for row in c:
-        subject = Subject(row)
-        sample_name = subject.name
-        samples_dict[sample_name] = subject
-    return samples_dict
-
-def get_family_dict(c):
+def get_family_dict(args):
     families = defaultdict(list)
-    subjects = get_subjects(c)
+    subjects = get_subjects(args)
     for subject in subjects.values():
         families[subject.family_id].append(subject)
 
     return families
+
+def get_subjects(args):
+    """
+    return a dictionary of subjects, optionally using the
+    subjects_query argument to filter them.
+    """
+    gq = GeminiQuery.GeminiQuery(args.db)
+    query = "SELECT * FROM samples"
+    if args.sample_filter:
+        query += " WHERE " + args.sample_filter
+    gq.c.execute(query)
+    samples_dict = {}
+    for row in gq.c:
+        subject = Subject(row)
+        samples_dict[subject.name] = subject
+    return samples_dict
+
+def get_subjects_in_family(args, family):
+    subjects = get_subjects(args)
+    family_names = [f.name for f in family]
+    subject_dict = {}
+    for subject in subjects:
+        if subject in family_names:
+            subject_dict[subject] = subjects[subject]
+    return subject_dict

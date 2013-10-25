@@ -6,10 +6,11 @@ from itertools import tee, ifilterfalse
 
 # gemini imports
 import GeminiQuery
-from gemini_subjects import get_family_dict
 from gemini_constants import *
 from gemini_region import add_region_to_query
-from gemini_subjects import Subject
+from gemini_subjects import (Subject, get_subjects, get_subjects_in_family,
+                             get_family_dict)
+from gemini_utils import itersubclasses
 
 def all_samples_predicate(args):
     """ returns a predicate that returns True if, for a variant,
@@ -19,8 +20,9 @@ def all_samples_predicate(args):
     return select_subjects_predicate(subjects, args)
 
 def family_wise_predicate(args):
-    gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
-    families = get_family_dict(gq.c)
+    formatter = _select_formatter(args)
+    families = get_family_dict(args)
+    gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
     predicates = []
     for f in families.values():
         family_names = [x.name for x in f]
@@ -46,30 +48,6 @@ def select_subjects_predicate(subjects, args, subset=None):
         return all([p(row) for p in predicates])
     return predicate
 
-def get_subjects(args):
-    """
-    return a dictionary of subjects, optionally using the
-    subjects_query argument to filter them.
-    """
-    gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
-    query = "SELECT * FROM samples"
-    if args.sample_filter:
-        query += " WHERE " + args.sample_filter
-    gq.c.execute(query)
-    samples_dict = {}
-    for row in gq.c:
-        subject = Subject(row)
-        samples_dict[subject.name] = subject
-    return samples_dict
-
-def get_subjects_in_family(args, family):
-    subjects = get_subjects(args)
-    family_names = [f.name for f in family]
-    subject_dict = {}
-    for subject in subjects:
-        if subject in family_names:
-            subject_dict[subject] = subjects[subject]
-    return subject_dict
 
 
 def variant_in_any_subject(subjects):
@@ -116,7 +94,8 @@ def get_row_predicates(args):
 
 
 def needs_genotypes(args):
-    return args.show_variant_samples or args.family_wise or args.sample_filter
+    return (args.show_variant_samples or args.family_wise
+            or args.sample_filter or args.carrier_summary)
 
 def add_required_columns_to_query(args):
     if args.region:
@@ -125,7 +104,8 @@ def add_required_columns_to_query(args):
 def run_query(args):
     predicates = get_row_predicates(args)
     add_required_columns_to_query(args)
-    gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
+    formatter = _select_formatter(args)
+    gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, needs_genotypes(args))
 
@@ -134,6 +114,22 @@ def run_query(args):
 
     for row in gq:
         print row
+
+
+def _select_formatter(args):
+    SUPPORTED_FORMATS = {x.name.lower(): x for x in
+                         itersubclasses(GeminiQuery.RowFormat)}
+
+    if args.carrier_summary:
+        return SUPPORTED_FORMATS["carrier_summary"](args)
+
+    if not args.format in SUPPORTED_FORMATS:
+        raise NotImplementedError("Conversion to %s not supported. Valid "
+                                  "formats are %s."
+                                  % (args.format, SUPPORTED_FORMATS))
+    else:
+        return SUPPORTED_FORMATS[args.format](args)
+
 
 def query(parser, args):
 

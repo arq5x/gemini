@@ -4,20 +4,27 @@ Release History
 
 0.6.3 (in development)
 =======================================
-1. Addition permutation testing to the c-alpha test via the ``--permutations`` option.
-2. Addition of the ``--passonly`` option during loading to filter out all variants with a filter flag set.
+1. Addition permutation testing to the c-alpha test via the ``--permutations``
+   option.
+2. Addition of the ``--passonly`` option during loading to filter out all
+   variants with a filter flag set.
 3. Fixed bug with parallel loading using the extended sample table format.
 4. SLURM support added.
-5. Refactor of loading options to remove explosion of xxx-queue options. Now load  using
-   ``--scheduler`` on ``--queue``.
+5. Refactor of loading options to remove explosion of xxx-queue options. Now
+   load using ``--scheduler`` on ``--queue``.
+6. Refactor of Sample class to handle the expanded samples table.
+7. Addition of ``--carrier-summary-by-phenotype`` for summarizing the counts of
+   carriers and non-carriers stratified by the given sample phenotype column.
 
 0.6.2 (2013-Oct-7)
 =======================================
 1. Moved `--tped` and `--json` options into the more generic `--format` option.
 2. Fixed bug in handling missing phenotypes in the sample table.
 3. Fixed `--tped` output formatting error.
-4. API change: GeminiQuery.run takes an optional list of predicates that a row must pass to be returned.
-5. `--sample-filter` option added to allow for restricting variants to samples that pass the given sample query.
+4. API change: GeminiQuery.run takes an optional list of predicates that a row
+   must pass to be returned.
+5. `--sample-filter` option added to allow for restricting variants to samples
+   that pass the given sample query.
 6. ethnicity removed as a default PED field.
 7. PED file format extended to allow for extra columns to be added to the samples table under the column named in the header.
 8. The autosomal_recessive and autosomal_dominant tools now warn, but allow for variants to be detected in the absence of known parent/child relationships.
