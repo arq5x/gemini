@@ -270,22 +270,6 @@ def summarize_query_by_sample(args):
                      hom_alt_counts.get(key, 0)]
         print "\t".join(map(str, count_row))
 
-def summarize_query_by_carrier(args):
-    # get the variants that match the query
-    # for each variant extract out the sample names that have it or dont
-    # (have it = HOM_ALT or HET, dont = HOM_REF)
-    # aggregate these by a column in the sample table
-    # probably query the sample table once for the column but do it for all of
-    # the variants, extract the name and the column
-    # set a column name
-    gq = GeminiQuery.GeminiQuery(args.db)
-    gq.run(args.query, show_variant_samples=True)
-    affected_carrier = Counter()
-    unaffected_carrier = Counter()
-    affected_noncarrier = Counter()
-    unaffected_noncarrier = Counter()
-    pass
-
 
 def stats(parser, args):
 
