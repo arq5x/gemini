@@ -1264,6 +1264,11 @@ are the control samples and which are the case samples:
 	ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
 	DHODH	0.0	0.0	nan	nan
 
+---------------------------------------------
+``--nonsynonymous`` ``--calpha``
+---------------------------------------------
+If you would rather consider all nonsynonymous variants for the C-alpha test rather
+than just the medium and high impact variants, add the ``--nonsynonymous`` flag.
 
 ===========================================================================
 ``db_info``: List the gemini database tables and columns

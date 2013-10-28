@@ -52,7 +52,11 @@ def get_calpha(args):
     # p_0 = the fraction of samples that are cases (used for weighting)
     p_0 = float(len(case)) / float(len(samples))
 
-    ns = _medium_or_high_impact_variants(args)
+    if args.nonsynonymous:
+        ns = _nonsynonymous_variants(args)
+    else:
+        ns = _medium_or_high_impact_variants(args)
+
     variants_in_gene, variants = _calculate_counts(ns, samples)
     header = ["gene", "T", "c", "Z", "p_value"]
     print "\t".join(header)
@@ -260,7 +264,7 @@ def _summarize_by_gene_and_sample(args, query):
 
 
 def burden(parser, args):
-    if args.nonsynonymous:
+    if args.nonsynonymous and not args.calpha:
         nonsynonymous_by_gene(args)
     elif args.calpha:
         get_calpha(args)
