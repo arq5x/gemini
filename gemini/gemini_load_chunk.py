@@ -12,7 +12,7 @@ import cyvcf as vcf
 
 # gemini modules
 import version
-from ped import get_ped_fields, default_ped_fields
+from ped import get_ped_fields, default_ped_fields, load_ped_file
 import infotag
 import database
 import annotations
@@ -417,13 +417,7 @@ class GeminiLoader(object):
 
         self.ped_hash = {}
         if self.args.ped_file is not None:
-            header = get_ped_fields(self.args.ped_file)
-            for line in open(self.args.ped_file, 'r'):
-                if line.startswith("#"):
-                    continue
-                fields = line.split()
-                linedict = dict(zip(header, line.split()))
-                self.ped_hash[fields[1]] = fields
+            self.ped_hash = load_ped_file(self.args.ped_file)
 
         sample_list = []
         for sample in self.samples:
