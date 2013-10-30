@@ -541,7 +541,7 @@ def get_subjects(args):
     """
     gq = GeminiQuery.GeminiQuery(args.db)
     query = "SELECT * FROM samples"
-    if args.sample_filter:
+    if hasattr(args, 'sample_filter') and args.sample_filter:
         query += " WHERE " + args.sample_filter
     gq.c.execute(query)
     samples_dict = {}
