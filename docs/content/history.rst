@@ -16,6 +16,8 @@ Release History
 7. Addition of ``--carrier-summary-by-phenotype`` for summarizing the counts of
    carriers and non-carriers stratified by the given sample phenotype column.
 8. Added a ``--nonsynonymous`` option to the C-alpha test.
+9. Added ``gemini amend`` to edit an existing database. For now only handles updating
+   the samples table.
 
 0.6.2 (2013-Oct-7)
 =======================================

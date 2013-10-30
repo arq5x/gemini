@@ -158,6 +158,22 @@ by using the ``--load-gerp-bp`` option.
 
     $ gemini load -v my.vcf --load-gerp-bp -t snpEff my.db
 
+=======================================
+Updating the samples table in a database
+=======================================
+If, after loading a database, you find more information about your samples or
+want to add a column to the samples table to query on, you can reload the samples
+table with a new PED_ file with ``gemini amend --sample``. This is also useful if
+you forgot to load a PED_ file when initially loading your database. This file
+must have the standard first six columns of a PED_ file, but after that other
+columns can be added. The top of the PED_ file also must have a header starting
+with # which names all of the columns if there are more than the standard six
+PED_ file columns:
+
+.. code-block:: bash
+
+   $ gemini amend --sample your_new_ped_file your.db
+
 
 ===================================
 Loading VCFs without genotypes.
