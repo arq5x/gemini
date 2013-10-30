@@ -27,3 +27,4 @@ gemini load -p test4.snpeff.ped -v test4.vep.snpeff.vcf -t snpEff test4.snpeff.p
 gemini load -v test.vcf_id.snpeff.vcf -t snpEff test.vcf_id.snpeff.vcf.db
 gemini load -p test.de_novo.ped -v test.family.vcf -t snpEff test.family.db
 gemini load -p test_extended_ped.ped -v test4.vep.snpeff.vcf -t snpEff extended_ped.db
+cp extended_ped.db test.amend.db

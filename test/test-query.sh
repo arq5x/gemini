@@ -502,6 +502,6 @@ chr10	126678091	G	A	0,0,0,1	M128215	M128215		1	0	1	2	0
 chr10	135210790	T	C	0,3,3,0	M10478,M10500		M10478,M10500	0	2	2	0	0
 chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	2
 chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	2	2	0	0" > exp
-gemini query --show-samples --column-summary affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db > obs
+gemini query --show-samples --carrier-summary-by-phenotype affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db > obs
 check obs exp
 rm obs exp
