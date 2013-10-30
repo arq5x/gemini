@@ -3,6 +3,7 @@
 import sqlite3
 import sys
 from itertools import repeat
+import contextlib
 
 from ped import get_ped_fields, default_ped_fields
 
@@ -286,8 +287,6 @@ def insert_sample(cursor, sample_list):
     cursor.execute("insert into samples values "
                    "({0})".format(placeholders), sample_list)
     cursor.execute("END")
-    #                               (?,?,?,?,?,?,?,?)''', sample_list)
-    # cursor.execute("END")
 
 
 def insert_resources(cursor, resources):
@@ -317,3 +316,15 @@ def close_and_commit(cursor, connection):
 def empty_tables(cursor):
     cursor.execute('''delete * from variation''')
     cursor.execute('''delete * from samples''')
+
+
+@contextlib.contextmanager
+def database_transaction(db):
+    conn = sqlite3.connect(db)
+    conn.isolation_level = None
+    cursor = conn.cursor()
+    cursor.execute('PRAGMA synchronous = OFF')
+    cursor.execute('PRAGMA journal_mode=MEMORY')
+    yield cursor
+    conn.commit
+    cursor.close()
