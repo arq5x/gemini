@@ -85,7 +85,7 @@ class CarrierSummary(RowFormat):
 
     Assumes None == unknown.
     """
-    name = "column_summary"
+    name = "carrier_summary"
 
     def __init__(self, args):
         subjects = get_subjects(args)
@@ -190,7 +190,7 @@ class JSONRowFormat(RowFormat):
     def format(self, row):
         """Emit a JSON representation of a given row
         """
-        return json.dumps(row)
+        return json.dumps(row.row)
 
     def format_query(self, query):
         return query
@@ -731,6 +731,21 @@ class GeminiQuery(object):
         return requested_genotype or \
                self.include_gt_cols or \
                self.show_variant_samples or self.needs_genotypes
+
+def select_formatter(args):
+    SUPPORTED_FORMATS = {x.name.lower(): x for x in
+                         itersubclasses(RowFormat)}
+
+    if hasattr(args, 'carrier_summary') and args.carrier_summary:
+        return SUPPORTED_FORMATS["carrier_summary"](args)
+
+    if not args.format in SUPPORTED_FORMATS:
+        raise NotImplementedError("Conversion to %s not supported. Valid "
+                                  "formats are %s."
+                                  % (args.format, SUPPORTED_FORMATS))
+    else:
+        return SUPPORTED_FORMATS[args.format](args)
+
 
 def flatten(l):
     """
