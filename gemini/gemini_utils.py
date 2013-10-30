@@ -414,3 +414,9 @@ def partition(pred, iterable):
     # partition(is_odd, range(10)) --> 0 2 4 6 8   and  1 3 5 7 9
     t1, t2 = tee(iterable)
     return list(ifilterfalse(pred, t1)), list(filter(pred, t2))
+
+def quote_string(item):
+    """ if the item is a string, put quotes around it else leave it """
+    if isinstance(item, basestring):
+        item = "\"" + item + "\""
+    return item
