@@ -9,7 +9,9 @@ import gemini_query
 import \
     gemini_region, gemini_stats, gemini_dump, \
     gemini_annotate, gemini_windower, \
-    gemini_browser, gemini_dbinfo, gemini_merge_chunks, gemini_update
+    gemini_browser, gemini_dbinfo, gemini_merge_chunks, gemini_update, \
+    gemini_amend
+
 import gemini.version
 
 import tool_compound_hets
@@ -128,6 +130,19 @@ def main():
                              help="Keep only variants that pass all filters.")
 
     parser_load.set_defaults(func=gemini_load.load)
+    #########################################
+    # $ gemini amend
+    #########################################
+    parser_amend = subparsers.add_parser('amend',
+                                         help="Amend an already loaded GEMINI database.")
+    parser_amend.add_argument('db',
+                              metavar='db',
+                              help='The name of the database to be amended.')
+    parser_amend.add_argument('--sample',
+                              metavar='sample',
+                              default=None,
+                              help='New sample information file to load')
+    parser_amend.set_defaults(func=gemini_amend.amend)
 
     #########################################
     # $ gemini load_chunk
