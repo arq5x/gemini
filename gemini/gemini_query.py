@@ -6,6 +6,7 @@ from itertools import tee, ifilterfalse
 
 # gemini imports
 import GeminiQuery
+from GeminiQuery import select_formatter
 from gemini_constants import *
 from gemini_region import add_region_to_query
 from gemini_subjects import (Subject, get_subjects, get_subjects_in_family,
@@ -20,7 +21,7 @@ def all_samples_predicate(args):
     return select_subjects_predicate(subjects, args)
 
 def family_wise_predicate(args):
-    formatter = _select_formatter(args)
+    formatter = select_formatter(args)
     families = get_family_dict(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
     predicates = []
@@ -104,7 +105,7 @@ def add_required_columns_to_query(args):
 def run_query(args):
     predicates = get_row_predicates(args)
     add_required_columns_to_query(args)
-    formatter = _select_formatter(args)
+    formatter = select_formatter(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, needs_genotypes(args))
@@ -114,21 +115,6 @@ def run_query(args):
 
     for row in gq:
         print row
-
-
-def _select_formatter(args):
-    SUPPORTED_FORMATS = {x.name.lower(): x for x in
-                         itersubclasses(GeminiQuery.RowFormat)}
-
-    if args.carrier_summary:
-        return SUPPORTED_FORMATS["carrier_summary"](args)
-
-    if not args.format in SUPPORTED_FORMATS:
-        raise NotImplementedError("Conversion to %s not supported. Valid "
-                                  "formats are %s."
-                                  % (args.format, SUPPORTED_FORMATS))
-    else:
-        return SUPPORTED_FORMATS[args.format](args)
 
 
 def query(parser, args):
