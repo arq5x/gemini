@@ -5,6 +5,7 @@ import os
 import sys
 
 import GeminiQuery
+from GeminiQuery import select_formatter
 
 def _report_results(args, query, gq):
     # report the results of the region query
@@ -108,7 +109,8 @@ def region(parser, args):
 
     if os.path.exists(args.db):
 
-        gq = GeminiQuery.GeminiQuery(args.db, out_format=args.format)
+        formatter = select_formatter(args)
+        gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
 
         if args.region is not None and args.gene is not None:
             sys.exit('EXITING: Choose either --reg or --gene, not both.\n')
