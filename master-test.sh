@@ -14,6 +14,12 @@ cd test
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
 
+# Test gemini region
+bash test-region.sh
+
+# Test amending the database
+bash test-amend.sh
+
 # Test query tool
 bash test-query.sh
 
@@ -65,8 +71,6 @@ bash test-stats.sh
 # Test windower
 bash test-windower.sh
 
-# Test gemini region
-bash test-region.sh
 
 # Test pfam domains
 bash test-pfam.sh
