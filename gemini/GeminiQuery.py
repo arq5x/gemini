@@ -91,8 +91,11 @@ class CarrierSummary(RowFormat):
         subjects = get_subjects(args)
         self.carrier_summary = args.carrier_summary
 
+        # get the list of all possible values in the column
+        # but don't include None, since we are treating that as unknown.
         self.column_types = list(set([getattr(x, self.carrier_summary)
                                       for x in subjects.values()]))
+        self.column_types = [i for i in self.column_types if i is not None]
         self.column_counters = {None: set()}
         for ct in self.column_types:
             self.column_counters[ct] = set([k for (k, v) in subjects.items() if
