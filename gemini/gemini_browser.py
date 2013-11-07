@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import warnings
 import GeminiQuery
 
@@ -22,6 +23,20 @@ with warnings.catch_warnings():
 
 debug(True)
 
+
+def connect_to_database(database):
+    """
+    Establish a connection to the requested Gemini database.
+    """
+    # open up a new database
+    if os.path.exists(database):
+        conn = sqlite3.connect(database)
+        conn.isolation_level = None
+        # allow us to refer to columns by name
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        return c
 
 base_dir = os.path.dirname(__file__)
 TEMPLATE_PATH.append(os.path.abspath(os.path.join(base_dir, 'views')))
@@ -73,15 +88,16 @@ def query():
 
         (query, gt_filter, use_header, igv_links) = _get_fields()
 
-        if use_header: use_header = True
-        if igv_links: igv_links = True
+        if use_header:
+            use_header = True
+        if igv_links:
+            igv_links = True
 
         gq = GeminiQuery.GeminiQuery(database)
         gq._set_gemini_browser(True)
         gq.run(query, gt_filter)
 
-
-        if len(query) == 0:
+        if query:
             return template('query.j2', dbfile=database)
 
         if igv_links and ('chrom' not in query.lower()
@@ -111,7 +127,7 @@ def query():
         gq = GeminiQuery.GeminiQuery(database)
         gq.run(query, gt_filter)
 
-        if len(query) == 0:
+        if query:
             return template('query.j2', dbfile=database)
 
         # dump the results to a text file.  this will be
@@ -169,7 +185,7 @@ def auto_rec():
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
 
-        c = connect_to_db(database)
+        c = connect_to_database(database)
 
         row_iter = \
             recessive_tool.get_auto_recessive_candidates(c)
@@ -186,7 +202,8 @@ def auto_dom():
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
 
-        c = connect_to_db(database)
+        #c = connect_to_db(database)
+        c = connect_to_database(database)
 
         row_iter = \
             dominant_tool.get_auto_dominant_candidates(c)
