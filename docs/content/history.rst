@@ -18,6 +18,12 @@ Release History
 8. Added a ``--nonsynonymous`` option to the C-alpha test.
 9. Added ``gemini amend`` to edit an existing database. For now only handles updating
    the samples table.
+10. Fixed a bug that prevented variants that overlapped with multiple 1000G variants
+    from having AAF info extracted from 1000G annotations.  This is now corrected such
+    that multiple overlaps with 1000G variants are tolerated, yet the logic ensures 
+    that the AAF info is extracted for the correct variant.
+11. Fixed installation issues for the GEMINI browser.
+
 
 0.6.2 (2013-Oct-7)
 =======================================
