@@ -66,6 +66,12 @@ os.path.basename(test_script))
 def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     """Install gemini plus python dependencies inside isolated Anaconda environment.
     """
+    # Work around issue with distribute where asks for 'distribute==0.0'
+    try:
+        subprocess.check_call([anaconda["easy_install"], "--upgrade", "distribute"])
+    except subprocess.CalledProcessError:
+        subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
+    # Ensure latest version of fabric for running CloudBioLinux
     subprocess.check_call([anaconda["pip"], "install", "fabric>=1.7.0"])
     # Install problem dependency separately: bx-python
     subprocess.check_call([anaconda["pip"], "install", "--upgrade",
@@ -91,7 +97,7 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
             "python": python_bin}
 
 def install_conda_pkgs(anaconda):
-    pkgs = ["cython", "distribute", "ipython", "nose", "numpy",
+    pkgs = ["cython", "distribute", "ipython", "jinja2", "nose", "numpy",
             "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
             "pyzmq", "pandas", "scipy"]
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + pkgs)
@@ -119,6 +125,7 @@ def install_anaconda_python(args, remotes):
                               (anaconda_dir, os.path.basename(url)), shell=True)
     return {"conda": conda,
             "pip": os.path.join(bindir, "pip"),
+            "easy_install": os.path.join(bindir, "easy_install"),
             "dir": anaconda_dir}
 
 def _cleanup_problem_files(venv_dir):
