@@ -14,8 +14,14 @@ def release(parser, args):
     repo = "https://github.com/arq5x/gemini.git"
     # update locally isolated python
     pip_bin = os.path.join(os.path.dirname(sys.executable), "pip")
+    ei_bin = os.path.join(os.path.dirname(sys.executable), "easy_install")
     activate_bin = os.path.join(os.path.dirname(sys.executable), "activate")
     conda_bin = os.path.join(os.path.dirname(sys.executable), "conda")
+    # Work around issue with distribute where asks for 'distribute==0.0'
+    try:
+        subprocess.check_call([ei_bin, "--upgrade", "distribute"])
+    except subprocess.CalledProcessError:
+        subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
     if os.path.exists(conda_bin):
         pkgs = ["cython", "distribute", "ipython", "jinja2", "nose", "numpy",
                 "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
