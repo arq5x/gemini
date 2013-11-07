@@ -2,7 +2,7 @@
 Release History
 #############################
 
-0.6.3 (in development)
+0.6.3 (2013-Nov-7)
 =======================================
 1. Addition permutation testing to the c-alpha test via the ``--permutations``
    option.
