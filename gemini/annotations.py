@@ -446,20 +446,21 @@ def get_1000G_info(var):
     """
     Returns a suite of annotations from the 1000 Genomes project
     """
-    fetched = []
+    #fetched = []
     info_map = {}
     found = False
+
     for hit in annotations_in_region(var, "1000g", "vcf", "grch37"):
-        fetched.append(hit)
-        # We need a single 1000G entry for a variant
-        if fetched != None and len(fetched) == 1 and \
-                hit.alt == var.ALT[0] and hit.ref == var.REF:
-            # loads each VCF INFO key/value pair into a DICT
-            found = True
+        # We need to ensure we are dealing with the exact sample variant
+        # based on position and the alleles present.
+        if var.start == hit.pos and \
+           var.ALT[0] == hit.alt and \
+           hit.ref == var.REF:
             for info in hit.info.split(";"):
                 if info.find("=") > 0:
                     (key, value) = info.split("=", 1)
                     info_map[key] = value
+            found = True
 
     return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'),
                          info_map.get('ASN_AF'), info_map.get('AFR_AF'),
