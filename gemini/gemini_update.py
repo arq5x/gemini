@@ -17,7 +17,7 @@ def release(parser, args):
     activate_bin = os.path.join(os.path.dirname(sys.executable), "activate")
     conda_bin = os.path.join(os.path.dirname(sys.executable), "conda")
     if os.path.exists(conda_bin):
-        pkgs = ["cython", "distribute", "ipython", "nose", "numpy",
+        pkgs = ["cython", "distribute", "ipython", "jinja2", "nose", "numpy",
                 "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
                 "pyzmq", "pandas", "scipy"]
         subprocess.check_call([conda_bin, "install", "--yes"] + pkgs)
