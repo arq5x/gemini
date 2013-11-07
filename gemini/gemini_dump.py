@@ -35,7 +35,7 @@ def get_genotypes(c, args):
     """For each variant, report each sample's genotype
        on a separate line.
     """
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
 
     query = "SELECT  v.chrom, v.start, v.end, \
                      v.ref, v.alt, \

@@ -14,17 +14,17 @@ from gemini_constants import *
 
 
 def get_pathways(args):
-    
+
     version_dic = defaultdict()
     version_dic = {'66': 'kegg_pathways_ensembl66', '67': 'kegg_pathways_ensembl67',
                    '68': 'kegg_pathways_ensembl68', '69': 'kegg_pathways_ensembl69',
                    '70': 'kegg_pathways_ensembl70', '71': 'kegg_pathways_ensembl71'}
-    
+
     config = read_gemini_config()
     path_dirname = config["annotation_dir"]
     if args.version in version_dic:
         path_file = os.path.join(path_dirname, version_dic[args.version])
-         
+
     else:
         sys.exit("Unsupported Ensembl gene version.\n")
 
@@ -68,18 +68,18 @@ def _get_pathways(gene, transcript, pathways, allow_none=True):
     return pathways
 
 def _report_variant_pathways(c, args, idx_to_sample):
-    
+
     (agn_paths, hgnc_paths, ensembl_paths) = get_pathways(args)
-    
+
     for r in c:
         gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
-        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))        
+        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))
         gene     = str(r['gene'])
         trans    = str(r['transcript'])
-        
+
         pathways = []
         if (gene, trans) in agn_paths:
-            pathways = _get_pathways(gene, trans, agn_paths[(gene, trans)], 
+            pathways = _get_pathways(gene, trans, agn_paths[(gene, trans)],
                             allow_none=False)
         elif (gene, trans) in hgnc_paths:
             pathways = _get_pathways(gene, trans, hgnc_paths[(gene, trans)],
@@ -95,10 +95,10 @@ def _report_variant_pathways(c, args, idx_to_sample):
                                  r['ref'], r['alt'], r['impact'], \
                                  idx_to_sample[idx], gts[idx], gene, trans, \
                                  pathlist])
-    
+
 def get_ind_pathways(c, args):
 
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
                              i.impact, v.gt_types, v.gts, i.gene, \
@@ -114,11 +114,11 @@ def get_ind_pathways(c, args):
                      'gene', 'transcript', 'pathway'])
 
     _report_variant_pathways(c, args, idx_to_sample)
-                            
+
 
 def get_ind_lof_pathways(c, args):
 
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
                              i.impact, v.gt_types, v.gts, i.gene, \
@@ -144,7 +144,7 @@ def pathways(parser, args):
         conn.isolation_level = None
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        
+
         if (not args.lof):
             get_ind_pathways(c, args)
         else:
@@ -152,4 +152,4 @@ def pathways(parser, args):
 
 
 
-          
+

@@ -123,7 +123,7 @@ class GeminiLoader(object):
 
     def build_indices_and_disconnect(self):
         """
-        Create the db table indicies and close up
+        Create the db table indices and close up
         db connection
         """
         # index our tables for speed

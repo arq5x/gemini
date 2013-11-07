@@ -213,7 +213,7 @@ def get_variants_by_sample(c, args):
     Report the number of variants observed for each sample
     where the sample had a non-ref genotype
     """
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
 
     # report.
     print '\t'.join(['sample', 'total'])
@@ -233,7 +233,7 @@ def get_gtcounts_by_sample(c, args):
     Report the count of each genotype class
     observed for each sample.
     """
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
 
     # report.
     print '\t'.join(['sample', 'num_hom_ref', 'num_het',

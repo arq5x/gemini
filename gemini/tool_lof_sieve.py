@@ -9,7 +9,7 @@ from gemini_constants import *
 
 def get_ind_lof(c, args):
 
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
                              v.impact, v.aa_change, v.aa_length, \
