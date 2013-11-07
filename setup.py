@@ -17,21 +17,13 @@ long_description = """
 ``gemini`` is a database framework for exploring genetic variation'
 """
 
+with open("requirements.txt", "r") as f:
+    install_requires = [x.strip() for x in f.readlines() if not x.startswith("gemini")]
+
 setup(
         name="gemini",
         version=version,
-        install_requires=['numpy>=1.6.0',
-                          'pyparsing>=1.5.6,<=1.5.7',
-                          'PyYAML >= 3.10',
-                          'cyvcf>=0.1.8',
-                          'PyYAML >= 3.10',
-                          'python-graph-core >= 1.8.2',
-                          'python-graph-dot >= 1.8.2',
-                          'bottle >= 0.11.6',
-                          'ipython-cluster-helper >= 0.1.9',
-                          'bx-python >= 0.7.1',
-                          'pandas >= 0.11.0',
-                          'scipy >= 0.12.0'],
+        install_requires=install_requires,
         requires = ['python (>=2.5, <3.0)'],
         packages=['gemini',
                   'gemini.scripts',
@@ -41,8 +33,18 @@ setup(
         long_description=long_description,
         url="http://gemini.readthedocs.org",
         package_dir = {'gemini': "gemini"},
-        package_data = {'gemini': ['data/gemini.conf']},
+        package_data = {'gemini': [
+            'static/css/gemini.css',
+            'static/img/gemini.png', 
+            'static/third_party/bootstrap/css/*',
+            'static/third_party/bootstrap/img/*',
+            'static/third_party/bootstrap/js/*',
+            'static/third_party/jquery/jquery-1.7.1.js',
+            'static/third_party/jquery-ui/jquery-ui.min.js',
+            'views/*'
+            ]},
         zip_safe = False,
+        include_package_data=True,
         scripts = ['gemini/scripts/gemini'],
         author_email="arq5x@virginia.edu",
         classifiers=[

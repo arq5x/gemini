@@ -398,16 +398,16 @@ class Family(object):
         mask += ")"
 
         mask += " and "
-        for i, child in enumerate(self.children):
-            if child.affected:
-                mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                    str(HET)
-            else:
-                mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + \
-                    str(HOM_REF)
 
-            if i < (len(self.children) - 1):
-                mask += " and "
+        if len(self.children) == 1:
+            mask += 'gt_types[' + str(self.children[0].sample_id - 1) + "] == " + \
+                str(HET)
+        else:      
+            for i, child in enumerate(self.children):
+                mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                        str(HET)
+                if i < (len(self.children) - 1):
+                    mask += " or "
 
         return mask
 

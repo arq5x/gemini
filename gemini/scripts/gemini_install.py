@@ -97,7 +97,7 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
             "python": python_bin}
 
 def install_conda_pkgs(anaconda):
-    pkgs = ["cython", "distribute", "ipython", "nose", "numpy",
+    pkgs = ["cython", "distribute", "ipython", "jinja2", "nose", "numpy",
             "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
             "pyzmq", "pandas", "scipy"]
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + pkgs)
