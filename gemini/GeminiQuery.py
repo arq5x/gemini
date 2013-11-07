@@ -324,9 +324,10 @@ class GeminiQuery(object):
 
         self._connect_to_database()
         # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323
-        self.sample_to_idx = util.map_samples_to_indicies(self.c)
+        self.sample_to_idx = util.map_samples_to_indices(self.c)
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
-        self.idx_to_sample = util.map_indicies_to_samples(self.c)
+        self.idx_to_sample = util.map_indices_to_samples(self.c)
+        self.idx_to_sample_object = util.map_indices_to_sample_objects(self.c)
         self.formatter = out_format
         self.predicates = [self.formatter.predicate]
 
@@ -336,7 +337,7 @@ class GeminiQuery(object):
 
     def run(self, query, gt_filter=None, show_variant_samples=False,
             variant_samples_delim=',', predicates=None,
-            needs_genotypes=False):
+            needs_genotypes=False, show_families=False):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -349,6 +350,7 @@ class GeminiQuery(object):
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
         self.needs_genotypes = needs_genotypes
+        self.show_families = show_families
         if predicates:
             self.predicates += predicates
 
@@ -388,6 +390,8 @@ class GeminiQuery(object):
                  - OrderedSet(self.select_columns)]
         if self.show_variant_samples:
             h += ["variant_samples", "HET_samples", "HOM_ALT_samples"]
+        if self.show_families:
+            h += ["families"]
         return self.formatter.header(h)
 
     @property
@@ -472,6 +476,8 @@ class GeminiQuery(object):
                 hom_ref_names = [self.idx_to_sample[x] for x in hom_ref_samples]
                 unknown_samples = [x for x, y in enumerate(gt_types) if y == UNKNOWN]
                 unknown_names = [self.idx_to_sample[x] for x in unknown_samples]
+                families = map(str, list(set([self.idx_to_sample_object[x].family_id
+                            for x in variant_samples])))
 
                 # skip the record if it does not meet the user's genotype filter
                 if self.gt_filter and not eval(self.gt_filter):
@@ -526,6 +532,8 @@ class GeminiQuery(object):
                     self.variant_samples_delim.join(het_names)
                 fields["HOM_ALT_samples"] = \
                     self.variant_samples_delim.join(hom_alt_names)
+            if self.show_families:
+                fields["families"] = self.variant_samples_delim.join(families)
 
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
                                    gt_depths, gt_ref_depths, gt_alt_depths,

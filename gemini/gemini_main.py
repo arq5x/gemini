@@ -230,6 +230,12 @@ def main():
                               default=False,
                               help=('Add a column of all sample names with a variant to each '
                                     'variant.'))
+    parser_query.add_argument('--show-families',
+                              dest='show_families',
+                              action='store_true',
+                              default=False,
+                              help=('Add a column listing all of the families '
+                                    'with a variant to each variant.'))
     parser_query.add_argument('--family-wise',
                               dest='family_wise',
                               default=False,

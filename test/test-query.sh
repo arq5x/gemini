@@ -505,3 +505,17 @@ chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	2	2	0	0" > exp
 gemini query --show-samples --carrier-summary-by-phenotype affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db > obs
 check obs exp
 rm obs exp
+
+#########################################################################
+# 30. Test a basic query of the variants table with show-families
+#########################################################################
+echo "    query.t30...\c"
+echo "chrom	start	end	ref	alt	families
+chr10	1142207	1142208	T	C	1
+chr10	48003991	48003992	C	T	1
+chr10	52004314	52004315	T	C	1
+chr10	52497528	52497529	G	C	1
+chr16	72057434	72057435	C	T	1" > exp
+gemini query --header --show-families -q "select chrom, start, end, ref, alt from variants limit 5" extended_ped.db > obs
+check obs exp
+rm obs exp
