@@ -1,0 +1,13 @@
+#Family_ID	Individual_ID	Paternal_ID	Maternal_ID	Sex	Phenotype	ethnicity
+1	child_1	dad_1	mom_1	1	2	caucasian
+2	child_2	dad_2	mom_2	1	2	caucasian
+2	dad_2	-9	-9	1	1	caucasian
+2	mom_2	-9	-9	2	1	caucasian
+1	dad_1	-9	-9	1	1	caucasian
+1	mom_1	-9	-9	2	1	caucasian
+3	child_3	dad_3	mom_3	1	2	caucasian
+3	dad_3	-9	-9	1	1	caucasian
+3	mom_3	-9	-9	2	1	caucasian
+4	child_4	dad_4	mom_4	1	2	caucasianNEuropean
+4	dad_4	-9	-9	1	1	caucasianNEuropean
+4	mom_4	-9	-9	2	1	caucasianNEuropean

@@ -10,6 +10,8 @@ gemini load -v test5.vep.snpeff.vcf -t VEP test5.vep.db
 gemini load -v test.query.vcf -t snpEff test.query.db
 gemini load -v test.region.vep.vcf -t VEP test.region.db
 gemini load -v test.burden.vcf -t VEP -p test.burden.ped test.burden.db
+gemini load -v test.comp_het.vcf -t snpEff -p test.comp_het.ped test.comp_het.db
+gemini load -v test.comp_het.2.vcf -t snpEff test.comp_het_default.db
 gemini load -v test.auto_dom.vcf -t snpEff -p test.auto_dom.ped test.auto_dom.db
 gemini load -v test.auto_dom.no_parents.vcf -t snpEff -p test.auto_dom.no_parents.ped test.auto_dom.no_parents.db
 gemini load -v test.auto_dom.no_parents.2.vcf -t snpEff -p test.auto_dom.no_parents.2.ped test.auto_dom.no_parents.2.db
