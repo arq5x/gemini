@@ -59,6 +59,9 @@ bash test-effstring.sh
 # Test loading functionality
 bash test-annotate-tool.sh
 
+# Test comp_hets tool
+bash test-comphet.sh
+
 # Test pathway tool
 bash test-pathtool.sh
 
@@ -78,9 +81,11 @@ bash test-pfam.sh
 # Test GERP scores
 bash test-gerp.sh
 
+# Test disease models
 bash test-auto-dom.sh
-
 bash test-auto-rec.sh
+
+# Test denovo tool
 bash test-de-novo.sh
 
 # cleanup
