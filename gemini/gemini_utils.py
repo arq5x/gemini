@@ -2,9 +2,10 @@
 import sqlite3
 import collections
 from itertools import tee, ifilterfalse
+from gemini_subjects import Subject
 
 
-def map_samples_to_indicies(c):
+def map_samples_to_indices(c):
     """Return a dict mapping samples names (key)
        to sample indices in the numpy genotype arrays (value).
     """
@@ -17,21 +18,29 @@ def map_samples_to_indicies(c):
     return sample_to_idx
 
 
-def map_indicies_to_samples(c):
+def map_indices_to_samples(c):
     """Return a dict mapping samples indices in the
        numpy arrays (key) to sample names.
     """
-    idx_to_sample = {}
-    c.execute("select sample_id, name from samples")
+    return {k: v.name for (k, v) in map_indices_to_sample_objects(c).items()}
+    # c.execute("select sample_id, name from samples")
+    # for row in c:
+    #     name = str(row['name'])
+    #     idx = row['sample_id'] - 1
+    #     idx_to_sample[idx] = name
+    # return idx_to_sample
+
+def map_indices_to_sample_objects(c):
+    idx_to_sample_object = {}
+    c.execute("select * from samples")
     for row in c:
-        name = str(row['name'])
         idx = row['sample_id'] - 1
-        idx_to_sample[idx] = name
-    return idx_to_sample
+        idx_to_sample_object[idx] = Subject(row)
+    return idx_to_sample_object
 
 
 def get_col_names_and_indices(sqlite_description, ignore_gt_cols=False):
-    """Return a list of column namanes and a list of the row indicies.
+    """Return a list of column namanes and a list of the row indices.
        Optionally exclude gt_* columns.
     """
     col_indices = []

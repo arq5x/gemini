@@ -2,7 +2,7 @@
 Release History
 #############################
 
-0.6.3 (in development)
+0.6.3 (2013-Nov-7)
 =======================================
 1. Addition permutation testing to the c-alpha test via the ``--permutations``
    option.
@@ -23,6 +23,7 @@ Release History
     that multiple overlaps with 1000G variants are tolerated, yet the logic ensures 
     that the AAF info is extracted for the correct variant.
 11. Fixed installation issues for the GEMINI browser.
+12. Added ``--show-families`` option to gemini query.
 
 
 0.6.2 (2013-Oct-7)

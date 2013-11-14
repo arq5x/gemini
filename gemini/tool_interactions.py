@@ -32,7 +32,7 @@ def get_variant_genes(c, args, idx_to_sample):
         var_id = str(r['variant_id'])
         chrom = str(r['chrom'])
         start = str(r['start'])
-        end = str(r['end'])   
+        end = str(r['end'])
         gene     = str(r['gene'])
         impact = str(r['impact'])
         biotype = str(r['biotype'])
@@ -41,7 +41,7 @@ def get_variant_genes(c, args, idx_to_sample):
         clinvar_disease_name = str(r['clinvar_disease_name'])
         aaf_1kg_all = str(r['aaf_1kg_all'])
         aaf_esp_all = str(r['aaf_esp_all'])
-        
+
         for idx, gt_type in enumerate(gt_types):
             if (gt_type == HET or gt_type == HOM_ALT):
                 if gene != "None":
@@ -52,21 +52,21 @@ def get_variant_genes(c, args, idx_to_sample):
                                    aaf_esp_all))
                     samples[idx_to_sample[idx]].append(value)
     return samples
-    
+
 def get_lof_genes(c, args, idx_to_sample):
     lof = defaultdict(list)
     for r in c:
         gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
-        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))  
+        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))
         gene     = str(r['gene'])
-        
+
         for idx, gt_type in enumerate(gt_types):
             if (gt_type == HET or gt_type == HOM_ALT):
                 if gene != "None":
                     (key, value) = (idx_to_sample[idx], gene)
                     lof[idx_to_sample[idx]].append(gene)
     return lof
-                
+
 def sample_gene_interactions(c, args, idx_to_sample):
     out = open("file.dot", 'w')
     #fetch variant gene dict for all samples
@@ -87,7 +87,7 @@ def sample_gene_interactions(c, args, idx_to_sample):
     if args.gene == None or args.gene not in hprd_genes:
         sys.stderr.write("Gene name not found or")
         sys.stderr.write(" gene not in p-p interaction file\n")
-        
+
     elif args.gene in hprd_genes:
         x, y = \
             breadth_first_search(gr,root=args.gene,filter=radius(args.radius))
@@ -96,14 +96,14 @@ def sample_gene_interactions(c, args, idx_to_sample):
         dot = write(gst)
         out.write(dot)
         st, sd = shortest_path(gst, args.gene)
-        
+
         if args.var_mode:
             for sample in samples.iterkeys():
                 var = samples[str(sample)]
-                #for each level return interacting genes if they are 
-                # variants in the sample. 
-                # 0th order would be returned if the user chosen 
-                # gene is a variant in the sample        
+                #for each level return interacting genes if they are
+                # variants in the sample.
+                # 0th order would be returned if the user chosen
+                # gene is a variant in the sample
                 for x in range(0, (args.radius+1)):
                     for each in var:
                         for key, value in sd.iteritems():
@@ -121,7 +121,7 @@ def sample_gene_interactions(c, args, idx_to_sample):
                                           str(each[8]), \
                                           str(each[9]), \
                                           str(each[10]), \
-                                          str(each[11])])        
+                                          str(each[11])])
         elif (not args.var_mode):
             for sample in samples.iterkeys():
                 for each in samples[str(sample)]:
@@ -132,7 +132,7 @@ def sample_gene_interactions(c, args, idx_to_sample):
                             k.append(key)
                     if k:
                         print "\t".join([str(sample), str(args.gene), \
-                                 str(x)+"_order:", 
+                                 str(x)+"_order:",
                                  ",".join(k)])
                     else:
                         print "\t".join([str(sample), str(args.gene), \
@@ -141,8 +141,8 @@ def sample_gene_interactions(c, args, idx_to_sample):
                     k = []
                 #initialize variants list for next iteration
                 variants = []
-                
-            
+
+
 def sample_lof_interactions(c, args, idx_to_sample, samples):
     lof = get_lof_genes(c, args, idx_to_sample)
     #file handle for fetching the hprd graph
@@ -159,7 +159,7 @@ def sample_lof_interactions(c, args, idx_to_sample, samples):
     #initialize keys
     k = []
     variants = []
-    
+
     if (not args.var_mode):
         for sample in lof.iterkeys():
             lofvariants = list(set(lof[str(sample)]))
@@ -174,7 +174,7 @@ def sample_lof_interactions(c, args, idx_to_sample, samples):
                     gst = digraph()
                     gst.add_spanning_tree(x)
                     st, sd = shortest_path(gst, gene)
-                    # for each level return interacting genes 
+                    # for each level return interacting genes
                     # if they are variants in the sample.
                     for rad in range(1, (args.radius+1)):
                         for key, value in sd.iteritems():
@@ -183,7 +183,7 @@ def sample_lof_interactions(c, args, idx_to_sample, samples):
                         if k:
                             print "\t".join([str(sample), \
                                        str(gene), \
-                                       str(rad)+"_order:", 
+                                       str(rad)+"_order:",
                                        ",".join(k)])
                         else:
                             print "\t".join([str(sample), \
@@ -197,7 +197,7 @@ def sample_lof_interactions(c, args, idx_to_sample, samples):
     elif args.var_mode:
         for sample in lof.iterkeys():
             lofvariants = list(set(lof[str(sample)]))
-            var = samples[str(sample)]    
+            var = samples[str(sample)]
             for gene in lofvariants:
                 if gene in hprd_genes:
                     x, y = \
@@ -225,37 +225,37 @@ def sample_lof_interactions(c, args, idx_to_sample, samples):
                                                str(each[9]), \
                                                str(each[10]), \
                                                str(each[11])])
-    
+
 
 def sample_variants(c, args):
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
     query = "SELECT variant_id, gt_types, gts, gene, impact, biotype, \
                     in_dbsnp, clinvar_sig, clinvar_disease_name, aaf_1kg_all, aaf_esp_all, chrom, \
                     start, end  \
              FROM variants"
     c.execute(query)
-    
+
     if args.command == 'interactions':
-        #header  
+        #header
         if args.var_mode:
             print "\t".join(['sample','gene','order_of_interaction', \
                              'interacting_gene', 'var_id', 'chrom', 'start', \
                              'end', 'impact', 'biotype', 'in_dbsnp', \
                              'clinvar_sig', 'clinvar_disease_name', 'aaf_1kg_all', \
                              'aaf_esp_all'])
-        
+
         if (not args.var_mode):
             print "\t".join(['sample','gene','order_of_interaction', \
                      'interacting_gene'])
         sample_gene_interactions(c, args, idx_to_sample)
-        
+
     elif args.command == 'lof_interactions':
         samples = get_variant_genes(c, args, idx_to_sample)
         return samples
-  
-    
+
+
 def sample_lof_variants(c, args, samples):
-    idx_to_sample = util.map_indicies_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(c)
     query = "SELECT chrom, start, end, \
                              gt_types, gts, gene \
              FROM variants \
@@ -268,14 +268,14 @@ def sample_lof_variants(c, args, samples):
                     'interacting_gene', 'var_id', 'chrom', 'start', \
                     'end', 'impact','biotype','in_dbsnp', 'clinvar_sig', \
                     'clinvar_disease_name', 'aaf_1kg_all','aaf_esp_all'])
-                    
+
     elif (not args.var_mode):
         print "\t".join(['sample','lof_gene','order_of_interaction', \
                          'interacting_gene'])
-                         
+
     sample_lof_interactions(c, args, idx_to_sample, samples)
 
-    
+
 def genequery(parser, args):
     if os.path.exists(args.db):
         conn = sqlite3.connect(args.db)

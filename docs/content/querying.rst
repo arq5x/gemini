@@ -251,6 +251,12 @@ variant_samples is a list of all of the samples with a variant, HET_samples is t
 of those heterozygous for the variant and HOM_ALT_samples is the subset homozygous for
 the variant.
 
+=============================================================
+``--show-families`` Finding out which families have a variant
+=============================================================
+This works exactly like ``--show-samples`` except lists all of the families with a
+variant instead of the individual samples.
+
 ===================================================
 ``--region`` Restrict a query to a specified region
 ===================================================

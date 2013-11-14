@@ -5,7 +5,6 @@ import sys
 import numpy as np
 from collections import defaultdict
 
-import gemini_utils as util
 from gemini_constants import *
 import GeminiQuery
 
@@ -31,8 +30,12 @@ class Subject(object):
 
     def _set_fields_from_row(self, row):
         [setattr(self, k, v) for (k, v) in zip(row.keys(), list(row))]
-        self.phenotype = int(row['phenotype']) if row['phenotype'] else None
+        self.phenotype = int(self.phenotype) if self._has_phenotype() else None
         self._set_affected_status(row)
+
+    def _has_phenotype(self):
+        if hasattr(self, 'phenotype') and self.phenotype is not None:
+            return True
 
     def _set_affected_status(self, row):
         # 1 = unaffected
