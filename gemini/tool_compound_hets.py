@@ -50,7 +50,7 @@ def get_compound_hets(args):
     """
     gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True)
     idx_to_sample = gq.idx_to_sample
-    subjects_dict = subjects.get_subjects(gq.c)
+    subjects_dict = subjects.get_subjects(args)
     
     if args.columns is not None:
         custom_columns = _add_necessary_columns(args, str(args.columns))        
