@@ -5,13 +5,15 @@ Overview
 ========
 The intent of ``GEMINI`` (GEnome MINIing) is to provide a simple, flexible, and 
 powerful framework for exploring genetic variation for personal and medical genetics.
-GEMINI is unique in that it integrated genetic variation (from VCF files) with
+GEMINI is unique in that it integrates genetic variation (from VCF files) with
 a wealth of genome annotations into a unified database framework. Using this
 integrated database as the analysis framework, we aim to leverage the expressive 
 power of SQL for data analysis, while attempting to overcome the fundamental 
 challenges associated with using databases for very large
 (e.g. 1,000,000 variants times 1,000 samples yields one billion genotypes)
-datasets.
+datasets. In addition, by defining sample relationships with a PED file, GEMINI allows
+one to explore and test for variants that meet specific inheritance models (e.g., 
+recessive, dominant, etc.).
 
 Documentation
 ================
