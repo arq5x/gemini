@@ -23,12 +23,12 @@ def release(parser, args):
     except subprocess.CalledProcessError:
         subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
     if os.path.exists(conda_bin):
-        pkgs = ["cython", "distribute", "ipython", "jinja2", "nose", "numpy",
+        pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
                 "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
                 "pyzmq", "pandas", "scipy"]
         subprocess.check_call([conda_bin, "install", "--yes"] + pkgs)
     elif os.path.exists(activate_bin):
-        subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
+        pass
     else:
         raise NotImplementedError("Can only upgrade gemini installed in anaconda or virtualenv")
     # update libraries
