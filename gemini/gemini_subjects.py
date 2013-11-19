@@ -397,7 +397,7 @@ class Family(object):
 
         mask += ")"
 
-        mask += " and "
+        mask += " and ("
 
         if len(self.children) == 1:
             mask += 'gt_types[' + str(self.children[0].sample_id - 1) + "] == " + \
@@ -408,7 +408,7 @@ class Family(object):
                         str(HET)
                 if i < (len(self.children) - 1):
                     mask += " or "
-
+        mask += " )"
         return mask
 
     def get_genotype_columns(self):
