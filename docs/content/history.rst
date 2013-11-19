@@ -4,7 +4,7 @@ Release History
 
 0.6.3.1 (2013-Nov-19)
 =======================================
-1. Fixed undetected bug preventing the ``comp_hets`` tool from funtioning.
+1. Fixed undetected bug preventing the ``comp_hets`` tool from functioning.
 2. Added unit tests for the ``comp_hets`` tool.
 
 0.6.3 (2013-Nov-7)
