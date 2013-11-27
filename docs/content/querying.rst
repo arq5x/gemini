@@ -432,7 +432,7 @@ to get a summary of how a set of variants segregate with affected status:
 
 .. code-block:: bash
 
-	$ gemini query --show-samples --carrier-status-by-phenotype affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped_test.db
+	$ gemini query --show-samples --carrier-summary-by-phenotype affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped_test.db
 	chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	unaffected_carrier	affected_carrier	unaffected_noncarrier	affected_noncarrier	unknown
 	chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	2	2	0	0	0
 	chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	1	2	1	0	0
@@ -449,7 +449,7 @@ like hair color:
 
 .. code-block:: bash
 
-	$ gemini query --show-samples --carrier-status-by-phenotype hair_color --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db
+	$ gemini query --show-samples --carrier-summary-by-phenotype hair_color --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db
 	chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	blue_carrier	brown_carrier	purple_carrier	blue_noncarrier	brown_noncarrier	purple_noncarrier	unknown
 	chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	1	2	1	0	0	0	0
 	chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	0	2	1	1	0	0	0
