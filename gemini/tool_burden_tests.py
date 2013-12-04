@@ -61,6 +61,9 @@ def get_calpha(args):
     header = ["gene", "T", "c", "Z", "p_value"]
     print "\t".join(header)
 
+    if args.permutations > 0:
+        perms = permute_cases(samples, args.permutations, case)
+
     for gene in variants_in_gene:
         vig = variants_in_gene[gene]
 
@@ -109,12 +112,14 @@ def get_calpha(args):
         else:
             # this permutes the cases without replacement, important for
             # calculating an exact p-value
-            perms = permute_cases(samples, args.permutations, case)
             T_scores = []
             for perm_case in perms:
                 y_i = [len(filter(lambda a: a in perm_case, x)) for x in vig.values()]
                 T_permuted = _calculate_T(m, p_0, n_i, y_i)
                 T_scores.append(T_permuted)
+            if args.save_tscores:
+                with open("permutated_t_scores.txt", "a") as out_handle:
+                    out_handle.write("\t".join([gene] + map(str, T_scores)) + "\n")
             false_hits = sum([x >= T for x in T_scores])
             # the + 1 to make it an unbiased estimator
             # Permutation P-values Should Never Be Zero: Calculating Exact

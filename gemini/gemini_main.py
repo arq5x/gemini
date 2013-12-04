@@ -599,6 +599,9 @@ def main():
                                default=1.0,
                                help='The max. alt. allele frequency for a '
                                      'variant to be included.')
+    parser_burden.add_argument('--save_tscores', default=False,
+                               action='store_true',
+                               help='Save the permuted T-scores to a file.')
     parser_burden.add_argument('db',
                                metavar='db',
                                help='The name of the database to be queried.')
