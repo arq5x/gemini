@@ -1,7 +1,7 @@
 numpy>=1.7.1
 pyparsing>=1.5.6,<=1.5.7
 pysam>=0.6
-cyvcf>=0.1.9
+cyvcf>=0.1.9.1
 PyYAML>=3.10
 pybedtools>=0.6.2
 jinja2>=2.7.1
