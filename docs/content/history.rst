@@ -2,6 +2,11 @@
 Release History
 #############################
 
+0.6.3.2 (2013-Dec-10)
+=======================================
+1. Fixed a bug that caused ``--gt-filter`` to no be enforced from ``query`` tool unless a GT* column was selected.
+2. Support for ref and alt allele depths provided by FreeBayes.
+
 0.6.3.1 (2013-Nov-19)
 =======================================
 1. Fixed undetected bug preventing the ``comp_hets`` tool from functioning.
