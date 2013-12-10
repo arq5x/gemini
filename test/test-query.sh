@@ -519,3 +519,47 @@ chr16	72057434	72057435	C	T	1" > exp
 gemini query --header --show-families -q "select chrom, start, end, ref, alt from variants limit 5" extended_ped.db > obs
 check obs exp
 rm obs exp
+
+####################################################################
+# 31. Test that rows are filtered based on a --gt-filter if
+#     a GT* column is SELECTed.
+####################################################################
+echo "    query.t15...\c"
+echo "chr1	69269	69270	A	G	OR4F5	3
+chr1	69510	69511	A	G	OR4F5	3
+chr1	69760	69761	A	T	OR4F5	3
+chr1	861629	861630	G	A	SAMD11	3
+chr1	861807	861808	A	G	SAMD11	3
+chr1	866318	866319	G	A	SAMD11	3
+chr1	866510	866511	C	CCCCT	SAMD11	3
+chr1	866892	866893	T	C	SAMD11	3
+chr1	866919	866920	A	G	SAMD11	3
+chr1	870902	870903	T	C	SAMD11	3" > exp
+gemini query -q "select chrom, start, end, ref, alt, gene, gt_types.1094PC0019 \
+                 from variants" \
+             --gt-filter "gt_types.1094PC0019 == HOM_ALT" test.query.db | head \
+       > obs
+check obs exp
+rm obs exp
+
+####################################################################
+# 31. Test that rows are filtered based on a --gt-filter if
+#     a GT* column is NOT SELECTed.
+####################################################################
+echo "    query.t15...\c"
+echo "chr1	69269	69270	A	G	OR4F5
+chr1	69510	69511	A	G	OR4F5
+chr1	69760	69761	A	T	OR4F5
+chr1	861629	861630	G	A	SAMD11
+chr1	861807	861808	A	G	SAMD11
+chr1	866318	866319	G	A	SAMD11
+chr1	866510	866511	C	CCCCT	SAMD11
+chr1	866892	866893	T	C	SAMD11
+chr1	866919	866920	A	G	SAMD11
+chr1	870902	870903	T	C	SAMD11" > exp
+gemini query -q "select chrom, start, end, ref, alt, gene \
+                 from variants" \
+             --gt-filter "gt_types.1094PC0019 == HOM_ALT" test.query.db | head \
+       > obs
+check obs exp
+rm obs exp

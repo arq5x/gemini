@@ -97,7 +97,7 @@ def get_row_predicates(args):
 def needs_genotypes(args):
     return (args.show_variant_samples or args.family_wise
             or args.sample_filter or args.carrier_summary or
-            args.show_families)
+            args.show_families or args.gt_filter)
 
 def add_required_columns_to_query(args):
     if args.region:
