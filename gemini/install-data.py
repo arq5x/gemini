@@ -81,10 +81,13 @@ def _check_dependencies():
     print "Checking required dependencies..."
     for cmd, url in [("curl", "http://curl.haxx.se/")]:
         try:
-            subprocess.check_call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            print " %s found" % cmd
+            retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
+            retcode = 127
+        if retcode == 127:
             raise OSError("gemini requires %s (%s)" % (cmd, url))
+        else:
+            print " %s found" % cmd
 
 def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
@@ -122,11 +125,12 @@ def _download_to_dir(url, dirname, version, cur_version):
         max_retries = 2
         retries = 0
         while 1:
-            try:
-                cmd = ["curl", "-C", "-", "-OL", url]
-                subprocess.check_call(cmd)
+            cmd = ["curl", "-C", "-", "-OL", url]
+            retcode = subprocess.call(cmd)
+            if retcode == 0:
                 break
-            except subprocess.CalledProcessError:
+            else:
+                print "Curl failed with non-zero exit code %s. Retrying" % retcode
                 if retries >= max_retries:
                     raise
                 time.sleep(10)
