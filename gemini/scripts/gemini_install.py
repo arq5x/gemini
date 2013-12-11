@@ -225,10 +225,13 @@ def check_dependencies():
                      ("wget", "http://www.gnu.org/software/wget/"),
                      ("curl", "http://curl.haxx.se/")]:
         try:
-            subprocess.check_call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            print " %s found" % cmd
+            retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
+            retcode = 127
+        if retcode == 127:
             raise OSError("gemini requires %s (%s)" % (cmd, url))
+        else:
+            print " %s found" % cmd
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated installer for gemini framework.")
