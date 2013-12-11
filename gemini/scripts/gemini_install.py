@@ -58,7 +58,7 @@ def main(args):
     print " Tools installed in:\n  %s" % args.tooldir
     print " Data installed in:\n  %s" % args.datadir
     print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
-os.path.basename(test_script))
+                                                    os.path.basename(test_script))
     print " NOTE: be sure to add %s/bin to your PATH." % args.tooldir
 
     shutil.rmtree(work_dir)
@@ -70,7 +70,10 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     try:
         subprocess.check_call([anaconda["easy_install"], "--upgrade", "distribute"])
     except subprocess.CalledProcessError:
-        subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
+        try:
+            subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
+        except subprocess.CalledProcessError:
+            pass
     # Ensure latest version of fabric for running CloudBioLinux
     subprocess.check_call([anaconda["pip"], "install", "fabric>=1.7.0"])
     # Install problem dependency separately: bx-python
