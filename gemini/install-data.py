@@ -68,6 +68,9 @@ def install_annotation_files(anno_root_dir):
         os.makedirs(anno_dir)
 
     cur_config = read_gemini_config(allow_missing=True)
+    cur_config["annotation_dir"] = os.path.abspath(anno_dir)
+    cur_config["versions"] = anno_versions
+    write_gemini_config(cur_config)
 
     _check_dependencies()
     _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
@@ -92,10 +95,6 @@ def _check_dependencies():
 def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
     """
-    cur_config["annotation_dir"] = os.path.abspath(anno_dir)
-    cur_config["versions"] = anno_versions
-    write_gemini_config(cur_config)
-
     for orig in file_names:
         if orig.endswith(".gz"):
             dls = [orig, "%s.tbi" % orig]
