@@ -122,10 +122,8 @@ def install_anaconda_python(args, remotes):
         url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux")
         if not os.path.exists(os.path.basename(url)):
             subprocess.check_call(["wget", url])
-        #subprocess.check_call("LC_ALL=C sed -ie 's/more /cat  /' %s" % os.path.basename(url),
-        #                      shell=True)
-        subprocess.check_call("echo -e '\nyes\n%s\nno\n' | bash %s" %
-                              (anaconda_dir, os.path.basename(url)), shell=True)
+        subprocess.check_call("bash %s -b -p %s" %
+                              (os.path.basename(url), anaconda_dir), shell=True)
     return {"conda": conda,
             "pip": os.path.join(bindir, "pip"),
             "easy_install": os.path.join(bindir, "easy_install"),
