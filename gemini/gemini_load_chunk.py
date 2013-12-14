@@ -256,6 +256,7 @@ class GeminiLoader(object):
         encode_dnaseI = annotations.get_encode_dnase_clusters(var)
         encode_cons_seg = annotations.get_encode_consensus_segs(var)
         gerp_el = annotations.get_gerp_elements(var)
+        vista_enhancers = annotations.get_vista_enhancers(var)
 
         # grab the GERP score for this variant if asked.
         gerp_bp = None
@@ -402,7 +403,8 @@ class GeminiLoader(object):
                    encode_cons_seg.helas3,
                    encode_cons_seg.hepg2,
                    encode_cons_seg.huvec,
-                   encode_cons_seg.k562]
+                   encode_cons_seg.k562,
+                   vista_enhancers]
         return variant, variant_impacts
 
     def _prepare_samples(self):

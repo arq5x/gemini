@@ -45,6 +45,7 @@ def get_anno_files():
                                           'encode.6celltypes.consensus.bedg.gz'),
     'gerp_bp': os.path.join(anno_dirname, 'hg19.gerp.bw'),
     'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
+    'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
     }
 
 class ClinVarInfo(object):
@@ -315,6 +316,16 @@ def get_gerp_elements(var):
         return min(float(p) for p in p_vals)
     else:
         return None
+
+def get_vista_enhancers(var):
+    """
+    Returns the VISTA enhancer information.
+    """
+    vista_enhancers = []
+    for hit in annotations_in_region(var, "vista_enhancers", "tuple"):
+        vista_enhancers.append(hit[4])
+    return ",".join(vista_enhancers) if len(vista_enhancers) > 0 else None
+
 
 def get_pfamA_domains(var):
     """
