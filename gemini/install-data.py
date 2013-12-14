@@ -69,6 +69,9 @@ def install_annotation_files(anno_root_dir):
         os.makedirs(anno_dir)
 
     cur_config = read_gemini_config(allow_missing=True)
+    cur_config["annotation_dir"] = os.path.abspath(anno_dir)
+    cur_config["versions"] = anno_versions
+    write_gemini_config(cur_config)
 
     _check_dependencies()
     _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
@@ -82,18 +85,17 @@ def _check_dependencies():
     print "Checking required dependencies..."
     for cmd, url in [("curl", "http://curl.haxx.se/")]:
         try:
-            subprocess.check_call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            print " %s found" % cmd
+            retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
+            retcode = 127
+        if retcode == 127:
             raise OSError("gemini requires %s (%s)" % (cmd, url))
+        else:
+            print " %s found" % cmd
 
 def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
     """
-    cur_config["annotation_dir"] = os.path.abspath(anno_dir)
-    cur_config["versions"] = anno_versions
-    write_gemini_config(cur_config)
-
     for orig in file_names:
         if orig.endswith(".gz"):
             dls = [orig, "%s.tbi" % orig]
@@ -123,11 +125,12 @@ def _download_to_dir(url, dirname, version, cur_version):
         max_retries = 2
         retries = 0
         while 1:
-            try:
-                cmd = ["curl", "-C", "-", "-OL", url]
-                subprocess.check_call(cmd)
+            cmd = ["curl", "-C", "-", "-OL", url]
+            retcode = subprocess.call(cmd)
+            if retcode == 0:
                 break
-            except subprocess.CalledProcessError:
+            else:
+                print "Curl failed with non-zero exit code %s. Retrying" % retcode
                 if retries >= max_retries:
                     raise
                 time.sleep(10)

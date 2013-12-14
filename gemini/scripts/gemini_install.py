@@ -58,7 +58,7 @@ def main(args):
     print " Tools installed in:\n  %s" % args.tooldir
     print " Data installed in:\n  %s" % args.datadir
     print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
-os.path.basename(test_script))
+                                                    os.path.basename(test_script))
     print " NOTE: be sure to add %s/bin to your PATH." % args.tooldir
 
     shutil.rmtree(work_dir)
@@ -70,7 +70,10 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     try:
         subprocess.check_call([anaconda["easy_install"], "--upgrade", "distribute"])
     except subprocess.CalledProcessError:
-        subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
+        try:
+            subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
+        except subprocess.CalledProcessError:
+            pass
     # Ensure latest version of fabric for running CloudBioLinux
     subprocess.check_call([anaconda["pip"], "install", "fabric>=1.7.0"])
     # Install problem dependency separately: bx-python
@@ -119,10 +122,8 @@ def install_anaconda_python(args, remotes):
         url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux")
         if not os.path.exists(os.path.basename(url)):
             subprocess.check_call(["wget", url])
-        #subprocess.check_call("LC_ALL=C sed -ie 's/more /cat  /' %s" % os.path.basename(url),
-        #                      shell=True)
-        subprocess.check_call("echo -e '\nyes\n%s\nno\n' | bash %s" %
-                              (anaconda_dir, os.path.basename(url)), shell=True)
+        subprocess.check_call("bash %s -b -p %s" %
+                              (os.path.basename(url), anaconda_dir), shell=True)
     return {"conda": conda,
             "pip": os.path.join(bindir, "pip"),
             "easy_install": os.path.join(bindir, "easy_install"),
@@ -225,10 +226,13 @@ def check_dependencies():
                      ("wget", "http://www.gnu.org/software/wget/"),
                      ("curl", "http://curl.haxx.se/")]:
         try:
-            subprocess.check_call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            print " %s found" % cmd
+            retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
+            retcode = 127
+        if retcode == 127:
             raise OSError("gemini requires %s (%s)" % (cmd, url))
+        else:
+            print " %s found" % cmd
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated installer for gemini framework.")

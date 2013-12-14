@@ -21,7 +21,10 @@ def release(parser, args):
     try:
         subprocess.check_call([ei_bin, "--upgrade", "distribute"])
     except subprocess.CalledProcessError:
-        subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
+        try:
+            subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
+        except subprocess.CalledProcessError:
+            pass
     if os.path.exists(conda_bin):
         pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
                 "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
