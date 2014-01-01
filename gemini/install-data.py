@@ -139,6 +139,11 @@ def _download_to_dir(url, dirname, version, cur_version):
                     raise
                 time.sleep(10)
                 retries += 1
+        with open(stub) as in_handle:
+            line1 = in_handle.readline()
+            line2 = in_handle.readline()
+            if "?xml" in line1 and "Error" in line2 and "AccessDenied" in line2:
+                raise ValueError("Could not download annotation file. Permission denied error: %s" % url)
         # move to system directory (/usr/share/gemini/data) and remove from pwd
         shutil.move(stub, dest)
         os.chdir(orig_dir)
