@@ -56,6 +56,13 @@ in any directories one wishes.**
      other transient errors during installation, a re-run can often solve
      the problem (fingers crossed).
 
+  3. If you're installing behind a proxy you'll need to set proxy information in
+     a `condarc file`_ and also set ``all_proxy``, ``http_proxy`` and ``https_proxy``
+     in your ``.bashrc`` file. See `this mailing list discussion`_ for more information.
+
+.. _condarc file: http://docs.continuum.io/conda/intro.html#configuration
+.. _this mailing list discussion: https://groups.google.com/d/msg/gemini-variation/WMQiMDeW6aE/6oa8nS1NorUJ
+
 
 Dependencies
 -------------------------------
