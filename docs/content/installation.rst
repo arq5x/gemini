@@ -141,6 +141,13 @@ version with:
 
     $ gemini update
 
+There are also flags to update to the latest development version of the code or
+to only update data files without updating the source:
+
+.. code-block:: bash
+
+    $ gemini update --devel
+    $ gemini update --dataonly
 
 
 Software dependencies

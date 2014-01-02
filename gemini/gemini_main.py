@@ -767,6 +767,8 @@ def main():
     parser_update = subparsers.add_parser("update", help="Update gemini software and data files.")
     parser_update.add_argument("--devel", help="Get the latest development version instead of the release",
                                action="store_true", default=False)
+    parser_update.add_argument("--dataonly", help="Only update data, not the underlying libraries.",
+                               action="store_true", default=False)
     parser_update.set_defaults(func=gemini_update.release)
 
     #######################################################

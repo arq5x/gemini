@@ -199,6 +199,9 @@ def _get_hits(coords, annotation, parser_type):
     # catch invalid region errors raised by ctabix
     except ValueError:
         hit_iter = []
+    # recent versions of pysam return KeyError
+    except KeyError:
+        hit_iter = []
     return hit_iter
 
 def _get_bw_summary(coords, annotation):

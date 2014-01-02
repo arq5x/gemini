@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import sys
 import os
 import shutil
@@ -54,7 +55,7 @@ anno_versions = {
     "GRCh37-gms-mappability.vcf.gz": 2,
     "hg19.rmsk.bed.gz": 2}
 
-def install_annotation_files(anno_root_dir):
+def install_annotation_files(anno_root_dir, dl_files=False):
     """Download required annotation files.
     """
     # create the full gemini data path based on
@@ -65,17 +66,20 @@ def install_annotation_files(anno_root_dir):
         anno_dir = os.path.join(anno_root_dir, "data")
     else:
         anno_dir = os.path.join(anno_root_dir, "gemini", "data")
-    if not os.path.exists(anno_dir):
-        os.makedirs(anno_dir)
 
     cur_config = read_gemini_config(allow_missing=True)
     cur_config["annotation_dir"] = os.path.abspath(anno_dir)
     cur_config["versions"] = anno_versions
     write_gemini_config(cur_config)
 
-    _check_dependencies()
-    _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
-                         anno_files, anno_dir, cur_config)
+    if dl_files:
+        if not os.path.exists(anno_dir):
+            os.makedirs(anno_dir)
+        if not os.path.isdir(anno_dir):
+            sys.exit(anno_dir + " is not a valid directory.")
+        _check_dependencies()
+        _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
+                             anno_files, anno_dir, cur_config)
     #_download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
     #                     toadd_anno_files, cur_config)
 
@@ -135,15 +139,18 @@ def _download_to_dir(url, dirname, version, cur_version):
                     raise
                 time.sleep(10)
                 retries += 1
+        with open(stub) as in_handle:
+            line1 = in_handle.readline()
+            line2 = in_handle.readline()
+            if "?xml" in line1 and "Error" in line2 and "AccessDenied" in line2:
+                raise ValueError("Could not download annotation file. Permission denied error: %s" % url)
         # move to system directory (/usr/share/gemini/data) and remove from pwd
         shutil.move(stub, dest)
         os.chdir(orig_dir)
 
 if __name__ == "__main__":
-    anno_dir = sys.argv[1]
-    if not os.path.exists(anno_dir):
-        os.makedirs(anno_dir)
-    if os.path.isdir(anno_dir):
-        install_annotation_files(anno_dir)
-    else:
-        sys.exit(anno_dir + " is not a valid directory.")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("anno_dir", help="Directory to write annotation files.")
+    parser.add_argument("--nodata", dest="dl_files", default=True, action="store_false")
+    args = parser.parse_args()
+    install_annotation_files(args.anno_dir, args.dl_files)

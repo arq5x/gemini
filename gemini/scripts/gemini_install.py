@@ -49,9 +49,7 @@ def main(args):
         print "Installing associated tools..."
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     os.chdir(work_dir)
-    if args.install_data:
-        print "Installing gemini data..."
-        install_data(gemini["python"], gemini["data_script"], args.datadir)
+    install_data(gemini["python"], gemini["data_script"], args)
     os.chdir(work_dir)
     test_script = install_testbase(args.datadir, remotes["gemini"])
     print "Finished: gemini, tools and data installed"
@@ -156,10 +154,15 @@ def install_tools(fab_cmd, fabfile, fabricrc):
            "install_biolinux:target=custom,flavor=%s" % flavor_dir]
     subprocess.check_call(cmd)
 
-def install_data(python_cmd, data_script, datadir):
+def install_data(python_cmd, data_script, args):
     """Install biological data used by gemini.
     """
-    subprocess.check_call([python_cmd, data_script, datadir])
+    cmd = [python_cmd, data_script, args.datadir]
+    if args.install_data:
+        print "Installing gemini data..."
+    else:
+        cmd.append("--nodata")
+    subprocess.check_call(cmd)
 
 def install_testbase(datadir, repo):
     """Clone or update gemini code so we have the latest test suite.
