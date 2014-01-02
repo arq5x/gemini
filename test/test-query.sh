@@ -1,3 +1,13 @@
+check()
+{
+	if diff $1 $2; then
+    	echo ok
+	else
+    	echo fail
+	fi
+}
+export -f check
+
 ####################################################################
 # 1. Test the samples table
 ####################################################################
@@ -205,11 +215,11 @@ rm obs exp
 # 12. Test a query of the variants table with a select * and the full genotype column
 ###############################################################################
 echo "    query.t12...\c"
-echo "chr1	30547	30548	None	1	1	T	G	50.09	None	snp	tv	0.116666666667	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	0	3	53	0.428571428571	0.00815097309095	None	0.527472527473	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	7	None	29.0	0	0	14	0.0	0.0	16.7	6	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	./.,./.,./.,./.,./.,./.,T/T,./.,./.,./.,./.,./.,./.,T/T,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,G/G,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,T/T,./.,G/G,./.,G/G,./.,./.,./.,./.,./.,T/T,./.,./.,./.,./.,./.,./.,./.
-chr1	30859	30860	None	2	1	G	C	54.3	None	snp	tv	0.433333333333	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	24	1	1	34	0.0576923076923	0.000983220876781	0.646258503401	0.110859728507	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	61	None	36.25	0	0	52	0.0	0.6396	13.57	3	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	G/G,G/G,G/G,G/G,./.,./.,G/G,./.,G/G,G/G,G/G,./.,./.,G/G,G/G,./.,./.,./.,./.,./.,G/G,./.,./.,G/G,./.,G/G,G/G,G/G,G/G,C/C,G/G,./.,G/G,./.,./.,./.,./.,./.,./.,./.,./.,./.,G/C,./.,G/G,./.,G/G,./.,./.,G/G,G/G,G/G,G/G,./.,./.,./.,./.,./.,./.,./.
-chr1	30866	30869	None	3	1	CCT	C	49.48	None	indel	del	0.466666666667	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	23	4	1	32	0.107142857143	0.180078296859	0.253333333333	0.194805194805	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	65	None	36.09	0	0	56	None	12.2055	3.81	6	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	CCT/CCT,CCT/CCT,CCT/C,CCT/CCT,./.,./.,CCT/CCT,./.,CCT/CCT,CCT/C,CCT/CCT,./.,./.,CCT/CCT,CCT/CCT,./.,./.,./.,./.,./.,CCT/CCT,./.,./.,CCT/C,./.,CCT/CCT,C/C,CCT/CCT,CCT/CCT,CCT/CCT,CCT/CCT,./.,CCT/CCT,./.,./.,./.,./.,CCT/CCT,./.,./.,./.,./.,CCT/C,./.,CCT/CCT,./.,CCT/CCT,CCT/CCT,./.,CCT/CCT,CCT/CCT,CCT/CCT,CCT/CCT,./.,./.,./.,./.,./.,./.,./.
-chr1	30894	30895	None	4	1	T	C	51.79	None	snp	ts	0.483333333333	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	26	2	1	31	0.0689655172414	0.0126621812074	0.462962962963	0.130671506352	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	63	None	36.09	0	0	58	0.0	0.2091	3.98	4	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	T/C,T/C,T/T,T/T,./.,./.,T/T,./.,T/T,T/T,T/T,./.,T/T,T/T,T/T,./.,./.,./.,T/T,./.,T/T,./.,./.,T/T,./.,./.,T/T,T/T,T/T,C/C,T/T,./.,T/T,./.,./.,./.,./.,T/T,./.,./.,./.,./.,T/T,./.,T/T,./.,T/T,T/T,./.,./.,T/T,T/T,T/T,T/T,./.,./.,./.,./.,./.,./.
-chr1	30922	30923	None	5	1	G	T	601.49	None	snp	tv	0.25	1	rs140337953	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	0	0	15	45	1.0	1	None	0	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	17	None	35.61	0	0	30	0.0	0.0	35.38	30	None	None	None	None	0	None	None	None	0	1	0.8	0.89	0.48	0.73	0.73	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,T/T,./.,T/T,./.,./.,./.,./.,T/T,T/T,T/T,T/T,./.,T/T,./.,T/T,./.,./.,./.,./.,T/T,T/T,./.,./.,./.,./.,./.,T/T,./.,T/T,T/T,./.,./.,./.,./.,T/T,T/T,./.,./.,./.,./.,./.,./." > exp
+echo "chr1	30547	30548	None	1	1	T	G	50.09	None	snp	tv	0.116666666667	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.3	None	0	1	0	None	None	4	0	3	53	0.428571428571	0.00815097309095	None	0.527472527473	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	8	protein_coding	downstream	LOW	None	None	None	None	None	None	None	7	None	29.0	0	0	14	0.0	0.0	16.7	6	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	None	./.,./.,./.,./.,./.,./.,T/T,./.,./.,./.,./.,./.,./.,T/T,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,G/G,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,T/T,./.,G/G,./.,G/G,./.,./.,./.,./.,./.,T/T,./.,./.,./.,./.,./.,./.,./.
+chr1	30859	30860	None	2	1	G	C	54.3	None	snp	tv	0.433333333333	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.3	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	24	1	1	34	0.0576923076923	0.000983220876781	0.646258503401	0.110859728507	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	61	None	36.25	0	0	52	0.0	0.6396	13.57	3	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	None	G/G,G/G,G/G,G/G,./.,./.,G/G,./.,G/G,G/G,G/G,./.,./.,G/G,G/G,./.,./.,./.,./.,./.,G/G,./.,./.,G/G,./.,G/G,G/G,G/G,G/G,C/C,G/G,./.,G/G,./.,./.,./.,./.,./.,./.,./.,./.,./.,G/C,./.,G/G,./.,G/G,./.,./.,G/G,G/G,G/G,G/G,./.,./.,./.,./.,./.,./.,./.
+chr1	30866	30869	None	3	1	CCT	C	49.48	None	indel	del	0.466666666667	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.3	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	23	4	1	32	0.107142857143	0.180078296859	0.253333333333	0.194805194805	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	65	None	36.09	0	0	56	None	12.2055	3.81	6	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	None	CCT/CCT,CCT/CCT,CCT/C,CCT/CCT,./.,./.,CCT/CCT,./.,CCT/CCT,CCT/C,CCT/CCT,./.,./.,CCT/CCT,CCT/CCT,./.,./.,./.,./.,./.,CCT/CCT,./.,./.,CCT/C,./.,CCT/CCT,C/C,CCT/CCT,CCT/CCT,CCT/CCT,CCT/CCT,./.,CCT/CCT,./.,./.,./.,./.,CCT/CCT,./.,./.,./.,./.,CCT/C,./.,CCT/CCT,./.,CCT/CCT,CCT/CCT,./.,CCT/CCT,CCT/CCT,CCT/CCT,CCT/CCT,./.,./.,./.,./.,./.,./.,./.
+chr1	30894	30895	None	4	1	T	C	51.79	None	snp	ts	0.483333333333	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.3	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	26	2	1	31	0.0689655172414	0.0126621812074	0.462962962963	0.130671506352	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	63	None	36.09	0	0	58	0.0	0.2091	3.98	4	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	None	T/C,T/C,T/T,T/T,./.,./.,T/T,./.,T/T,T/T,T/T,./.,T/T,T/T,T/T,./.,./.,./.,T/T,./.,T/T,./.,./.,T/T,./.,./.,T/T,T/T,T/T,C/C,T/T,./.,T/T,./.,./.,./.,./.,T/T,./.,./.,./.,./.,T/T,./.,T/T,./.,T/T,T/T,./.,./.,T/T,T/T,T/T,T/T,./.,./.,./.,./.,./.,./.
+chr1	30922	30923	None	5	1	G	T	601.49	None	snp	tv	0.25	1	rs140337953	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.3	Simple_repeat_Simple_repeat_(TC)n;trf;LTR_ERVL-MaLR_MLT1A	0	1	0	None	None	0	0	15	45	1.0	1	None	0	2.981822	FAM138A	ENST00000417324	0	0	0	None	None	None	85	protein_coding	downstream	LOW	None	None	None	None	None	None	None	17	None	35.61	0	0	30	0.0	0.0	35.38	30	None	None	None	None	0	None	None	None	0	1	0.8	0.89	0.48	0.73	0.73	None	None	None	None	0	None	None	None	R	R	R	R	R	unknown	None	./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,./.,T/T,./.,T/T,./.,./.,./.,./.,T/T,T/T,T/T,T/T,./.,T/T,./.,T/T,./.,./.,./.,./.,T/T,T/T,./.,./.,./.,./.,./.,T/T,./.,T/T,T/T,./.,./.,./.,./.,T/T,T/T,./.,./.,./.,./.,./.,./." > exp
 gemini query -q "select *, gts \
                   from variants \
                   limit 5" test.query.db > obs
@@ -524,7 +534,7 @@ rm obs exp
 # 31. Test that rows are filtered based on a --gt-filter if
 #     a GT* column is SELECTed.
 ####################################################################
-echo "    query.t15...\c"
+echo "    query.t31...\c"
 echo "chr1	69269	69270	A	G	OR4F5	3
 chr1	69510	69511	A	G	OR4F5	3
 chr1	69760	69761	A	T	OR4F5	3
@@ -543,10 +553,10 @@ check obs exp
 rm obs exp
 
 ####################################################################
-# 31. Test that rows are filtered based on a --gt-filter if
+# 32. Test that rows are filtered based on a --gt-filter if
 #     a GT* column is NOT SELECTed.
 ####################################################################
-echo "    query.t15...\c"
+echo "    query.t32...\c"
 echo "chr1	69269	69270	A	G	OR4F5
 chr1	69510	69511	A	G	OR4F5
 chr1	69760	69761	A	T	OR4F5
@@ -560,6 +570,27 @@ chr1	870902	870903	T	C	SAMD11" > exp
 gemini query -q "select chrom, start, end, ref, alt, gene \
                  from variants" \
              --gt-filter "gt_types.1094PC0019 == HOM_ALT" test.query.db | head \
+       > obs
+check obs exp
+rm obs exp
+
+####################################################################
+# 33. Test that non-genotype columns that contain the substring "gt"
+# execute properly
+####################################################################
+echo "    query.t33...\c"
+echo "chrom	start	end	ref	alt	aa_length	gene
+chr1	30547	30548	T	G	85	FAM138A
+chr1	30859	30860	G	C	85	FAM138A
+chr1	30866	30869	CCT	C	85	FAM138A
+chr1	30894	30895	T	C	85	FAM138A
+chr1	30922	30923	G	T	85	FAM138A
+chr1	69269	69270	A	G	305	OR4F5
+chr1	69427	69428	T	G	305	OR4F5
+chr1	69510	69511	A	G	305	OR4F5
+chr1	69760	69761	A	T	305	OR4F5" > exp
+gemini query --header -q "select chrom, start, end, ref, alt, aa_length, gene \
+                 from variants" test.query.db | head \
        > obs
 check obs exp
 rm obs exp

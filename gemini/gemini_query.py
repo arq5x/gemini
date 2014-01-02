@@ -95,9 +95,12 @@ def get_row_predicates(args):
 
 
 def needs_genotypes(args):
-    return (args.show_variant_samples or args.family_wise
-            or args.sample_filter or args.carrier_summary or
-            args.show_families or args.gt_filter)
+    return (args.show_variant_samples or 
+            args.family_wise or 
+            args.sample_filter or 
+            args.carrier_summary or
+            args.show_families or 
+            args.gt_filter)
 
 def add_required_columns_to_query(args):
     if args.region:
@@ -107,9 +110,10 @@ def run_query(args):
     predicates = get_row_predicates(args)
     add_required_columns_to_query(args)
     formatter = select_formatter(args)
+    genotypes_needed = needs_genotypes(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
-           args.sample_delim, predicates, needs_genotypes(args),
+           args.sample_delim, predicates, genotypes_needed,
            args.show_families)
 
     if args.use_header and gq.header:
