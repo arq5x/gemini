@@ -576,7 +576,6 @@ class GeminiQuery(object):
         Execute a query. Intercept gt* columns and
         replace sample names with indices where necessary.
         """
-        print self._query_needs_genotype_info()
         if self._query_needs_genotype_info():
             # break up the select statement into individual
             # pieces and replace genotype columns using sample
