@@ -354,9 +354,12 @@ class GeminiQuery(object):
         if predicates:
             self.predicates += predicates
 
+        # make sure the SELECT columns are separated by a 
+        # comma and a space. then tokenize by spaces.
+        self.query = self.query.replace(',', ', ')
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
-                not any("gt" in s for s in self.query_pieces):
+           not any(".gt" in s for s in self.query_pieces):
             if self.gt_filter is None:
                 self.query_type = "no-genotypes"
             else:
@@ -573,7 +576,7 @@ class GeminiQuery(object):
         Execute a query. Intercept gt* columns and
         replace sample names with indices where necessary.
         """
-
+        print self._query_needs_genotype_info()
         if self._query_needs_genotype_info():
             # break up the select statement into individual
             # pieces and replace genotype columns using sample
@@ -587,7 +590,9 @@ class GeminiQuery(object):
             self._execute_query()
 
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
-                                   if not tuple[0].startswith("gt")]
+                                   if not tuple[0].startswith("gt") \
+                                      and ".gt" not in tuple[0]]
+
             if "*" in self.select_columns:
                 self.select_columns.remove("*")
                 self.all_columns_orig.remove("*")
@@ -672,7 +677,10 @@ class GeminiQuery(object):
         # remove any GT columns
         select_clause_list = []
         for token in select_tokens:
-            if not token.startswith("gt") and not token.startswith("GT"):
+            if not token.startswith("gt") and \
+               not token.startswith("GT") and \
+               not ".gt" in token and \
+               not ".GT" in token:
                 select_clause_list.append(token)
 
         # reconstruct the query with the GT* columns added
@@ -738,10 +746,13 @@ class GeminiQuery(object):
 
     def _query_needs_genotype_info(self):
         tokens = self._tokenize_query()
-        requested_genotype = "variants" in tokens and any([x.startswith("gt") for x in tokens])
+        requested_genotype = "variants" in tokens and \
+                            (any([x.startswith("gt") for x in tokens]) or \
+                             any(".gt" in x for x in tokens))   
         return requested_genotype or \
                self.include_gt_cols or \
-               self.show_variant_samples or self.needs_genotypes
+               self.show_variant_samples or \
+               self.needs_genotypes
 
 def select_formatter(args):
     SUPPORTED_FORMATS = {x.name.lower(): x for x in
