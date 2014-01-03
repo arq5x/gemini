@@ -2,6 +2,15 @@
 Release History
 #############################
 
+0.6.4 (2014-Jan-03)
+=======================================
+
+1. New annotation: experimentally validated human enhancers from VISTA.
+2. Installation improvements to enable isolated installations inside of virtual
+   machines and containers without data. Allow data-only upgrades as part of
+   ``update`` process.
+3. Fix for gemini query error when ``--header`` specified (#241).
+
 0.6.3.2 (2013-Dec-10)
 =======================================
 1. Fixed a bug that caused ``--gt-filter`` to no be enforced from ``query`` tool unless a GT* column was selected.
