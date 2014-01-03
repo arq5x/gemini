@@ -157,7 +157,8 @@ def install_tools(fab_cmd, fabfile, fabricrc):
 def install_data(python_cmd, data_script, args):
     """Install biological data used by gemini.
     """
-    cmd = [python_cmd, data_script, args.datadir]
+    data_dir = os.path.join(args.datadir, "gemini_data") if args.sharedpy else args.datadir
+    cmd = [python_cmd, data_script, data_dir]
     if args.install_data:
         print "Installing gemini data..."
     else:
@@ -249,6 +250,9 @@ if __name__ == "__main__":
                         dest="install_tools", action="store_false", default=True)
     parser.add_argument("--nodata", help="Do not install data dependencies",
                         dest="install_data", action="store_false", default=True)
+    parser.add_argument("--sharedpy", help=("Indicate we share an Anaconda Python directory with "
+                                            "another project. Creates unique gemini data directory."),
+                        action="store_true", default=False)
     if len(sys.argv) == 1:
         parser.print_help()
     else:

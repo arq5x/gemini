@@ -60,7 +60,7 @@ def install_annotation_files(anno_root_dir, dl_files=False):
     """
     # create the full gemini data path based on
     # the root dir the user provided
-    if anno_root_dir.endswith(("gemini/data", "gemini/data/")):
+    if anno_root_dir.endswith(("gemini/data", "gemini/data/", "gemini_data")):
         anno_dir = anno_root_dir
     elif anno_root_dir.endswith(("gemini", "gemini/")):
         anno_dir = os.path.join(anno_root_dir, "data")
