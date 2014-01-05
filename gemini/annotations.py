@@ -6,6 +6,7 @@ import sys
 import collections
 import subprocess as subp
 import re
+import string
 
 from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
@@ -46,6 +47,7 @@ def get_anno_files():
     'gerp_bp': os.path.join(anno_dirname, 'hg19.gerp.bw'),
     'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
     'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
+    'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),
     }
 
 class ClinVarInfo(object):
@@ -338,6 +340,29 @@ def get_pfamA_domains(var):
     for hit in annotations_in_region(var, "pfam_domain", "bed"):
         pfam_domain.append(hit.name)
     return ",".join(pfam_domain) if len(pfam_domain) > 0 else None
+
+
+def get_cosmic_info(var):
+    """
+    Returns a list of COSMIC ids associated with given variant
+
+    E.g. from COSMIC VCF
+    #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+    chrM    1747    COSN408408      G       A       .       .       .
+    chrM    2700    COSN408409      G       A       .       .       .
+    chr1    42880262    COSM464635  G   C   .   .   AA=p.D224H;CDS=c.670G>C;CNT=1;GENE=RIMKLA;STRAND=+
+    chr1    42880269    COSM909628  G   A   .   .   AA=p.G226D;CDS=c.677G>A;CNT=1;GENE=RIMKLA;STRAND=+
+    chr1    42880284    COSM1502979 G   T   .   .   AA=p.C231F;CDS=c.692G>T;CNT=1;GENE=RIMKLA;STRAND=+
+    chr1    42880318    COSM681351  T   A   .   .   AA=p.F242L;CDS=c.726T>A;CNT=1;GENE=RIMKLA;STRAND=+
+    chr1    42880337    COSM464636  G   A   .   .   AA=p.D249N;CDS=c.745G>A;CNT=1;GENE=RIMKLA;STRAND=+
+    chr1    42880384    COSM909629  T   C   .   .   AA=p.N264N;CDS=c.792T>C;CNT=1;GENE=RIMKLA;STRAND=+
+    chr1    42880415    COSM909630  G   C   .   .   AA=p.G275R;CDS=c.823G>C;CNT=1;GENE=RIMKLA;STRAND=+
+    """
+    # report the first overlapping ClinVar variant Most often, just one).
+    cosmic_ids = []
+    for hit in annotations_in_region(var, "cosmic", "vcf", "ucsc"):
+        cosmic_ids.append(hit.id)
+    return ",".join(cosmic_ids) if len(cosmic_ids) > 0 else None
 
 
 def get_clinvar_info(var):

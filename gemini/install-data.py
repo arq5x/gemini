@@ -46,7 +46,8 @@ anno_files = \
 'kegg_pathways_ensembl71',
 'hprd_interaction_graph',
 'cse-hiseq-8_4-2013-02-20.bed.gz',
-'hg19.vista.enhancers.20131108.bed.gz'
+'hg19.vista.enhancers.20131108.bed.gz',
+'hg19.cosmic.v67.20131024.gz'
 ]
 
 toadd_anno_files = []

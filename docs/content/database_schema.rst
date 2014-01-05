@@ -118,7 +118,6 @@ haplotype_score           FLOAT         Consistency of the site with two segrega
 qual_depth                FLOAT         Variant confidence or quality by depth
 allele_count              INTEGER       Allele counts in genotypes
 allele_bal                FLOAT         Allele balance for hets
-is_somatic                BOOL          Whether the variant is somatically acquired.
 ========================  ========      ==============================================================================================
 
 
@@ -258,7 +257,20 @@ encode_consensus_hepg2    STRING        ENCODE consensus segmentation prediction
 encode_consensus_huvec    STRING        ENCODE consensus segmentation prediction for HuVEC.   See encode_consseg_gm12878 for details.        
 encode_consensus_k562     STRING        ENCODE consensus segmentation prediction for k562.    See encode_consseg_gm12878 for details.
 vista_enhancers           STRING        Experimentally validated human enhancers from VISTA (http://enhancer.lbl.gov/frnt_page_n.shtml)
-========================  ========      ===============================================================================================
+========================  ========      ==============================================================================================
+
+
+
+Cancer related columns
+........................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
+is_somatic                BOOL          | Whether the variant is somatically acquired.
+cosmic_ids                STRING        | A list of known COSMIC ids for this variant.
+                                        | See: http://cancer.sanger.ac.uk/cancergenome/projects/cosmic/
+========================  ========      ==============================================================================================
+
+
 
 |
 
