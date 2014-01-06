@@ -257,6 +257,7 @@ class GeminiLoader(object):
         encode_cons_seg = annotations.get_encode_consensus_segs(var)
         gerp_el = annotations.get_gerp_elements(var)
         vista_enhancers = annotations.get_vista_enhancers(var)
+        cosmic_ids = annotations.get_cosmic_info(var)
 
         # grab the GERP score for this variant if asked.
         gerp_bp = None
@@ -404,7 +405,8 @@ class GeminiLoader(object):
                    encode_cons_seg.hepg2,
                    encode_cons_seg.huvec,
                    encode_cons_seg.k562,
-                   vista_enhancers]
+                   vista_enhancers,
+                   cosmic_ids]
         return variant, variant_impacts
 
     def _prepare_samples(self):
