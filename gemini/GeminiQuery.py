@@ -337,7 +337,8 @@ class GeminiQuery(object):
 
     def run(self, query, gt_filter=None, show_variant_samples=False,
             variant_samples_delim=',', predicates=None,
-            needs_genotypes=False, show_families=False):
+            needs_genotypes=False, needs_genes=False,
+            show_families=False):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -350,6 +351,7 @@ class GeminiQuery(object):
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
         self.needs_genotypes = needs_genotypes
+        self.needs_genes = needs_genes
         self.show_families = show_families
         if predicates:
             self.predicates += predicates
@@ -576,6 +578,9 @@ class GeminiQuery(object):
         Execute a query. Intercept gt* columns and
         replace sample names with indices where necessary.
         """
+        if self.needs_genes:
+            self.query = self._add_gene_col_to_query()
+ 
         if self._query_needs_genotype_info():
             # break up the select statement into individual
             # pieces and replace genotype columns using sample
@@ -698,6 +703,21 @@ class GeminiQuery(object):
         # extract the original select columns
         return self.query
 
+    def _add_gene_col_to_query(self):
+        """
+        Add the gene column to the list of SELECT'ed columns
+        in a query.
+        """
+        if "from" not in self.query.lower():
+            sys.exit("Malformed query: expected a FROM keyword.")
+
+        (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
+        
+        select_clause = ",".join(select_tokens) + \
+                    ", gene "
+        
+        self.query = "select " + select_clause + rest_of_query
+        return self.query
 
     def _split_select(self):
         """

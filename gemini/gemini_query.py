@@ -3,6 +3,7 @@
 import os
 import sys
 from itertools import tee, ifilterfalse
+from collections import defaultdict
 
 # gemini imports
 import GeminiQuery
@@ -12,6 +13,10 @@ from gemini_region import add_region_to_query
 from gemini_subjects import (Subject, get_subjects, get_subjects_in_family,
                              get_family_dict)
 from gemini_utils import itersubclasses
+
+# for interaction with DGIdb
+import urllib2
+import json
 
 def all_samples_predicate(args):
     """ returns a predicate that returns True if, for a variant,
@@ -102,25 +107,91 @@ def needs_genotypes(args):
             args.show_families or 
             args.gt_filter)
 
+
+def needs_gene(args):
+    return (args.dgidb)
+
+
+def query_dgidb(genes):
+    """
+    Batch query DGIdb for drug-gene interaction data for
+    a set of genes.
+    """
+
+    def convert(input):
+        """
+        Convert JSON UNICODE to plain ole strings.
+        """
+        if isinstance(input, dict):
+            return {convert(key): convert(value) for key, value in input.iteritems()}
+        elif isinstance(input, list):
+            return [convert(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
+
+    # make a single request to DGIdb for all of the genes requested
+    dgidb_url = 'http://dgidb.genome.wustl.edu/api/v1/interactions.json?genes='
+    query = dgidb_url + ','.join(genes.keys())
+    response = urllib2.urlopen(query)
+    data = convert(json.load(response))
+    matches = data['matchedTerms']
+
+    # store the results for all of the genes. if there are no matches
+    # in DGIdb, the result will be None.
+    gene_dgidb_info = {}
+    for gene in genes:
+        gene_dgidb_info[gene] = None
+
+    for match in matches:
+        gene = match['searchTerm']
+        gene_dgidb_info[gene] = dict(match)
+
+    return gene_dgidb_info
+
+
 def add_required_columns_to_query(args):
     if args.region:
         add_region_to_query(args)
+
 
 def run_query(args):
     predicates = get_row_predicates(args)
     add_required_columns_to_query(args)
     formatter = select_formatter(args)
     genotypes_needed = needs_genotypes(args)
+    gene_needed = needs_gene(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, genotypes_needed,
-           args.show_families)
+           gene_needed, args.show_families)
 
     if args.use_header and gq.header:
         print gq.header
 
-    for row in gq:
-        print row
+    if not args.dgidb:
+        for row in gq:
+            print row
+    else:
+        # collect a list of all the genes that need to be queried
+        # from DGIdb
+        genes = defaultdict()
+        for row in gq:
+            genes[row['gene']] = True
+
+        # collect info from DGIdb
+        dgidb_info = query_dgidb(genes)
+
+        # rerun the query (the cursor is now consumed)
+        gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
+        gq.run(args.query, args.gt_filter, args.show_variant_samples,
+           args.sample_delim, predicates, genotypes_needed,
+           gene_needed, args.show_families)
+
+        # report the query results with DGIdb info added at the end.
+        for row in gq:  
+            print str(row) + "\t" + str(dgidb_info[row['gene']])
 
 
 def query(parser, args):

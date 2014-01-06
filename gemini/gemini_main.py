@@ -285,6 +285,11 @@ def main():
                               help=('Output columns of counts of carriers and '
                                     'non-carriers stratified by the given '
                                     'sample phenotype column'))
+    parser_query.add_argument('--dgidb',
+                              dest='dgidb',
+                              action='store_true',
+                              help='Request drug-gene interaction info from DGIdb.',
+                              default=False)
 
     parser_query.set_defaults(func=gemini_query.query)
 

@@ -1,5 +1,7 @@
 import os
 import warnings
+from collections import namedtuple
+
 import GeminiQuery
 
 import tool_de_novo_mutations as de_novo_tool
@@ -32,6 +34,28 @@ app = Bottle()
 # -- serve static files, files located in static
 static_folder = 'static'
 _static_folder = os.path.join(os.path.dirname(__file__), static_folder)
+
+@app.route('/stats/region/:chrom',method='GET')
+def stats_region(chrom):
+    # Note: chrom is give as an argument
+
+    # we then extract start and end using HTML GET    
+    start = request.GET.get('start', '').strip()
+    end = request.GET.get('end', '').strip()
+
+    # construct a query
+    query =  "SELECT start, end from variants"
+    query += " WHERE chrom = '" + chrom + "'"
+    query += " AND start >= " + start
+    query += " AND end <= " + end
+
+    # issue the query
+    gq = GeminiQuery.GeminiQuery(database)
+    gq._set_gemini_browser(True)
+    gq.run(query)
+
+    # return query results in JSON format
+    return{'features': [dict(row) for row in gq]}
 
 
 @app.route('/static/<filepath:path>')
@@ -140,13 +164,18 @@ def query():
 @app.route('/de_novo', method='GET')
 def de_novo():
 
+    Arguments = namedtuple('Arguments', ['db', 'min_sample_depth'], verbose=True)
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
 
         min_sample_depth = str(request.GET.get('min-depth', '').strip())
         igv_links = request.GET.get('igv_links')
 
-        gq = GeminiQuery.GeminiQuery(database)
+        args = Arguments(db=database, min_sample_depth=min_sample_depth)
+
+        de_novo_factory = \
+            GeminiInheritanceModelFactory(args, model="de_novo")
+        de_novo_factory.get_candidates()
 
         if len(min_sample_depth) == 0:
             row_iter = \
