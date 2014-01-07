@@ -18,7 +18,7 @@ The recommended Gemini install location is /usr/local/share/gemini.
 """
 
 anno_files = \
-['dbsnp.137.vcf.gz',
+['dbsnp.138.vcf.gz',
 'clinvar_20131230.vcf.gz',
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
