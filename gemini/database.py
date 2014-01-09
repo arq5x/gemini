@@ -164,6 +164,7 @@ def create_tables(cursor):
                     encode_consensus_k562 text,                 \
                     vista_enhancers text,                       \
                     cosmic_ids text,                            \
+                    info_string blob,                           \
                     PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (   \
@@ -232,7 +233,7 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?)', variant)
+                                                             ?,?,?,?,?,?,?,?,?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -259,7 +260,7 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?)', buffer)
+                                                         ?,?,?,?,?,?,?,?,?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
