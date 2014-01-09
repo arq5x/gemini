@@ -54,8 +54,6 @@ def select_subjects_predicate(subjects, args, subset=None):
         return all([p(row) for p in predicates])
     return predicate
 
-
-
 def variant_in_any_subject(subjects):
     def predicate(row):
         return subjects.intersection(samples_with_variant(row)) != set()
