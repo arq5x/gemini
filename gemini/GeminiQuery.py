@@ -213,9 +213,10 @@ class GeminiRow(object):
                  gt_quals=None, variant_samples=None,
                  HET_samples=None, HOM_ALT_samples=None,
                  HOM_REF_samples=None, UNKNOWN_samples=None,
-                 formatter=DefaultRowFormat(None)):
+                 info=None,formatter=DefaultRowFormat(None)):
         self.row = row
         self.gts = gts
+        self.info = info
         self.gt_types = gt_types
         self.gt_phases = gt_phases
         self.gt_depths = gt_depths
@@ -233,7 +234,7 @@ class GeminiRow(object):
         self.UNKNOWN_samples = UNKNOWN_samples
 
     def __getitem__(self, val):
-        if val not in self.gt_cols:
+        if val not in self.gt_cols and val is not 'info':
             return self.row[val]
         else:
             return getattr(self, val)
@@ -454,6 +455,8 @@ class GeminiQuery(object):
             hom_alt_names = []
             hom_ref_names = []
             unknown_names = []
+            
+            info = compression.unpack_ordereddict_blob(row['info'])
 
 
             if self._query_needs_genotype_info():
@@ -543,7 +546,7 @@ class GeminiQuery(object):
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
                                    gt_depths, gt_ref_depths, gt_alt_depths,
                                    gt_quals, variant_names, het_names, hom_alt_names,
-                                   hom_ref_names, unknown_names,
+                                   hom_ref_names, unknown_names, info,
                                    formatter=self.formatter)
 
             if not all([predicate(gemini_row) for predicate in self.predicates]):

@@ -333,9 +333,9 @@ class GeminiLoader(object):
             gt_quals = None
         
         if self.args.load_info_string is True:
-            info_string = var.INFO
+            info = var.INFO
         else:
-            info_string = None
+            info = None
 
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
@@ -412,7 +412,7 @@ class GeminiLoader(object):
                    encode_cons_seg.k562,
                    vista_enhancers,
                    cosmic_ids,
-                   pack_blob(info_string)]
+                   pack_blob(info)]
         
         return variant, variant_impacts
 
