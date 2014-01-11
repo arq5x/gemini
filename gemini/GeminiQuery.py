@@ -234,7 +234,7 @@ class GeminiRow(object):
         self.UNKNOWN_samples = UNKNOWN_samples
 
     def __getitem__(self, val):
-        if val not in self.gt_cols and val is not 'info':
+        if val not in self.gt_cols:
             return self.row[val]
         else:
             return getattr(self, val)
@@ -373,8 +373,8 @@ class GeminiQuery(object):
                 self.query_type = "select-genotypes"
             else:
                 self.gt_filter = self._correct_genotype_filter()
-                self.query_type = "filter-genotypes"
-
+                self.query_type = "filter-genotypes" 
+        
         self._apply_query()
         self.query_executed = True
 
@@ -455,10 +455,11 @@ class GeminiQuery(object):
             hom_alt_names = []
             hom_ref_names = []
             unknown_names = []
+            info = None
             
-            info = compression.unpack_ordereddict_blob(row['info'])
-
-
+            if 'info' in self.report_cols:
+                info = compression.unpack_ordereddict_blob(row['info'])
+            
             if self._query_needs_genotype_info():
                 gts = compression.unpack_genotype_blob(row['gts'])
                 gt_types = \
@@ -496,10 +497,12 @@ class GeminiQuery(object):
             for idx, col in enumerate(self.report_cols):
                 if col == "*":
                     continue
-                if not col.startswith("gt") and not col.startswith("GT"):
+                if not col.startswith("gt") and not col.startswith("GT") and not col == "info":
                     fields[col] = row[col]
+                elif col == "info":
+                    fields[col] = ';'.join(['%s=%s' % (key, value) for (key, value) in info.items()])
                 else:
-                    # reuse the original column anme user requested
+                    # reuse the original column name user requested
                     # e.g. replace gts[1085] with gts.NA20814
                     if '[' in col:
                         orig_col = self.gt_idx_to_name_map[col]
