@@ -500,7 +500,7 @@ class GeminiQuery(object):
                 if not col.startswith("gt") and not col.startswith("GT") and not col == "info":
                     fields[col] = row[col]
                 elif col == "info":
-                    fields[col] = ';'.join(['%s=%s' % (key, value) for (key, value) in info.items()])
+                    fields[col] = self._info_dict_to_string(info)
                 else:
                     # reuse the original column name user requested
                     # e.g. replace gts[1085] with gts.NA20814
@@ -764,7 +764,14 @@ class GeminiQuery(object):
                 self.all_columns_orig.append(token)
                 self.gt_name_to_idx_map[token] = new_col
                 self.gt_idx_to_name_map[new_col] = token
-
+    
+    def _info_dict_to_string(self, info):
+        "Flatten the VCF info-field OrderedDict into a string, including all arrays for allelic-level info"
+        
+        return ';'.join(['%s=%s' % (key, value) if not isinstance(value, list) \
+                         else '%s=%s' % (key, ','.join([str(v) for v in value])) \
+                         for (key, value) in info.items()])
+    
     def _tokenize_query(self):
         tokens = list(flatten([x.split(",") for x in self.query.split(" ")]))
         return tokens
