@@ -35,8 +35,18 @@ def release(parser, args):
             pass
         else:
             raise NotImplementedError("Can only upgrade gemini installed in anaconda or virtualenv")
+        # allow downloads excluded in recent pip (1.5 or greater) versions
+        try:
+            p = subprocess.Popen([pip_bin, "--version"], stdout=subprocess.PIPE)
+            pip_version = p.communicate()[0].split()[1]
+        except:
+            pip_version = ""
+        pip_compat = []
+        if pip_version >= "1.5":
+            for req in ["python-graph-core", "python-graph-dot"]:
+                pip_compat += ["--allow-external", req, "--allow-unverified", req]
         # update libraries
-        subprocess.check_call([pip_bin, "install", "--allow-all-external", "-r", url])
+        subprocess.check_call([pip_bin, "install"] + pip_compat + ["-r", url])
         if args.devel:
             print("Installing latest GEMINI development version")
             subprocess.check_call([pip_bin, "install", "--upgrade", "--no-deps",

@@ -77,7 +77,17 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     # Install problem dependency separately: bx-python
     subprocess.check_call([anaconda["pip"], "install", "--upgrade",
                            "https://bitbucket.org/james_taylor/bx-python/get/tip.tar.bz2"])
-    subprocess.check_call([anaconda["pip"], "install", "--allow-all-external", "-r", remotes["requirements"]])
+    # allow downloads excluded in recent pip (1.5 or greater) versions
+    try:
+        p = subprocess.Popen([anaconda["pip"], "--version"], stdout=subprocess.PIPE)
+        pip_version = p.communicate()[0].split()[1]
+    except:
+        pip_version = ""
+    pip_compat = []
+    if pip_version >= "1.5":
+        for req in ["python-graph-core", "python-graph-dot"]:
+            pip_compat += ["--allow-external", req, "--allow-unverified", req]
+    subprocess.check_call([anaconda["pip"], "install"] + pip_compat + ["-r", remotes["requirements"]])
     for final_name, ve_name in [("gemini", "gemini"), ("gemini_python", "python"),
                                 ("gemini_pip", "pip")]:
         final_script = os.path.join(tooldir, "bin", final_name)
