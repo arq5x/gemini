@@ -36,7 +36,7 @@ def release(parser, args):
         else:
             raise NotImplementedError("Can only upgrade gemini installed in anaconda or virtualenv")
         # update libraries
-        subprocess.check_call([pip_bin, "install", "-r", url])
+        subprocess.check_call([pip_bin, "install", "--allow-all-external", "-r", url])
         if args.devel:
             print("Installing latest GEMINI development version")
             subprocess.check_call([pip_bin, "install", "--upgrade", "--no-deps",

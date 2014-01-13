@@ -77,7 +77,7 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     # Install problem dependency separately: bx-python
     subprocess.check_call([anaconda["pip"], "install", "--upgrade",
                            "https://bitbucket.org/james_taylor/bx-python/get/tip.tar.bz2"])
-    subprocess.check_call([anaconda["pip"], "install", "-r", remotes["requirements"]])
+    subprocess.check_call([anaconda["pip"], "install", "--allow-all-external", "-r", remotes["requirements"]])
     for final_name, ve_name in [("gemini", "gemini"), ("gemini_python", "python"),
                                 ("gemini_pip", "pip")]:
         final_script = os.path.join(tooldir, "bin", final_name)
