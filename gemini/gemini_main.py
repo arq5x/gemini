@@ -103,11 +103,11 @@ def main():
                              action='store_true',
                              help='Load GERP scores at base pair resolution. Slow. Off by default.',
                              default=False)
-    parser_load.add_argument('--load-info-string',
-                             dest='load_info_string',
-                             action='store_false',
-                             help='Load INFO string from VCF file. May result in large DB. On by default',
-                             default=True)
+    parser_load.add_argument('--skip-info-string',
+                             dest='skip_info_string',
+                             action='store_true',
+                             help='Do not load INFO string from VCF file to reduce DB size. Loaded by default',
+                             default=False)
     parser_load.add_argument('--no-load-genotypes',
                              dest='no_load_genotypes',
                              action='store_true',
@@ -191,11 +191,11 @@ def main():
                                   action='store_true',
                                   help='Load GERP scores at base pair resolution. Slow. Off by default.',
                                   default=False)
-    parser_loadchunk.add_argument('--load-info-string',
-                                dest='load_info_string',
-                                action='store_false',
-                                help='Load INFO string from VCF file. May result in large DB. On by default',
-                                default=True)
+    parser_loadchunk.add_argument('--skip-info-string',
+                                  dest='skip_info_string',
+                                  action='store_true',
+                                  help='Do not load INFO string from VCF file to reduce DB size. Loaded by default',
+                                  default=False)
     parser_loadchunk.add_argument('--passonly',
                                   dest='passonly',
                                   default=False,

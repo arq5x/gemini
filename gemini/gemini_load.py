@@ -136,6 +136,9 @@ def load_chunks_multicore(grabix_file, args):
     if args.passonly is True:
         passonly = "--passonly"
 
+    skip_info_string = ""
+    if args.skip_info_string is True:
+        skip_info_string = "--skip-info-string"
 
     submit_command = "{cmd}"
     vcf, _ = os.path.splitext(grabix_file)
@@ -186,6 +189,10 @@ def load_chunks_ipython(grabix_file, args, view):
     if args.passonly is True:
         passonly = "--passonly"
 
+    skip_info_string = ""
+    if args.skip_info_string is True:
+        skip_info_string = "--skip-info-string"
+
 
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
@@ -198,7 +205,8 @@ def load_chunks_ipython(grabix_file, args, view):
                  "no_genotypes": no_genotypes,
                  "no_load_genotypes": no_load_genotypes,
                  "load_gerp_bp": load_gerp_bp,
-                 "passonly": passonly}
+                 "passonly": passonly,
+                 "skip_info_string": skip_info_string}
     chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
 
     print "Done loading variants in {0} chunks.".format(total_chunks)
@@ -224,7 +232,7 @@ def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
-                       " {load_gerp_bp} {passonly}"
+                       " {load_gerp_bp} {passonly} {skip_info_string}"
                        " -o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
 

@@ -332,7 +332,7 @@ class GeminiLoader(object):
             gt_alt_depths = None
             gt_quals = None
         
-        if self.args.load_info_string is True:
+        if self.args.skip_info_string is False:
             info = var.INFO
         else:
             info = None
