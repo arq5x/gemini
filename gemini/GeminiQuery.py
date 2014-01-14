@@ -213,9 +213,10 @@ class GeminiRow(object):
                  gt_quals=None, variant_samples=None,
                  HET_samples=None, HOM_ALT_samples=None,
                  HOM_REF_samples=None, UNKNOWN_samples=None,
-                 formatter=DefaultRowFormat(None)):
+                 info=None,formatter=DefaultRowFormat(None)):
         self.row = row
         self.gts = gts
+        self.info = info
         self.gt_types = gt_types
         self.gt_phases = gt_phases
         self.gt_depths = gt_depths
@@ -372,8 +373,8 @@ class GeminiQuery(object):
                 self.query_type = "select-genotypes"
             else:
                 self.gt_filter = self._correct_genotype_filter()
-                self.query_type = "filter-genotypes"
-
+                self.query_type = "filter-genotypes" 
+        
         self._apply_query()
         self.query_executed = True
 
@@ -454,8 +455,11 @@ class GeminiQuery(object):
             hom_alt_names = []
             hom_ref_names = []
             unknown_names = []
-
-
+            info = None
+            
+            if 'info' in self.report_cols:
+                info = compression.unpack_ordereddict_blob(row['info'])
+            
             if self._query_needs_genotype_info():
                 gts = compression.unpack_genotype_blob(row['gts'])
                 gt_types = \
@@ -493,10 +497,12 @@ class GeminiQuery(object):
             for idx, col in enumerate(self.report_cols):
                 if col == "*":
                     continue
-                if not col.startswith("gt") and not col.startswith("GT"):
+                if not col.startswith("gt") and not col.startswith("GT") and not col == "info":
                     fields[col] = row[col]
+                elif col == "info":
+                    fields[col] = self._info_dict_to_string(info)
                 else:
-                    # reuse the original column anme user requested
+                    # reuse the original column name user requested
                     # e.g. replace gts[1085] with gts.NA20814
                     if '[' in col:
                         orig_col = self.gt_idx_to_name_map[col]
@@ -543,7 +549,7 @@ class GeminiQuery(object):
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
                                    gt_depths, gt_ref_depths, gt_alt_depths,
                                    gt_quals, variant_names, het_names, hom_alt_names,
-                                   hom_ref_names, unknown_names,
+                                   hom_ref_names, unknown_names, info,
                                    formatter=self.formatter)
 
             if not all([predicate(gemini_row) for predicate in self.predicates]):
@@ -758,7 +764,14 @@ class GeminiQuery(object):
                 self.all_columns_orig.append(token)
                 self.gt_name_to_idx_map[token] = new_col
                 self.gt_idx_to_name_map[new_col] = token
-
+    
+    def _info_dict_to_string(self, info):
+        "Flatten the VCF info-field OrderedDict into a string, including all arrays for allelic-level info"
+        
+        return ';'.join(['%s=%s' % (key, value) if not isinstance(value, list) \
+                         else '%s=%s' % (key, ','.join([str(v) for v in value])) \
+                         for (key, value) in info.items()])
+    
     def _tokenize_query(self):
         tokens = list(flatten([x.split(",") for x in self.query.split(" ")]))
         return tokens
