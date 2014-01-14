@@ -17,7 +17,10 @@ def unpack_genotype_blob(blob):
     return numpy.array(cPickle.loads(zlib.decompress(blob)))
     
 def unpack_ordereddict_blob(blob):
-    return OrderedDict(cPickle.loads(zlib.decompress(blob)))
+	blob_val = cPickle.loads(zlib.decompress(blob))
+	if blob_val is not None:
+	    return OrderedDict(blob_val)
+	return None
 
 def zdumps(obj):
     return zlib.compress(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL), 9)

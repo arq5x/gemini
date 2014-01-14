@@ -767,10 +767,12 @@ class GeminiQuery(object):
     
     def _info_dict_to_string(self, info):
         "Flatten the VCF info-field OrderedDict into a string, including all arrays for allelic-level info"
-        
-        return ';'.join(['%s=%s' % (key, value) if not isinstance(value, list) \
-                         else '%s=%s' % (key, ','.join([str(v) for v in value])) \
-                         for (key, value) in info.items()])
+        if info is not None:
+            return ';'.join(['%s=%s' % (key, value) if not isinstance(value, list) \
+                             else '%s=%s' % (key, ','.join([str(v) for v in value])) \
+                             for (key, value) in info.items()])
+        else:
+            return None
     
     def _tokenize_query(self):
         tokens = list(flatten([x.split(",") for x in self.query.split(" ")]))
