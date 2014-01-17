@@ -47,7 +47,9 @@ anno_files = \
 'hprd_interaction_graph',
 'cse-hiseq-8_4-2013-02-20.bed.gz',
 'hg19.vista.enhancers.20131108.bed.gz',
-'hg19.cosmic.v67.20131024.gz'
+'hg19.cosmic.v67.20131024.gz',
+'detailed_gene_table',
+'summary_gene_table'
 ]
 
 toadd_anno_files = []
