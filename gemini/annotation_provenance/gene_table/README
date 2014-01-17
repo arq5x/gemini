@@ -1,0 +1,69 @@
+
+# biomart download: 
+# Ensembl 73 version:
+# perl scripts for download (future reference).
+# Two queries issued: Connector for both these would be the ensembl transcript id
+################################################################################
+
+1) mart_export1 (retrieve all gene ids): query1.pl
+2) mart_export2 (retrieve CDS length):   query2.pl
+
+###################################################
+#HGNC download for gene synonyms
+#the connectors can be, ensembl gene id, HGNC id
+###################################################
+
+1) HGNC_download -> hgnc.query.pl
+
+##########################################
+#processing to add None for blank columns
+##########################################
+
+cat mart_export1 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl73_1
+cat mart_export2 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl73_2
+cat HGNC_download | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > hgnc_file
+
+
+###########################################################################
+# Linking CDS length to gene ids (i.e. joining on 2 files from biomart)
+###########################################################################
+
+python ensembl.py (outfile: ensembl_format)
+
+N.B.
+# Note: the CCDS length is used to calculate the protein length as (CDS length/3 -1 . Thats how Ensembl protein lengths are reported.
+For transcripts that have an incomplete CDS, e.g. ENST00000435543, our calculation of protein length would vary from that reported in ensembl.
+
+#############################################################################################################################
+# Linking synonyms from HGNC to the above table
+# table columns: ("Chromosome","HGNC_symbol","Ensembl_gene_id","Ensembl_transcript_id","Biotype","Transcript_status",
+                  "CCDS_id","HGNC_id","CDS_length","Protein_length","transcript_start","transcript_end","strand",
+                  "Previous_symbol","Synonymous")
+
+python synonym.py (outfile: raw_gene_table)
+
+#############################################################################################################################
+# A second pass at raw_gene_table to have a summary_gene_table and a detailed_gene_table
+# For each line in the table (HGNC symbol + previous symbol + synonym) is a gene list
+# Each member of the gene list is  represented as a key gene (2nd column )and the synonym column is a difference of the two
+# This means if we have (1 HGNC symbol + 2 previous names + 1 synonym) there would be 4 lines instead of 1 and these lines
+# would be repeated with the number of transcripts available for the gene.
+# Includes RVIS percentile scores mapped by their HGNC symbol, and added to synonym lines
+# RVIS percentiles were obtained from dataset 2 supp material from this below reference 
+# Petrovski S., Wang Q., Heinzen E.L., Allen A.S., Goldstein D.B. (2013). Genic Intolerance to Functional Variation and the 
+  Interpretation of Personal Genomes. PLOS Genetics, doi: 10.1371/journal.pgen.1003709).
+
+# detailed_gene_table columns:
+ ("Chromosome","Gene_name","Is_hgnc","Ensembl_gene_id","Ensembl_transcript_id","Biotype","Transcript_status","CCDS_id",
+   "HGNC_id","CDS_length","Protein_length","Transcript_start","Transcript_end","strand","Synonyms", "Rvis_pct")
+
+# summary_gene_table columns:
+ ("Chromosome","gene_name","is_hgnc","Ensembl_gene_id","HGNC_id","synonyms", "rvis_pct","strand","transcript_min_start",
+  "transcript_max_start")					 
+
+######################################################################################################################
+
+python combined_gene_table.py (outfiles: detailed_gene_table, summary_gene_table)
+
+
+
