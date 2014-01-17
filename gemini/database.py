@@ -24,6 +24,7 @@ def index_variation(cursor):
     cursor.execute('''create index var_lof_idx on variants(is_lof)''')
     cursor.execute('''create index var_depth_idx on variants(depth)''')
     cursor.execute('''create index var_gene_idx on variants(gene)''')
+    cursor.execute('''create index var_trans_idx on variants(transcript)''')
 
 
 def index_variation_impacts(cursor):
@@ -35,11 +36,29 @@ def index_variation_impacts(cursor):
         '''create index varimp_lof_idx on variant_impacts(is_lof)''')
     cursor.execute('''create index varimp_impact_idx on \
                       variant_impacts(impact)''')
+    cursor.execute('''create index varimp_trans_idx on \
+                      variant_impacts(transcript)''')
+    cursor.execute('''create index varimp_gene_idx on \
+                      variant_impacts(gene)''')
 
 
 def index_samples(cursor):
     cursor.execute('''create unique index sample_name_idx on samples(name)''')
 
+
+def index_gene_detailed(cursor):
+    cursor.execute('''create index gendet_chrom_gene_idx on \
+                       gene_detailed(chrom, gene)''')
+    cursor.execute('''create index gendet_rvis_idx on \
+                       gene_detailed(rvis_pct)''')
+    cursor.execute('''create index gendet_transcript_idx on \
+                       gene_detailed(transcript)''')
+
+def index_gene_summary(cursor):
+    cursor.execute('''create index gensum_chrom_gene_idx on \
+                       gene_summary(chrom, gene)''')
+    cursor.execute('''create index gensum_rvis_idx on \
+                      gene_summary(rvis_pct)''')
 
 def create_indices(cursor):
     """
@@ -206,6 +225,40 @@ def create_tables(cursor):
                      resource text)''')
 
     cursor.execute('''create table if not exists version (version text)''')
+    
+    cursor.execute('''create table if not exists gene_detailed (       \
+                   uid integer,                                        \
+                   chrom text,                                         \
+                   gene text,                                          \
+                   is_hgnc bool,                                       \
+                   ensembl_gene_id text,                               \
+                   transcript text,                                    \
+                   biotype text,                                       \
+                   transcript_status text,                             \
+                   ccds_id text,                                       \
+                   hgnc_id text,                                       \
+                   cds_length text,                                    \
+                   protein_length text,                                \
+                   transcript_start text,                              \
+                   transcript_end text,                                \
+                   strand text,                                        \
+                   synonym text,                                       \
+                   rvis_pct float,                                     \
+                   PRIMARY KEY(uid ASC))''')
+                   
+    cursor.execute('''create table if not exists gene_summary (     \
+                    uid integer,                                    \
+                    chrom text,                                     \
+                    gene text,                                      \
+                    is_hgnc bool,                                   \
+                    ensembl_gene_id text,                           \
+                    hgnc_id text,                                   \
+                    transcript_min_start text,                      \
+                    transcript_max_end text,                        \
+                    strand text,                                    \
+                    synonym text,                                   \
+                    rvis_pct float,                                 \
+                    PRIMARY KEY(uid ASC))''')
 
 def create_sample_table(cursor, args):
     NUM_BUILT_IN = 6
@@ -291,7 +344,21 @@ def insert_sample(cursor, sample_list):
                    "({0})".format(placeholders), sample_list)
     cursor.execute("END")
 
+def insert_gene_detailed(cursor, table_contents):
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.executemany('insert into gene_detailed values (?,?,?,?,?,?,?,?,?, \
+                                                          ?,?,?,?,?,?,?,?)',
+                        table_contents)
+    cursor.execute("END")
+    
 
+def insert_gene_summary(cursor, contents):
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.executemany('insert into gene_summary values (?,?,?,?,?,?,?,?, \
+                                                         ?,?,?)', 
+                        contents)
+    cursor.execute("END")
+    
 def insert_resources(cursor, resources):
     """Populate table of annotation resources used in this database.
     """
