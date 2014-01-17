@@ -13,6 +13,8 @@ import cyvcf as vcf
 # gemini modules
 import version
 from ped import get_ped_fields, default_ped_fields, load_ped_file
+from gene_table import gene_detailed
+from gene_table import gene_summary
 import infotag
 import database
 import annotations
@@ -21,6 +23,7 @@ import severe_impact
 import popgen
 from gemini_constants import *
 from compression import pack_blob
+from gemini.config import read_gemini_config
 
 
 class GeminiLoader(object):
@@ -48,6 +51,8 @@ class GeminiLoader(object):
 
         self.buffer_size = buffer_size
         self._get_anno_version()
+        self._get_gene_detailed()
+        self._get_gene_summary()
 
         if self.args.anno_type == "VEP":
             if not self._is_proper_vep_input():
@@ -445,6 +450,57 @@ class GeminiLoader(object):
                 sample_list = [i, None, sample]
                 sample_list += list(repeat(None, len(default_ped_fields) - 2))
             database.insert_sample(self.c, sample_list)
+            
+    def _get_gene_detailed(self):
+        """
+        define a gene detailed table
+        """
+        #unique identifier for each entry
+        i = 0
+        table_contents = detailed_list = []
+        
+        config = read_gemini_config()
+        path_dirname = config["annotation_dir"]
+        file_handle = os.path.join(path_dirname, 'detailed_gene_table')
+        
+        for line in open(file_handle, 'r'):
+            field = line.strip().split("\t")
+            if not field[0].startswith("Chromosome"):
+                i += 1
+                table = gene_detailed(field)
+                detailed_list = [str(i),table.chrom,table.gene,table.is_hgnc,
+                                 table.ensembl_gene_id,table.ensembl_trans_id, 
+                                 table.biotype,table.trans_status,table.ccds_id, 
+                                 table.hgnc_id,table.cds_length,table.protein_length, 
+                                 table.transcript_start,table.transcript_end,
+                                 table.strand,table.synonym,table.rvis]
+                table_contents.append(detailed_list)
+        database.insert_gene_detailed(self.c, table_contents)
+        
+    def _get_gene_summary(self):
+        """
+        define a gene summary table
+        """
+        #unique identifier for each entry
+        i = 0
+        contents = summary_list = []
+        
+        config = read_gemini_config()
+        path_dirname = config["annotation_dir"]
+        file = os.path.join(path_dirname, 'summary_gene_table')
+        
+        for line in open(file, 'r'):
+            col = line.strip().split("\t")
+            if not col[0].startswith("Chromosome"):
+                i += 1
+                table = gene_summary(col)
+                summary_list = [str(i),table.chrom,table.gene,table.is_hgnc,
+                                table.ensembl_gene_id,table.hgnc_id,
+                                table.transcript_min_start,
+                                table.transcript_max_end,table.strand,
+                                table.synonym,table.rvis]
+                contents.append(summary_list)
+        database.insert_gene_summary(self.c, contents)
 
     def _init_sample_gt_counts(self):
         """
