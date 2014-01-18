@@ -68,6 +68,9 @@ bash test-pathtool.sh
 # Test interaction tool
 bash test-interactions.sh
 
+# Test lof sieve tool
+bash test-lofsieve.sh
+
 # Test stats tool
 bash test-stats.sh
 
