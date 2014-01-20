@@ -1,6 +1,7 @@
-#!/usr/bin/env python
-
 import sys
+import os
+import database
+from gemini.config import read_gemini_config
 
 class gene_detailed:
 
@@ -51,7 +52,23 @@ class gene_summary:
         return ",".join([self.chrom, self.gene, self.is_hgnc, self.ensembl_gene_id, self.hgnc_id, self.synonym, self.rvis, 
                          self.strand, self.transcript_min_start, self.transcript_max_end])
          
-         
-          
+def update_cosmic_census_genes(cursor):
+    """
+    Update the gene summary table with
+    whether or not a given gene is in the
+    COSMIC cancer gene census
+    """
+    config = read_gemini_config()
+    path_dirname = config["annotation_dir"]
+    file = os.path.join(path_dirname, 'cancer_gene_census.20140120.tsv')
+    
+    cosmic_census_genes = []
+    for line in open(file, 'r'):
+        fields = line.strip().split("\t")
+        gene = fields[0]
+        chrom = "chr" + fields[3]
+        cosmic_census_genes.append((1,gene,chrom))
+
+    database.update_gene_summary_w_cancer_census(cursor, cosmic_census_genes)
          
         

@@ -27,7 +27,6 @@ def load(parser, args):
     else:
         load_singlecore(args)
 
-
 def load_singlecore(args):
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
@@ -35,6 +34,7 @@ def load_singlecore(args):
     gemini_loader.store_resources()
     gemini_loader.store_version()
     gemini_loader.populate_from_vcf()
+    gemini_loader.update_gene_table()
     gemini_loader.build_indices_and_disconnect()
 
     if not args.no_genotypes and not args.no_load_genotypes:

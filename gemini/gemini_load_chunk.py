@@ -13,8 +13,7 @@ import cyvcf as vcf
 # gemini modules
 import version
 from ped import get_ped_fields, default_ped_fields, load_ped_file
-from gene_table import gene_detailed
-from gene_table import gene_summary
+import gene_table
 import infotag
 import database
 import annotations
@@ -467,7 +466,7 @@ class GeminiLoader(object):
             field = line.strip().split("\t")
             if not field[0].startswith("Chromosome"):
                 i += 1
-                table = gene_detailed(field)
+                table = gene_table.gene_detailed(field)
                 detailed_list = [str(i),table.chrom,table.gene,table.is_hgnc,
                                  table.ensembl_gene_id,table.ensembl_trans_id, 
                                  table.biotype,table.trans_status,table.ccds_id, 
@@ -493,14 +492,21 @@ class GeminiLoader(object):
             col = line.strip().split("\t")
             if not col[0].startswith("Chromosome"):
                 i += 1
-                table = gene_summary(col)
+                table = gene_table.gene_summary(col)
+                # defaul cosmic census to False
+                cosmic_census = 0
                 summary_list = [str(i),table.chrom,table.gene,table.is_hgnc,
                                 table.ensembl_gene_id,table.hgnc_id,
                                 table.transcript_min_start,
                                 table.transcript_max_end,table.strand,
-                                table.synonym,table.rvis]
+                                table.synonym,table.rvis,cosmic_census]
                 contents.append(summary_list)
         database.insert_gene_summary(self.c, contents)
+
+    def update_gene_table(self):
+        """
+        """
+        gene_table.update_cosmic_census_genes(self.c)
 
     def _init_sample_gt_counts(self):
         """
@@ -558,6 +564,7 @@ def load(parser, args):
     gemini_loader.store_version()
 
     gemini_loader.populate_from_vcf()
+    gemini_loader.update_gene_table()
     # gemini_loader.build_indices_and_disconnect()
 
     if not args.no_genotypes and not args.no_load_genotypes:

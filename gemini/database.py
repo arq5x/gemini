@@ -258,6 +258,7 @@ def create_tables(cursor):
                     strand text,                                    \
                     synonym text,                                   \
                     rvis_pct float,                                 \
+                    in_cosmic_census bool,                          \
                     PRIMARY KEY(uid ASC))''')
 
 def create_sample_table(cursor, args):
@@ -355,7 +356,7 @@ def insert_gene_detailed(cursor, table_contents):
 def insert_gene_summary(cursor, contents):
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into gene_summary values (?,?,?,?,?,?,?,?, \
-                                                         ?,?,?)', 
+                                                         ?,?,?,?)', 
                         contents)
     cursor.execute("END")
     
@@ -387,6 +388,11 @@ def empty_tables(cursor):
     cursor.execute('''delete * from variation''')
     cursor.execute('''delete * from samples''')
 
+
+def update_gene_summary_w_cancer_census(cursor, genes):
+    update_qry = "UPDATE gene_summary SET in_cosmic_census = ? "
+    update_qry += " WHERE gene = ? and chrom = ?"
+    cursor.executemany(update_qry, genes)
 
 @contextlib.contextmanager
 def database_transaction(db):
