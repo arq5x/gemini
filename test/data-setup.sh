@@ -8,6 +8,7 @@ gemini load -v test4.vep.snpeff.vcf -t VEP test4.vep.db
 gemini load -v test5.vep.snpeff.vcf -t snpEff test5.snpeff.db
 gemini load -v test5.vep.snpeff.vcf -t VEP test5.vep.db
 gemini load -v test.query.vcf -t snpEff test.query.db
+gemini load -v test.query.vcf --cores 2 -t snpEff test.query.core.db
 gemini load -v test.region.vep.vcf -t VEP test.region.db
 gemini load -v test.burden.vcf -t VEP -p test.burden.ped test.burden.db
 gemini load -v test.comp_het.vcf -t snpEff -p test.comp_het.ped test.comp_het.db
