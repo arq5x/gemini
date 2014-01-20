@@ -87,6 +87,33 @@ def append_version_info(main_curr, chunk_db):
     cmd = "detach toMerge"
     main_curr.execute(cmd)
 
+def append_gene_summary(main_curr, chunk_db):
+    """
+    Append the gene_summary from a chunk_db
+    to the main database.
+    """
+    cmd = "attach ? as toMerge"
+    main_curr.execute(cmd, (chunk_db, ))
+
+    cmd = "INSERT INTO gene_summary SELECT * FROM toMerge.gene_summary"
+    main_curr.execute(cmd)
+
+    cmd = "detach toMerge"
+    main_curr.execute(cmd)
+
+def append_gene_detailed(main_curr, chunk_db):
+    """
+    Append the gene_detailed from a chunk_db
+    to the main database.
+    """
+    cmd = "attach ? as toMerge"
+    main_curr.execute(cmd, (chunk_db, ))
+
+    cmd = "INSERT INTO gene_detailed SELECT * FROM toMerge.gene_detailed"
+    main_curr.execute(cmd)
+
+    cmd = "detach toMerge"
+    main_curr.execute(cmd)
 
 def update_sample_genotype_counts(main_curr, chunk_db):
     """
@@ -148,6 +175,8 @@ def merge_db_chunks(args):
             append_sample_info(main_curr, db)
             append_resource_info(main_curr, db)
             append_version_info(main_curr, db)
+            append_gene_summary(main_curr, db)
+            append_gene_detailed(main_curr, db)
         else:
             update_sample_genotype_counts(main_curr, db)
 
