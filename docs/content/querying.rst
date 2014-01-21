@@ -460,3 +460,95 @@ like hair color:
 	chr10	135210790	T	C	0,3,3,0	M10478,M10500		M10478,M10500	0	1	1	1	1	0	0
 	chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	0	0	2
 	chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	1	1	1	1	0	0
+
+=================================
+Querying the gene tables
+=================================
+The gene tables viz. ``gene_detailed table`` and the ``gene_summary table`` have been built on version 73 of the ensembl genes. The column specifications are
+available at :doc:`database_schema`. These tables contain gene specific information e.g. gene synonyms, RVIS percentile scores(Petrovski et.al 2013), strand specifications, cancer gene census etc. While the former is more detailed, the later lacks transcript wise information and summarizes some aspects of the former. For e.g. while the gene_detailed table lists all transcripts of a gene with their start and end co-ordinates, the gene_summary table reports only the minimum start and maximum end co-ordinates of the gene transcripts. The ``chrom``, ``gene`` and the ``transcript`` columns of the gene tables may be used to join on the variants and the variant_impacts tables.  
+
+---------------------------------------------------------------
+``Query the gene_detailed table with a join on variants table:``
+---------------------------------------------------------------
+
+.. code-block:: bash
+
+    $ gemini query --header -q "select v.variant_id, v.chrom, v.gene, \
+	               g.transcript_status, g.transcript, g.transcript_start, \
+			       g.transcript_end, g.synonym, g.rvis_pct, g.protein_length, \
+				   v.impact from variants v, gene_detailed g \
+					
+				   WHERE v.chrom = g.chrom AND \
+						 v.gene = g.gene AND v.impact_severity='HIGH' AND \
+						 v.biotype='protein_coding' AND \
+						 v.transcript = g.transcript" test.query.db
+
+	variant_id	chrom	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
+	46	chr1	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frame_shift
+	578	chr1	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frame_shift
+	733	chr1	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gain
+	
+---------------------------------------------------------------------------
+``Query the gene_detailed table with a join on the variant_impacts table:``
+---------------------------------------------------------------------------
+
+.. code-block:: bash
+
+    $ gemini query --header -q "select v.gene, g.transcript_status,g.transcript, g.transcript_start, \
+	               g.transcript_end, g.synonym, g.rvis_pct, g.protein_length, \
+                   v.impact from variant_impacts v, gene_detailed g \
+		           
+				   WHERE v.transcript = g.transcript AND \
+                         v.gene = g.gene AND \
+	                     v.impact_severity='HIGH' AND \
+                         v.biotype='protein_coding'" test.query.db
+
+	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
+	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frame_shift
+	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frame_shift
+	TNFRSF18	KNOWN	ENST00000379265	1139224	1141951	AITR,CD357,GITR	None	234	frame_shift
+	TNFRSF18	KNOWN	ENST00000379268	1138891	1142071	AITR,CD357,GITR	None	241	frame_shift
+	TNFRSF18	KNOWN	ENST00000328596	1138888	1141951	AITR,CD357,GITR	None	255	frame_shift
+	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gain
+	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	frame_shift
+	SCNN1D	KNOWN	ENST00000325425	1217489	1227404	ENaCdelta,dNaCh	96.77990092	704	frame_shift
+	SCNN1D	KNOWN	ENST00000379116	1215816	1227399	ENaCdelta,dNaCh	96.77990092	802	frame_shift
+	SCNN1D	KNOWN	ENST00000338555	1215968	1227404	ENaCdelta,dNaCh	96.77990092	638	frame_shift
+	SCNN1D	KNOWN	ENST00000400928	1217576	1227409	ENaCdelta,dNaCh	96.77990092	638	frame_shift
+	
+---------------------------------------------------------------------------
+``Query the gene_summary table with a join on the variants table:``
+---------------------------------------------------------------------------
+
+.. code-block:: bash
+
+    $ gemini query --header -q "select v.chrom, v.gene, g.strand, g.transcript_min_start, g.transcript_max_end, \
+                   g.synonym, g.rvis_pct, v.impact from variants v, gene_summary g \
+                   
+				   WHERE v.chrom = g.chrom AND \
+                         v.gene = g.gene AND \
+                         v.impact_severity='HIGH'" test.query.db
+
+	chrom	gene	strand	transcript_min_start	transcript_max_end	synonym	rvis_pct	impact
+	chr1	SAMD11	1	860260	879955	MGC45873	None	frame_shift
+	chr1	TNFRSF18	-1	1138888	1142071	AITR,CD357,GITR	None	frame_shift
+	chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	stop_gain
+	chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	frame_shift
+	
+-------------------------------------------------------------------------
+``Query the gene_summary table with a join on the variant_impacts table:``
+-------------------------------------------------------------------------
+
+.. code-block:: bash
+
+    $ gemini query --header -q "select g.gene, v.impact, v.transcript, \
+	               g.transcript_min_start, g.transcript_max_end, g.rvis_pct, g.synonym \
+		           from gene_summary g, variant_impacts v \
+			      
+				   WHERE g.gene=v.gene AND \
+				         g.gene ='SCNN1D' AND \
+				         v.impact ='stop_gain'" test.query.db
+
+	gene	impact	transcript	transcript_min_start	transcript_max_end	rvis_pct	synonym
+	SCNN1D	stop_gain	ENST00000470022	1215816	1227409	96.77990092	ENaCdelta,dNaCh
+	

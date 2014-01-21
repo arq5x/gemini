@@ -405,3 +405,53 @@ version        STRING      What version of gemini was used to create the DB.
 
 
 
+The ``gene_detailed`` table
+---------------------------
+
+Built on version 73 of Ensembl genes
+
+==================  ========      ===============================================================================
+column_name         type          notes
+==================  ========      ===============================================================================
+uid                 INTEGER       PRIMARY_KEY (unique identifier for each entry in the table)
+chrom               STRING        The chromosome on which the gene resides     
+gene                STRING        The gene name
+is_hgnc             BOOL          Flag for gene column: 0 for non HGNC symbol and 1 for HGNC symbol = TRUE
+ensembl_gene_id     STRING        The ensembl gene id for the gene
+transcript          STRING        The ensembl transcript id for the gene
+biotype             STRING        The biotype (e.g protein coding) of the transcript
+transcript_status   STRING        The status of the transcript (e.g. KNOWN, PUTATIVE etc.)
+ccds_id             STRING        The consensus coding sequence transcript identifier
+hgnc_id             STRING        The HGNC identifier for the gene if HGNC symbol is TRUE
+cds_length          STRING        The length of CDS in bases
+protein_length      STRING        The length of the transcript as the number of amino acids
+transcript_start    STRING        The start position of the transcript in bases
+transcript_end      STRING        The end position of the transcript in bases
+strand              STRING        The strand of DNA where the gene resides
+synonym             STRING        Other gene names (previous or synonyms) for the gene
+rvis_pct            FLOAT         The RVIS percentile values for the gene
+==================  ========      ===============================================================================
+
+
+The ``gene_summary`` table
+---------------------------
+
+Built on version 73 of Ensembl genes
+
+======================  ========      ===============================================================================
+column_name             type          notes
+======================  ========      ===============================================================================
+uid                     INTEGER       PRIMARY_KEY (unique identifier for each entry in the table)
+chrom                   STRING        The chromosome on which the gene resides     
+gene                    STRING        The gene name
+is_hgnc                 BOOL          Flag for gene column: 0 for non HGNC symbol and 1 for HGNC symbol = TRUE
+ensembl_gene_id         STRING        The ensembl gene id for the gene
+hgnc_id                 STRING        The HGNC identifier for the gene if HGNC symbol is TRUE
+transcript_min_start    STRING        The minimum start position of all transcripts for the gene
+transcript_max_end      STRING        The maximum end position of all transcripts for the gene
+strand                  STRING        The strand of DNA where the gene resides
+synonym                 STRING        Other gene names (previous or synonyms) for the gene
+rvis_pct                FLOAT         The RVIS percentile values for the gene
+in_cosmic_census        BOOL          Are mutations in the gene implicated in cancer by the cancer gene census?
+======================  ========      ===============================================================================
+

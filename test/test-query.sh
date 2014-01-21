@@ -585,7 +585,7 @@ check obs exp
 rm obs exp
 
 #########################################################################
-# 34. Test the detailed_gene table and the join on variants table
+# 34. Test the gene_detailed table and the join on variants table
 #########################################################################
 echo "    query.t34...\c"
 echo "variant_id	chrom	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
@@ -606,7 +606,7 @@ check obs exp
 rm obs exp
 
 #########################################################################
-# 35. Test the detailed_gene table and the join on variant_impacts table
+# 35. Test the gene_detailed table and the join on variant_impacts table
 #########################################################################
 echo "    query.t35...\c"
 echo "gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
@@ -634,7 +634,7 @@ check obs exp
 rm obs exp
 
 ###########################################################################
-# 36. Test the summary gene table and the join on variants table
+# 36. Test the gene_summary table and the join on variants table
 ###########################################################################
 echo "    query.t36...\c"
 echo "chrom	gene	strand	transcript_min_start	transcript_max_end	synonym	rvis_pct	impact
@@ -653,7 +653,7 @@ check obs exp
 rm obs exp 
 
 ############################################################################
-# 37. Test the summary gene table and the join on variant_impacts table
+# 37. Test the gene_summary table and the join on variant_impacts table
 ############################################################################
 echo "    query.t37...\c"
 echo "gene	impact	transcript	transcript_min_start	transcript_max_end	rvis_pct	synonym
@@ -670,7 +670,7 @@ rm obs exp
 
 
 ############################################################################
-# 38. Test the loading of gene summary table with multiple cores
+# 38. Test the loading of gene_summary table with multiple cores
 ############################################################################
 echo "    query.t38...\c"
 echo "chrom	gene	strand	transcript_min_start	transcript_max_end	synonym	rvis_pct	impact
@@ -689,7 +689,7 @@ check obs exp
 rm obs exp 
 
 ###########################################################################
-# 39. Test the loading of gene detailed table with multiple cores
+# 39. Test the loading of gene_detailed table with multiple cores
 ###########################################################################
 echo "    query.t34...\c"
 echo "variant_id	chrom	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
