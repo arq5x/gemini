@@ -260,14 +260,16 @@ def summarize_query_by_sample(args):
     total_counts = Counter()
     het_counts = Counter()
     hom_alt_counts = Counter()
-    print "\t".join(["sample", "total", "num_het", "num_hom_alt"])
+    hom_ref_counts = Counter()
+    print "\t".join(["sample", "total", "num_het", "num_hom_alt", "num_hom_ref"])
     for row in gq:
         total_counts.update(row["variant_samples"])
         het_counts.update(row["HET_samples"])
         hom_alt_counts.update(row["HOM_ALT_samples"])
+        hom_ref_counts.update(row["HOM_REF_samples"])
     for key in total_counts.keys():
         count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
-                     hom_alt_counts.get(key, 0)]
+                     hom_alt_counts.get(key, 0), hom_ref_counts.get(key, 0)]
         print "\t".join(map(str, count_row))
 
 
