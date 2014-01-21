@@ -25,14 +25,11 @@ class gene_detailed:
         self.synonym = field[14]
         self.rvis = field[15]
         
-        
-        
     def __str__(self):
         return ",".join([self.chrom, self.gene, self.is_hgnc, self.ensembl_gene_id, self.ensembl_trans_id, self.biotype, self.trans_status,
                          self.ccds_id, self.hgnc_id, self.cds_length, self.protein_length, self.transcript_start, self.transcript_end, self.strand, 
                          str(self.synonym), self.rvis])
-                     
-                     
+                                             
 class gene_summary:
     
     def __init__(self, col):
