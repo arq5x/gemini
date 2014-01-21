@@ -53,6 +53,8 @@ def index_gene_detailed(cursor):
                        gene_detailed(rvis_pct)''')
     cursor.execute('''create index gendet_transcript_idx on \
                        gene_detailed(transcript)''')
+    cursor.execute('''create index gendet_ccds_idx on \
+                       gene_detailed(ccds_id)''')
 
 def index_gene_summary(cursor):
     cursor.execute('''create index gensum_chrom_gene_idx on \
