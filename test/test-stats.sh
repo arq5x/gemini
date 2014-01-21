@@ -117,11 +117,11 @@ rm obs exp
 # 9. Test summarize
 ###################################################################
 echo "    stat.t09...\c"
-echo "sample	total	num_het	num_hom_alt
-M10475	4	1	3
-M128215	6	3	3
-M10478	6	2	4
-M10500	6	1	5" > exp
+echo "sample	total	num_het	num_hom_alt	num_hom_ref
+M10475	4	1	3	4
+M128215	6	3	3	2
+M10478	6	2	4	2
+M10500	6	1	5	2" > exp
 gemini stats --summarize "select * from variants" test5.snpeff.db > obs
 check obs exp
 rm obs exp

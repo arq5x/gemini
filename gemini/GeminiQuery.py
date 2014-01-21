@@ -225,7 +225,7 @@ class GeminiRow(object):
         self.gt_quals = gt_quals
         self.gt_cols = ['gts', 'gt_types', 'gt_phases',
                         'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
-                        'gt_quals', "variant_samples", "HET_samples", "HOM_ALT_samples"]
+                        'gt_quals', "variant_samples", "HET_samples", "HOM_ALT_samples", "HOM_REF_samples"]
         self.formatter = formatter
         self.variant_samples = variant_samples
         self.HET_samples = HET_samples
