@@ -10,7 +10,7 @@ import \
     gemini_region, gemini_stats, gemini_dump, \
     gemini_annotate, gemini_windower, \
     gemini_browser, gemini_dbinfo, gemini_merge_chunks, gemini_update, \
-    gemini_amend
+    gemini_amend, gemini_set_somatic, gemini_actionable_mutations
 
 import gemini.version
 
@@ -70,7 +70,7 @@ def main():
     #########################################
     # create the top-level parser
     #########################################
-    parser = argparse.ArgumentParser(prog='gemini')
+    parser = argparse.ArgumentParser(prog='gemini', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-v", "--version", help="Installed gemini version",
                         action="version",
                         version="%(prog)s " + str(gemini.version.__version__))
@@ -776,6 +776,89 @@ def main():
             help='The name of the database to be queried.')
     parser_browser.set_defaults(func=gemini_browser.browser_main)
 
+
+
+    #########################################
+    # $ gemini set_somatic
+    #########################################
+    parser_set_somatic = subparsers.add_parser("set_somatic", 
+                          help="Tag somatic mutations (is_somatic) by comparint tumor/normal pairs.")
+    parser_set_somatic.add_argument('db', metavar='db',
+            help='The name of the database to be updated.')
+    parser_set_somatic.set_defaults(func=gemini_set_somatic.set_somatic)
+
+    parser_set_somatic.add_argument('--min-depth',
+            dest='min_depth',
+            type=float,
+            default=30,
+            help='The min combined depth for tumor + normal (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--min-qual',
+            dest='min_qual',
+            type=float,
+            default=30,
+            help='The min variant quality (VCF QUAL) (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--max-norm-alt-freq',
+            dest='max_norm_alt_freq',
+            type=float,
+            default=0.03,
+            help='The max freq. of the alt. allele in the normal sample (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--max-norm-alt-count',
+            dest='max_norm_alt_count',
+            type=int,
+            default=2,
+            help='The max count. of the alt. allele in the normal sample (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--min-norm-depth',
+            dest='min_norm_depth',
+            type=int,
+            default=10,
+            help='The minimum depth allowed in the normal sample to believe somatic (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--min-tumor-alt-freq',
+            dest='min_tumor_alt_freq',
+            type=float,
+            default=0.05,
+            help='The min freq. of the alt. allele in the tumor sample (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--min-tumor-alt-count',
+            dest='min_tumor_alt_count',
+            type=int,
+            default=2,
+            help='The min count. of the alt. allele in the tumor sample (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--min-tumor-depth',
+            dest='min_tumor_depth',
+            type=int,
+            default=10,
+            help='The minimum depth allowed in the tumor sample to believe somatic (def: %(default)s).')
+
+    parser_set_somatic.add_argument('--chrom',
+            dest='chrom',
+            metavar='STRING',
+            help='A specific chromosome on which to tag somatic mutations. (def: %(default)s).',
+            default=None,
+            )
+
+    parser_set_somatic.add_argument('--dry-run',
+            dest='dry_run',
+            action='store_true',
+            help='Don\'t set the is_somatic flag, just report what _would_ be set. For testing parameters.',
+            default=False)
+
+
+    #########################################
+    # $ gemini actionable_mutations
+    #########################################
+    parser_actionable_mut = subparsers.add_parser("actionable_mutations", 
+                          help="Retriev genes with actionable somatic mutations via COSMIC and DGIdb.")
+    parser_actionable_mut.add_argument('db', metavar='db',
+            help='The name of the database to be queried.')
+    parser_actionable_mut.set_defaults(func=gemini_actionable_mutations.get_actionable_mutations)
+
+
     #########################################
     # $ gemini update
     #########################################
@@ -785,6 +868,7 @@ def main():
     parser_update.add_argument("--dataonly", help="Only update data, not the underlying libraries.",
                                action="store_true", default=False)
     parser_update.set_defaults(func=gemini_update.release)
+
 
     #######################################################
     # parse the args and call the selected function
