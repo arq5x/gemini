@@ -718,11 +718,14 @@ class GeminiQuery(object):
             sys.exit("Malformed query: expected a FROM keyword.")
 
         (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
-        
-        select_clause = ",".join(select_tokens) + \
-                    ", gene "
-        
-        self.query = "select " + select_clause + rest_of_query
+
+        if not any("gene" in s for s in select_tokens):
+
+            select_clause = ",".join(select_tokens) + \
+                        ", gene "
+            
+            self.query = "select " + select_clause + rest_of_query
+
         return self.query
 
     def _split_select(self):
