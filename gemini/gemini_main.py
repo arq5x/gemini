@@ -373,6 +373,12 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
+    parser_region.add_argument('--show-samples',
+                               dest='show_variant_samples',
+                               action='store_true',
+                               default=False,
+                                help=('Add a column of all sample names with a variant to each '
+                                      'variant.'))
     parser_region.add_argument('--format',
                               dest='format',
                               default='default',
@@ -781,7 +787,7 @@ def main():
     #########################################
     # $ gemini set_somatic
     #########################################
-    parser_set_somatic = subparsers.add_parser("set_somatic", 
+    parser_set_somatic = subparsers.add_parser("set_somatic",
                           help="Tag somatic mutations (is_somatic) by comparint tumor/normal pairs.")
     parser_set_somatic.add_argument('db', metavar='db',
             help='The name of the database to be updated.')
@@ -852,7 +858,7 @@ def main():
     #########################################
     # $ gemini actionable_mutations
     #########################################
-    parser_actionable_mut = subparsers.add_parser("actionable_mutations", 
+    parser_actionable_mut = subparsers.add_parser("actionable_mutations",
                           help="Retriev genes with actionable somatic mutations via COSMIC and DGIdb.")
     parser_actionable_mut.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
