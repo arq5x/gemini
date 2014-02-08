@@ -22,9 +22,20 @@ def index_variation(cursor):
     cursor.execute('''create index var_exonic_idx on variants(is_exonic)''')
     cursor.execute('''create index var_coding_idx on variants(is_coding)''')
     cursor.execute('''create index var_lof_idx on variants(is_lof)''')
+    cursor.execute('''create index var_som_idx on variants(is_somatic)''')
     cursor.execute('''create index var_depth_idx on variants(depth)''')
     cursor.execute('''create index var_gene_idx on variants(gene)''')
     cursor.execute('''create index var_trans_idx on variants(transcript)''')
+    cursor.execute('''create index var_impact_idx on variants(impact)''')
+    cursor.execute('''create index var_impact_severity_idx on variants(impact_severity)''')
+    cursor.execute('''create index var_esp_idx on variants(aaf_esp_all)''')
+    cursor.execute('''create index var_1kg_idx on variants(aaf_1kg_all)''')
+    cursor.execute('''create index var_qual_idx on variants(qual)''')
+    cursor.execute('''create index var_homref_idx on variants(num_hom_ref)''')
+    cursor.execute('''create index var_homalt_idx on variants(num_hom_alt)''')
+    cursor.execute('''create index var_het_idx on variants(num_het)''')
+    cursor.execute('''create index var_unk_idx on variants(num_unknown)''')
+    cursor.execute('''create index var_callrate_idx on variants(call_rate)''')
 
 
 def index_variation_impacts(cursor):
@@ -67,7 +78,10 @@ def create_indices(cursor):
     Index our master DB tables for speed
     """
     index_variation(cursor)
+    index_variation_impacts(cursor)
     index_samples(cursor)
+    index_gene_detailed(cursor)
+    index_gene_summary(cursor)
 
 
 def create_tables(cursor):
