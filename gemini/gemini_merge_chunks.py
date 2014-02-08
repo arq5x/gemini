@@ -14,12 +14,15 @@ def append_variant_info(main_curr, chunk_db):
     cmd = "attach ? as toMerge"
     main_curr.execute(cmd, (chunk_db, ))
 
+    main_curr.execute("BEGIN TRANSACTION")
     cmd = "INSERT INTO variants SELECT * FROM toMerge.variants"
     main_curr.execute(cmd)
 
     cmd = \
         "INSERT INTO variant_impacts SELECT * FROM toMerge.variant_impacts"
     main_curr.execute(cmd)
+    main_curr.execute("END TRANSACTION")
+
     cmd = "detach toMerge"
     main_curr.execute(cmd)
 
@@ -152,7 +155,6 @@ def merge_db_chunks(args):
 
     main_conn = sqlite3.connect(args.db)
     main_conn.isolation_level = None
-    main_conn.row_factory = sqlite3.Row
     main_curr = main_conn.cursor()
     main_curr.execute('PRAGMA synchronous = OFF')
     main_curr.execute('PRAGMA journal_mode=MEMORY')
@@ -180,7 +182,7 @@ def merge_db_chunks(args):
         else:
             update_sample_genotype_counts(main_curr, db)
 
-    gemini_db.create_indices(main_curr)
+    #gemini_db.create_indices(main_curr)
     main_conn.commit()
     main_curr.close()
 
