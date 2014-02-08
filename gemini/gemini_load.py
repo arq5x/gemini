@@ -3,13 +3,17 @@
 # native Python imports
 import os.path
 import sys
+import sqlite3
 
 import annotations
 from gemini_constants import *
 import subprocess
 from cluster_helper.cluster import cluster_view
+import database as gemini_db
 from gemini_load_chunk import GeminiLoader
 import uuid
+import time
+import datetime
 
 
 def load(parser, args):
@@ -75,10 +79,27 @@ def merge_chunks_ipython(chunks, db, view):
         merge_chunks_ipython(tmp_dbs, db, view)
 
 def merge_chunks_multicore(chunks, db):
-    if len(chunks) == 1:
+    if len(chunks) <= 1:
+        ts = time.time()
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        print st, "indexing final database."
+
         os.rename(chunks[0], db)
+        main_conn = sqlite3.connect(db)
+        main_conn.isolation_level = None
+        main_curr = main_conn.cursor()
+        main_curr.execute('PRAGMA synchronous = OFF')
+        main_curr.execute('PRAGMA journal_mode=MEMORY')
+        
+        gemini_db.create_indices(main_curr)
+        
+        main_conn.commit()
+        main_curr.close()
         return db
     else:
+        ts = time.time()
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        print st, "merging", len(chunks), "chunks."
         procs = []
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
@@ -159,7 +180,7 @@ def load_chunks_multicore(grabix_file, args):
         chunk_dbs.append(chunk_vcf + ".db")
 
     wait_until_finished(procs)
-    print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num)
+    print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num+1)
     return chunk_dbs
 
 def load_chunks_ipython(grabix_file, args, view):
