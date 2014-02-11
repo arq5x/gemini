@@ -28,7 +28,7 @@ remotes = {"requirements":
            "gemini":
            "https://github.com/arq5x/gemini.git",
            "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-2.2.2-%s-x86_64.sh"}
+           "http://repo.continuum.io/miniconda/Miniconda-3.0.0-%s-x86_64.sh"}
 
 def main(args):
     check_dependencies()
@@ -65,13 +65,13 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     """Install gemini plus python dependencies inside isolated Anaconda environment.
     """
     # Work around issue with distribute where asks for 'distribute==0.0'
-    try:
-        subprocess.check_call([anaconda["easy_install"], "--upgrade", "distribute"])
-    except subprocess.CalledProcessError:
-        try:
-            subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
-        except subprocess.CalledProcessError:
-            pass
+    # try:
+    #     subprocess.check_call([anaconda["easy_install"], "--upgrade", "distribute"])
+    # except subprocess.CalledProcessError:
+    #     try:
+    #         subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
+    #     except subprocess.CalledProcessError:
+    #         pass
     # Ensure latest version of fabric for running CloudBioLinux
     subprocess.check_call([anaconda["pip"], "install", "fabric>=1.7.0"])
     # Install problem dependency separately: bx-python
@@ -111,6 +111,7 @@ def install_conda_pkgs(anaconda):
     pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
             "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
             "pyzmq", "pandas", "scipy"]
+    subprocess.check_call([anaconda["conda"], "install", "--yes", "numpy"])
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + pkgs)
 
 def install_anaconda_python(args, remotes):
