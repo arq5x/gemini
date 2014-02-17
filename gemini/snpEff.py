@@ -139,6 +139,7 @@ effect_names = ["CDS",
                 "RARE_AMINO_ACID",
                 "SPLICE_SITE_ACCEPTOR",
                 "SPLICE_SITE_DONOR",
+                "SPLICE_SITE_REGION",
                 "START_GAINED",
                 "START_LOST",
                 "STOP_GAINED",
@@ -176,6 +177,7 @@ effect_dict = {'CDS': 'CDS',
                'RARE_AMINO_ACID': 'rare_amino_acid',
                'SPLICE_SITE_ACCEPTOR': 'splice_acceptor',
                'SPLICE_SITE_DONOR': 'splice_donor',
+               'SPLICE_SITE_REGION': 'splice_region',
                'START_GAINED': 'start_gain',
                'START_LOST': 'start_loss',
                'STOP_GAINED': 'stop_gain',
@@ -217,6 +219,8 @@ effect_desc = ["The variant hits a CDS.",
                bases before exon start, except for the first exon).",
                "The variant hits a Splice donor site (defined as two \
                bases after coding exon end, except for the last exon).",
+               "The variant lies near a splice site but is not a donor \
+                or acceptor site",
                "A variant in 5'UTR region produces a three base sequence \
                 that can be a START codon.",
                "Variant causes start codon to be mutated into a non-start \
@@ -262,6 +266,7 @@ effect_priorities = ["LOW",
                      "HIGH",
                      "HIGH",
                      "LOW",
+                     "LOW",
                      "HIGH",
                      "HIGH",
                      "HIGH",
@@ -298,6 +303,7 @@ effect_priority_codes = [3,
                          1,
                          1,
                          3,
+                         3,
                          1,
                          1,
                          1,
@@ -313,7 +319,7 @@ effect_priority_codes = [3,
                          1,
                          3]
 
-effect_ids = range(1, 36)
+effect_ids = range(1, 37)
 effect_map = {}
 EffectInfo = namedtuple(
     'EffectInfo', ['id', 'priority', 'priority_code', 'desc'])
