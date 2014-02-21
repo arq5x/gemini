@@ -23,7 +23,6 @@ anno_files = \
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
 'hg19.pfam.ucscgenes.bed.gz',
-'hg19.gerp.bw',
 'hg19.gerp.elements.bed.gz',
 'hg19.cytoband.bed.gz',
 'hg19.dgv.bed.gz',
@@ -52,6 +51,7 @@ anno_files = \
 'summary_gene_table',
 'cancer_gene_census.20140120.tsv'
 ]
+extra_anno_files = {"gerp_bp": "hg19.gerp.bw"}
 
 toadd_anno_files = []
 
@@ -61,7 +61,7 @@ anno_versions = {
     "clinvar_20131230.vcf.gz": 2,
     "hg19.rmsk.bed.gz": 2}
 
-def install_annotation_files(anno_root_dir, dl_files=False):
+def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
     """Download required annotation files.
     """
     # create the full gemini data path based on
@@ -84,8 +84,11 @@ def install_annotation_files(anno_root_dir, dl_files=False):
         if not os.path.isdir(anno_dir):
             sys.exit(anno_dir + " is not a valid directory.")
         _check_dependencies()
+        to_dl = anno_files[:]
+        if extra:
+            to_dl += [extra_anno_files[x] for x in extra]
         _download_anno_files("https://s3.amazonaws.com/gemini-annotations",
-                             anno_files, anno_dir, cur_config)
+                             to_dl, anno_dir, cur_config)
     #_download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
     #                     toadd_anno_files, cur_config)
 
@@ -158,5 +161,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("anno_dir", help="Directory to write annotation files.")
     parser.add_argument("--nodata", dest="dl_files", default=True, action="store_false")
+    parser.add_argument("--extra", help="Add additional non-standard genome annotations to include",
+                        action="append", default=[])
     args = parser.parse_args()
-    install_annotation_files(args.anno_dir, args.dl_files)
+    install_annotation_files(args.anno_dir, args.dl_files, args.extra)
