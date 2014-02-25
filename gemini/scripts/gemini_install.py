@@ -99,8 +99,9 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
         cmd = ["ln", "-s", ve_script, final_script]
         subprocess.check_call(sudo_cmd + cmd)
-    _cleanup_problem_files(anaconda["dir"])
     python_bin = os.path.join(anaconda["dir"], "bin", "python")
+    _cleanup_problem_files(anaconda["dir"])
+    _add_missing_inits(python_bin)
     library_loc = subprocess.check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
                                           shell=True)
     return {"fab": os.path.join(anaconda["dir"], "bin", "fab"),
@@ -137,6 +138,19 @@ def install_anaconda_python(args, remotes):
             "pip": os.path.join(bindir, "pip"),
             "easy_install": os.path.join(bindir, "easy_install"),
             "dir": anaconda_dir}
+
+def _add_missing_inits(python_bin):
+    """pip/setuptools strips __init__.py files with namespace declarations.
+    I have no idea why, but this adds them back.
+    """
+    library_loc = subprocess.check_output("%s -c 'import pygraph.classes.graph; "
+                                          "print pygraph.classes.graph.__file__'" % python_bin,
+                                          shell=True)
+    pygraph_init = os.path.normpath(os.path.join(os.path.dirname(library_loc.strip()), os.pardir,
+                                                 "__init__.py"))
+    if not os.path.exists(pygraph_init):
+        with open(pygraph_init, "w") as out_handle:
+            out_handle.write("__import__('pkg_resources').declare_namespace(__name__)\n")
 
 def _cleanup_problem_files(venv_dir):
     """Remove problem bottle items in PATH which conflict with site-packages
