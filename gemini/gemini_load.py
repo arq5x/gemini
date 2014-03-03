@@ -6,7 +6,6 @@ import sys
 import sqlite3
 
 import annotations
-from gemini_constants import *
 import subprocess
 from cluster_helper.cluster import cluster_view
 import database as gemini_db
@@ -38,8 +37,11 @@ def load_singlecore(args):
     gemini_loader.store_resources()
     gemini_loader.store_version()
     gemini_loader.populate_from_vcf()
-    gemini_loader.update_gene_table()
-    gemini_loader.build_indices_and_disconnect()
+
+    if not args.skip_gene_tables and not args.test_mode:
+        gemini_loader.update_gene_table()
+    if not args.test_mode:
+        gemini_loader.build_indices_and_disconnect()
 
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
@@ -153,6 +155,14 @@ def load_chunks_multicore(grabix_file, args):
     if args.load_gerp_bp is True:
         load_gerp_bp = "--load-gerp-bp"
 
+    skip_gene_tables = ""
+    if args.skip_gene_tables is True:
+        skip_gene_tables = "--skip-gene-tables"
+
+    test_mode = ""
+    if args.test_mode is True:
+        test_mode = "--test-mode"
+
     passonly = ""
     if args.passonly is True:
         passonly = "--passonly"
@@ -206,6 +216,14 @@ def load_chunks_ipython(grabix_file, args, view):
     if args.load_gerp_bp is True:
         load_gerp_bp = "--load-gerp-bp"
 
+    skip_gene_tables = ""
+    if args.skip_gene_tables is True:
+        skip_gene_tables = "--skip-gene-tables"
+
+    test_mode = ""
+    if args.test_mode is True:
+        test_mode = "--test-mode"
+
     passonly = ""
     if args.passonly is True:
         passonly = "--passonly"
@@ -226,6 +244,8 @@ def load_chunks_ipython(grabix_file, args, view):
                  "no_genotypes": no_genotypes,
                  "no_load_genotypes": no_load_genotypes,
                  "load_gerp_bp": load_gerp_bp,
+                 "skip_gene_tables": skip_gene_tables,
+                 "test_mode": test_mode,
                  "passonly": passonly,
                  "skip_info_string": skip_info_string}
     chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
@@ -253,7 +273,8 @@ def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
-                       " {load_gerp_bp} {passonly} {skip_info_string}"
+                       " {load_gerp_bp} {skip_gene_tables}"
+                       " {passonly} {skip_info_string} {test_mode}"
                        " -o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
 

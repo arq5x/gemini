@@ -103,6 +103,11 @@ def main():
                              action='store_true',
                              help='Load GERP scores at base pair resolution. Slow. Off by default.',
                              default=False)
+    parser_load.add_argument('--skip-gene-tables',
+                             dest='skip_gene_tables',
+                             action='store_true',
+                             help='Do not load gene tables. Loaded by default.',
+                             default=False)
     parser_load.add_argument('--skip-info-string',
                              dest='skip_info_string',
                              action='store_true',
@@ -133,6 +138,11 @@ def main():
                              default=False,
                              action='store_true',
                              help="Keep only variants that pass all filters.")
+    parser_load.add_argument('--test-mode',
+                         dest='test_mode',
+                         action='store_true',
+                         help='Load in test mode (faster)',
+                         default=False)
 
     parser_load.set_defaults(func=gemini_load.load)
     #########################################
@@ -191,6 +201,11 @@ def main():
                                   action='store_true',
                                   help='Load GERP scores at base pair resolution. Slow. Off by default.',
                                   default=False)
+    parser_loadchunk.add_argument('--skip-gene-tables',
+                             dest='skip_gene_tables',
+                             action='store_true',
+                             help='Do not load gene tables. Loaded by default.',
+                             default=False)
     parser_loadchunk.add_argument('--skip-info-string',
                                   dest='skip_info_string',
                                   action='store_true',
@@ -201,6 +216,11 @@ def main():
                                   default=False,
                                   action='store_true',
                                   help="Keep only variants that pass all filters.")
+    parser_loadchunk.add_argument('--test-mode',
+                         dest='test_mode',
+                         action='store_true',
+                         help='Load in test mode (faster)',
+                         default=False)
     parser_loadchunk.set_defaults(func=gemini_load_chunk.load)
 
     #########################################

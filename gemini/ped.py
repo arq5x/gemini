@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-import sys
-
 default_ped_fields = ["family_id", "name", "paternal_id", "maternal_id",
                       "sex", "phenotype"]
 

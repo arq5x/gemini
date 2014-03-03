@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
     Utility functions for extracting specific attributes
     from the VCF INFO field.
