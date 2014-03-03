@@ -90,7 +90,7 @@ def get_rms_map_qual(var):
     Return the RMS mapping quality,
     or None if it isn't present in the VCF.
     """
-    return var.INFO.get('MQ')
+    return _safe_single_attr(var.INFO.get('MQ'))
 
 
 def get_homopol_run(var):

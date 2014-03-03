@@ -4,9 +4,6 @@ import sqlite3
 import os
 import sys
 import collections
-import subprocess as subp
-import re
-import string
 
 from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
@@ -17,38 +14,42 @@ annos = {}
 def get_anno_files():
     config = read_gemini_config()
     anno_dirname = config["annotation_dir"]
-    return {
+    # Default annotations -- always found
+    annos = {
      'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
-    'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-    'dbsnp': os.path.join(anno_dirname, 'dbsnp.138.vcf.gz'),
-    'clinvar': os.path.join(anno_dirname, 'clinvar_20131230.vcf.gz'),
-    'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
-    'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
-    'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
-    'conserved': os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
-    'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
-    'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
-    'esp': os.path.join(anno_dirname,
-                        'ESP6500SI.all.snps_indels.vcf.gz'),
-    '1000g': os.path.join(anno_dirname,
-                          'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz'),
-    'recomb': os.path.join(anno_dirname,
-                           'genetic_map_HapMapII_GRCh37.gz'),
-    'gms': os.path.join(anno_dirname,
-                        'GRCh37-gms-mappability.vcf.gz'),
-    'grc': os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
-    'cse': os.path.join(anno_dirname, "cse-hiseq-8_4-2013-02-20.bed.gz"),
-    'encode_tfbs': os.path.join(anno_dirname,
-                                'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
-    'encode_dnase1': os.path.join(anno_dirname,
-                                  'stam.125cells.dnaseI.hg19.bed.gz'),
-    'encode_consensus_segs': os.path.join(anno_dirname,
-                                          'encode.6celltypes.consensus.bedg.gz'),
-    'gerp_bp': os.path.join(anno_dirname, 'hg19.gerp.bw'),
-    'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
-    'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-    'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),
+     'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
+     'dbsnp': os.path.join(anno_dirname, 'dbsnp.138.vcf.gz'),
+     'clinvar': os.path.join(anno_dirname, 'clinvar_20131230.vcf.gz'),
+     'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
+     'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
+     'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
+     'conserved': os.path.join(anno_dirname, '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz'),
+     'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
+     'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
+     'esp': os.path.join(anno_dirname,
+                         'ESP6500SI.all.snps_indels.vcf.gz'),
+     '1000g': os.path.join(anno_dirname,
+                           'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz'),
+     'recomb': os.path.join(anno_dirname,
+                            'genetic_map_HapMapII_GRCh37.gz'),
+     'gms': os.path.join(anno_dirname,
+                         'GRCh37-gms-mappability.vcf.gz'),
+     'grc': os.path.join(anno_dirname, 'GRC_patch_regions.bed.gz'),
+     'cse': os.path.join(anno_dirname, "cse-hiseq-8_4-2013-02-20.bed.gz"),
+     'encode_tfbs': os.path.join(anno_dirname,
+                                 'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz'),
+     'encode_dnase1': os.path.join(anno_dirname,
+                                   'stam.125cells.dnaseI.hg19.bed.gz'),
+     'encode_consensus_segs': os.path.join(anno_dirname,
+                                           'encode.6celltypes.consensus.bedg.gz'),
+     'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
+     'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
+     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),
     }
+    # optional annotations
+    if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
+        annos['gerp_bp'] = os.path.join(anno_dirname, 'hg19.gerp.bw')
+    return annos
 
 class ClinVarInfo(object):
     def __init__(self):
@@ -305,6 +306,9 @@ def get_gerp_bp(var):
     """
     Returns a summary of the GERP scores for the variant.
     """
+    if "gerp_bp" not in annos:
+        raise IOError("Need to download BigWig file with GERP scores per base pair. "
+                      "Run `gemini update --dataonly --extra gerp_bp")
     gerp = bigwig_summary(var, "gerp_bp")
     return gerp
 

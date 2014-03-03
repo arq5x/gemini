@@ -156,6 +156,12 @@ to only update data files without updating the source:
     $ gemini update --devel
     $ gemini update --dataonly
 
+To download optional large files associated with specific analyses in GEMINI,
+like GERP scores per base pair, pass the ``--extra`` flag:
+
+.. code-block:: bash
+
+    $ gemini update --dataonly --extra gerp_bp
 
 Software dependencies
 =====================

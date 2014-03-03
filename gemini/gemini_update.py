@@ -17,19 +17,20 @@ def release(parser, args):
     ei_bin = os.path.join(os.path.dirname(sys.executable), "easy_install")
     activate_bin = os.path.join(os.path.dirname(sys.executable), "activate")
     conda_bin = os.path.join(os.path.dirname(sys.executable), "conda")
-    # Work around issue with distribute where asks for 'distribute==0.0'
     if not args.dataonly:
-        try:
-            subprocess.check_call([ei_bin, "--upgrade", "distribute"])
-        except subprocess.CalledProcessError:
-            try:
-                subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
-            except subprocess.CalledProcessError:
-                pass
+        # Work around issue with distribute where asks for 'distribute==0.0'
+        # try:
+        #     subprocess.check_call([ei_bin, "--upgrade", "distribute"])
+        # except subprocess.CalledProcessError:
+        #     try:
+        #         subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
+        #     except subprocess.CalledProcessError:
+        #         pass
         if os.path.exists(conda_bin):
             pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
                     "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
                     "pyzmq", "pandas", "scipy"]
+            subprocess.check_call([conda_bin, "install", "--yes", "numpy"])
             subprocess.check_call([conda_bin, "install", "--yes"] + pkgs)
         elif os.path.exists(activate_bin):
             pass
@@ -54,7 +55,8 @@ def release(parser, args):
         print "Gemini upgraded to latest version"
     # update datafiles
     config = gemini.config.read_gemini_config()
-    subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]])
+    extra_args = ["--extra=%s" % x for x in args.extra]
+    subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]] + extra_args)
     print "Gemini data files updated"
     # update tests
     if not args.dataonly:
