@@ -43,20 +43,23 @@ def interpret_severe_impact(args, var):
                     # the predicted inpact, which is outside the ()
                 impact_detail = piece[1]
                     # all the other information, which is inside the ()
-                impact_info = snpEff.effect_map[impact_string]
-                # update the impact stored if a higher or an equal severity transcript
-                # is encountered
-                if impact_info.priority_code <= max_severity:
-                    impact_details = snpEff.EffectDetails(impact_string,
+                try:
+                    impact_info = snpEff.effect_map[impact_string]
+                    # update the impact stored if a higher or an equal severity transcript
+                    # is encountered
+                    if impact_info.priority_code <= max_severity:
+                        impact_details = snpEff.EffectDetails(impact_string,
                                                           impact_info.priority,
                                                           impact_detail,
                                                           counter,
                                                           args.maj_version)
-                    impact_all.append(impact_details)
-                    # store the current "winning" severity for the next iteration
-                    max_severity = impact_info.priority_code 
-                    # This would store the highest priority for the next outer loop
-                    top_severity =  impact_info.priority
+                        impact_all.append(impact_details)
+                        # store the current "winning" severity for the next iteration
+                        max_severity = impact_info.priority_code 
+                        # This would store the highest priority for the next outer loop
+                        top_severity =  impact_info.priority
+                except KeyError:
+                    pass
         
         # prioritizing biotype: initialize flags to a high value
         set_flag = flag = 4
