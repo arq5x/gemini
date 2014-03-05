@@ -79,7 +79,7 @@ class EffectDetails(object):
         self.polyphen_score = None
         self.sift_pred = None
         self.sift_score = None
-        self.consequence = effect_dict[self.effect_name]
+        self.consequence = effect_dict[self.effect_name] if self.effect_severity != None else self.effect_name
 
     def __str__(self):
         return "\t".join([self.consequence, self.effect_severity,
