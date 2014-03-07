@@ -129,7 +129,7 @@ effect_dict = {
     'non_coding_exon_variant': 'nc_exon', 'frameshift_variant': 'frame_shift',
     'initiator_codon_variant': 'transcript_codon_change', 'inframe_deletion': 'inframe_codon_loss',
     'inframe_insertion': 'inframe_codon_gain', 'missense_variant': 'non_syn_coding',
-    'splice_region_variant': 'other_splice_variant', 'incomplete_terminal_codon_variant': 'incomplete_terminal_codon',
+    'splice_region_variant': 'splice_region', 'incomplete_terminal_codon_variant': 'incomplete_terminal_codon',
     'stop_retained_variant': 'synonymous_stop', 'synonymous_variant': 'synonymous_coding',
     'coding_sequence_variant': 'CDS', 'mature_miRNA_variant': 'mature_miRNA',
     '5_prime_UTR_variant': 'UTR_5_prime', '3_prime_UTR_variant': 'UTR_3_prime',
