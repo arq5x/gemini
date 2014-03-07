@@ -219,8 +219,8 @@ effect_desc = ["The variant hits a CDS.",
                bases before exon start, except for the first exon).",
                "The variant hits a Splice donor site (defined as two \
                bases after coding exon end, except for the last exon).",
-               "The variant lies near a splice site but is not a donor \
-                or acceptor site",
+               "The variant lies within a splice site region (1-3bps into \
+                an exon or 3-8bps into an intron)",
                "A variant in 5'UTR region produces a three base sequence \
                 that can be a START codon.",
                "Variant causes start codon to be mutated into a non-start \
@@ -265,7 +265,7 @@ effect_priorities = ["LOW",
                      "HIGH",
                      "HIGH",
                      "HIGH",
-                     "LOW",
+                     "MED",
                      "LOW",
                      "HIGH",
                      "HIGH",
@@ -302,7 +302,7 @@ effect_priority_codes = [3,
                          1,
                          1,
                          1,
-                         3,
+                         2,
                          3,
                          1,
                          1,
