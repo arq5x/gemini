@@ -655,7 +655,7 @@ class GeminiQuery(object):
         (gt_types[11] == 1)
         """
         corrected_gt_filter = []
-        tokens = re.split(r'[\s+]+', self.gt_filter)
+        tokens = re.split(r'[\s+]+', str(self.gt_filter))
         for token in tokens:
             if token.find("gt") >= 0 or token.find("GT") >= 0:
                 corrected = self._correct_genotype_col(token)

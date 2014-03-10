@@ -17,9 +17,9 @@ echo "    burden.t2...\c"
 echo "gene	T	c	Z	p_value
 SYCE1	-0.5	0.25	-1.0	0.841344746069
 WDR37	-1.0	1.5	-0.816496580928	0.792891910879
-DHODH	0.0	0.0	nan	nan
+CTBP2	0.0	0.0	nan	nan
 ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
-CTBP2	0.0	0.0	nan	nan" > exp
+DHODH	0.0	0.0	nan	nan" > exp
 gemini burden --controls M10475 M10478 --cases M10500 M128215 --calpha test.burden.db > obs
 check obs exp
 rm obs exp
@@ -31,9 +31,9 @@ echo "    burden.t3...\c"
 echo "gene	T	c	Z	p_value
 SYCE1	-0.5	0.25	-1.0	0.841344746069
 WDR37	-1.0	1.5	-0.816496580928	0.792891910879
-DHODH	0.0	0.0	nan	nan
+CTBP2	0.0	0.0	nan	nan
 ASAH2C	-0.5	0.75	-0.57735026919	0.718148569175
-CTBP2	0.0	0.0	nan	nan" > exp
+DHODH	0.0	0.0	nan	nan" > exp
 gemini burden --calpha test.burden.db > obs
 check obs exp
 rm obs exp
