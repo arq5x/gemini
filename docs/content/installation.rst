@@ -307,7 +307,7 @@ codon_change_del                                    CODON_CHANGE_PLUS_CODON_DELE
 codon_change_ins                                    CODON_CHANGE_PLUS_CODON_INSERTION      null                                                      MED
 UTR_5_del                                           UTR_5_DELETED                          null                                                      MED
 UTR_3_del                                           UTR_3_DELETED                          null                                                      MED
-other_splice_variant                                null                                   splice_region_variant                                     MED
+splice_region                                       SPLICE_SITE_REGION                     splice_region_variant                                     MED
 mature_miRNA                                        null                                   mature_miRNA_variant                                      MED
 regulatory_region                                   null                                   regulatory_region_variant                                 MED
 TF_binding_site                                     null                                   TF_binding_site_variant                                   MED
