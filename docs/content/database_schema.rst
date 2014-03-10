@@ -343,7 +343,7 @@ MED               - non_syn_coding
                   - codon_change_ins
                   - UTR_5_del
                   - UTR_3_del
-                  - other_splice_variant
+                  - splice_region
                   - mature_miRNA
                   - regulatory_region
                   - TF_binding_site
