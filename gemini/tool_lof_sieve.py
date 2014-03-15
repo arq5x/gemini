@@ -11,7 +11,7 @@ import zlib
 
 
 def get_ind_lof(c, args):
-
+    
     idx_to_sample = util.map_indices_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
@@ -42,9 +42,20 @@ def get_ind_lof(c, args):
         transcript_pos = None
         transcript_pct = None
         if aa_change != 'None':
-            transcript_pos = re.findall('\S(\d+)\S', aa_change)[0]
-            if aa_length != 'None':
-                transcript_pct = float(transcript_pos) / float(aa_length)
+            try:
+                #transcript_pos for snpEff annotated VCF
+                transcript_pos = re.findall('\S(\d+)\S', aa_change)[0]
+            except IndexError:
+                #transcript_pos for VEP annotated VCF
+                if aa_length != 'None' and \
+                        aa_length.split("/")[0] != "-":
+                    transcript_pos = aa_length.split("/")[0] 
+        #transcript_pct for snpEff annotated VCF        
+        if aa_length != 'None' and "/" not in aa_length:
+            transcript_pct = float(transcript_pos) / float(aa_length)
+        #transcript_pct for VEP annotated VCF
+        elif aa_length != 'None' and "/" in aa_length:
+            transcript_pct = float(transcript_pos) / float(aa_length.split("/")[1])
 
         for idx, gt_type in enumerate(gt_types):
             if gt_type == HET or gt_type == HOM_ALT:
@@ -56,7 +67,7 @@ def get_ind_lof(c, args):
                                  r['aa_length'] or 'None',
                                  str(transcript_pct) or 'None',
                                  idx_to_sample[idx],
-                                 gts[idx], gene, trans, r['biotype']])
+                                 gts[idx], gene, trans, r['biotype'] or 'None'])
 
 
 def lof_sieve(parser, args):
