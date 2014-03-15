@@ -271,7 +271,6 @@ cosmic_ids                STRING        | A list of known COSMIC ids for this va
 ========================  ========      ==============================================================================================
 
 
-
 |
 
 The ``variant_impacts`` table
@@ -303,6 +302,66 @@ sift_scores       FLOAT         SIFT prob. scores reflecting severity (Higher th
 
 |
 
+Details of the ``impact`` and ``impact_severity`` columns
+---------------------------------------------------------
+
+=====================  =======================================
+impact severity        impacts
+=====================  =======================================
+HIGH                   - exon_deleted
+                       - frame_shift
+                       - splice_acceptor
+                       - splice_donor
+                       - start_loss
+                       - stop_gain
+                       - stop_loss
+                       - non_synonymous_start
+                       - transcript_codon_change
+MED                    - non_syn_coding
+                       - inframe_codon_gain
+                       - inframe_codon_loss
+                       - inframe_codon_change
+                       - codon_change_del
+                       - codon_change_ins
+                       - UTR_5_del
+                       - UTR_3_del
+                       - splice_region
+                       - mature_miRNA
+                       - regulatory_region
+                       - TF_binding_site
+                       - regulatory_region_ablation
+                       - regulatory_region_amplification
+                       - TFBS_ablation
+                       - TFBS_amplification 
+LOW                    - synonymous_stop
+                       - synonymous_coding
+                       - UTR_5_prime
+                       - UTR_3_prime
+                       - intron
+                       - CDS
+                       - upstream
+                       - downstream
+                       - intergenic
+                       - intragenic
+                       - gene
+                       - transcript
+                       - exon
+                       - start_gain
+                       - synonymous_start
+                       - intron_conserved
+                       - nc_transcript
+                       - NMD_transcript
+                       - transcript_codon_change
+                       - incomplete_terminal_codon
+                       - nc_exon
+                       - transcript_ablation
+                       - transcript_amplification
+                       - feature elongation
+                       - feature truncation   
+=====================  =======================================
+
+|
+
 The ``samples`` table
 ----------------------
 
@@ -320,63 +379,6 @@ ethnicity      STRING      The ethnic group to which the sample belongs [User de
 =============  ==========  ==================================================
 
 |
-
-Details of the ``impact`` and ``impact_severity`` columns
----------------------------------------------------------
-================  =======================================
-impact severity   impacts
-================  =======================================
-HIGH              - exon_deleted
-                  - frame_shift
-                  - splice_acceptor
-                  - splice_donor
-                  - start_loss
-                  - stop_gain
-                  - stop_loss
-                  - non_synonymous_start
-                  - transcript_codon_change
-MED               - non_syn_coding
-                  - inframe_codon_gain
-                  - inframe_codon_loss
-                  - inframe_codon_change
-                  - codon_change_del
-                  - codon_change_ins
-                  - UTR_5_del
-                  - UTR_3_del
-                  - splice_region
-                  - mature_miRNA
-                  - regulatory_region
-                  - TF_binding_site
-                  - regulatory_region_ablation
-                  - regulatory_region_amplification
-                  - TFBS_ablation
-                  - TFBS_amplification 
-LOW               - synonymous_stop
-                  - synonymous_coding
-                  - UTR_5_prime
-                  - UTR_3_prime
-                  - intron
-                  - CDS
-                  - upstream
-                  - downstream
-                  - intergenic
-                  - intragenic
-                  - gene
-                  - transcript
-                  - exon
-                  - start_gain
-                  - synonymous_start
-                  - intron_conserved
-                  - nc_transcript
-                  - NMD_transcript
-                  - transcript_codon_change
-                  - incomplete_terminal_codon
-                  - nc_exon
-                  - transcript_ablation
-                  - transcript_amplification
-                  - feature elongation
-                  - feature truncation   
-================  =======================================
 
 
 The ``resources`` table
