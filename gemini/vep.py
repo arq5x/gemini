@@ -2,9 +2,9 @@
 
 #############
 
-# CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift
-# non_synonymous_codon|gaT/gaG|D/E|ENSG00000116254|CHD5|ENST00000378006|18/25|benign(0.011)|tolerated(0.3)
-# nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6|||
+# CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift|Protein_position
+# missense_variant|gAg/gTg|E/V|ENSG00000188157||ENST00000379370|12/36|probably_damaging(0.932)|deleterious(0.02)|728/2045
+# nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6||||
 #############
 
 import re
@@ -27,13 +27,13 @@ class EffectDetails(object):
         self.exon = fields[6] if fields[6] != '' else None
         self.polyphen = fields[7] if fields[7] != '' else None
         self.sift = fields[8] if fields[8] != '' else None
-        self.aa_length = None
+        self.aa_length = fields[9] if fields[9] != '' else None
         self.biotype = None
         self.warnings = None
         self.consequence = effect_dict[
             self.effect_name] if self.effect_severity != None else self.effect_name
-        if len(fields) > 9:
-            self.warnings = fields[9]
+        if len(fields) > 10:
+            self.warnings = fields[10]
 
         # rules for being exonic.
         # 1. the impact must be in the list of exonic impacts
@@ -44,6 +44,7 @@ class EffectDetails(object):
             self.is_exonic = 1
 
         self.is_lof = 0 if self.effect_severity != "HIGH" else 1
+        
         # Exons that are coding (excludes UTR's)
         if self.is_exonic == 0:
             self.is_coding = 0

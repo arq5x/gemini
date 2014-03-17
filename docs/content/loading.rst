@@ -21,9 +21,9 @@ into GEMINI.
 
 .. note::
 	Choose the annotator as per your requirement!
-	Some gene/transcript annotations are available with only one tool (e.g. ``Polyphen/Sift`` with VEP
-	and ``amino_acid length/biotype`` with SnpEff). As such these values would be set to None, if an
-	alternate annotator is used during the load step.
+	Some gene/transcript annotations are available with only one tool (e.g. 
+	``Polyphen/Sift`` with VEP). As such these values would be set to None, 
+	if an alternate annotator is used during the load step.
 
 Instructions for installing and running these tools can be found in the following section:
 
