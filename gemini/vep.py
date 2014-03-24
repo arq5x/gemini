@@ -2,9 +2,9 @@
 
 #############
 
-# CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift|Protein_position
-# missense_variant|gAg/gTg|E/V|ENSG00000188157||ENST00000379370|12/36|probably_damaging(0.932)|deleterious(0.02)|728/2045
-# nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6||||
+# CSQ: Consequence|Codons|Amino_acids|Gene|hgnc|Feature|EXON|polyphen|sift|Protein_position|BIOTYPE
+# missense_variant|gAg/gTg|E/V|ENSG00000188157||ENST00000379370|12/36|probably_damaging(0.932)|deleterious(0.02)|728/2045_protein_coding
+# nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6|||||
 #############
 
 import re
@@ -28,31 +28,36 @@ class EffectDetails(object):
         self.polyphen = fields[7] if fields[7] != '' else None
         self.sift = fields[8] if fields[8] != '' else None
         self.aa_length = fields[9] if fields[9] != '' else None
-        self.biotype = None
+        self.biotype = fields[10] if fields[10] != '' else None
         self.warnings = None
         self.consequence = effect_dict[
             self.effect_name] if self.effect_severity != None else self.effect_name
-        if len(fields) > 10:
-            self.warnings = fields[10]
+        if len(fields) > 11:
+            self.warnings = fields[11]
 
         # rules for being exonic.
         # 1. the impact must be in the list of exonic impacts
-        # 2. the exon information != None
+        # 3. must be protein_coding
         self.is_exonic = 0
         if self.effect_name in exonic_impacts and \
-                self.exon is not None:
+                self.biotype == "protein_coding":
             self.is_exonic = 1
-
-        self.is_lof = 0 if self.effect_severity != "HIGH" else 1
         
-        # Exons that are coding (excludes UTR's)
-        if self.is_exonic == 0:
-            self.is_coding = 0
-        elif self.is_exonic == 1:
-            if self.effect_name.startswith("5_prime_UTR") or self.effect_name.startswith("3_prime_UTR"):
-                self.is_coding = 0
-            else:
-                self.is_coding = 1
+        # rules for being loss-of-function (lof).
+        #  must be protein_coding
+        #  must be a coding variant with HIGH impact
+        self.is_lof = 0 
+        if self.effect_severity == "HIGH" and self.biotype == "protein_coding":
+            self.is_lof = 1
+        
+        # Rules for being coding
+        # must be protein_coding
+        # Exonic but not UTR's
+        self.is_coding = 0
+        if self.is_exonic and not (self.effect_name == "5_prime_UTR_variant" or \
+                                   self.effect_name == "3_prime_UTR_variant"):
+            self.is_coding = 1
+            
         # parse Polyphen predictions
         if self.polyphen is not None:
             self.polyphen_b = self.polyphen.split("(")
@@ -74,12 +79,12 @@ class EffectDetails(object):
 
     def __str__(self):
 
-        return "\t".join([self.consequence, self.effect_severity, self.codon_change,
-                          self.aa_change, self.aa_length, self.biotype,
-                          self.ensembl_gene, self.gene, self.transcript,
-                          self.exon, self.is_exonic, self.anno_id, self.polyphen_pred,
-                          self.polyphen_score, self.sift_pred, self.sift_score,
-                          self.is_coding, self.is_lof])
+        return "\t".join([self.consequence, self.effect_severity, str(self.codon_change),
+                          str(self.aa_change), str(self.aa_length), str(self.biotype),
+                          str(self.ensembl_gene), str(self.gene), str(self.transcript),
+                          str(self.exon), str(self.is_exonic), str(self.anno_id), str(self.polyphen_pred),
+                          str(self.polyphen_score), str(self.sift_pred), str(self.sift_score),
+                          str(self.is_coding), str(self.is_lof)])
 
     def __repr__(self):
         return self.__str__()
