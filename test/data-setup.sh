@@ -1,5 +1,6 @@
 gemini load --test-mode -v test.snpeff.vcf -t snpEff test.snpeff.vcf.db
 gemini load --test-mode -v test1.snpeff.vcf -t snpEff test1.snpeff.db
+gemini load --test-mode -v test1.snpeff.vcf -t VEP test1.vep.db
 gemini load --test-mode -v test2.snpeff.vcf test2.snpeff.db
 gemini load --test-mode -v test3.snpeff.vcf test3.snpeff.db
 gemini load --test-mode -v test.clinvar.vcf test.clinvar.db
