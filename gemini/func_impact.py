@@ -40,12 +40,20 @@ def interpret_impact(args, var):
                     # the predicted inpact, which is outside the ()
                 impact_detail = piece[1]
                     # all the other information, which is inside the ()
-                impact_info = snpEff.effect_map[impact_string]
-                impact_details = snpEff.EffectDetails(impact_string,
+                try:
+                    impact_info = snpEff.effect_map[impact_string]
+                    impact_details = snpEff.EffectDetails(impact_string,
                                                       impact_info.priority,
                                                       impact_detail,
                                                       counter,
                                                       args.maj_version)
+                except KeyError:
+                    impact_details = snpEff.EffectDetails(impact_string,
+                                                    None,
+                                                    impact_detail,
+                                                    counter,
+                                                    args.maj_version)
+                                                    
                 impact_all.append(impact_details)
 
     elif args.anno_type == "VEP":

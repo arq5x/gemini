@@ -414,11 +414,11 @@ echo "10 10:1142207-1142208:C 0 1142207 C C C C C C C C
 10 10:48003991-48003992:C|T 0 48003991 T T C T C T C C
 10 10:52004314-52004315:C 0 52004314 0 0 0 0 C C C C
 10 10:52497528-52497529:C 0 52497528 0 0 C C C C 0 0
-16 16:72057434-72057435:C|T 0 72057434 C T C C C C C C
 10 10:126678091-126678092:A|G 0 126678091 G G G G G G G A
 10 10:135210790-135210791:C|T 0 135210790 T T C C C C T T
 10 10:135336655-135336656:A 0 135336655 0 0 A A 0 0 A A
-10 10:135369531-135369532:C|T 0 135369531 T T T C T C T T" > exp
+10 10:135369531-135369532:C|T 0 135369531 T T T C T C T T
+16 16:72057434-72057435:C|T 0 72057434 C T C C C C C C" > exp
 gemini query --format tped -q "select * from variants" test4.snpeff.ped.db > obs
 check obs exp
 rm obs exp
@@ -427,8 +427,8 @@ rm obs exp
 # 23. Test exclude-phenotype query
 ########################################################################
 echo "    query.t23...\c"
-echo "C/T,C/C,C/C,C/C	1,0,0,0
-G/G,G/G,G/G,G/A	0,0,0,1" > exp
+echo "G/G,G/G,G/G,G/A	0,0,0,1
+C/T,C/C,C/C,C/C	1,0,0,0" > exp
 gemini query --sample-filter "phenotype!=2" --in only -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
 #gemini query --exclude-phenotype affected -q "select gts, gt_types from variants" test4.snpeff.ped.db > obs
 check obs exp
@@ -496,11 +496,11 @@ chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M12
 chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	1	2	1	0	0
 chr10	52004314	T	C	2,2,3,3	M10500,M128215		M10500,M128215	1	1	0	0	2
 chr10	52497528	G	C	2,3,3,2	M10478,M10500		M10478,M10500	0	2	0	0	2
-chr16	72057434	C	T	1,0,0,0	M10475	M10475		1	0	1	2	0
 chr10	126678091	G	A	0,0,0,1	M128215	M128215		1	0	1	2	0
 chr10	135210790	T	C	0,3,3,0	M10478,M10500		M10478,M10500	0	2	2	0	0
 chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	2
-chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	2	2	0	0" > exp
+chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	2	2	0	0
+chr16	72057434	C	T	1,0,0,0	M10475	M10475		1	0	1	2	0" > exp
 gemini query --show-samples --carrier-summary-by-phenotype affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db > obs
 check obs exp
 rm obs exp
@@ -514,7 +514,7 @@ chr10	1142207	1142208	T	C	1
 chr10	48003991	48003992	C	T	1
 chr10	52004314	52004315	T	C	1
 chr10	52497528	52497529	G	C	1
-chr16	72057434	72057435	C	T	1" > exp
+chr10	126678091	126678092	G	A	1" > exp
 gemini query --header --show-families -q "select chrom, start, end, ref, alt from variants limit 5" extended_ped.db > obs
 check obs exp
 rm obs exp
