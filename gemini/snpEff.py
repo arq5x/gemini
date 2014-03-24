@@ -59,7 +59,7 @@ class EffectDetails(object):
         else:
             self.is_exonic = 0
 
-        # rules for being exonic.
+        # rules for being coding.
         # 1. must be protein_coding
         # 2. must be exonic, yet must not be a UTR
         self.is_coding = 0
