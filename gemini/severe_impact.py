@@ -18,7 +18,7 @@ def interpret_severe_impact(args, var):
     """
 
     effect_strings_str = ""
-    effect_strings = impact_all = string = []
+    effect_strings = impact_all = []
     impact_details = impact_features = None
     max_severity = 9  # initialize to a value greater than the largest value in impact info priority code
     counter = 0  # initialize counter for anno_id
@@ -39,10 +39,11 @@ def interpret_severe_impact(args, var):
             counter += 1
             eff_pieces = snpEff.eff_search.findall(effect_string)
             for piece in eff_pieces:
+                # the predicted inpact, which is outside the ()
                 impact_string = piece[0]
-                    # the predicted inpact, which is outside the ()
+                # all the other information, which is inside the ()  
                 impact_detail = piece[1]
-                    # all the other information, which is inside the ()
+                    
                 try:
                     impact_info = snpEff.effect_map[impact_string]
                     # update the impact stored if a higher or an equal severity transcript
@@ -60,16 +61,15 @@ def interpret_severe_impact(args, var):
                         top_severity =  impact_info.priority
                 except KeyError:
                     pass
-        
+                    
         # prioritizing biotype: initialize flags to a high value
         set_flag = flag = 4
         for idx, impact in enumerate(impact_all):
-            string = str(impact).split("\t")
-            if string[1] == str(top_severity) and string[7] == "protein_coding":    
+            if impact.effect_severity == str(top_severity) and impact.biotype == "protein_coding":    
                 set_flag = 0    
-            elif string[1] == str(top_severity) and string[7] != "protein_coding":
+            elif impact.effect_severity == str(top_severity) and impact.biotype != "protein_coding":
                 set_flag = 1
-            if string[1] == str(top_severity) and set_flag < flag:
+            if impact.effect_severity == str(top_severity) and set_flag < flag:
                 flag = set_flag
                 impact_features = impact
         return impact_features
@@ -97,10 +97,12 @@ def interpret_severe_impact(args, var):
                         impact_info = vep.effect_map[impact_string]
                         # update the impact stored only if a higher severity
                         # transcript is encountered
-                        if impact_info.priority_code < max_severity:
+                        if impact_info.priority_code <= max_severity:
                             impact_details = vep.EffectDetails(
                                 impact_string, impact_info.priority, effect_string, counter)
+                            impact_all.append(impact_details)
                             max_severity = impact_info.priority_code  # store the current "winning" severity for the next iteration.
+                            top_severity =  impact_info.priority
                     except KeyError:
                         pass
 
@@ -111,14 +113,27 @@ def interpret_severe_impact(args, var):
                 impact_info = vep.effect_map.get(impact_string)
                 if impact_info is None:
                     pass
-                elif impact_info.priority_code < max_severity:
+                elif impact_info.priority_code <= max_severity:
                     impact_details = vep.EffectDetails(
                         impact_string, impact_info.priority, effect_string, counter)
+                    impact_all.append(impact_details)
                     max_severity = impact_info.priority_code  # initialize the max_severity to the former value of priority code
-
+                    top_severity =  impact_info.priority
+        
+        # prioritize biotype
+        set_flag = flag = 4
+        for idx, impact in enumerate(impact_all):
+            if impact.effect_severity == str(top_severity) and impact.biotype == "protein_coding":    
+                set_flag = 0    
+            elif impact.effect_severity == str(top_severity) and impact.biotype != "protein_coding":
+                set_flag = 1
+            if impact.effect_severity == str(top_severity) and set_flag < flag:
+                flag = set_flag
+                impact_features = impact
+        
     else:
         # should not get here, as the valid -t options should be handled
         # in main()
         sys.exit("ERROR: Unsupported variant annotation type.\n")
-
-    return impact_details
+    
+    return impact_features
