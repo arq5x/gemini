@@ -186,7 +186,7 @@ class GeminiLoader(object):
         proper execution of VEP for use with Gemini.
         """
         #support versions 73-75
-        format = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position".upper()
+        format = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".upper()
 
         if 'CSQ' in self.vcf_reader.infos and \
             format in str(self.vcf_reader.infos['CSQ']).upper():
