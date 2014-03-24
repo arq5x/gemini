@@ -22,19 +22,25 @@ def query_dgidb(genes):
 
     # make a single request to DGIdb for all of the genes requested
     dgidb_url = 'http://dgidb.genome.wustl.edu/api/v1/interactions.json?genes='
-    query = dgidb_url + ','.join(genes.keys())
-    response = urllib2.urlopen(query)
-    data = convert(json.load(response))
-    matches = data['matchedTerms']
+    
+    # None is present by default. Make sure we have more than None
+    if len(genes) > 1:
+        query = dgidb_url + ','.join(genes.keys())
+        
+        response = urllib2.urlopen(query)
+        data = convert(json.load(response))
+        matches = data['matchedTerms']
 
-    # store the results for all of the genes. if there are no matches
-    # in DGIdb, the result will be None.
-    gene_dgidb_info = {}
-    for gene in genes:
-        gene_dgidb_info[gene] = None
+        # store the results for all of the genes. if there are no matches
+        # in DGIdb, the result will be None.
+        gene_dgidb_info = {}
+        for gene in genes:
+            gene_dgidb_info[gene] = None
 
-    for match in matches:
-        gene = match['searchTerm']
-        gene_dgidb_info[gene] = dict(match)
+        for match in matches:
+            gene = match['searchTerm']
+            gene_dgidb_info[gene] = dict(match)
 
-    return gene_dgidb_info
+        return gene_dgidb_info
+    else:
+        return None
