@@ -44,7 +44,7 @@ def get_anno_files():
                                            'encode.6celltypes.consensus.bedg.gz'),
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),
+     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),     
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
@@ -288,6 +288,36 @@ def get_cpg_island_info(var):
         return True
     return False
 
+# def get_dbNSFP_info(var, impacts):
+#     """
+#     Returns Polyphen, SIFT, etc. from dbNSFP annotation file.
+#     One prediction per transcript.
+    
+#     LIMITATION: only handles bi-allelic loci
+#     """
+
+#     # is this variant predicted to be nonsynonymous for any of the transcripts?
+#     # if not, we can skip dnNSFP.
+#     non_syn_impacts = [imp for imp in impacts \
+#                                if imp.consequence == 'non_syn_coding']
+
+#     if len(non_syn_impacts) > 0:
+#         for hit in annotations_in_region(var, "dbnsfp", parser_type="tuple", naming="grch37"):
+
+#             if var.POS == int(hit[1]) and \
+#                var.REF == hit[2] and \
+#                var.ALT[0] == hit[3]:
+                
+#                 transcripts = hit[7].split(';')
+#                 aapos = hit[8].split(';')
+#                 pp_scores = hit[11].split(';')
+
+#                 if len(transcripts) != len(pp_scores):
+#                     print var.POS, var.REF, var.ALT[0], [i.transcript for i in non_syn_impacts], \
+#                           [i.polyphen_pred for i in non_syn_impacts], [i.polyphen_score for i in non_syn_impacts], \
+#                           hit[7], hit[8], hit[11], hit[12]
+#     else:
+#         pass
 
 def get_cyto_info(var):
     """
