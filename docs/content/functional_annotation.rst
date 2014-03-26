@@ -103,15 +103,16 @@ VEP fields specified as below:
 .. code-block:: bash
 
     $ perl variant_effect_predictor.pl -i example.vcf \
-       --cache \
-       --sift b \
-       --polyphen b \
-       --symbol \
-       --numbers \
-	   --total_length \
-       -o output \
-       --vcf \
-       --fields Consequence,Codons,Amino_acids,Gene,SYMBOL,Feature,EXON,PolyPhen,SIFT,Protein_position
+	--cache \
+	--sift b \
+	--polyphen b \
+	--symbol \
+	--numbers \
+	--biotype \
+	--total_length \
+	-o output \
+	--vcf \
+	--fields Consequence,Codons,Amino_acids,Gene,SYMBOL,Feature,EXON,PolyPhen,SIFT,Protein_position,BIOTYPE
 		
     
 A documentation for the above specified options may be found at 
