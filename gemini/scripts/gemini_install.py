@@ -28,7 +28,7 @@ remotes = {"requirements":
            "gemini":
            "https://github.com/arq5x/gemini.git",
            "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-3.0.0-%s-x86_64.sh"}
+           "http://repo.continuum.io/miniconda/Miniconda-latest-%s-x86_64.sh"}
 
 def main(args):
     check_dependencies()
@@ -88,6 +88,9 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
         for req in ["python-graph-core", "python-graph-dot"]:
             pip_compat += ["--allow-external", req, "--allow-unverified", req]
     subprocess.check_call([anaconda["pip"], "install"] + pip_compat + ["-r", remotes["requirements"]])
+    python_bin = os.path.join(anaconda["dir"], "bin", "python")
+    _cleanup_problem_files(anaconda["dir"])
+    _add_missing_inits(python_bin)
     for final_name, ve_name in [("gemini", "gemini"), ("gemini_python", "python"),
                                 ("gemini_pip", "pip")]:
         final_script = os.path.join(tooldir, "bin", final_name)
@@ -99,9 +102,6 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
         cmd = ["ln", "-s", ve_script, final_script]
         subprocess.check_call(sudo_cmd + cmd)
-    python_bin = os.path.join(anaconda["dir"], "bin", "python")
-    _cleanup_problem_files(anaconda["dir"])
-    _add_missing_inits(python_bin)
     library_loc = subprocess.check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
                                           shell=True)
     return {"fab": os.path.join(anaconda["dir"], "bin", "fab"),
