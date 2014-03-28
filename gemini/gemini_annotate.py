@@ -9,6 +9,7 @@ from scipy.stats import mode
 import pysam
 
 from gemini.annotations import annotations_in_region, guess_contig_naming
+from database import database_transaction
 
 def add_requested_columns(args, update_cursor, col_names, col_types=None):
     """
@@ -90,7 +91,7 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
                                                     naming))
             # were there any hits for this row?
             if len(update_data) > 0:
-                # we add the primary key to update_data for the 
+                # we add the primary key to update_data for the
                 # where clause in the SQL UPDATE statement.
                 update_data.append(str(row["variant_id"]))
                 to_update.append(tuple(update_data))
@@ -206,12 +207,12 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
                 try:
                     vals.append(int(val))
                 except ValueError:
-                    sys.exit ('Non-integer value found in annotation file: %s\n' % (val))    
+                    sys.exit ('Non-integer value found in annotation file: %s\n' % (val))
             elif col_types[idx] == "float":
                 try:
                     vals.append(float(val))
                 except ValueError:
-                    sys.exit ('Non-float value found in annotation file: %s\n' % (val)) 
+                    sys.exit ('Non-float value found in annotation file: %s\n' % (val))
             else:
                 vals.append(val)
 
@@ -295,3 +296,10 @@ def annotate(parser, args):
             annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs)
     else:
         sys.exit("Unknown column type requested. Exiting.")
+
+    conn.close()
+
+    # index on the newly created columns
+    for col_name in col_names:
+        with database_transaction(args.db) as c:
+            c.execute('''create index %s on variants(%s)''' % (col_name + "idx", col_name))
