@@ -64,6 +64,8 @@ class Family(object):
         self.children = []
         self.is_constructed = False
 
+        self.find_parents()
+
     def has_an_affected(self):
         """
         Return True if the Family has at least one affected individual.
@@ -502,11 +504,16 @@ class Family(object):
         return subjects
 
 
-def get_families(c):
+def get_families(db):
     """
     Query the samples table to return a list of Family
     objects that each contain all of the Subjects in a Family.
     """
+    conn = sqlite3.connect(db)
+    conn.isolation_level = None
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
     query = "SELECT * FROM samples \
              WHERE family_id is not NULL \
              ORDER BY family_id"
@@ -527,7 +534,6 @@ def get_families(c):
         family = Family(families_dict[fam])
         families.append(family)
     return families
-
 
 def get_family_dict(args):
     families = defaultdict(list)

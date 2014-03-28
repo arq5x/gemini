@@ -9,7 +9,7 @@ from GeminiQuery import select_formatter
 
 def _report_results(args, query, gq):
     # report the results of the region query
-    gq.run(query, args.show_variant_samples)
+    gq.run(query, show_variant_samples=args.show_variant_samples)
     if args.use_header and gq.header:
         print gq.header
 

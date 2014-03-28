@@ -57,7 +57,7 @@ class GeminiInheritanceModelFactory(object):
         Extract the relevant genotype filters, as well all labels
         for each family in the database.
         """
-        families = subjects.get_families(self.gq.c)
+        families = subjects.get_families(self.args.db)
         self.family_ids = []
         self.family_masks = []
         self.family_gt_labels = []
