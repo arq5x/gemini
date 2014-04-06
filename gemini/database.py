@@ -17,8 +17,7 @@ def index_variation(cursor):
                                num_hom_alt, num_unknown)''')
     cursor.execute('''create index var_aaf_idx on variants(aaf)''')
     cursor.execute('''create index var_in_dbsnp_idx on variants(in_dbsnp)''')
-    cursor.execute('''create index var_in_call_rate_idx on \
-                      variants(call_rate)''')
+    cursor.execute('''create index var_in_call_rate_idx on variants(call_rate)''')
     cursor.execute('''create index var_exonic_idx on variants(is_exonic)''')
     cursor.execute('''create index var_coding_idx on variants(is_coding)''')
     cursor.execute('''create index var_lof_idx on variants(is_lof)''')
@@ -35,7 +34,9 @@ def index_variation(cursor):
     cursor.execute('''create index var_homalt_idx on variants(num_hom_alt)''')
     cursor.execute('''create index var_het_idx on variants(num_het)''')
     cursor.execute('''create index var_unk_idx on variants(num_unknown)''')
-    cursor.execute('''create index var_callrate_idx on variants(call_rate)''')
+    cursor.execute('''create index var_omim_idx on variants(in_omim)''')
+    cursor.execute('''create index var_cadd_raw_idx on variants(cadd_raw)''')
+    cursor.execute('''create index var_cadd_scaled_idx on variants(cadd_scaled)''')
 
 
 def index_variation_impacts(cursor):
@@ -199,7 +200,9 @@ def create_tables(cursor):
                     encode_consensus_k562 text,                 \
                     vista_enhancers text,                       \
                     cosmic_ids text,                            \
-                    info blob,                           \
+                    info blob,                                  \
+                    cadd_raw float,                             \
+                    cadd_scaled float,                          \
                     PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (   \
@@ -303,7 +306,8 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?,?)', variant)
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -330,7 +334,8 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?,?)', buffer)
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:

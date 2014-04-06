@@ -1,3 +1,4 @@
+gemini load --test-mode -v test.cadd.vcf test.cadd.db
 gemini load --test-mode -v test.snpeff.vcf -t snpEff test.snpeff.vcf.db
 gemini load --test-mode -v test1.snpeff.vcf -t snpEff test1.snpeff.db
 gemini load --test-mode -v test1.snpeff.vcf -t VEP test1.vep.db

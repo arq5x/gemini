@@ -32,6 +32,9 @@ bash test-burden.sh
 # Test basic functionality
 bash test-columns.sh
 
+# Test cadd scores
+bash test-cadd.sh
+
 # Test loading functionality
 bash test-load.sh
 
