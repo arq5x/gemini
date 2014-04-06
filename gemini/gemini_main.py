@@ -106,7 +106,7 @@ def main():
     parser_load.add_argument('--skip-cadd-scores',
                              dest='skip_cadd_score',
                              action='store_true',
-                             help='Donot Load CADD scores. Loaded by default',
+                             help='Do not Load CADD scores. Loaded by default',
                              default=False)
     parser_load.add_argument('--skip-gene-tables',
                              dest='skip_gene_tables',
@@ -209,7 +209,7 @@ def main():
     parser_loadchunk.add_argument('--skip-cadd-scores',
                                  dest='skip_cadd_score',
                                  action='store_true',
-                                 help='Donot Load CADD scores. Loaded by default',
+                                 help='Do not Load CADD scores. Loaded by default',
                                  default=False)
     parser_loadchunk.add_argument('--skip-gene-tables',
                              dest='skip_gene_tables',
