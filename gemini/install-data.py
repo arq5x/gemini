@@ -49,7 +49,8 @@ anno_files = \
 'hg19.cosmic.v67.20131024.gz',
 'detailed_gene_table',
 'summary_gene_table',
-'cancer_gene_census.20140120.tsv'
+'cancer_gene_census.20140120.tsv',
+'whole_genome_SNVs.tsv.compressed.gz'
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw"}
 
