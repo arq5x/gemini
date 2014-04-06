@@ -159,6 +159,10 @@ def load_chunks_multicore(grabix_file, args):
     if args.skip_gene_tables is True:
         skip_gene_tables = "--skip-gene-tables"
 
+    skip_cadd_score = ""
+    if args.skip_cadd_score is True:
+        skip_cadd_score = "--skip-cadd-scores"
+    
     test_mode = ""
     if args.test_mode is True:
         test_mode = "--test-mode"
@@ -219,7 +223,11 @@ def load_chunks_ipython(grabix_file, args, view):
     skip_gene_tables = ""
     if args.skip_gene_tables is True:
         skip_gene_tables = "--skip-gene-tables"
-
+    
+    skip_cadd_score = ""
+    if args.skip_cadd_score is True:
+        skip_cadd_score = "--skip-cadd-scores"
+    
     test_mode = ""
     if args.test_mode is True:
         test_mode = "--test-mode"
@@ -245,6 +253,7 @@ def load_chunks_ipython(grabix_file, args, view):
                  "no_load_genotypes": no_load_genotypes,
                  "load_gerp_bp": load_gerp_bp,
                  "skip_gene_tables": skip_gene_tables,
+                 "skip_cadd_score": skip_cadd_score,
                  "test_mode": test_mode,
                  "passonly": passonly,
                  "skip_info_string": skip_info_string}
@@ -273,7 +282,7 @@ def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
-                       " {load_gerp_bp} {skip_gene_tables}"
+                       " {load_gerp_bp} {skip_gene_tables} {skip_cadd_score}"
                        " {passonly} {skip_info_string} {test_mode}"
                        " -o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
