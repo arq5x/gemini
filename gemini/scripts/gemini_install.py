@@ -28,7 +28,7 @@ remotes = {"requirements":
            "gemini":
            "https://github.com/arq5x/gemini.git",
            "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-latest-%s-x86_64.sh"}
+           "http://repo.continuum.io/miniconda/Miniconda-3.3.0-%s-x86_64.sh"}
 
 def main(args):
     check_dependencies()
