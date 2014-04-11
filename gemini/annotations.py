@@ -5,6 +5,7 @@ import os
 import sys
 import collections
 import re
+from unidecode import unidecode
 from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
 
@@ -468,7 +469,9 @@ def get_clinvar_info(var):
             else:
                 info_map[info] = True
 
-        clinvar.clinvar_dbsource = info_map['CLNSRC'] or None
+        raw_dbsource = info_map['CLNSRC'] or None
+        #interpret 8-bit strings and convert to plain text
+        clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf-8'))
         clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
             clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
@@ -476,12 +479,10 @@ def get_clinvar_info(var):
             clinvar.lookup_clinvar_significance(info_map['CLNSIG'])
         clinvar.clinvar_dsdb = info_map['CLNDSDB'] or None
         clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
-        # Clinvar represents commas as \x2c.  Make them commas.
         # Remap all unicode characters into plain text string replacements
         raw_disease_name = info_map['CLNDBN'] or None
-        #raw_disease_name.decode('string_escape')
-        clinvar.clinvar_disease_name = \
-            unicode(raw_disease_name, errors="replace").encode(errors="replace")
+        clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8'))
+        # Clinvar represents commas as \x2c.  Make them commas.
         clinvar.clinvar_disease_name = clinvar.clinvar_disease_name.decode('string_escape')
 
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
