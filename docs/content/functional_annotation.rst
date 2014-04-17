@@ -8,8 +8,9 @@ or `VEP <http://www.ensembl.org/info/docs/variation/vep/index.html>`_.
 
 .. note::
 	
-	Version support: VEP versions 73 through 75 and core SnpEff
-	versions 3.0 through 3.3
+	Version support: VEP versions 73 through 75 and core SnpEff versions 3.0 through 3.3. 
+	GEMINI supports ENSEMBL annotations hence users are expected to download genome databases
+	for these tools as represented in the examples below.
 	
 .. note::
  	
