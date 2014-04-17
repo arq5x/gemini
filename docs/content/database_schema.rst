@@ -200,11 +200,16 @@ gerp_element_pval         FLOAT         | GERP elements P-val
                                         | Details: http://mendel.stanford.edu/SidowLab/downloads/gerp/
 recomb_rate               FLOAT         | Returns the mean recombination rate at the variant site
                                         | Based on HapMapII_GRCh37 genetic map
-cadd_raw                  FLOAT         | Raw CADD scores for scoring deleteriousness of SNV's in the human genome
+cadd_raw                  FLOAT         | Raw ``CADD`` scores for scoring deleteriousness of SNV's in the human genome
                                         | Details: http://www.ncbi.nlm.nih.gov/pubmed/24487276
-cadd_scaled               FLOAT         | Scaled CADD scores (Phred like) for scoring deleteriousness of SNV's
+cadd_scaled               FLOAT         | Scaled ``CADD`` scores (Phred like) for scoring deleteriousness of SNV's
                                         | Details: http://www.ncbi.nlm.nih.gov/pubmed/24487276
 ========================  ========      ==============================================================================================
+
+**Note:**
+``CADD`` scores (http://cadd.gs.washington.edu/) are Copyright 2013 University of Washington and Hudson-Alpha Institute for Biotechnology 
+(all rights reserved) but are freely available for all academic, non-commercial applications. For commercial licensing information contact 
+Jennifer McCullar (mccullaj@uw.edu).
 
 
 
