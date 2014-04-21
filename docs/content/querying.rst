@@ -461,11 +461,15 @@ like hair color:
 	chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	0	0	2
 	chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	1	1	1	1	0	0
 
-=================================
+#################################
 Querying the gene tables
-=================================
+#################################
 The gene tables viz. ``gene_detailed table`` and the ``gene_summary table`` have been built on version 73 of the ensembl genes. The column specifications are
 available at :doc:`database_schema`. These tables contain gene specific information e.g. gene synonyms, RVIS percentile scores(Petrovski et.al 2013), strand specifications, cancer gene census etc. While the former is more detailed, the later lacks transcript wise information and summarizes some aspects of the former. For e.g. while the gene_detailed table lists all transcripts of a gene with their start and end co-ordinates, the gene_summary table reports only the minimum start and maximum end co-ordinates of the gene transcripts. The ``chrom``, ``gene`` and the ``transcript`` columns of the gene tables may be used to join on the variants and the variant_impacts tables.  
+
+============================================================
+Using the ``gene_detailed`` and the ``gene_summary`` tables
+============================================================
 
 ---------------------------------------------------------------
 ``Query the gene_detailed table with a join on variants table:``
@@ -552,3 +556,35 @@ available at :doc:`database_schema`. These tables contain gene specific informat
 	gene	impact	transcript	transcript_min_start	transcript_max_end	rvis_pct	synonym
 	SCNN1D	stop_gain	ENST00000470022	1215816	1227409	96.77990092	ENaCdelta,dNaCh
 	
+===================================================================
+Restrict analysis to transcripts with a valid ``CCDS_ID``
+===================================================================
+Since the current available transcript sets are more than one (e.g. RefSeq, ENSEMBL and UCSC)
+we support information (e.g pathways tool) for the ENSEMBL transcripts but provide a mapping of 
+these transcripts to the consensus set agreed upon by all the above three mentioned groups viz. 
+``transcripts having a valid CCDS_ID``. Here we show, how we can return variants and their
+impacts for only these restricted set of transcripts using the gene_detailed table.
+
+
+.. code-block:: bash
+	
+	$ gemini query --header -q "select i.var_id, i.gene, i.impact, i.transcript, \
+	                g.transcript_status, ccds_id, g.rvis_pct from \
+					variant_impacts i, gene_detailed g where \
+					i.transcript=g.transcript and i.gene=g.gene and\
+					impact_severity='HIGH' and g.ccds_id!='None'" test.query.db
+					
+	variant_id	gene	impact	transcript	transcript_status	ccds_id	rvis_pct
+	2051	SAMD11	frame_shift	ENST00000342066	KNOWN	CCDS2	None
+	3639	CCNL2	splice_acceptor	ENST00000408918	KNOWN	CCDS30558	53.98089172
+	3639	CCNL2	splice_acceptor	ENST00000400809	KNOWN	CCDS30557	53.98089172
+	13221	SMIM1	frame_shift	ENST00000444870	NOVEL	CCDS57966	None
+	21881	NPHP4	splice_acceptor	ENST00000378156	KNOWN	CCDS44052	81.78815758
+	
+
+
+
+
+
+
+

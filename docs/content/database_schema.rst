@@ -79,8 +79,8 @@ Gene information
 ========================  ========      ==============================================================================================
 gene                      STRING        Corresponding gene name of the highly affected transcript
 transcript                STRING        | The variant transcript that was most severely affected
-                                        | (for two equally affected transcripts, either the first
-										one is selected (VEP) or the protein_coding biotype is prioritized (snpEff)
+                                        | (for two equally affected transcripts,the protein_coding
+										biotype is prioritized (snpEff/VEP)
 is_exonic                 BOOL          Does the variant affect an exon for >= 1transcript?
 is_coding                 BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
 is_lof                    BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
@@ -118,6 +118,7 @@ haplotype_score           FLOAT         Consistency of the site with two segrega
 qual_depth                FLOAT         Variant confidence or quality by depth
 allele_count              INTEGER       Allele counts in genotypes
 allele_bal                FLOAT         Allele balance for hets
+info                      BLOB          Stores the ``INFO`` field of the VCF
 ========================  ========      ==============================================================================================
 
 
