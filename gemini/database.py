@@ -256,6 +256,7 @@ def create_tables(cursor):
                    transcript_status text,                             \
                    ccds_id text,                                       \
                    hgnc_id text,                                       \
+                   entrez_id text,                                     \
                    cds_length text,                                    \
                    protein_length text,                                \
                    transcript_start text,                              \
@@ -263,6 +264,7 @@ def create_tables(cursor):
                    strand text,                                        \
                    synonym text,                                       \
                    rvis_pct float,                                     \
+                   mam_phenotype_id text,                              \
                    PRIMARY KEY(uid ASC))''')
                    
     cursor.execute('''create table if not exists gene_summary (     \
@@ -277,6 +279,7 @@ def create_tables(cursor):
                     strand text,                                    \
                     synonym text,                                   \
                     rvis_pct float,                                 \
+                    mam_phenotype_id text,                          \
                     in_cosmic_census bool,                          \
                     PRIMARY KEY(uid ASC))''')
 
@@ -369,7 +372,8 @@ def insert_sample(cursor, sample_list):
 def insert_gene_detailed(cursor, table_contents):
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into gene_detailed values (?,?,?,?,?,?,?,?,?, \
-                                                          ?,?,?,?,?,?,?,?)',
+                                                          ?,?,?,?,?,?,?,?,?, \
+                                                          ?)',
                         table_contents)
     cursor.execute("END")
     
@@ -377,7 +381,7 @@ def insert_gene_detailed(cursor, table_contents):
 def insert_gene_summary(cursor, contents):
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into gene_summary values (?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?)', 
+                                                         ?,?,?,?,?)', 
                         contents)
     cursor.execute("END")
     
