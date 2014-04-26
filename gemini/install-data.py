@@ -47,8 +47,8 @@ anno_files = \
 'cse-hiseq-8_4-2013-02-20.bed.gz',
 'hg19.vista.enhancers.20131108.bed.gz',
 'hg19.cosmic.v67.20131024.gz',
-'detailed_gene_table',
-'summary_gene_table',
+'detailed_gene_table_v75',
+'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv',
 'whole_genome_SNVs.tsv.compressed.gz'
 ]
@@ -60,7 +60,9 @@ anno_versions = {
     "GRCh37-gms-mappability.vcf.gz": 2,
     "dbsnp.138.vcf.gz": 2,
     "clinvar_20140303.vcf.gz": 3,
-    "hg19.rmsk.bed.gz": 2}
+    "hg19.rmsk.bed.gz": 2,
+    "detailed_gene_table_v75": 2,
+    "summary_gene_table_v75": 2}
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
     """Download required annotation files.

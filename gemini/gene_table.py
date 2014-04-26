@@ -24,11 +24,13 @@ class gene_detailed:
         self.strand = field[13]
         self.synonym = field[14]
         self.rvis = field[15]
+        self.entrez = field[16]
+        self.mam_phenotype = field[17]
         
     def __str__(self):
         return ",".join([self.chrom, self.gene, self.is_hgnc, self.ensembl_gene_id, self.ensembl_trans_id, self.biotype, self.trans_status,
                          self.ccds_id, self.hgnc_id, self.cds_length, self.protein_length, self.transcript_start, self.transcript_end, self.strand, 
-                         str(self.synonym), self.rvis])
+                         str(self.synonym), self.rvis, self.entrez, self.mam_phenotype])
                                              
 class gene_summary:
     
@@ -44,10 +46,11 @@ class gene_summary:
          self.strand = col[7]
          self.transcript_min_start = col[8]
          self.transcript_max_end = col[9]
+         self.mam_phenotype = col[10]
          
     def __str__(self):
         return ",".join([self.chrom, self.gene, self.is_hgnc, self.ensembl_gene_id, self.hgnc_id, self.synonym, self.rvis, 
-                         self.strand, self.transcript_min_start, self.transcript_max_end])
+                         self.strand, self.transcript_min_start, self.transcript_max_end, self.mam_phenotype])
          
 def update_cosmic_census_genes(cursor):
     """

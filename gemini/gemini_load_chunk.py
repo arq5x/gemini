@@ -466,7 +466,7 @@ class GeminiLoader(object):
         
         config = read_gemini_config()
         path_dirname = config["annotation_dir"]
-        file_handle = os.path.join(path_dirname, 'detailed_gene_table')
+        file_handle = os.path.join(path_dirname, 'detailed_gene_table_v75')
         
         for line in open(file_handle, 'r'):
             field = line.strip().split("\t")
@@ -476,9 +476,9 @@ class GeminiLoader(object):
                 detailed_list = [str(i),table.chrom,table.gene,table.is_hgnc,
                                  table.ensembl_gene_id,table.ensembl_trans_id, 
                                  table.biotype,table.trans_status,table.ccds_id, 
-                                 table.hgnc_id,table.cds_length,table.protein_length, 
+                                 table.hgnc_id,table.entrez,table.cds_length,table.protein_length, 
                                  table.transcript_start,table.transcript_end,
-                                 table.strand,table.synonym,table.rvis]
+                                 table.strand,table.synonym,table.rvis,table.mam_phenotype]
                 table_contents.append(detailed_list)
         database.insert_gene_detailed(self.c, table_contents)
         
@@ -492,7 +492,7 @@ class GeminiLoader(object):
         
         config = read_gemini_config()
         path_dirname = config["annotation_dir"]
-        file = os.path.join(path_dirname, 'summary_gene_table')
+        file = os.path.join(path_dirname, 'summary_gene_table_v75')
         
         for line in open(file, 'r'):
             col = line.strip().split("\t")
@@ -505,7 +505,8 @@ class GeminiLoader(object):
                                 table.ensembl_gene_id,table.hgnc_id,
                                 table.transcript_min_start,
                                 table.transcript_max_end,table.strand,
-                                table.synonym,table.rvis,cosmic_census]
+                                table.synonym,table.rvis,table.mam_phenotype,
+                                cosmic_census]
                 contents.append(summary_list)
         database.insert_gene_summary(self.c, contents)
 
