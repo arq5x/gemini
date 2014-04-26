@@ -16,7 +16,7 @@ ccdslen = defaultdict(list)
 ensemb = defaultdict(list)
 
 
-for each in open("ensembl73_2", 'r'):
+for each in open("ensembl75_2", 'r'):
     if each.startswith("Ensembl") is False:
         col = each.strip().split("\t")
         if col[2] != "None":
@@ -25,10 +25,8 @@ for each in open("ensembl73_2", 'r'):
             Protein_length = "None"
         (key, value) = (col[1], (col[2],str(Protein_length)))
         ccdslen[key].append(value)
-#for each in ccdslen["ENST00000230859"]:
-    #print each[0], each[1] 
 
-for line in open("ensembl73_1", 'r'):
+for line in open("ensembl75_1", 'r'):
     if line.startswith("Chromosome") is False:
         k = line.strip().split("\t")
         chrom = str((k[0]))
@@ -54,12 +52,3 @@ for line in open("ensembl73_1", 'r'):
         out.write("\n")
         
 out.close()
-
-
-    
-    
-    
-    
-    
-    
-    
