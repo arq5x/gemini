@@ -420,7 +420,7 @@ version        STRING      What version of gemini was used to create the DB.
 The ``gene_detailed`` table
 ---------------------------
 
-Built on version 73 of Ensembl genes
+Built on version 75 of Ensembl genes
 
 ==================  ========      ===============================================================================
 column_name         type          notes
@@ -435,6 +435,7 @@ biotype             STRING        The biotype (e.g protein coding) of the transc
 transcript_status   STRING        The status of the transcript (e.g. KNOWN, PUTATIVE etc.)
 ccds_id             STRING        The consensus coding sequence transcript identifier
 hgnc_id             STRING        The HGNC identifier for the gene if HGNC symbol is TRUE
+entrez_id           STRING        The entrez gene identifier for the gene
 cds_length          STRING        The length of CDS in bases
 protein_length      STRING        The length of the transcript as the number of amino acids
 transcript_start    STRING        The start position of the transcript in bases
@@ -442,13 +443,16 @@ transcript_end      STRING        The end position of the transcript in bases
 strand              STRING        The strand of DNA where the gene resides
 synonym             STRING        Other gene names (previous or synonyms) for the gene
 rvis_pct            FLOAT         The RVIS percentile values for the gene
+mam_phenotype_id    STRING        | High level mammalian phenotype ID applied to mouse phenotype descriptions
+                                  | in the MGI database at http://www.informatics.jax.org/. Data taken from
+								  ftp://ftp.informatics.jax.org/pub/reports/HMD_HumanPhenotype.rpt
 ==================  ========      ===============================================================================
 
 
 The ``gene_summary`` table
 ---------------------------
 
-Built on version 73 of Ensembl genes
+Built on version 75 of Ensembl genes
 
 ======================  ========      ===============================================================================
 column_name             type          notes
@@ -464,6 +468,9 @@ transcript_max_end      STRING        The maximum end position of all transcript
 strand                  STRING        The strand of DNA where the gene resides
 synonym                 STRING        Other gene names (previous or synonyms) for the gene
 rvis_pct                FLOAT         The RVIS percentile values for the gene
+mam_phenotype_id        STRING        | High level mammalian phenotype ID applied to mouse phenotype descriptions
+                                      | in the MGI database at http://www.informatics.jax.org/. Data taken from
+									  ftp://ftp.informatics.jax.org/pub/reports/HMD_HumanPhenotype.rpt
 in_cosmic_census        BOOL          Are mutations in the gene implicated in cancer by the cancer gene census?
 ======================  ========      ===============================================================================
 
