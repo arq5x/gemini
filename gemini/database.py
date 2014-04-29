@@ -151,6 +151,7 @@ def create_tables(cursor):
                     aa_length text,                             \
                     biotype text,                               \
                     impact text default NULL,                   \
+                    impact_so text default NULL,                \
                     impact_severity text,                       \
                     polyphen_pred text,                         \
                     polyphen_score float,                       \
@@ -219,6 +220,7 @@ def create_tables(cursor):
                     aa_length text,                                   \
                     biotype text,                                     \
                     impact text,                                      \
+                    impact_so text,                                   \
                     impact_severity text,                             \
                     polyphen_pred text,                               \
                     polyphen_score float,                             \
@@ -310,7 +312,7 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?)', variant)
+                                                             ?,?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -338,7 +340,7 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?)', buffer)
+                                                         ?,?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
@@ -353,7 +355,7 @@ def insert_variation_impacts(cursor, buffer):
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into variant_impacts values (?,?,?,?,?,?,?,?, \
                                                             ?,?,?,?,?,?,?,?, \
-                                                            ?,?)',
+                                                            ?,?,?)',
                        buffer)
     cursor.execute("END")
 
