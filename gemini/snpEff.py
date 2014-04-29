@@ -80,6 +80,7 @@ class EffectDetails(object):
         self.sift_pred = None
         self.sift_score = None
         self.consequence = effect_dict[self.effect_name] if self.effect_severity != None else self.effect_name
+        self.so = effect_so[self.effect_name] if self.effect_severity != None else self.effect_name
 
     def __str__(self):
         return "\t".join([self.consequence, self.effect_severity,
@@ -87,7 +88,7 @@ class EffectDetails(object):
                           str(self.aa_change), str(self.aa_length), str(self.gene),
                           str(self.biotype), str(self.is_exonic),
                           str(self.is_coding), str(self.transcript),
-                          str(self.exon), str(self.anno_id)])
+                          str(self.exon), str(self.anno_id), str(self.so)])
 
     def __repr__(self):
         return self.__str__()
@@ -116,7 +117,8 @@ exonic_impacts = ["CODON_CHANGE",
                   "UTR_3_PRIME",
                   "UTR_5_DELETED",
                   "UTR_5_PRIME",
-                  "NON_SYNONYMOUS_START"]
+                  "NON_SYNONYMOUS_START",
+                  "CHROMOSOME_LARGE_DELETION"]
 
 
 effect_names = ["CDS",
@@ -154,7 +156,47 @@ effect_names = ["CDS",
                 "UTR_5_DELETED",
                 "UTR_5_PRIME",
                 "NON_SYNONYMOUS_START",
-                "NONE"]
+                "NONE",
+                "CHROMOSOME_LARGE_DELETION"]
+                
+effect_so = defaultdict()
+effect_so = {'CDS': 'coding_sequence_variant',
+             'CODON_CHANGE': 'coding_sequence_variant',
+             'CODON_CHANGE_PLUS_CODON_DELETION': 'disruptive_inframe_deletion',
+             'CODON_CHANGE_PLUS_CODON_INSERTION': 'disruptive_inframe_insertion',
+             'CODON_DELETION': 'inframe_deletion',
+             'CODON_INSERTION': 'inframe_insertion',
+             'DOWNSTREAM': 'downstream_gene_variant',
+             'EXON': 'exon_variant',
+             'EXON_DELETED': 'exon_loss_variant',
+             'FRAME_SHIFT': 'frameshift_variant',
+             'GENE': 'gene_variant',
+             'INTERGENIC': 'intergenic_variant',
+             'INTERGENIC_CONSERVED': 'conserved_intergenic_variant',
+             'INTRAGENIC': 'intragenic_variant',
+             'INTRON': 'intron_variant',
+             'INTRON_CONSERVED': 'conserved_intron_variant',
+             'NON_SYNONYMOUS_CODING': 'missense_variant',
+             'RARE_AMINO_ACID': 'rare_amino_acid_variant',
+             'SPLICE_SITE_ACCEPTOR': 'splice_acceptor_variant',
+             'SPLICE_SITE_DONOR': 'splice_donor_variant',
+             'SPLICE_SITE_REGION': 'splice_region_variant',
+             'START_GAINED': '5_prime_UTR_premature_start_codon_gain_variant',
+             'START_LOST': 'start_lost',
+             'STOP_GAINED': 'stop_gained',
+             'STOP_LOST': 'stop_lost',
+             'SYNONYMOUS_CODING': 'synonymous_variant',
+             'SYNONYMOUS_START': 'start_retained',
+             'SYNONYMOUS_STOP': 'stop_retained_variant',
+             'TRANSCRIPT': 'transcript_variant',
+             'UPSTREAM': 'upstream_gene_variant',
+             'UTR_3_DELETED': '3_prime_UTR_truncation_+_exon_loss_variant',
+             'UTR_3_PRIME': '3_prime_UTR_variant',
+             'UTR_5_DELETED': '5_prime_UTR_truncation_+_exon_loss_variant',
+             'UTR_5_PRIME': '5_prime_UTR_variant',
+             'NON_SYNONYMOUS_START': 'initiator_codon_variant',
+             'NONE': 'None',
+             'CHROMOSOME_LARGE_DELETION': 'chromosomal_deletion'}
 
 effect_dict = defaultdict()
 effect_dict = {'CDS': 'CDS',
@@ -169,7 +211,7 @@ effect_dict = {'CDS': 'CDS',
                'FRAME_SHIFT': 'frame_shift',
                'GENE': 'gene',
                'INTERGENIC': 'intergenic',
-               'INTERGENIC_CONSERVED': 'intergenic',
+               'INTERGENIC_CONSERVED': 'intergenic_conserved',
                'INTRAGENIC': 'intragenic',
                'INTRON': 'intron',
                'INTRON_CONSERVED': 'intron_conserved',
@@ -192,7 +234,8 @@ effect_dict = {'CDS': 'CDS',
                'UTR_5_DELETED': 'UTR_5_del',
                'UTR_5_PRIME': 'UTR_5_prime',
                'NON_SYNONYMOUS_START': 'non_synonymous_start',
-               'NONE': 'None'}
+               'NONE': 'None',
+               'CHROMOSOME_LARGE_DELETION': 'chrom_large_del'}
 
 effect_desc = ["The variant hits a CDS.",
                "One or many codons are changed",
@@ -243,7 +286,8 @@ effect_desc = ["The variant hits a CDS.",
                "Variant hits 5'UTR region.",
                "The variant causes a start codon to be changed into a \
                 different codon",
-                "Unknown"]
+                "Unknown",
+                "A large region of the chromosome deleted (over 1%)"]
 
 effect_priorities = ["LOW",
                      "MED",
@@ -280,7 +324,8 @@ effect_priorities = ["LOW",
                      "MED",
                      "LOW",
                      "HIGH",
-                     "LOW"]
+                     "LOW",
+                     "HIGH"]
 
 effect_priority_codes = [3,
                          2,
@@ -317,9 +362,10 @@ effect_priority_codes = [3,
                          2,
                          3,
                          1,
-                         3]
+                         3,
+                         1]
 
-effect_ids = range(1, 37)
+effect_ids = range(1, 38)
 effect_map = {}
 EffectInfo = namedtuple(
     'EffectInfo', ['id', 'priority', 'priority_code', 'desc'])
