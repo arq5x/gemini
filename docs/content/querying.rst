@@ -269,9 +269,9 @@ that region using the ``--region`` tool.
                 from variants"  test1.snpeff.db
    chr1	30859	30860	G	C
 
-===================================================
+=========================================================
 ``--sample-filter`` Restrict a query to specified samples
-===================================================
+=========================================================
 The ``--sample-filter`` option allows you to select samples that a variant
 must be in by doing a SQL query on the samples table. For example if you
 wanted to show the set of variants that appear in all samples with
