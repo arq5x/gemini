@@ -278,7 +278,7 @@ class GeminiLoader(object):
         # impact terms initialized to None for handling unannotated vcf's
         # anno_id in variants is for the trans. with the most severe impact term
         gene = transcript = exon = codon_change = aa_change = aa_length = \
-            biotype = consequence = effect_severity = None
+            biotype = consequence = consequence_so = effect_severity = None
         is_coding = is_exonic = is_lof = None
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
 
@@ -304,6 +304,7 @@ class GeminiLoader(object):
                 is_exonic = severe_impacts.is_exonic
                 is_coding = severe_impacts.is_coding
                 is_lof = severe_impacts.is_lof
+                consequence_so = severe_impacts.so
 
         # construct the filter string
         filter = None
@@ -356,9 +357,9 @@ class GeminiLoader(object):
                               impact.exon, impact.codon_change,
                               impact.aa_change, impact.aa_length,
                               impact.biotype, impact.consequence,
-                              impact.effect_severity, impact.polyphen_pred,
-                              impact.polyphen_score, impact.sift_pred,
-                              impact.sift_score]
+                              impact.so, impact.effect_severity,
+                              impact.polyphen_pred, impact.polyphen_score, 
+                              impact.sift_pred, impact.sift_score]
                 variant_impacts.append(var_impact)
 
         # construct the core variant record.
@@ -388,9 +389,9 @@ class GeminiLoader(object):
                    in_segdup, is_conserved, gerp_bp, gerp_el,
                    hom_ref, het, hom_alt, unknown,
                    aaf, hwe_p_value, inbreeding_coeff, pi_hat,
-                   recomb_rate, gene, transcript,
-                   is_exonic, is_coding, is_lof, exon, codon_change,
-                   aa_change, aa_length, biotype, consequence, effect_severity,
+                   recomb_rate, gene, transcript, is_exonic,
+                   is_coding, is_lof, exon, codon_change, aa_change,
+                   aa_length, biotype, consequence, consequence_so, effect_severity,
                    polyphen_pred, polyphen_score, sift_pred, sift_score,
                    infotag.get_ancestral_allele(var), infotag.get_rms_bq(var),
                    infotag.get_cigar(var),

@@ -95,9 +95,9 @@ single core, it takes a few hours.
     $ gemini load -v my.vcf -t snpEff --cores 20 my.db
 
 
-================================
+=============================================
 Using LSF, SGE, SLURM and Torque schedulers
-================================
+=============================================
 One can load VCF files into GEMINI in parallel using many cores on
 LSF, SGE, SLURM or Torque clusters. One must simply specify the type of job
 scheduler your cluster uses and the queue name to which your jobs
@@ -158,9 +158,9 @@ by using the ``--load-gerp-bp`` option.
 
     $ gemini load -v my.vcf --load-gerp-bp -t snpEff my.db
 
-=======================================
+=========================================
 Updating the samples table in a database
-=======================================
+=========================================
 If, after loading a database, you find more information about your samples or
 want to add a column to the samples table to query on, you can reload the samples
 table with a new PED_ file with ``gemini amend --sample``. This is also useful if

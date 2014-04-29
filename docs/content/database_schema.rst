@@ -90,6 +90,7 @@ aa_change                 STRING        What is the amino acid change (for an sn
 aa_length                 STRING        The length of CDS in terms of number of amino acids (``only snpEff``)
 biotype                   STRING        The 'type' of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``only snpEff``)
 impact                    STRING        The consequence of the most severely affected transcript
+impact_so                 STRING        The Sequence ontology term for the most severe consequence
 impact_severity           STRING        Severity of the highest order observed for the variant
 polyphen_pred             STRING        Polyphen predictions for the snps for the severely affected transcript (``only VEP``) 
 polyphen_score            FLOAT         Polyphen scores for the severely affected transcript (``only VEP``)
@@ -301,6 +302,7 @@ aa_change         STRING        What is the amino acid change?
 aa_length         STRING        The length of CDS in terms of number of amino acids (``snpEff only``)
 biotype           STRING        The type of transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``SnpEff only``)
 impact            STRING        Impacts due to variation (ref.impact category)
+impact_so         STRING        The sequence ontology term for the impact
 impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
 polyphen_pred     STRING        | Impact of the SNP as given by PolyPhen (``VEP only``) 
                                 | benign, possibly_damaging, probably_damaging, unknown
@@ -327,6 +329,8 @@ HIGH                   - exon_deleted
                        - stop_loss
                        - non_synonymous_start
                        - transcript_codon_change
+                       - rare_amino_acid
+                       - chrom_large_del
 MED                    - non_syn_coding
                        - inframe_codon_gain
                        - inframe_codon_loss

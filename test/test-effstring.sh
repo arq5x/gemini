@@ -73,16 +73,16 @@ rm obs exp
 # 2. Test variants table for severe_impact columns  
 ####################################################################
 echo "    effstring.t02...\c"
-echo "anno_id	gene	transcript	impact	impact_severity	biotype	is_exonic	is_coding	is_lof
-1	FAM138A	ENST00000417324	downstream	LOW	protein_coding	0	0	0
-1	OR4F5	ENST00000335137	synonymous_coding	LOW	protein_coding	1	1	0
-1	OR4F5	ENST00000335137	non_syn_coding	MED	protein_coding	1	1	0
-6	SAMD11	ENST00000342066	frame_shift	HIGH	protein_coding	1	1	1
-8	SAMD11	ENST00000342066	UTR_3_prime	LOW	protein_coding	1	0	0
-1	HES4	ENST00000428771	start_gain	LOW	protein_coding	1	0	0
-13	CCNL2	ENST00000488340	splice_acceptor	HIGH	nonsense_mediated_decay	0	0	0" > exp
+echo "anno_id	gene	transcript	impact	impact_so	impact_severity	biotype	is_exonic	is_coding	is_lof
+1	FAM138A	ENST00000417324	downstream	downstream_gene_variant	LOW	protein_coding	0	0	0
+1	OR4F5	ENST00000335137	synonymous_coding	synonymous_variant	LOW	protein_coding	1	1	0
+1	OR4F5	ENST00000335137	non_syn_coding	missense_variant	MED	protein_coding	1	1	0
+6	SAMD11	ENST00000342066	frame_shift	frameshift_variant	HIGH	protein_coding	1	1	1
+8	SAMD11	ENST00000342066	UTR_3_prime	3_prime_UTR_variant	LOW	protein_coding	1	0	0
+1	HES4	ENST00000428771	start_gain	5_prime_UTR_premature_start_codon_gain_variant	LOW	protein_coding	1	0	0
+13	CCNL2	ENST00000488340	splice_acceptor	splice_acceptor_variant	HIGH	nonsense_mediated_decay	0	0	0" > exp
 
-gemini query -q "select anno_id, gene, transcript, impact, impact_severity, biotype, \
+gemini query -q "select anno_id, gene, transcript, impact, impact_so, impact_severity, biotype, \
                     is_exonic, is_coding, is_lof from variants" \
                     --header \
                     test1.snpeff.db \
