@@ -51,7 +51,7 @@ def main(args):
     os.chdir(work_dir)
     install_data(gemini["python"], gemini["data_script"], args)
     os.chdir(work_dir)
-    test_script = install_testbase(args.datadir, remotes["gemini"])
+    test_script = install_testbase(args.datadir, remotes["gemini"], gemini)
     print "Finished: gemini, tools and data installed"
     print " Tools installed in:\n  %s" % args.tooldir
     print " Data installed in:\n  %s" % args.datadir
@@ -106,7 +106,8 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
                                           shell=True)
     return {"fab": os.path.join(anaconda["dir"], "bin", "fab"),
             "data_script": os.path.join(os.path.dirname(library_loc.strip()), "install-data.py"),
-            "python": python_bin}
+            "python": python_bin,
+            "cmd": os.path.join(anaconda["dir"], "bin", "gemini")}
 
 def install_conda_pkgs(anaconda):
     pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
@@ -190,7 +191,7 @@ def install_data(python_cmd, data_script, args):
         cmd.append("--nodata")
     subprocess.check_call(cmd)
 
-def install_testbase(datadir, repo):
+def install_testbase(datadir, repo, gemini):
     """Clone or update gemini code so we have the latest test suite.
     """
     gemini_dir = os.path.join(datadir, "gemini")
@@ -199,7 +200,7 @@ def install_testbase(datadir, repo):
     if os.path.exists(gemini_dir):
         os.chdir(gemini_dir)
         try:
-            subprocess.check_call(["git", "pull", "origin", "master"])
+            subprocess.check_call(["git", "pull", "origin", "master", "--tags"])
             needs_git = False
         except:
             os.chdir(cur_dir)
@@ -207,8 +208,31 @@ def install_testbase(datadir, repo):
     if needs_git:
         os.chdir(os.path.split(gemini_dir)[0])
         subprocess.check_call(["git", "clone", repo])
+    os.chdir(gemini_dir)
+    _update_testdir_revision(gemini["cmd"])
     os.chdir(cur_dir)
     return os.path.join(gemini_dir, "master-test.sh")
+
+def _update_testdir_revision(gemini_cmd):
+    """Update test directory to be in sync with a tagged installed version or development.
+    """
+    try:
+        p = subprocess.Popen([gemini_cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        gversion = p.communicate()[0].split()[1]
+    except:
+        gversion = ""
+    tag = ""
+    if gversion:
+        try:
+            p = subprocess.Popen("git tag -l | grep %s" % gversion, stdout=subprocess.PIPE, shell=True)
+            tag = p.communicate()[0].strip()
+        except:
+            tag = ""
+    if tag:
+        subprocess.check_call(["git", "checkout", "tags/%s" % tag])
+        pass
+    else:
+        subprocess.check_call(["git", "reset", "--hard", "HEAD"])
 
 def write_fabricrc(base_file, tooldir, datadir, distribution, use_sudo):
     out_file = os.path.join(os.getcwd(), os.path.basename(base_file))

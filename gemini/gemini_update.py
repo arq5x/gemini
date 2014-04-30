@@ -13,6 +13,7 @@ def release(parser, args):
     url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
     repo = "https://github.com/arq5x/gemini.git"
     # update locally isolated python
+    gemini_cmd = os.path.join(os.path.dirname(sys.executable), "gemini")
     pip_bin = os.path.join(os.path.dirname(sys.executable), "pip")
     ei_bin = os.path.join(os.path.dirname(sys.executable), "easy_install")
     activate_bin = os.path.join(os.path.dirname(sys.executable), "activate")
@@ -62,7 +63,7 @@ def release(parser, args):
     if not args.dataonly:
         test_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(pip_bin))),
                                 "gemini")
-        _update_testbase(test_dir, repo)
+        _update_testbase(test_dir, repo, gemini_cmd)
         print "Run test suite with: cd %s && bash master-test.sh" % test_dir
 
 def _get_install_script():
@@ -72,13 +73,13 @@ def _get_install_script():
     except ImportError:
         return os.path.join(os.path.dirname(__file__), "install-data.py")
 
-def _update_testbase(repo_dir, repo):
+def _update_testbase(repo_dir, repo, gemini_cmd):
     cur_dir = os.getcwd()
     needs_git = True
     if os.path.exists(repo_dir):
         os.chdir(repo_dir)
         try:
-            subprocess.check_call(["git", "pull", "origin", "master"])
+            subprocess.check_call(["git", "pull", "origin", "master", "--tags"])
             needs_git = False
         except:
             os.chdir(cur_dir)
@@ -86,4 +87,27 @@ def _update_testbase(repo_dir, repo):
     if needs_git:
         os.chdir(os.path.split(repo_dir)[0])
         subprocess.check_call(["git", "clone", repo])
+    os.chdir(repo_dir)
+    _update_testdir_revision(gemini_cmd)
     os.chdir(cur_dir)
+
+def _update_testdir_revision(gemini_cmd):
+    """Update test directory to be in sync with a tagged installed version or development.
+    """
+    try:
+        p = subprocess.Popen([gemini_cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        gversion = p.communicate()[0].split()[1]
+    except:
+        gversion = ""
+    tag = ""
+    if gversion:
+        try:
+            p = subprocess.Popen("git tag -l | grep %s" % gversion, stdout=subprocess.PIPE, shell=True)
+            tag = p.communicate()[0].strip()
+        except:
+            tag = ""
+    if tag:
+        subprocess.check_call(["git", "checkout", "tags/%s" % tag])
+        pass
+    else:
+        subprocess.check_call(["git", "reset", "--hard", "HEAD"])
