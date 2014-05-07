@@ -261,8 +261,8 @@ class GeminiLoader(object):
         vista_enhancers = annotations.get_vista_enhancers(var)
         cosmic_ids = annotations.get_cosmic_info(var)
         
-        #load CADD scores by default
-        if self.args.skip_cadd_score is False:
+        #load CADD scores if asked
+        if self.args.load_cadd is True:
             (cadd_raw, cadd_scaled) = annotations.get_cadd_scores(var)
         else:
             (cadd_raw, cadd_scaled) =  (None, None)
