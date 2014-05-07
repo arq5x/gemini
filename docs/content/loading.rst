@@ -151,14 +151,26 @@ use those extra columns during queries.
 Load GERP base pair conservation scores
 =======================================
 By default, GERP scores at base pair resolution are not computed owing to the roughly 2X
-increasing in loading time.  However, one can optionally ask GEMINI to compute these scores
-by using the ``--load-gerp-bp`` option.
+increase in loading time.  However, one can optionally ask GEMINI to compute these scores
+by using the ``--load-gerp-bp`` option (Note: This requires a prior install of the data
+file by running ``gemini update --dataonly --extra gerp_bp``).
 
 .. code-block:: bash
 
     $ gemini load -v my.vcf --load-gerp-bp -t snpEff my.db
 
 =========================================
+Load CADD scores for deleterious variants
+=========================================
+By default, the CADD scores (http://cadd.gs.washington.edu/) are not loaded into the
+database tables. However, one may opt to optionally include these scores by using the
+``--load-cadd`` option ((Note: This requires a prior install of the data file by
+running ``gemini update --dataonly --extra cadd_score``).
+
+.. code-block:: bash
+
+	$ gemini load -v my.vcf --load-cadd my.db
+
 Updating the samples table in a database
 =========================================
 If, after loading a database, you find more information about your samples or
