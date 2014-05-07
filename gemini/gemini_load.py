@@ -19,7 +19,10 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
-
+    if args.load_cadd is False:
+        sys.stdout.write("CADD SCORES NOT LOADED BY DEFAULT (use:--load-cadd).\n")
+    if args.load_gerp_bp is False:
+        sys.stdout.write("GERP PER BP NOT LOADED BY DEFAULT (use:--load-gerp-bp).\n")
     # collect of the the add'l annotation files
     annotations.load_annos()
 
@@ -159,9 +162,9 @@ def load_chunks_multicore(grabix_file, args):
     if args.skip_gene_tables is True:
         skip_gene_tables = "--skip-gene-tables"
 
-    skip_cadd_score = ""
-    if args.skip_cadd_score is True:
-        skip_cadd_score = "--skip-cadd-scores"
+    load_cadd = ""
+    if args.load_cadd is True:
+        load_cadd = "--load-cadd"
     
     test_mode = ""
     if args.test_mode is True:
@@ -224,9 +227,9 @@ def load_chunks_ipython(grabix_file, args, view):
     if args.skip_gene_tables is True:
         skip_gene_tables = "--skip-gene-tables"
     
-    skip_cadd_score = ""
-    if args.skip_cadd_score is True:
-        skip_cadd_score = "--skip-cadd-scores"
+    load_cadd = ""
+    if args.load_cadd is True:
+        load_cadd = "--load-cadd"
     
     test_mode = ""
     if args.test_mode is True:
@@ -253,7 +256,7 @@ def load_chunks_ipython(grabix_file, args, view):
                  "no_load_genotypes": no_load_genotypes,
                  "load_gerp_bp": load_gerp_bp,
                  "skip_gene_tables": skip_gene_tables,
-                 "skip_cadd_score": skip_cadd_score,
+                 "load_cadd": load_cadd,
                  "test_mode": test_mode,
                  "passonly": passonly,
                  "skip_info_string": skip_info_string}
@@ -282,7 +285,7 @@ def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
-                       " {load_gerp_bp} {skip_gene_tables} {skip_cadd_score}"
+                       " {load_gerp_bp} {skip_gene_tables} {load_cadd}"
                        " {passonly} {skip_info_string} {test_mode}"
                        " -o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
