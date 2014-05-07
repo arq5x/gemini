@@ -45,12 +45,13 @@ def get_anno_files():
                                            'encode.6celltypes.consensus.bedg.gz'),
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),
-     'cadd_score': os.path.join(anno_dirname, 'whole_genome_SNVs.tsv.compressed.gz') 
+     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz')
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
         annos['gerp_bp'] = os.path.join(anno_dirname, 'hg19.gerp.bw')
+    if os.path.exists(os.path.join(anno_dirname, 'whole_genome_SNVs.tsv.compressed.gz')):
+        annos['cadd_score'] = os.path.join(anno_dirname, 'whole_genome_SNVs.tsv.compressed.gz')
     return annos
 
 class ClinVarInfo(object):
@@ -380,9 +381,13 @@ def get_vista_enhancers(var):
 
 def get_cadd_scores(var):
     """
-    Returns the C-raw scores & scaled scores (CADD) to predict deleterious 
+    Returns the C-raw scores & scaled scores (CADD) to predict deleterious
     variants. Implemented only for SNV's
     """
+    if "cadd_score" not in annos:
+        raise IOError("Need to download the CADD file with scores for deleteriousness."
+                      "Run `gemini update --dataonly --extra cadd_score")
+
     cadd_raw = cadd_scaled = None
     labels = {"A":"CGT", "C":"AGT", "G":"ACT", "T":"ACG", "R":"ACGT", "M":"ACGT"}
     
