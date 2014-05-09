@@ -103,6 +103,11 @@ def main():
                              action='store_true',
                              help='Load GERP scores at base pair resolution. Slow. Off by default.',
                              default=False)
+    parser_load.add_argument('--skip-cadd-scores',
+                             dest='skip_cadd_score',
+                             action='store_true',
+                             help='Do not Load CADD scores. Loaded by default',
+                             default=False)
     parser_load.add_argument('--skip-gene-tables',
                              dest='skip_gene_tables',
                              action='store_true',
@@ -201,6 +206,11 @@ def main():
                                   action='store_true',
                                   help='Load GERP scores at base pair resolution. Slow. Off by default.',
                                   default=False)
+    parser_loadchunk.add_argument('--skip-cadd-scores',
+                                 dest='skip_cadd_score',
+                                 action='store_true',
+                                 help='Do not Load CADD scores. Loaded by default',
+                                 default=False)
     parser_loadchunk.add_argument('--skip-gene-tables',
                              dest='skip_gene_tables',
                              action='store_true',

@@ -79,8 +79,8 @@ Gene information
 ========================  ========      ==============================================================================================
 gene                      STRING        Corresponding gene name of the highly affected transcript
 transcript                STRING        | The variant transcript that was most severely affected
-                                        | (for two equally affected transcripts, either the first
-										one is selected (VEP) or the protein_coding biotype is prioritized (snpEff)
+                                        | (for two equally affected transcripts,the protein_coding
+										biotype is prioritized (snpEff/VEP)
 is_exonic                 BOOL          Does the variant affect an exon for >= 1transcript?
 is_coding                 BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
 is_lof                    BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
@@ -90,6 +90,7 @@ aa_change                 STRING        What is the amino acid change (for an sn
 aa_length                 STRING        The length of CDS in terms of number of amino acids (``only snpEff``)
 biotype                   STRING        The 'type' of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``only snpEff``)
 impact                    STRING        The consequence of the most severely affected transcript
+impact_so                 STRING        The Sequence ontology term for the most severe consequence
 impact_severity           STRING        Severity of the highest order observed for the variant
 polyphen_pred             STRING        Polyphen predictions for the snps for the severely affected transcript (``only VEP``) 
 polyphen_score            FLOAT         Polyphen scores for the severely affected transcript (``only VEP``)
@@ -118,6 +119,7 @@ haplotype_score           FLOAT         Consistency of the site with two segrega
 qual_depth                FLOAT         Variant confidence or quality by depth
 allele_count              INTEGER       Allele counts in genotypes
 allele_bal                FLOAT         Allele balance for hets
+info                      BLOB          Stores the ``INFO`` field of the VCF
 ========================  ========      ==============================================================================================
 
 
@@ -200,7 +202,16 @@ gerp_element_pval         FLOAT         | GERP elements P-val
                                         | Details: http://mendel.stanford.edu/SidowLab/downloads/gerp/
 recomb_rate               FLOAT         | Returns the mean recombination rate at the variant site
                                         | Based on HapMapII_GRCh37 genetic map
+cadd_raw                  FLOAT         | Raw ``CADD`` scores for scoring deleteriousness of SNV's in the human genome
+                                        | Details: http://www.ncbi.nlm.nih.gov/pubmed/24487276
+cadd_scaled               FLOAT         | Scaled ``CADD`` scores (Phred like) for scoring deleteriousness of SNV's
+                                        | Details: http://www.ncbi.nlm.nih.gov/pubmed/24487276
 ========================  ========      ==============================================================================================
+
+**Note:**
+``CADD`` scores (http://cadd.gs.washington.edu/) are Copyright 2013 University of Washington and Hudson-Alpha Institute for Biotechnology 
+(all rights reserved) but are freely available for all academic, non-commercial applications. For commercial licensing information contact 
+Jennifer McCullar (mccullaj@uw.edu).
 
 
 
@@ -291,6 +302,7 @@ aa_change         STRING        What is the amino acid change?
 aa_length         STRING        The length of CDS in terms of number of amino acids (``snpEff only``)
 biotype           STRING        The type of transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``SnpEff only``)
 impact            STRING        Impacts due to variation (ref.impact category)
+impact_so         STRING        The sequence ontology term for the impact
 impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
 polyphen_pred     STRING        | Impact of the SNP as given by PolyPhen (``VEP only``) 
                                 | benign, possibly_damaging, probably_damaging, unknown
@@ -317,6 +329,8 @@ HIGH                   - exon_deleted
                        - stop_loss
                        - non_synonymous_start
                        - transcript_codon_change
+                       - rare_amino_acid
+                       - chrom_large_del
 MED                    - non_syn_coding
                        - inframe_codon_gain
                        - inframe_codon_loss
@@ -410,7 +424,7 @@ version        STRING      What version of gemini was used to create the DB.
 The ``gene_detailed`` table
 ---------------------------
 
-Built on version 73 of Ensembl genes
+Built on version 75 of Ensembl genes
 
 ==================  ========      ===============================================================================
 column_name         type          notes
@@ -425,6 +439,7 @@ biotype             STRING        The biotype (e.g protein coding) of the transc
 transcript_status   STRING        The status of the transcript (e.g. KNOWN, PUTATIVE etc.)
 ccds_id             STRING        The consensus coding sequence transcript identifier
 hgnc_id             STRING        The HGNC identifier for the gene if HGNC symbol is TRUE
+entrez_id           STRING        The entrez gene identifier for the gene
 cds_length          STRING        The length of CDS in bases
 protein_length      STRING        The length of the transcript as the number of amino acids
 transcript_start    STRING        The start position of the transcript in bases
@@ -432,13 +447,16 @@ transcript_end      STRING        The end position of the transcript in bases
 strand              STRING        The strand of DNA where the gene resides
 synonym             STRING        Other gene names (previous or synonyms) for the gene
 rvis_pct            FLOAT         The RVIS percentile values for the gene
+mam_phenotype_id    STRING        | High level mammalian phenotype ID applied to mouse phenotype descriptions
+                                  | in the MGI database at http://www.informatics.jax.org/. Data taken from
+								  ftp://ftp.informatics.jax.org/pub/reports/HMD_HumanPhenotype.rpt
 ==================  ========      ===============================================================================
 
 
 The ``gene_summary`` table
 ---------------------------
 
-Built on version 73 of Ensembl genes
+Built on version 75 of Ensembl genes
 
 ======================  ========      ===============================================================================
 column_name             type          notes
@@ -454,6 +472,9 @@ transcript_max_end      STRING        The maximum end position of all transcript
 strand                  STRING        The strand of DNA where the gene resides
 synonym                 STRING        Other gene names (previous or synonyms) for the gene
 rvis_pct                FLOAT         The RVIS percentile values for the gene
+mam_phenotype_id        STRING        | High level mammalian phenotype ID applied to mouse phenotype descriptions
+                                      | in the MGI database at http://www.informatics.jax.org/. Data taken from
+									  ftp://ftp.informatics.jax.org/pub/reports/HMD_HumanPhenotype.rpt
 in_cosmic_census        BOOL          Are mutations in the gene implicated in cancer by the cancer gene census?
 ======================  ========      ===============================================================================
 

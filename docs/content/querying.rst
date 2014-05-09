@@ -269,9 +269,9 @@ that region using the ``--region`` tool.
                 from variants"  test1.snpeff.db
    chr1	30859	30860	G	C
 
-===================================================
+=========================================================
 ``--sample-filter`` Restrict a query to specified samples
-===================================================
+=========================================================
 The ``--sample-filter`` option allows you to select samples that a variant
 must be in by doing a SQL query on the samples table. For example if you
 wanted to show the set of variants that appear in all samples with
@@ -461,94 +461,170 @@ like hair color:
 	chr10	135336655	G	A	2,3,2,3	M10478,M128215		M10478,M128215	1	1	0	0	0	0	2
 	chr10	135369531	T	C	0,1,1,0	M10478,M10500	M10478,M10500		0	1	1	1	1	0	0
 
-=================================
+#################################
 Querying the gene tables
-=================================
+#################################
 The gene tables viz. ``gene_detailed table`` and the ``gene_summary table`` have been built on version 73 of the ensembl genes. The column specifications are
 available at :doc:`database_schema`. These tables contain gene specific information e.g. gene synonyms, RVIS percentile scores(Petrovski et.al 2013), strand specifications, cancer gene census etc. While the former is more detailed, the later lacks transcript wise information and summarizes some aspects of the former. For e.g. while the gene_detailed table lists all transcripts of a gene with their start and end co-ordinates, the gene_summary table reports only the minimum start and maximum end co-ordinates of the gene transcripts. The ``chrom``, ``gene`` and the ``transcript`` columns of the gene tables may be used to join on the variants and the variant_impacts tables.  
 
+============================================================
+Using the ``gene_detailed`` & ``gene_summary`` tables
+============================================================
+
 ---------------------------------------------------------------
-``Query the gene_detailed table with a join on variants table:``
+Query the gene_detailed table with a join on variants table:
 ---------------------------------------------------------------
+E.g. Get additional transcript info for the most severe impact transcript
+e.g. transcript status, transcript start,end and the protein length
 
 .. code-block:: bash
 
-    $ gemini query --header -q "select v.variant_id, v.chrom, v.gene, \
-	               g.transcript_status, g.transcript, g.transcript_start, \
-			       g.transcript_end, g.synonym, g.rvis_pct, g.protein_length, \
-				   v.impact from variants v, gene_detailed g \
+    $ gemini query --header -q "select v.variant_id, v.gene, \
+	               v.impact, g.transcript_status, g.transcript, \
+				   g.transcript_start, g.transcript_end, g.protein_length, \
+				   from variants v, gene_detailed g \
 					
 				   WHERE v.chrom = g.chrom AND \
-						 v.gene = g.gene AND v.impact_severity='HIGH' AND \
-						 v.biotype='protein_coding' AND \
-						 v.transcript = g.transcript" test.query.db
+						 v.gene = g.gene AND \
+						 v.transcript = g.transcript AND \
+						 v.impact_severity='HIGH'" test.query.db
 
-	variant_id	chrom	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
-	46	chr1	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frame_shift
-	578	chr1	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frame_shift
-	733	chr1	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gain
+	variant_id	gene	impact	transcript_status	transcript	transcript_start	transcript_end	protein_length
+	46	SAMD11	frame_shift	KNOWN	ENST00000342066	861118	879955	681
+	578	TNFRSF18	frame_shift	PUTATIVE	ENST00000486728	1139224	1141060	169
+	733	SCNN1D	stop_gain	NOVEL	ENST00000470022	1217305	1221548	138
 	
 ---------------------------------------------------------------------------
-``Query the gene_detailed table with a join on the variant_impacts table:``
+Query the gene_detailed table with a join on the variant_impacts table:
 ---------------------------------------------------------------------------
+E.g. Get the transcript status for all transcripts of the SCNN1D gene where 
+impact severity is not 'LOW'.
+
 
 .. code-block:: bash
 
-    $ gemini query --header -q "select v.gene, g.transcript_status,g.transcript, g.transcript_start, \
-	               g.transcript_end, g.synonym, g.rvis_pct, g.protein_length, \
+    $ gemini query --header -q "select v.gene, g.transcript_status, g.transcript, \
                    v.impact from variant_impacts v, gene_detailed g \
 		           
 				   WHERE v.transcript = g.transcript AND \
                          v.gene = g.gene AND \
-	                     v.impact_severity='HIGH' AND \
-                         v.biotype='protein_coding'" test.query.db
+						 v.gene = 'SCNN1D' \
+	                     v.impact_severity!='LOW'" test.query.db
 
-	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
-	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frame_shift
-	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frame_shift
-	TNFRSF18	KNOWN	ENST00000379265	1139224	1141951	AITR,CD357,GITR	None	234	frame_shift
-	TNFRSF18	KNOWN	ENST00000379268	1138891	1142071	AITR,CD357,GITR	None	241	frame_shift
-	TNFRSF18	KNOWN	ENST00000328596	1138888	1141951	AITR,CD357,GITR	None	255	frame_shift
-	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gain
-	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	frame_shift
-	SCNN1D	KNOWN	ENST00000325425	1217489	1227404	ENaCdelta,dNaCh	96.77990092	704	frame_shift
-	SCNN1D	KNOWN	ENST00000379116	1215816	1227399	ENaCdelta,dNaCh	96.77990092	802	frame_shift
-	SCNN1D	KNOWN	ENST00000338555	1215968	1227404	ENaCdelta,dNaCh	96.77990092	638	frame_shift
-	SCNN1D	KNOWN	ENST00000400928	1217576	1227409	ENaCdelta,dNaCh	96.77990092	638	frame_shift
+	gene	transcript_status	transcript	impact
+	SCNN1D	NOVEL	ENST00000470022	non_syn_coding
+	SCNN1D	NOVEL	ENST00000470022	frame_shift
+	SCNN1D	KNOWN	ENST00000325425	frame_shift
+	SCNN1D	KNOWN	ENST00000379116	non_syn_coding
+	SCNN1D	KNOWN	ENST00000338555	non_syn_coding
+	SCNN1D	KNOWN	ENST00000400928	non_syn_coding
 	
 ---------------------------------------------------------------------------
-``Query the gene_summary table with a join on the variants table:``
+Query the gene_summary table with a join on the variants table:
 ---------------------------------------------------------------------------
+E.g. Get the synonym/alternate names, RVIS percentile scores and the min-max
+start-end of transcripts for genes that have a severely affected transcript 
+of a 'HIGH' order.
 
 .. code-block:: bash
 
-    $ gemini query --header -q "select v.chrom, v.gene, g.strand, g.transcript_min_start, g.transcript_max_end, \
-                   g.synonym, g.rvis_pct, v.impact from variants v, gene_summary g \
+    $ gemini query --header -q "select v.chrom, v.gene, g.transcript_min_start, \
+	               g.transcript_max_end, g.synonym, g.rvis_pct, v.impact from \
+				   variants v, gene_summary g \
                    
 				   WHERE v.chrom = g.chrom AND \
                          v.gene = g.gene AND \
                          v.impact_severity='HIGH'" test.query.db
 
-	chrom	gene	strand	transcript_min_start	transcript_max_end	synonym	rvis_pct	impact
-	chr1	SAMD11	1	860260	879955	MGC45873	None	frame_shift
-	chr1	TNFRSF18	-1	1138888	1142071	AITR,CD357,GITR	None	frame_shift
-	chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	stop_gain
-	chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	frame_shift
+	chrom	gene	transcript_min_start	transcript_max_end	synonym	rvis_pct	impact
+	chr1	SAMD11	860260	879955	MGC45873	None	frame_shift
+	chr1	TNFRSF18	1138888	1142071	AITR,CD357,GITR	None	frame_shift
+	chr1	SCNN1D	1215816	1227409	ENaCdelta,dNaCh	96.77990092	stop_gain
 	
 -------------------------------------------------------------------------
-``Query the gene_summary table with a join on the variant_impacts table:``
+Query the gene_summary table with a join on the variant_impacts table:
 -------------------------------------------------------------------------
+E.g. Get all variants of a gene, the affected transcripts and impacts, where 
+a mammalian phenotype ID is available for the ``mouse phenotype``.
+
 
 .. code-block:: bash
 
-    $ gemini query --header -q "select g.gene, v.impact, v.transcript, \
-	               g.transcript_min_start, g.transcript_max_end, g.rvis_pct, g.synonym \
-		           from gene_summary g, variant_impacts v \
-			      
-				   WHERE g.gene=v.gene AND \
-				         g.gene ='SCNN1D' AND \
-				         v.impact ='stop_gain'" test.query.db
+    $ gemini query --header -q "select v.variant_id, v.chrom, v.gene, i.impact, \
+	               i.transcript, g.mam_phenotype_id from variants v, \
+				   variant_impacts i, gene_summary g \
+				   
+				   WHERE v.variant_id=i.variant_id \
+				   i.gene=g.gene AND \
+				   v.chrom=g.chrom AND \
+				   g.mam_phenotype_id !='None'" test.query.db
 
-	gene	impact	transcript	transcript_min_start	transcript_max_end	rvis_pct	synonym
-	SCNN1D	stop_gain	ENST00000470022	1215816	1227409	96.77990092	ENaCdelta,dNaCh
+	variant_id	chrom	gene	impact	transcript	mam_phenotype_id
+	334	chr1	TNFRSF18	non_syn_coding	ENST00000328596	MP:0005397,MP:0005384,MP:0005387
+	378	chr1	TNFRSF18	frame_shift	ENST00000486728	MP:0005397,MP:0005384,MP:0005387
+	483	chr1	AGRN	synonymous_coding	ENST00000379370	MP:0005378,MP:0005386,MP:0005388,MP:0005367,MP:0005369,MP:0005371,MP:0003631,MP:0002873,MP:0010768
+	484	chr1	AGRN	exon	ENST00000461111	MP:0005378,MP:0005386,MP:0005388,MP:0005367,MP:0005369,MP:0005371,MP:0003631,MP:0002873,MP:0010768
+	478	chr1	AGRN	intron	ENST00000461111	MP:0005378,MP:0005386,MP:0005388,MP:0005367,MP:0005369,MP:0005371,MP:0003631,MP:0002873,MP:0010768
+	479	chr1	AGRN	downstream	ENST00000492947	MP:0005378,MP:0005386,MP:0005388,MP:0005367,MP:0005369,MP:0005371,MP:0003631,MP:0002873,MP:0010768
 	
+===================================================================
+Restrict analysis to transcripts with a valid ``CCDS_ID``
+===================================================================
+Since the current available transcript sets are more than one (e.g. RefSeq, ENSEMBL and UCSC)
+we support information (e.g pathways tool) for the ENSEMBL transcripts but provide a mapping of 
+these transcripts to the consensus set agreed upon by all the above three mentioned groups viz. 
+``transcripts having a valid CCDS_ID``. Here we show, how we can return variants and their
+impacts for only these restricted set of transcripts using the gene_detailed table.
+
+
+.. code-block:: bash
+	
+	$ gemini query --header -q "select i.var_id, i.gene, i.impact, i.transcript, \
+	                g.transcript_status, ccds_id, g.rvis_pct from \
+					variant_impacts i, gene_detailed g where \
+					i.transcript=g.transcript and i.gene=g.gene and\
+					impact_severity='HIGH' and g.ccds_id!='None'" test.query.db
+					
+	variant_id	gene	impact	transcript	transcript_status	ccds_id	rvis_pct
+	2051	SAMD11	frame_shift	ENST00000342066	KNOWN	CCDS2	None
+	3639	CCNL2	splice_acceptor	ENST00000408918	KNOWN	CCDS30558	53.98089172
+	3639	CCNL2	splice_acceptor	ENST00000400809	KNOWN	CCDS30557	53.98089172
+	13221	SMIM1	frame_shift	ENST00000444870	NOVEL	CCDS57966	None
+	21881	NPHP4	splice_acceptor	ENST00000378156	KNOWN	CCDS44052	81.78815758
+	
+====================================================================
+What if I don't see my ``gene`` in the database?
+====================================================================
+Most genes are popular by their common names while the representation of gene names
+in the GEMINI database is mostly HGNC. For e.g ``ARTEMIS`` would be ``DCLRE1C`` in 
+the GEMINI database. As such one may miss out on variants if looking for specific
+genes by their common names. While, joining the main tables with the gene tables for
+synonym information would be useful (as shown in the previous examples), the gene 
+tables may also serve as a quick look up for alternate names of a gene, which 
+could then be looked up in the database.
+
+.. code-block:: bash
+    
+	$ gemini query -q "select synonym from gene_summary where \
+	                   gene='ARTEMIS'" test.query.db
+	A-SCID,FLJ11360,SNM1C,DCLRE1C,SCIDA
+	
+	or,
+	
+	$ gemini query -q "select gene from gene_summary where synonym \
+	                   like '%ARTEMIS%' and \
+	                   is_HGNC='1'" test.query.db
+	DCLRE1C
+	
+	#looking up for DCLRE1C in the database
+	$ gemini query -q "select variant_id, chrom, start, end, impact \
+	                   from variants where \
+	                   gene='DCLRE1C'" test.query.db
+	
+===================================================================
+ 
+
+
+
+
+

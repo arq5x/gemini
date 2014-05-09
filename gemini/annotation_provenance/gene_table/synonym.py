@@ -5,7 +5,7 @@ import os
 import itertools
 from collections import defaultdict
 
-files = 'raw_gene_table'
+files = 'gene_table'
 outfile = open(files, 'w')
 
 outfile.write("\t".join(["Chromosome","HGNC_symbol","Ensembl_gene_id","Ensembl_transcript_id","Biotype","Transcript_status",

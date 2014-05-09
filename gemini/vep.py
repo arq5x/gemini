@@ -32,6 +32,8 @@ class EffectDetails(object):
         self.warnings = None
         self.consequence = effect_dict[
             self.effect_name] if self.effect_severity != None else self.effect_name
+        self.so = self.effect_name #VEP impacts are SO by default
+        
         if len(fields) > 11:
             self.warnings = fields[11]
 
@@ -84,7 +86,7 @@ class EffectDetails(object):
                           str(self.ensembl_gene), str(self.gene), str(self.transcript),
                           str(self.exon), str(self.is_exonic), str(self.anno_id), str(self.polyphen_pred),
                           str(self.polyphen_score), str(self.sift_pred), str(self.sift_score),
-                          str(self.is_coding), str(self.is_lof)])
+                          str(self.is_coding), str(self.is_lof), str(self.so)])
 
     def __repr__(self):
         return self.__str__()
@@ -126,7 +128,6 @@ effect_names = ["splice_acceptor_variant", "splice_donor_variant",
                 "transcript_ablation", "transcript_amplification",
                 "TFBS_ablation", "TFBS_amplification",
                 "feature_elongation", "feature_truncation"]
-
 
 effect_dict = defaultdict()
 effect_dict = {

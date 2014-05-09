@@ -260,7 +260,13 @@ class GeminiLoader(object):
         gerp_el = annotations.get_gerp_elements(var)
         vista_enhancers = annotations.get_vista_enhancers(var)
         cosmic_ids = annotations.get_cosmic_info(var)
-
+        
+        #load CADD scores by default
+        if self.args.skip_cadd_score is False:
+            (cadd_raw, cadd_scaled) = annotations.get_cadd_scores(var)
+        else:
+            (cadd_raw, cadd_scaled) =  (None, None)
+        
         # grab the GERP score for this variant if asked.
         gerp_bp = None
         if self.args.load_gerp_bp is True:
@@ -272,7 +278,7 @@ class GeminiLoader(object):
         # impact terms initialized to None for handling unannotated vcf's
         # anno_id in variants is for the trans. with the most severe impact term
         gene = transcript = exon = codon_change = aa_change = aa_length = \
-            biotype = consequence = effect_severity = None
+            biotype = consequence = consequence_so = effect_severity = None
         is_coding = is_exonic = is_lof = None
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
 
@@ -298,6 +304,7 @@ class GeminiLoader(object):
                 is_exonic = severe_impacts.is_exonic
                 is_coding = severe_impacts.is_coding
                 is_lof = severe_impacts.is_lof
+                consequence_so = severe_impacts.so
 
         # construct the filter string
         filter = None
@@ -350,9 +357,9 @@ class GeminiLoader(object):
                               impact.exon, impact.codon_change,
                               impact.aa_change, impact.aa_length,
                               impact.biotype, impact.consequence,
-                              impact.effect_severity, impact.polyphen_pred,
-                              impact.polyphen_score, impact.sift_pred,
-                              impact.sift_score]
+                              impact.so, impact.effect_severity,
+                              impact.polyphen_pred, impact.polyphen_score, 
+                              impact.sift_pred, impact.sift_score]
                 variant_impacts.append(var_impact)
 
         # construct the core variant record.
@@ -382,9 +389,9 @@ class GeminiLoader(object):
                    in_segdup, is_conserved, gerp_bp, gerp_el,
                    hom_ref, het, hom_alt, unknown,
                    aaf, hwe_p_value, inbreeding_coeff, pi_hat,
-                   recomb_rate, gene, transcript,
-                   is_exonic, is_coding, is_lof, exon, codon_change,
-                   aa_change, aa_length, biotype, consequence, effect_severity,
+                   recomb_rate, gene, transcript, is_exonic,
+                   is_coding, is_lof, exon, codon_change, aa_change,
+                   aa_length, biotype, consequence, consequence_so, effect_severity,
                    polyphen_pred, polyphen_score, sift_pred, sift_score,
                    infotag.get_ancestral_allele(var), infotag.get_rms_bq(var),
                    infotag.get_cigar(var),
@@ -414,7 +421,9 @@ class GeminiLoader(object):
                    encode_cons_seg.k562,
                    vista_enhancers,
                    cosmic_ids,
-                   pack_blob(info)]
+                   pack_blob(info),
+                   cadd_raw,
+                   cadd_scaled]
         
         return variant, variant_impacts
 
@@ -458,7 +467,7 @@ class GeminiLoader(object):
         
         config = read_gemini_config()
         path_dirname = config["annotation_dir"]
-        file_handle = os.path.join(path_dirname, 'detailed_gene_table')
+        file_handle = os.path.join(path_dirname, 'detailed_gene_table_v75')
         
         for line in open(file_handle, 'r'):
             field = line.strip().split("\t")
@@ -468,9 +477,9 @@ class GeminiLoader(object):
                 detailed_list = [str(i),table.chrom,table.gene,table.is_hgnc,
                                  table.ensembl_gene_id,table.ensembl_trans_id, 
                                  table.biotype,table.trans_status,table.ccds_id, 
-                                 table.hgnc_id,table.cds_length,table.protein_length, 
+                                 table.hgnc_id,table.entrez,table.cds_length,table.protein_length, 
                                  table.transcript_start,table.transcript_end,
-                                 table.strand,table.synonym,table.rvis]
+                                 table.strand,table.synonym,table.rvis,table.mam_phenotype]
                 table_contents.append(detailed_list)
         database.insert_gene_detailed(self.c, table_contents)
         
@@ -484,7 +493,7 @@ class GeminiLoader(object):
         
         config = read_gemini_config()
         path_dirname = config["annotation_dir"]
-        file = os.path.join(path_dirname, 'summary_gene_table')
+        file = os.path.join(path_dirname, 'summary_gene_table_v75')
         
         for line in open(file, 'r'):
             col = line.strip().split("\t")
@@ -497,7 +506,8 @@ class GeminiLoader(object):
                                 table.ensembl_gene_id,table.hgnc_id,
                                 table.transcript_min_start,
                                 table.transcript_max_end,table.strand,
-                                table.synonym,table.rvis,cosmic_census]
+                                table.synonym,table.rvis,table.mam_phenotype,
+                                cosmic_census]
                 contents.append(summary_list)
         database.insert_gene_summary(self.c, contents)
 

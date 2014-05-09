@@ -4,7 +4,8 @@ import sqlite3
 import os
 import sys
 import collections
-
+import re
+from unidecode import unidecode
 from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
 
@@ -44,7 +45,8 @@ def get_anno_files():
                                            'encode.6celltypes.consensus.bedg.gz'),
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),     
+     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),
+     'cadd_score': os.path.join(anno_dirname, 'whole_genome_SNVs.tsv.compressed.gz') 
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
@@ -150,7 +152,6 @@ ThousandGInfo = collections.namedtuple("ThousandGInfo",
                                         aaf_AFR \
                                         aaf_EUR")
 
-
 def load_annos():
     """
     Populate a dictionary of Tabixfile handles for
@@ -254,6 +255,18 @@ def _get_var_coords(var, naming):
         chrom = _get_chr_as_grch37(chrom)
     return chrom, start, end
 
+def _get_cadd_scores(var, labels, hit):
+    """
+    get cadd scores
+    """
+    raw = hit[3].split(",")
+    scaled = hit[4].split(",")
+    
+    p = re.compile(str(var.ALT[0]))
+    for m in p.finditer(str(labels[hit[2]])):
+        pos = m.start()
+        return raw[pos], scaled[pos]
+        
 
 def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
     """Iterator of annotations found in a genomic region.
@@ -275,7 +288,6 @@ def bigwig_summary(var, anno, naming="ucsc"):
     if isinstance(anno, basestring):
         anno = annos[anno]
     return _get_bw_summary(coords, anno)
-
 
 
 # ## Track-specific annotations
@@ -366,6 +378,32 @@ def get_vista_enhancers(var):
     return ",".join(vista_enhancers) if len(vista_enhancers) > 0 else None
 
 
+def get_cadd_scores(var):
+    """
+    Returns the C-raw scores & scaled scores (CADD) to predict deleterious 
+    variants. Implemented only for SNV's
+    """
+    cadd_raw = cadd_scaled = None
+    labels = {"A":"CGT", "C":"AGT", "G":"ACT", "T":"ACG", "R":"ACGT", "M":"ACGT"}
+    
+    for hit in annotations_in_region(var, "cadd_score", "tuple", "grch37"):
+        # we want exact position mapping here and not a range (end-start) as
+        # returned in hit (e.g. indels) & we do not want to consider del & ins
+        if str(hit[1]) == str(var.POS) and len(var.REF) == 1 and \
+           len(var.ALT[0]) == 1:
+           
+            if str(hit[2]) == var.REF and str(var.ALT[0]) in labels[hit[2]]:
+               (cadd_raw, cadd_scaled) = _get_cadd_scores(var, labels, hit)
+            
+            # consider ref cases with ambiguity codes R (G,A) and M (A,C)
+            elif ((str(hit[2]) == 'R'  and var.REF in('G','A')) or \
+                (str(hit[2]) == 'M'  and var.REF in('A','C'))) and \
+                str(var.ALT[0]) in labels[hit[2]]:
+                (cadd_raw, cadd_scaled) = _get_cadd_scores(var, labels, hit)
+    
+    return (cadd_raw, cadd_scaled)
+     
+    
 def get_pfamA_domains(var):
     """
     Returns pfamA domains that a variant overlaps
@@ -431,7 +469,9 @@ def get_clinvar_info(var):
             else:
                 info_map[info] = True
 
-        clinvar.clinvar_dbsource = info_map['CLNSRC'] or None
+        raw_dbsource = info_map['CLNSRC'] or None
+        #interpret 8-bit strings and convert to plain text
+        clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf-8'))
         clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
             clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
@@ -439,12 +479,10 @@ def get_clinvar_info(var):
             clinvar.lookup_clinvar_significance(info_map['CLNSIG'])
         clinvar.clinvar_dsdb = info_map['CLNDSDB'] or None
         clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
-        # Clinvar represents commas as \x2c.  Make them commas.
         # Remap all unicode characters into plain text string replacements
         raw_disease_name = info_map['CLNDBN'] or None
-        #raw_disease_name.decode('string_escape')
-        clinvar.clinvar_disease_name = \
-            unicode(raw_disease_name, errors="replace").encode(errors="replace")
+        clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8'))
+        # Clinvar represents commas as \x2c.  Make them commas.
         clinvar.clinvar_disease_name = clinvar.clinvar_disease_name.decode('string_escape')
 
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
