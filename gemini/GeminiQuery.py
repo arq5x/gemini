@@ -349,6 +349,9 @@ class GeminiQuery(object):
         """
         self.query = self.formatter.format_query(query)
         self.gt_filter = gt_filter
+        if self._is_gt_filter_safe() is False:
+            sys.exit("ERROR: invalid --gt-filter command.")
+
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
         self.needs_genotypes = needs_genotypes
@@ -571,6 +574,35 @@ class GeminiQuery(object):
             # allow us to refer to columns by name
             self.conn.row_factory = sqlite3.Row
             self.c = self.conn.cursor()
+
+    def _is_gt_filter_safe(self):
+        """
+        Test to see if the gt_filter string is potentially malicious.
+        
+        A future improvement would be to use pyparsing to
+        traverse and directly validate the string.
+        """
+        if self.gt_filter is None:
+            return True
+
+        # avoid builtins
+        # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
+        if "__" in self.gt_filter:
+            return False
+
+        # avoid malicious commands
+        evil = [" rm ", "os.system"]
+        if any(s in self.gt_filter for s in evil):
+            return False
+
+        # make sure a "gt" col is in the string
+        valid_cols = ["gts.", "gt_types.", "gt_phases.", "gt_quals.",
+                      "gt_depths.", "gt_ref_depths.", "gt_alt_depths."]
+        if any(s in self.gt_filter for s in valid_cols):
+            return True
+
+        # assume the worst
+        return False
 
     def _execute_query(self):
         try:
