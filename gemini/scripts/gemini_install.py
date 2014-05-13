@@ -58,6 +58,7 @@ def main(args):
     print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
                                                     os.path.basename(test_script))
     print " NOTE: be sure to add %s/bin to your PATH." % args.tooldir
+    print " NOTE: Run the required commands for GERP_BP & CADD scores.\n"
 
     shutil.rmtree(work_dir)
 

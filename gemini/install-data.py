@@ -49,10 +49,9 @@ anno_files = \
 'hg19.cosmic.v67.20131024.gz',
 'detailed_gene_table_v75',
 'summary_gene_table_v75',
-'cancer_gene_census.20140120.tsv',
-'whole_genome_SNVs.tsv.compressed.gz'
+'cancer_gene_census.20140120.tsv'
 ]
-extra_anno_files = {"gerp_bp": "hg19.gerp.bw"}
+extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}
 
 toadd_anno_files = []
 

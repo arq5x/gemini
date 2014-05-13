@@ -157,10 +157,11 @@ to only update data files without updating the source:
     $ gemini update --dataonly
 
 To download optional large files associated with specific analyses in GEMINI,
-like GERP scores per base pair, pass the ``--extra`` flag:
+like GERP scores per base pair and CADD scores, pass the ``--extra`` flag:
 
 .. code-block:: bash
 
+    $ gemini update --dataonly --extra cadd_score
     $ gemini update --dataonly --extra gerp_bp
 
 Software dependencies
@@ -220,6 +221,13 @@ you'd like to install the necessary data files. The recommended path is
 .. code-block:: bash
 
     $ python gemini/install-data.py /usr/local/share/
+
+.. note::
+
+	Annotation files like GERP at base pair resolution and CADD scores are not part of this
+	default installation owing to their large file size. They may however be installed as
+	additional data files using the ``gemini update --dataonly`` option, with the flag
+	``--extra`` for ``gerp_bp`` and ``cadd_score``.
     
 Using previously installed annotation files
 ===============================================================
