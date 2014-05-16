@@ -323,7 +323,13 @@ class GeminiQuery(object):
         self.for_browser = False
         self.include_gt_cols = include_gt_cols
 
+        # try to connect to the provided database
         self._connect_to_database()
+
+        # extract the column names from the sample table.
+        # needed for gt-filter wildcard support.
+        self._collect_sample_table_columns()
+
         # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323
         self.sample_to_idx = util.map_samples_to_indices(self.c)
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
@@ -575,6 +581,13 @@ class GeminiQuery(object):
             self.conn.row_factory = sqlite3.Row
             self.c = self.conn.cursor()
 
+    def _collect_sample_table_columns(self):            
+        """
+        extract the column names in the samples table into a list
+        """
+        self.c.execute('select * from samples limit 1')
+        self.sample_column_names = [tup[0] for tup in self.c.description]
+
     def _is_gt_filter_safe(self):
         """
         Test to see if the gt_filter string is potentially malicious.
@@ -664,8 +677,8 @@ class GeminiQuery(object):
         """
         if raw_col == "*":
             return raw_col.lower()
+        # e.g., "gts.NA12878"
         elif '.' in raw_col:
-            # e.g., "gts.NA12878"
             (column, sample) = raw_col.split('.', 1)
             corrected = column.lower() + "[" + str(self.sample_to_idx[sample]).lower() + "]"
         else:
@@ -675,25 +688,76 @@ class GeminiQuery(object):
 
     def _correct_genotype_filter(self):
         """
-        This converts a "raw" genotype filter supplied by the user
-        to a filter than can be eval()'ed.  Specifically, we must
-        convery a _named_ genotype index to a _numerical_
-        genotype index so that the appropriate value can be
-        extracted for the sample from the genotype numpy arrays.
+        This converts a raw genotype filter that contains 
+        'wildcard' statements into a filter that can be eval()'ed.
+        Specifically, we must convert a _named_ genotype index 
+        to a _numerical_ genotype index so that the appropriate 
+        value can be extracted for the sample from the genotype 
+        numpy arrays.
 
-        For example, converts:
+        For example, without WILDCARDS, this converts:
         --gt-filter "(gt_types.1478PC0011 == 1)"
-        to
+        
+        to:
         (gt_types[11] == 1)
+
+        With WILDCARDS, this converts things like:
+            "gt_types.(phenotype==1).(==HET)"
+
+        to:
+            "gt_types[2] == HET and gt_types[5] == HET"
         """
+        def __get_matching_sample_ids(wildcard):
+            """
+            Helper function to convert a sample wildcard
+            to a list of sample offsets so that the wildcard
+            query can be applied to the gt_* columns.
+            """
+            query = 'SELECT sample_id FROM samples '
+            if wildcard != "*":
+               query += ' WHERE ' + wildcard
+        
+            sample_ids = []
+            self.c.execute(query)
+            for row in self.c:
+                # sample_ids are 1-based but gt_* indices are 0-based
+                sample_ids.append(int(row['sample_id']) - 1)
+            return sample_ids
+
         corrected_gt_filter = []
         tokens = re.split(r'[\s+]+', str(self.gt_filter))
         for token in tokens:
-            if token.find("gt") >= 0 or token.find("GT") >= 0:
+            # NOT a WILDCARD
+            # e.g., "gts.NA12878"
+            if (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and not '.(' in token and not ')self.' in token:
                 corrected = self._correct_genotype_col(token)
                 corrected_gt_filter.append(corrected)
+
+            # IS a WILDCARD
+            # e.g., "gt_types.(affected==1).(==HET)"
+            elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and '.(' in token and ').' in token:
+                # break the wildcard into its pieces. That is:
+                # (COLUMN).(WILDCARD).(WILDCARD_RULE)
+                (column, wildcard, wildcard_rule) = token.split('.')
+
+                # remove the syntactic parentheses
+                wildcard = wildcard.strip('(').strip(')')
+                wildcard_rule = wildcard_rule.strip('(').strip(')')
+                
+                # convert "gt_types.(affected==1).(==HET)"
+                # to, e.g.,: gt_types[3] == HET and gt_types[9] == HET
+                sample_ids = __get_matching_sample_ids(wildcard)
+                for (idx, sample_id) in enumerate(sample_ids):
+                    if idx < len(sample_ids) - 1:
+                        rule = column + '[' + str(sample_id) + '] ' + wildcard_rule + ' and '
+                    else:
+                        rule = column + '[' + str(sample_id) + '] ' + wildcard_rule
+                    corrected_gt_filter.append(rule)
             else:
                 corrected_gt_filter.append(token)
+        
         return " ".join(corrected_gt_filter)
 
 

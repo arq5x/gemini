@@ -228,6 +228,80 @@ Eh, I changed my mind, let's restrict the above to those variants where sample
 
 	 chrom	start	end	ref	alt	gene gts.1094PC0005	gts.1094PC0009	gts.1094PC0012	gts.1094PC0013
 
+===========================================================
+``--gt-filter`` Wildcard filtering on genotype columns.
+===========================================================
+
+Many times, we want to be able to apply the same rule to multiple samples
+without having to enter the rule over and over again for each sample. For example,
+let's imaging there are 100 samples in your study and you only want to report variants
+where every sample has an observed alignment depth of at least 20 reads. Traditionally,
+one would have enter each of the 100 samples from the command line as follows:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
+                       --gt-filter "gt_depths.sample1 >= 20 and \
+                                    gt_depths.sample2 >= 20 and \
+                                    gt_depths.sample3 >= 20 and \
+                                    ...
+                                    gt_depths.sample100 >= 20" \
+                       test.snpEff.vcf.db
+
+Obviously, this is deeply painful. There is now an option to allow wildcards to prevent this.  
+The structure of the wildcard ``--gt-filters`` is ``(COLUMN).(WILDCARD).(WILDCARD_RULE)``. For example,
+using wildcards, the above could be converted to:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
+                       --gt-filter "gt_depths.(*).(>=20)" \
+                       test.snpEff.vcf.db
+
+Obviously, this makes things much simpler.
+
+.. note::
+
+  The WILDCARDS must not contain any whitespace as above
+
+One can also apply wildcards that select samples based on the values in specific 
+columns in the ``samples`` table. For example, let's imagine we wanted to require that variants
+are returned only in cases where the affected individuals in the study (i.e., the ``phenotype`` column
+in the ``samples`` table is equal to ``2``) have non-reference genotypes. We could do the following:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
+                       --gt-filter "gt_types.(phenotype=2).(!=HOM_REF)" \
+                       test.snpEff.vcf.db
+
+.. note::
+
+  The WILDCARD syntax is SQL whereas the WILDCARD_RULE syntax is Python.
+
+Or perhaps we wanted to be more restrictive. We could also enforce that the affected individuals also
+had at least 20 aligned reads at such variant sites:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
+                       --gt-filter "gt_types.(phenotype=2).(!=HOM_REF) and \
+                                    gt_depths.(phenotype=2).(>=20)" \
+                       test.snpEff.vcf.db
+
+
+The system is fairly flexible in that it allows one to wildcard-select samples based on custom columns 
+that have been added to the ``samples`` table based upon a custom PED file.  For example, let's imaging our
+custom PED file had an extra column defining the hair color of each sample. We coukd use that to restrict interesting variants to those where samples with blue hair were heterozygous:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
+                       --gt-filter "gt_types.(hair_color='blue').(==HET)" \
+                       test.snpEff.vcf.db
+
+Hopefully this gives you a sense of what you can do with the "wildcard" genotype filter functionality.
+
 
 =============================================================
 ``--show-samples`` Finding out which samples have a variant
