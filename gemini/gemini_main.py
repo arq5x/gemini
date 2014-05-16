@@ -468,6 +468,10 @@ def main():
             metavar='QUERY_STR',
             default=None,
             help='The query to be issued to the database to summarize')
+    parser_stats.add_argument('--gt-filter',
+            dest='gt_filter',
+            metavar='STRING',
+            help='Restrictions to apply to genotype values')
     parser_stats.set_defaults(func=gemini_stats.stats)
 
     #########################################
