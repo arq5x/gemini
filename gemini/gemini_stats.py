@@ -256,7 +256,7 @@ def get_gtcounts_by_sample(c, args):
 
 def summarize_query_by_sample(args):
     gq = GeminiQuery.GeminiQuery(args.db)
-    gq.run(args.query, show_variant_samples=True)
+    gq.run(args.query, show_variant_samples=True, gt_filter=args.gt_filter)
     total_counts = Counter()
     het_counts = Counter()
     hom_alt_counts = Counter()
