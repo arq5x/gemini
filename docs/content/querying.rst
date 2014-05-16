@@ -300,6 +300,16 @@ custom PED file had an extra column defining the hair color of each sample. We c
                        --gt-filter "gt_types.(hair_color='blue').(==HET)" \
                        test.snpEff.vcf.db
 
+Or possibly, you want to stratify based on sub-population:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
+                       --gt-filter "gt_types.(population='CEU').(==HET) and " \
+                                    gt_types.(population='YRI').(==HOM_ALT)" \
+                       test.snpEff.vcf.db
+
+
 Hopefully this gives you a sense of what you can do with the "wildcard" genotype filter functionality.
 
 
