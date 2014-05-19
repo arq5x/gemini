@@ -1,9 +1,6 @@
 ####################################################################
-# 1. Test CADD scores with "--load_cadd"
+# 1. Test CADD scores (default)
 ####################################################################
-gemini load -v test.cadd.vcf --load-cadd \
-	test.cadd.db > /dev/null
-
 echo "    cadd.t01...\c"
 echo "chrom	start	end	ref	alt	cadd_raw	cadd_scaled
 chr1	30859	30860	G	C	-0.92	0.39
@@ -21,8 +18,10 @@ gemini query -q "select chrom, start, end, ref, alt, cadd_raw, cadd_scaled from 
 check obs exp
 rm obs exp
 ####################################################################
-# 2. Test CADD scores without "--load_cadd"
+# 2. Test CADD scores when not loaded with "--skip_cadd"
 ####################################################################
+gemini load -v test.cadd.vcf --skip-cadd test.no.cadd.db > /dev/null
+
 echo "    cadd.t02...\c"
 echo "chrom	start	end	ref	alt	cadd_raw	cadd_scaled
 chr1	30859	30860	G	C	None	None
