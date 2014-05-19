@@ -19,10 +19,10 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
-    if args.load_cadd is False:
-        sys.stdout.write("CADD SCORES NOT LOADED BY DEFAULT (use:--load-cadd).\n")
-    if args.load_gerp_bp is False:
-        sys.stdout.write("GERP PER BP NOT LOADED BY DEFAULT (use:--load-gerp-bp).\n")
+    if args.skip_cadd is False:
+        sys.stdout.write("CADD is being loaded (to skip use:--skip-cadd).\n")
+    if args.skip_gerp_bp is False:
+        sys.stdout.write("GERP per bp is being loaded (to skip use:--skip-gerp-bp).\n")
     # collect of the the add'l annotation files
     annotations.load_annos()
 
@@ -154,17 +154,17 @@ def load_chunks_multicore(grabix_file, args):
     if args.no_load_genotypes is True:
         no_load_genotypes = "--no-load-genotypes"
 
-    load_gerp_bp = ""
-    if args.load_gerp_bp is True:
-        load_gerp_bp = "--load-gerp-bp"
+    skip_gerp_bp = ""
+    if args.skip_gerp_bp is True:
+        skip_gerp_bp = "--skip-gerp-bp"
 
     skip_gene_tables = ""
     if args.skip_gene_tables is True:
         skip_gene_tables = "--skip-gene-tables"
 
-    load_cadd = ""
-    if args.load_cadd is True:
-        load_cadd = "--load-cadd"
+    skip_cadd = ""
+    if args.skip_cadd is True:
+        skip_cadd = "--skip-cadd"
     
     test_mode = ""
     if args.test_mode is True:
@@ -219,17 +219,17 @@ def load_chunks_ipython(grabix_file, args, view):
     if args.no_load_genotypes is True:
         no_load_genotypes = "--no-load-genotypes"
 
-    load_gerp_bp = ""
-    if args.load_gerp_bp is True:
-        load_gerp_bp = "--load-gerp-bp"
+    skip_gerp_bp = ""
+    if args.skip_gerp_bp is True:
+        skip_gerp_bp = "--skip-gerp-bp"
 
     skip_gene_tables = ""
     if args.skip_gene_tables is True:
         skip_gene_tables = "--skip-gene-tables"
     
-    load_cadd = ""
-    if args.load_cadd is True:
-        load_cadd = "--load-cadd"
+    skip_cadd = ""
+    if args.skip_cadd is True:
+        skip_cadd = "--skip-cadd"
     
     test_mode = ""
     if args.test_mode is True:
@@ -254,9 +254,9 @@ def load_chunks_ipython(grabix_file, args, view):
                  "grabix_file": grabix_file,
                  "no_genotypes": no_genotypes,
                  "no_load_genotypes": no_load_genotypes,
-                 "load_gerp_bp": load_gerp_bp,
+                 "skip_gerp_bp": skip_gerp_bp,
                  "skip_gene_tables": skip_gene_tables,
-                 "load_cadd": load_cadd,
+                 "skip_cadd": skip_cadd,
                  "test_mode": test_mode,
                  "passonly": passonly,
                  "skip_info_string": skip_info_string}
@@ -285,7 +285,7 @@ def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
-                       " {load_gerp_bp} {skip_gene_tables} {load_cadd}"
+                       " {skip_gerp_bp} {skip_gene_tables} {skip_cadd}"
                        " {passonly} {skip_info_string} {test_mode}"
                        " -o {start} {vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
