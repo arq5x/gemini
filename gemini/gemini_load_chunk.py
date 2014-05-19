@@ -261,15 +261,15 @@ class GeminiLoader(object):
         vista_enhancers = annotations.get_vista_enhancers(var)
         cosmic_ids = annotations.get_cosmic_info(var)
         
-        #load CADD scores if asked
-        if self.args.load_cadd is True:
+        #load CADD scores by default
+        if self.args.skip_cadd is False:
             (cadd_raw, cadd_scaled) = annotations.get_cadd_scores(var)
         else:
             (cadd_raw, cadd_scaled) =  (None, None)
         
-        # grab the GERP score for this variant if asked.
+        # load the GERP score for this variant by default.
         gerp_bp = None
-        if self.args.load_gerp_bp is True:
+        if self.args.skip_gerp_bp is False:
             gerp_bp = annotations.get_gerp_bp(var)
 
         # impact is a list of impacts for this variant
