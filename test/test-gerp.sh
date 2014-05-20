@@ -1,7 +1,7 @@
 ###########################################################################################
 #1. Test loading a file without using bp-res GERP scores
 ###########################################################################################
-gemini load -v test1.snpeff.vcf \
+gemini load -v test1.snpeff.vcf --skip-gerp-bp \
 	        nogerp.db > /dev/null
 
 echo "    gerp.t1...\c"
@@ -22,8 +22,7 @@ rm obs exp
 ###########################################################################################
 #2. Test loading a file using bp-res GERP scores
 ###########################################################################################
-gemini load -v test1.snpeff.vcf --load-gerp-bp \
-	        gerp.db > /dev/null
+gemini load -v test1.snpeff.vcf gerp.db > /dev/null
 
 echo "    gerp.t2...\c"
 echo "chr1	30859	30860	G	C	0.0	None

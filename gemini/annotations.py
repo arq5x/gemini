@@ -385,7 +385,7 @@ def get_cadd_scores(var):
     variants. Implemented only for SNV's
     """
     if "cadd_score" not in annos:
-        raise IOError("Need to download the CADD file with scores for deleteriousness."
+        raise IOError("Need to download the CADD data file for deleteriousness."
                       "Run `gemini update --dataonly --extra cadd_score")
 
     cadd_raw = cadd_scaled = None
