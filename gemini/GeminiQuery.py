@@ -610,7 +610,9 @@ class GeminiQuery(object):
 
         # make sure a "gt" col is in the string
         valid_cols = ["gts.", "gt_types.", "gt_phases.", "gt_quals.",
-                      "gt_depths.", "gt_ref_depths.", "gt_alt_depths."]
+                      "gt_depths.", "gt_ref_depths.", "gt_alt_depths.",
+                      "(gts).", "(gt_types).", "(gt_phases).", "(gt_quals).",
+                      "(gt_depths).", "(gt_ref_depths).", "(gt_alt_depths)."]
         if any(s in self.gt_filter for s in valid_cols):
             return True
 
@@ -702,7 +704,7 @@ class GeminiQuery(object):
         (gt_types[11] == 1)
 
         With WILDCARDS, this converts things like:
-            "gt_types.(phenotype==1).(==HET)"
+            "(gt_types).(phenotype==1).(==HET)"
 
         to:
             "gt_types[2] == HET and gt_types[5] == HET"
@@ -725,15 +727,25 @@ class GeminiQuery(object):
             return sample_ids
 
         corrected_gt_filter = []
-        tokens = re.split(r'[\s+]+', str(self.gt_filter))
-        for token in tokens:
+
+        # first try to identify wildcard rules.
+        wildcard_tokens = re.split(r'(\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
+        for token in wildcard_tokens:
             # NOT a WILDCARD
-            # e.g., "gts.NA12878"
+            # We must then split on whitespace and
+            # correct the gt_* columns:
+            # e.g., "gts.NA12878" or "and gt_types.M10500 == HET"
             if (token.find("gt") >= 0 or token.find("GT") >= 0) \
                 and not '.(' in token and not ')self.' in token:
-                corrected = self._correct_genotype_col(token)
-                corrected_gt_filter.append(corrected)
-
+                tokens = re.split(r'[\s+]+', str(token))
+                for t in tokens:
+                    if len(t) == 0:
+                        continue
+                    if (t.find("gt") >= 0 or t.find("GT") >= 0):
+                        corrected = self._correct_genotype_col(t)
+                        corrected_gt_filter.append(corrected)
+                    else:
+                        corrected_gt_filter.append(t)
             # IS a WILDCARD
             # e.g., "gt_types.(affected==1).(==HET)"
             elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
