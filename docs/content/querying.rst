@@ -255,14 +255,11 @@ using wildcards, the above could be converted to:
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "gt_depths.(*).(>=20)" \
+                       --gt-filter "(gt_depths).(*).(>=20)" \
                        test.snpEff.vcf.db
 
 Obviously, this makes things much simpler.
 
-.. note::
-
-  The WILDCARDS must not contain any whitespace as above
 
 One can also apply wildcards that select samples based on the values in specific 
 columns in the ``samples`` table. For example, let's imagine we wanted to require that variants
@@ -272,12 +269,9 @@ in the ``samples`` table is equal to ``2``) have non-reference genotypes. We cou
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "gt_types.(phenotype=2).(!=HOM_REF)" \
+                       --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF)" \
                        test.snpEff.vcf.db
 
-.. note::
-
-  The WILDCARD syntax is SQL whereas the WILDCARD_RULE syntax is Python.
 
 Or perhaps we wanted to be more restrictive. We could also enforce that the affected individuals also
 had at least 20 aligned reads at such variant sites:
@@ -285,8 +279,8 @@ had at least 20 aligned reads at such variant sites:
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "gt_types.(phenotype=2).(!=HOM_REF) and \
-                                    gt_depths.(phenotype=2).(>=20)" \
+                       --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF) and \
+                                    (gt_depths).(phenotype==2).(>=20)" \
                        test.snpEff.vcf.db
 
 
@@ -297,7 +291,7 @@ custom PED file had an extra column defining the hair color of each sample. We c
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "gt_types.(hair_color='blue').(==HET)" \
+                       --gt-filter "(gt_types).(hair_color='blue').(==HET)" \
                        test.snpEff.vcf.db
 
 Or possibly, you want to stratify based on sub-population:
@@ -305,10 +299,28 @@ Or possibly, you want to stratify based on sub-population:
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "gt_types.(population='CEU').(==HET) and " \
-                                    gt_types.(population='YRI').(==HOM_ALT)" \
+                       --gt-filter "(gt_types).(population='CEU').(==HET) and " \
+                                    (gt_types).(population='YRI').(==HOM_ALT)" \
                        test.snpEff.vcf.db
 
+
+One can also base the wildcard on multiple criteria (in this case, brown hair and affected):
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
+                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET)" \
+                       test.snpEff.vcf.db
+
+Lastly, wildcards can, of course, be combined with non-wildcard criteria:
+
+.. code-block:: bash
+
+  $ gemini query -q "select chrom, start, end, gene from variants" \
+                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET) \
+                                     and \
+                                    gt_types.M128215 == HOM_REF" \
+                      test.snpEff.vcf.db
 
 Hopefully this gives you a sense of what you can do with the "wildcard" genotype filter functionality.
 
