@@ -518,6 +518,13 @@ def get_dbsnp_info(var):
 def get_esp_info(var):
     """
     Returns a suite of annotations from the ESP project
+
+    ESP reports the minor allele frequency (MAF), not the
+    alternate allele frequency (AAF). We must therefore figure
+    out whther the reference or alternate allele is the minor allele.
+
+    1       69496   rs150690004     G       A       .       PASS    DBSNP=dbSNP_134;EA_AC=2,6764;AA_AC=23,3785;TAC=25,10549;MAF=0.0296,0.604,0.2364;GTS=AA,AG,GG;EA_GTC=0,2,3381;AA_GTC=5,13,1886;GTC=5,15,5267;DP=91;GL=OR4F5;CP=0.5;CG=2.3;AA=G;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;GM=NM_001005484.1;FG=missense;AAC=SER/GLY;PP=136/306;CDP=406;GS=56;PH=benign
+    1       69511   rs75062661      A       G       .       PASS    DBSNP=dbSNP_131;EA_AC=5337,677;AA_AC=1937,1623;TAC=7274,2300;MAF=11.2571,45.5899,24.0234;GTS=GG,GA,AA;EA_GTC=2430,477,100;AA_GTC=784,369,627;GTC=3214,846,727;DP=69;GL=OR4F5;CP=1.0;CG=1.1;AA=G;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;GM=NM_001005484.1;FG=missense;AAC=ALA/THR;PP=141/306;CDP=421;GS=58;PH=benign
     """
     aaf_EA = aaf_AA = aaf_ALL = None
     maf = fetched = con = []
@@ -539,14 +546,20 @@ def get_esp_info(var):
                     # SA=http://www.ncbi.nlm.nih.gov/sites/varvu?gene=4524&amp%3Brs=1801131|http://omim.org/entry/607093#0004
                         (key, value) = info.split("=", 1)
                         info_map[key] = value
-                # get the % minor allele frequencies
-                if info_map.get('MAF') is not None:
-                    lines = info_map['MAF'].split(",")
-                    # divide by 100 because ESP reports allele
-                    # frequencies as percentages.
-                    aaf_EA = float(lines[0]) / 100.0
-                    aaf_AA = float(lines[1]) / 100.0
-                    aaf_ALL = float(lines[2]) / 100.0
+
+                # get the allele counts so that we can compute alternate allele frequencies
+                # example: EA_AC=2,6764;AA_AC=23,3785;TAC=25,10549
+                if info_map.get('EA_AC') is not None:
+                    lines = info_map['EA_AC'].split(",")
+                    aaf_EA = float(lines[0]) / (float(lines[0]) + float(lines[1]))
+
+                if info_map.get('AA_AC') is not None:
+                    lines = info_map['AA_AC'].split(",")
+                    aaf_AA = float(lines[0]) / (float(lines[0]) + float(lines[1]))
+
+                if info_map.get('TAC') is not None:
+                    lines = info_map['TAC'].split(",")
+                    aaf_ALL = float(lines[0]) / (float(lines[0]) + float(lines[1]))
 
                 # Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
@@ -555,6 +568,7 @@ def get_esp_info(var):
                 elif info_map.get('EXOME_CHIP') is not None and \
                         info_map['EXOME_CHIP'] == "yes":
                     exome_chip = 1
+
     return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)
 
 
