@@ -2,6 +2,10 @@
 Release History
 #############################
 
+0.7.1 (in progress)
+=======================================
+
+
 0.7.0
 =======================================
 1. Added support for CADD scores via new `cadd_raw` and `cadd_scaled` columns.
