@@ -21,6 +21,8 @@ Release History
 11. Added support for the MPI Mouse Phenotype database via the `mam_phenotype_id` column in the `gene_summary` table.
 12. Enhanced security.
 13. Corrected the ESP allele frequencies to be based report _alternate_ allele frequency instead of _minor_ allele frequency.
+14. VEP version support updated (73-75) Support for aa length and bio type in VEP. 
+15. The `lof_sieve` tool support has been extended to VEP annotations.
 
 
 0.6.6
