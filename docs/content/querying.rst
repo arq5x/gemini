@@ -152,8 +152,13 @@ Obviously, this can become tedious when a project involves hundreds or thousands
 --- if you wanted to see genotype information for the 345 of 1145 affected samples in your study,
 you would have to type each and every column.sample name out. Brutal.
 
-To get around this, one can bulk-select sample genotype information using "wildcards". For example,
-a shortcut to reporting the genotype for *all* samples (in this case 4) in the study, one could do the following. Note that the column and the wildcard must each be surrounded with parentheses and separated by a period. The "*" is a shortcut (wildcard) meaning "all samples".
+To get around this, one can bulk-select sample genotype information using "wildcards". The column and the wildcard must each be surrounded with parentheses and separated by a period. The "*" is a shortcut (wildcard) meaning "all samples".
+
+.. note::
+
+  The syntax for SELECTing genotype columns using a wildcard is ``(COLUMN).(WILDCARD)``.
+
+For example, a shortcut to reporting the genotype for *all* samples (in this case 4) in the study, one could do the following:
 
 .. code-block:: bash
 
@@ -317,6 +322,12 @@ using wildcards, the above could be converted to:
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
                        --gt-filter "(gt_depths).(*).(>=20)" \
                        test.snpEff.vcf.db
+
+
+.. note::
+
+  The syntax of the wildcard ``--gt-filters`` is ``(COLUMN).(WILDCARD).(WILDCARD_RULE)``.
+
 
 Obviously, this makes things much simpler.
 
