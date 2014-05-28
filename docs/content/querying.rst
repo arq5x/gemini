@@ -143,6 +143,66 @@ sample so that we can assess the confidence in the genotype:
 	chr1	69760	69761	A	T	OR4F5	A/A	1
 	chr1	69870	69871	G	A	OR4F5	./.	-1
 
+===========================================================
+Selecting sample genotypes based on "wildcards".
+===========================================================
+The above examples demonstrate how one can select individual sample genotype
+information by explicitly listing each column and sample that one wishes to see.
+Obviously, this can become tedious when a project involves hundreds or thousands of samples 
+--- if you wanted to see genotype information for the 345 of 1145 affected samples in your study,
+you would have to type each and every column.sample name out. Brutal.
+
+To get around this, one can bulk-select sample genotype information using "wildcards". For example,
+a shortcut to reporting the genotype for *all* samples (in this case 4) in the study, one could do the following. Note that the column and the wildcard must each be surrounded with parentheses and separated by a period. The "*" is a shortcut (wildcard) meaning "all samples".
+
+.. code-block:: bash
+
+  $ gemini query --header -q "select chrom, start, end, ref, alt, gene, (gts).(*) \
+                              from variants" extended_ped.db
+  chrom start end ref alt gene  gts.M10475  gts.M10478  gts.M10500  gts.M128215
+  chr10 1142207 1142208 T C WDR37 C/C C/C C/C C/C
+  chr10 48003991  48003992  C T ASAH2C  T/T C/T C/T C/C
+  chr10 52004314  52004315  T C ASAH2 ./. ./. C/C C/C
+  chr10 52497528  52497529  G C ASAH2B  ./. C/C C/C ./.
+  chr10 126678091 126678092 G A CTBP2 G/G G/G G/G G/A
+  chr10 135210790 135210791 T C MTG1.1  T/T C/C C/C T/T
+  chr10 135336655 135336656 G A SPRN  ./. A/A ./. A/A
+  chr10 135369531 135369532 T C SYCE1 T/T T/C T/C T/T
+  chr16 72057434  72057435  C T DHODH C/T C/C C/C C/C
+
+To report the genotypes for solely those samples that are affected (phenotype == 2) with the phenotype in question, one could do the following:
+
+.. code-block:: bash
+
+  $ gemini query --header -q "select chrom, start, end, ref, alt, gene, (gts).(phenotype==2) \
+                              from variants" extended_ped.db
+  chrom start end ref alt gene  gts.M10478  gts.M10500
+  chr10 1142207 1142208 T C WDR37 C/C C/C
+  chr10 48003991  48003992  C T ASAH2C  C/T C/T
+  chr10 52004314  52004315  T C ASAH2 ./. C/C
+  chr10 52497528  52497529  G C ASAH2B  C/C C/C
+  chr10 126678091 126678092 G A CTBP2 G/G G/G
+  chr10 135210790 135210791 T C MTG1.1  C/C C/C
+  chr10 135336655 135336656 G A SPRN  A/A ./.
+  chr10 135369531 135369532 T C SYCE1 T/C T/C
+  chr16 72057434  72057435  C T DHODH C/C C/C
+
+One can add multiple wildcard criteria as well:
+
+.. code-block:: bash
+
+  $ gemini query --header -q "select chrom, start, end, ref, alt, gene, (gts).(phenotype==1 and hair_color=='blue') \
+                              from variants" extended_ped.db
+  chrom start end ref alt gene  gts.M128215
+  chr10 1142207 1142208 T C WDR37 C/C
+  chr10 48003991  48003992  C T ASAH2C  C/C
+  chr10 52004314  52004315  T C ASAH2 C/C
+  chr10 52497528  52497529  G C ASAH2B  ./.
+  chr10 126678091 126678092 G A CTBP2 G/A
+  chr10 135210790 135210791 T C MTG1.1  T/T
+  chr10 135336655 135336656 G A SPRN  A/A
+  chr10 135369531 135369532 T C SYCE1 T/T
+  chr16 72057434  72057435  C T DHODH C/C
 
 ===========================================================
 ``--gt-filter`` Filtering on genotypes
