@@ -776,8 +776,6 @@ could then be looked up in the database.
 	$ gemini query -q "select variant_id, chrom, start, end, impact \
 	                   from variants where \
 	                   gene='DCLRE1C'" test.query.db
-	
-===================================================================
  
 
 
