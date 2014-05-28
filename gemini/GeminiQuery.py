@@ -371,6 +371,7 @@ class GeminiQuery(object):
         self.query = self.query.replace(',', ', ')
         self.query_pieces = self.query.split()
         if not any(s.startswith("gt") for s in self.query_pieces) and \
+           not any(s.startswith("(gt") for s in self.query_pieces) and \
            not any(".gt" in s for s in self.query_pieces):
             if self.gt_filter is None:
                 self.query_type = "no-genotypes"
@@ -688,6 +689,24 @@ class GeminiQuery(object):
             corrected = raw_col
         return corrected
 
+    def _get_matching_sample_ids(self, wildcard):
+        """
+        Helper function to convert a sample wildcard
+        to a list of tuples reflecting the sample indices 
+        and sample names so that the wildcard
+        query can be applied to the gt_* columns.
+        """
+        query = 'SELECT sample_id, name FROM samples '
+        if wildcard != "*":
+           query += ' WHERE ' + wildcard
+    
+        sample_info = [] # list of sample_id/name tuples
+        self.c.execute(query)
+        for row in self.c:
+            # sample_ids are 1-based but gt_* indices are 0-based
+            sample_info.append((int(row['sample_id']) - 1, str(row['name'])))
+        return sample_info
+
     def _correct_genotype_filter(self):
         """
         This converts a raw genotype filter that contains 
@@ -709,23 +728,6 @@ class GeminiQuery(object):
         to:
             "gt_types[2] == HET and gt_types[5] == HET"
         """
-        def __get_matching_sample_ids(wildcard):
-            """
-            Helper function to convert a sample wildcard
-            to a list of sample offsets so that the wildcard
-            query can be applied to the gt_* columns.
-            """
-            query = 'SELECT sample_id FROM samples '
-            if wildcard != "*":
-               query += ' WHERE ' + wildcard
-        
-            sample_ids = []
-            self.c.execute(query)
-            for row in self.c:
-                # sample_ids are 1-based but gt_* indices are 0-based
-                sample_ids.append(int(row['sample_id']) - 1)
-            return sample_ids
-
         corrected_gt_filter = []
 
         # first try to identify wildcard rules.
@@ -755,21 +757,23 @@ class GeminiQuery(object):
                 (column, wildcard, wildcard_rule) = token.split('.')
 
                 # remove the syntactic parentheses
+                column = column.strip('(').strip(')')
                 wildcard = wildcard.strip('(').strip(')')
                 wildcard_rule = wildcard_rule.strip('(').strip(')')
                 
                 # convert "gt_types.(affected==1).(==HET)"
                 # to, e.g.,: gt_types[3] == HET and gt_types[9] == HET
-                sample_ids = __get_matching_sample_ids(wildcard)
-                for (idx, sample_id) in enumerate(sample_ids):
-                    if idx < len(sample_ids) - 1:
-                        rule = column + '[' + str(sample_id) + '] ' + wildcard_rule + ' and '
+                sample_info = self._get_matching_sample_ids(wildcard)
+                for (idx, sample) in enumerate(sample_info):
+                    if idx < len(sample_info) - 1:
+                        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule + ' and '
                     else:
-                        rule = column + '[' + str(sample_id) + '] ' + wildcard_rule
+                        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule
                     corrected_gt_filter.append(rule)
             else:
-                corrected_gt_filter.append(token)
-        
+                if len(token) > 0:
+                    corrected_gt_filter.append(token)
+
         return " ".join(corrected_gt_filter)
 
 
@@ -798,7 +802,9 @@ class GeminiQuery(object):
             if not token.startswith("gt") and \
                not token.startswith("GT") and \
                not ".gt" in token and \
-               not ".GT" in token:
+               not ".GT" in token and \
+               not token.startswith("(gt") and \
+               not token.startswith("(GT"):
                 select_clause_list.append(token)
 
         # reconstruct the query with the GT* columns added
@@ -865,19 +871,57 @@ class GeminiQuery(object):
         (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
         for token in select_tokens:
-            if not token.startswith("GT") and not token.startswith("gt"):
-                self.select_columns.append(token)
-                self.all_columns_new.append(token)
-                self.all_columns_orig.append(token)
-            else:
+            
+            # it is a WILDCARD
+            if (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and '.(' in token and ').' in token:
+                # break the wildcard into its pieces. That is:
+                # (COLUMN).(WILDCARD)
+                (column, wildcard) = token.split('.')
+
+                # remove the syntactic parentheses
+                wildcard = wildcard.strip('(').strip(')')
+                column = column.strip('(').strip(')')
+
+                # convert "gt_types.(affected==1)"
+                # to: gt_types[3] == HET and gt_types[9] == HET
+                sample_info = self._get_matching_sample_ids(wildcard)
+                
+                # maintain a list of the sample indices that should
+                # be displayed as a result of the SELECT'ed wildcard
+                wildcard_indices = []
+                for (idx, sample) in enumerate(sample_info):
+                    wildcard_display_col = column + '.' + str(sample[1])
+                    wildcard_mask_col = column + '[' + str(sample[0]) + ']'
+                    wildcard_indices.append(sample[0])
+
+                    new_col = wildcard_mask_col
+                    self.all_columns_new.append(new_col)
+                    self.all_columns_orig.append(wildcard_display_col)
+                    self.gt_name_to_idx_map[wildcard_display_col] = wildcard_mask_col
+                    self.gt_idx_to_name_map[wildcard_mask_col] = wildcard_display_col
+
+            # it is a basic genotype column
+            elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and '.(' not in token and not ').' in token:
                 new_col = self._correct_genotype_col(token)
+
                 self.all_columns_new.append(new_col)
                 self.all_columns_orig.append(token)
                 self.gt_name_to_idx_map[token] = new_col
                 self.gt_idx_to_name_map[new_col] = token
-    
+
+            # it is neither
+            else:
+                self.select_columns.append(token)
+                self.all_columns_new.append(token)
+                self.all_columns_orig.append(token)
+
     def _info_dict_to_string(self, info):
-        "Flatten the VCF info-field OrderedDict into a string, including all arrays for allelic-level info"
+        """
+        Flatten the VCF info-field OrderedDict into a string, 
+        including all arrays for allelic-level info.
+        """
         if info is not None:
             return ';'.join(['%s=%s' % (key, value) if not isinstance(value, list) \
                              else '%s=%s' % (key, ','.join([str(v) for v in value])) \
@@ -893,6 +937,7 @@ class GeminiQuery(object):
         tokens = self._tokenize_query()
         requested_genotype = "variants" in tokens and \
                             (any([x.startswith("gt") for x in tokens]) or \
+                             any([x.startswith("(gt") for x in tokens]) or \
                              any(".gt" in x for x in tokens))   
         return requested_genotype or \
                self.include_gt_cols or \

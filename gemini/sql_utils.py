@@ -24,7 +24,7 @@ def get_select_cols_and_rest(query):
     raw_select_clause = select_pattern.sub('', raw_select_clause)
 
     # now create and iterate through a list of of the SELECT'ed columns
-    selected_columns = raw_select_clause.replace(' ', '').split(',')
+    selected_columns = raw_select_clause.split(',')
     selected_columns = [c.strip() for c in selected_columns]
 
     return selected_columns, rest_of_query

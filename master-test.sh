@@ -94,6 +94,9 @@ bash test-auto-rec.sh
 # Test denovo tool
 bash test-de-novo.sh
 
+# Test wildcards
+bash test-wildcards.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot
