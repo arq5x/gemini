@@ -2,7 +2,11 @@
 Release History
 #############################
 
-0.6.5a (in progress)
+0.7.0 (in progress)
+=======================================
+1. Added COSMIC mutation information via new cosmic_ids column.
+
+0.6.6
 =======================================
 1. Added COSMIC mutation information via new cosmic_ids column.
 
