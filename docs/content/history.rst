@@ -8,21 +8,22 @@ Release History
 
 0.7.0
 =======================================
-1. Added support for CADD scores via new `cadd_raw` and `cadd_scaled` columns.
-2. Added support for genotype wildcards in query select statements. E.g., "select chrom, start, end (gts).(phenotype==2)". See http://gemini.readthedocs.org/en/latest/content/querying.html#selecting-sample-genotypes-based-on-wildcards.
-3. Added support for genotype wildcards in the --gt-filter. E.g., "--gt-filter "(gt_types).(phenotype==2).(==HET)"". See http://gemini.readthedocs.org/en/latest/content/querying.html#gt-filter-wildcard-filtering-on-genotype-columns.
+1. Added support for CADD scores via new ``cadd_raw`` and ``cadd_scaled`` columns.
+2. Added support for genotype wildcards in query select statements. E.g., ``SELECT chrom, start, end (gts).(phenotype==2) FROM variants``. See http://gemini.readthedocs.org/en/latest/content/querying.html#selecting-sample-genotypes-based-on-wildcards.
+3. Added support for genotype wildcards in the --gt-filter. E.g., ``--gt-filter "(gt_types).(phenotype==2).(==HET)``. See http://gemini.readthedocs.org/en/latest/content/querying.html#gt-filter-wildcard-filtering-on-genotype-columns.
 4. Added support for the VCF INFO field both in the API and as a column that can be SELECT'ed.
 5. Upgraded to the latest version of ClinVar.
 6. Standardized impacts to use Sequence Ontology (SO) terms.
 7. Automatically add indexes to custom, user-supplied annotation columns.
 8. Improvements to the installation script.
 9. Fixed bugs in the handling of ClinVar UTF8 encoded strings.
-10. Upgraded the `gene_summary` and `gene_detailed` tables to version 75 of Ensembl.
-11. Added support for the MPI Mouse Phenotype database via the `mam_phenotype_id` column in the `gene_summary` table.
+10. Upgraded the ``gene_summary`` and ``gene_detailed`` tables to version 75 of Ensembl.
+11. Added support for the MPI Mouse Phenotype database via the ``mam_phenotype_id`` column in the ``gene_summary`` table.
 12. Enhanced security.
 13. Corrected the ESP allele frequencies to be based report _alternate_ allele frequency instead of _minor_ allele frequency.
 14. VEP version support updated (73-75) Support for aa length and bio type in VEP. 
 15. The `lof_sieve` tool support has been extended to VEP annotations.
+16. Added the ``ccds_id`` and ``entrez_id`` columns to the ``gene_detailed`` table.
 
 
 0.6.6
