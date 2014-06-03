@@ -499,6 +499,10 @@ class GeminiQuery(object):
                             for x in variant_samples])))
 
                 # skip the record if it does not meet the user's genotype filter
+                #self.gt_filter = "(gt_types[i]==1 for i in [0,1,2])"
+                print gt_types, self.sample_info, all(gt_types[sample[0]]==HET for sample in self.sample_info)
+                print self.gt_filter
+                print eval(self.gt_filter, locals())
                 if self.gt_filter and not eval(self.gt_filter):
                     continue
 
@@ -728,10 +732,14 @@ class GeminiQuery(object):
         to:
             "gt_types[2] == HET and gt_types[5] == HET"
         """
+        #def _validate_genotype_op(op):
+
+
+
         corrected_gt_filter = []
 
         # first try to identify wildcard rules.
-        wildcard_tokens = re.split(r'(\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
+        wildcard_tokens = re.split(r'(\(.+?\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
         for token in wildcard_tokens:
             # NOT a WILDCARD
             # We must then split on whitespace and
@@ -753,23 +761,29 @@ class GeminiQuery(object):
             elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
                 and '.(' in token and ').' in token:
                 # break the wildcard into its pieces. That is:
-                # (COLUMN).(WILDCARD).(WILDCARD_RULE)
-                (column, wildcard, wildcard_rule) = token.split('.')
+                # (COLUMN).(WILDCARD).(WILDCARD_RULE).(WILDCARD_OP)
+                # e.g, (gts).(phenotype==2).(==HET).(any)
+                (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
 
                 # remove the syntactic parentheses
                 column = column.strip('(').strip(')')
                 wildcard = wildcard.strip('(').strip(')')
                 wildcard_rule = wildcard_rule.strip('(').strip(')')
-                
+                wildcard_op = wildcard_op.strip('(').strip(')')
+
                 # convert "gt_types.(affected==1).(==HET)"
                 # to, e.g.,: gt_types[3] == HET and gt_types[9] == HET
-                sample_info = self._get_matching_sample_ids(wildcard)
-                for (idx, sample) in enumerate(sample_info):
-                    if idx < len(sample_info) - 1:
-                        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule + ' and '
-                    else:
-                        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule
-                    corrected_gt_filter.append(rule)
+                self.sample_info = self._get_matching_sample_ids(wildcard)
+
+                # [gts[i] == 1 for i in idx]
+                rule = "all(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info)"
+
+                #for (idx, sample) in enumerate(sample_info):
+                #    if idx < len(sample_info) - 1:
+                #        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule + ' and '
+                #    else:
+                #        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule
+                corrected_gt_filter.append(rule)
             else:
                 if len(token) > 0:
                     corrected_gt_filter.append(token)
