@@ -2,7 +2,7 @@
 #1. Test loading an unannotated file without genotypes
 ###########################################################################################
 gemini load -v ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.snippet.vcf \
-	        --no-genotypes 1000G.snippet.db > /dev/null
+	        --skip-gerp-bp --skip-cadd --no-genotypes 1000G.snippet.db
 
 echo "    load.t1...\c"
 echo "chr1	10582	G	A	None
@@ -26,8 +26,8 @@ rm obs exp
 #2. Test loading an annotated file without genotypes
 ###########################################################################################
 gemini load -v ALL.wgs.phase1_release_v3.20101123.snps_indels_sv.sites.snippet.snpEff.vcf \
-    --no-genotypes \
-    -t snpEff 1000G.snippet.snpEff.db > /dev/null
+    --skip-gerp-bp --skip-cadd --no-genotypes \
+    -t snpEff 1000G.snippet.snpEff.db
 
 echo "    load.t2...\c"
 echo "chr1	10582	G	A	WASH7P
@@ -49,8 +49,8 @@ rm obs exp
 ###########################################################################################
 #3. Test loading an extended ped file
 ###########################################################################################
-gemini load -p test_extended_ped.ped -v test4.vep.snpeff.vcf -t snpEff \
-	  extended_ped_test.db > /dev/null
+gemini load -p test_extended_ped.ped -v test4.vep.snpeff.vcf \
+--skip-gerp-bp --skip-cadd -t snpEff extended_ped_test.db
 
 echo "    load.t3...\c"
 echo "sample_id	family_id	name	paternal_id	maternal_id	sex	phenotype	ethnicity	hair_color
@@ -65,7 +65,9 @@ rm obs exp
 ###########################################################################################
 #4. Test --passonly on loading
 ###########################################################################################
-gemini load  --passonly -v test.passonly.vcf -t snpEff passonly.db > /dev/null
+gemini load  --passonly -v test.passonly.vcf --skip-gerp-bp --skip-cadd -t snpEff \
+passonly.db
+
 echo "    load.t4...\c"
 echo "chr1	1334051	CTAGAG	C" > exp
 gemini query -q "select chrom, start, ref, alt from variants" passonly.db > obs
