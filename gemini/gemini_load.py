@@ -19,10 +19,26 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
+
+    annos = annotations.get_anno_files()
+    # force skipping CADD and GERP if the data files have not been installed
     if args.skip_cadd is False:
-        sys.stdout.write("CADD is being loaded (to skip use:--skip-cadd).\n")
+        if 'cadd_score' not in annos:
+            sys.stderr.write("\nCADD scores are not being loaded because the"
+            " annotation file could not be found.\n"
+            "`Run gemini update --dataonly --extra cadd_score`"
+            " to install the annotation file.\n\n")
+            args.skip_cadd = True
+        else:
+            sys.stderr.write("CADD scores are being loaded (to skip use:--skip-cadd).\n")
     if args.skip_gerp_bp is False:
-        sys.stdout.write("GERP per bp is being loaded (to skip use:--skip-gerp-bp).\n")
+        if 'gerp_bp' not in annos:
+            sys.stderr.write("\nGERP per bp is not being loaded because the annotation file"
+                        " could not be found.\n    Run `gemini update --dataonly --extra gerp_bp`"
+                        " to install the annotation file.\n\n")
+            args.skip_gerp_bp = True
+        else:
+            sys.stderr.write("GERP per bp is being loaded (to skip use:--skip-gerp-bp).\n")
     # collect of the the add'l annotation files
     annotations.load_annos()
 
