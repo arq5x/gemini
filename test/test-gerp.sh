@@ -23,7 +23,7 @@ gemini load -v test1.snpeff.vcf --skip-cadd gerp.db > /dev/null 2>&1
 path=`gemini_python ../gemini/anno_info.py`
 file="hg19.gerp.bw"
 
-if [[ -n $(find $path -name "$file" -maxdepth 1) ]]; then
+if [[ -n $(find $path -maxdepth 1 -name "$file") ]]; then
 
 echo "    gerp.t2...\c"
 echo "chr1	30859	30860	G	C	0.0	None
