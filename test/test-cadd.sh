@@ -6,7 +6,7 @@ gemini load -v test.cadd.vcf --skip-gerp-bp test.cadd.db > /dev/null 2>&1
 path=`gemini_python ../gemini/anno_info.py`
 file="whole_genome_SNVs.tsv.compressed.gz"
 
-if [[ -n $(find $path -name "$file" -maxdepth 1) ]]; then
+if [[ -n $(find $path -maxdepth 1 -name "$file") ]]; then
 
 echo "    cadd.t01...\c"
 echo "chrom	start	end	ref	alt	cadd_raw	cadd_scaled
