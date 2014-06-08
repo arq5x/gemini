@@ -3,7 +3,7 @@ import snpEff
 import vep
 
 
-def interpret_impact(args, var):
+def interpret_impact(args, var, effect_fields):
     """
     Interpret the report from SnpEff or VEP to determine the impact of the variant.
 
@@ -53,7 +53,6 @@ def interpret_impact(args, var):
                                                     impact_detail,
                                                     counter,
                                                     args.maj_version)
-                                                    
                 impact_all.append(impact_details)
 
     elif args.anno_type == "VEP":
@@ -65,7 +64,6 @@ def interpret_impact(args, var):
                              Variant impact will be set to unknown\n")
 
         for effect_string in effect_strings:
-
              # nc_transcript_variant&intron_variant|||ENSG00000243485|MIR1302-11|ENST00000
             each_string = effect_string.split("|")
             if "&" in each_string[0]:
@@ -77,10 +75,11 @@ def interpret_impact(args, var):
                     try:
                         impact_info = vep.effect_map[impact_string]
                         impact_details = vep.EffectDetails(
-                            impact_string, impact_info.priority, effect_string, counter)
+                            impact_string, impact_info.priority, effect_string, counter,
+                            effect_fields)
                     except KeyError:
                         impact_details = vep.EffectDetails(
-                            impact_string, None, effect_string, counter)
+                            impact_string, None, effect_string, counter, effect_fields)
                     impact_all.append(impact_details)
             # we expect VEP to produce a valid impact label for each_string[0]
             elif "&" not in each_string[0]:
@@ -89,10 +88,10 @@ def interpret_impact(args, var):
                 impact_info = vep.effect_map.get(impact_string)
                 try:
                     impact_details = vep.EffectDetails(
-                        impact_string, impact_info.priority, effect_string, counter)
+                        impact_string, impact_info.priority, effect_string, counter, effect_fields)
                 except AttributeError:
                     impact_details = vep.EffectDetails(
-                        impact_string, None, effect_string, counter)
+                        impact_string, None, effect_string, counter, effect_fields)
                 impact_all.append(impact_details)
     else:
         # should not get here, as the valid -t options should be handled

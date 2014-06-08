@@ -3,7 +3,7 @@ import snpEff
 import vep
 
 
-def interpret_severe_impact(args, var):
+def interpret_severe_impact(args, var, effect_fields):
     """
     Interpret the report from SnpEff or VEP to determine the impact of the variant.
 
@@ -99,7 +99,7 @@ def interpret_severe_impact(args, var):
                         # transcript is encountered
                         if impact_info.priority_code <= max_severity:
                             impact_details = vep.EffectDetails(
-                                impact_string, impact_info.priority, effect_string, counter)
+                                impact_string, impact_info.priority, effect_string, counter, effect_fields)
                             impact_all.append(impact_details)
                             max_severity = impact_info.priority_code  # store the current "winning" severity for the next iteration.
                             top_severity =  impact_info.priority
@@ -115,7 +115,7 @@ def interpret_severe_impact(args, var):
                     pass
                 elif impact_info.priority_code <= max_severity:
                     impact_details = vep.EffectDetails(
-                        impact_string, impact_info.priority, effect_string, counter)
+                        impact_string, impact_info.priority, effect_string, counter, effect_fields)
                     impact_all.append(impact_details)
                     max_severity = impact_info.priority_code  # initialize the max_severity to the former value of priority code
                     top_severity =  impact_info.priority

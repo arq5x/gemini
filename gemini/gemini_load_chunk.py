@@ -55,10 +55,9 @@ class GeminiLoader(object):
         self._get_gene_summary()
 
         if self.args.anno_type == "VEP":
-            if not self._is_proper_vep_input():
-                error = "\nERROR: Check gemini docs for the recommended VCF annotation with VEP"\
-                        "\nhttp://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-vep"
-                sys.exit(error)
+            self._effect_fields = self._get_vep_csq(self.vcf_reader)
+        else:
+            self._effect_fields = []
 
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
@@ -180,18 +179,26 @@ class GeminiLoader(object):
         elif self.args.anno_type == "VEP":
             pass
 
-    def _is_proper_vep_input(self):
+    def _get_vep_csq(self, reader):
         """
         Test whether the VCF header meets expectations for
         proper execution of VEP for use with Gemini.
         """
-        #support versions 73-75
-        format = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".upper()
-
-        if 'CSQ' in self.vcf_reader.infos and \
-            format in str(self.vcf_reader.infos['CSQ']).upper():
-            return True
-        return False
+        required = ["Consequence"]
+        expected = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".upper()
+        if 'CSQ' in reader.infos:
+            parts = str(reader.infos["CSQ"].desc).split("Format: ")[-1].split("|")
+            all_found = True
+            for check in required:
+                if check not in parts:
+                    all_found = False
+                    break
+            if all_found:
+                return parts
+        # Did not find expected fields
+        error = "\nERROR: Check gemini docs for the recommended VCF annotation with VEP"\
+                "\nhttp://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-vep"
+        sys.exit(error)
 
     def _create_db(self):
         """
@@ -283,9 +290,9 @@ class GeminiLoader(object):
         polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
 
         if self.args.anno_type is not None:
-            impacts = func_impact.interpret_impact(self.args, var)
+            impacts = func_impact.interpret_impact(self.args, var, self._effect_fields)
             severe_impacts = \
-                severe_impact.interpret_severe_impact(self.args, var)
+                severe_impact.interpret_severe_impact(self.args, var, self._effect_fields)
             if severe_impacts:
                 gene = severe_impacts.gene
                 transcript = severe_impacts.transcript

@@ -7,35 +7,30 @@
 # nc_transcript_variant|||ENSG00000116254|CHD5|ENST00000491020|5/6|||||
 #############
 
-import re
-from collections import namedtuple
-from collections import defaultdict
-
+from collections import defaultdict, namedtuple
+import itertools
 
 class EffectDetails(object):
-    def __init__(self, impact_string, severity, detail_string, counter):
-        fields = detail_string.split("|")
+    def __init__(self, impact_string, severity, detail_string, counter, labels):
+        fields = self._prep_fields(detail_string, labels)
         self.effect_severity = severity
         self.effect_name = impact_string
         self.anno_id = counter
-        self.codon_change = fields[1] if fields[1] != '' else None
-        self.aa_change = fields[2] if fields[2] != '' else None
-        self.ensembl_gene = fields[3] if fields[3] != '' else None
-        self.hgnc = fields[4] if fields[4] != '' else None
-        self.gene = self.hgnc if fields[4] != '' else self.ensembl_gene
-        self.transcript = fields[5] if fields[5] != '' else None
-        self.exon = fields[6] if fields[6] != '' else None
-        self.polyphen = fields[7] if fields[7] != '' else None
-        self.sift = fields[8] if fields[8] != '' else None
-        self.aa_length = fields[9] if fields[9] != '' else None
-        self.biotype = fields[10] if fields[10] != '' else None
-        self.warnings = None
-        self.consequence = effect_dict[
-            self.effect_name] if self.effect_severity != None else self.effect_name
-        self.so = self.effect_name #VEP impacts are SO by default
-        
-        if len(fields) > 11:
-            self.warnings = fields[11]
+        self.codon_change = fields.pop("codons", None)
+        self.aa_change = fields.pop("amino_acids", None)
+        self.ensembl_gene = fields.pop("gene", None)
+        self.hgnc = fields.pop("symbol", None)
+        self.gene = self.hgnc or self.ensembl_gene
+        self.transcript = fields.pop("feature", None)
+        self.exon = fields.pop("exon", None)
+        self.polyphen = fields.pop("polyphen", None)
+        self.sift = fields.pop("sift", None)
+        self.aa_length = fields.pop("protein_position", None)
+        self.biotype = fields.pop("biotype", None)
+        self.warnings = fields.pop("warning", None)
+        self.extra_fields = fields
+        self.consequence = effect_dict[self.effect_name] if self.effect_severity is not None else self.effect_name
+        self.so = self.effect_name  # VEP impacts are SO by default
 
         # rules for being exonic.
         # 1. the impact must be in the list of exonic impacts
@@ -44,22 +39,24 @@ class EffectDetails(object):
         if self.effect_name in exonic_impacts and \
                 self.biotype == "protein_coding":
             self.is_exonic = 1
-        
+
         # rules for being loss-of-function (lof).
         #  must be protein_coding
         #  must be a coding variant with HIGH impact
-        self.is_lof = 0 
         if self.effect_severity == "HIGH" and self.biotype == "protein_coding":
             self.is_lof = 1
-        
+        else:
+            self.is_lof = 0
+
         # Rules for being coding
         # must be protein_coding
         # Exonic but not UTR's
-        self.is_coding = 0
-        if self.is_exonic and not (self.effect_name == "5_prime_UTR_variant" or \
+        if self.is_exonic and not (self.effect_name == "5_prime_UTR_variant" or
                                    self.effect_name == "3_prime_UTR_variant"):
             self.is_coding = 1
-            
+        else:
+            self.is_coding = 0
+
         # parse Polyphen predictions
         if self.polyphen is not None:
             self.polyphen_b = self.polyphen.split("(")
@@ -78,6 +75,18 @@ class EffectDetails(object):
         else:
             self.sift_pred = None
             self.sift_score = None
+
+    def _prep_fields(self, detail_string, labels):
+        """Prepare a dictionary mapping labels to provided fields in the consequence.
+        """
+        out = {}
+        for key, val in itertools.izip_longest(labels, detail_string.split("|")):
+            if val and val.strip():
+                if key is None:
+                    out["warnings"] = val.strip()
+                else:
+                    out[key.strip().lower()] = val.strip()
+        return out
 
     def __str__(self):
 
