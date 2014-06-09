@@ -2,9 +2,13 @@
 Release History
 #############################
 
-0.7.1 (in progress)
-=======================================
+0.8.0 (in progress)
 
+0.7.1
+=======================================
+1. Suppress openpyxl/pandas warnings (thanks to @chapmanb)
+2. Fix unit tests to account for cases where a user has not downloaded the CADD or GERP annotation files.
+   Thanks to Xialoin Zhu and Daniel Swensson for reporting this and to Uma Paila for correcting it.
 
 0.7.0
 =======================================
