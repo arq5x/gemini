@@ -365,6 +365,7 @@ feature truncation                                feature_truncation_           
 .. _feature_elongation: http://sequenceontology.org/browser/current_svn/term/SO:0001907
 .. _feature_truncation: http://sequenceontology.org/browser/current_svn/term/SO:0001906
 .. _frameshift_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001589
+.. _gene_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001564
 .. _incomplete_terminal_codon_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001626
 .. _inframe_deletion: http://sequenceontology.org/browser/current_svn/term/SO:0001822
 .. _inframe_insertion: http://sequenceontology.org/browser/current_svn/term/SO:0001821
@@ -383,13 +384,14 @@ feature truncation                                feature_truncation_           
 .. _splice_acceptor_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001574
 .. _splice_donor_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001575
 .. _splice_region_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001630
+.. _start_lost: http://sequenceontology.org/browser/current_svn/term/SO:0002012
 .. _start_retained_variant: http://sequenceontology.org/browser/current_svn/term/SO:0002019
 .. _stop_gained: http://sequenceontology.org/browser/current_svn/term/SO:0001587
 .. _stop_lost: http://sequenceontology.org/browser/current_svn/term/SO:0001578
 .. _stop_retained_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001567
 .. _synonymous_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001819
 .. _TF_binding_site_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001782
-.. _TFBS_abation: http://sequenceontology.org/browser/current_svn/term/SO:0001895
+.. _TFBS_ablation: http://sequenceontology.org/browser/current_svn/term/SO:0001895
 .. _TFBS_amplification: http://sequenceontology.org/browser/current_svn/term/SO:0001892
 .. _transcript_ablation: http://sequenceontology.org/browser/current_svn/term/SO:0001893
 .. _transcript_amplification: http://sequenceontology.org/browser/current_svn/term/SO:0001889
