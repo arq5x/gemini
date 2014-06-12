@@ -225,7 +225,7 @@ snpEff/VEP.
 The table below shows the alternate `GEMINI` terms used for `snpEff/VEP`.
 
 =============================================       ===================================    =================================================
-Gemini terms                                        snpEff terms                           VEP terms
+Gemini terms                                        snpEff terms                           VEP terms (uses SO by default)
 =============================================       ===================================    =================================================
 splice_acceptor                                     SPLICE_SITE_ACCEPTOR                   splice_acceptor_variant_
 splice_donor                                        SPLICE_SITE_DONOR                      splice_donor_variant_
@@ -263,7 +263,7 @@ CDS                                                 CDS                         
 upstream                                            UPSTREAM                               upstream_gene_variant_
 downstream                                          DOWNSTREAM                             downstream_gene_variant_
 intergenic                                          INTERGENIC                             intergenic_variant_
-intergenic_conserved                                INTERGENIC_CONSERVED                   conserved_intergenic_variant_
+intergenic_conserved                                INTERGENIC_CONSERVED                   null
 intragenic                                          INTRAGENIC                             null
 gene                                                GENE                                   null
 transcript                                          TRANSCRIPT                             null
@@ -271,10 +271,10 @@ exon                                                EXON                        
 start_gain                                          START_GAINED                           null
 synonymous_start                                    SYNONYMOUS_START                       null
 intron_conserved                                    INTRON_CONSERVED                       null
-nc_transcript                                       null                                   nc_transcript_variant (*)
+nc_transcript                                       null                                   nc_transcript_variant_ (should have been returned by VEP as: non_coding_transcript_variant)
 NMD_transcript                                      null                                   NMD_transcript_variant_
 incomplete_terminal_codon                           null                                   incomplete_terminal_codon_variant_
-nc_exon                                             null                                   non_coding_transcript_exon_variant_
+nc_exon                                             null                                   non_coding_exon_variant_ (should have been returned by VEP as: non_coding_transcript_exon_variant)
 transcript_ablation                                 null                                   transcript_ablation_
 transcript_amplification                            null                                   transcript_amplification_
 feature elongation                                  null                                   feature_elongation_
@@ -338,10 +338,10 @@ exon                                              exon_variant_                 
 start_gain                                        5_prime_UTR_premature_start_codon_gain_variant_             LOW
 synonymous_start                                  start_retained_variant_                                     LOW
 intron_conserved                                  conserved_intron_variant_                                   LOW
-nc_transcript                                     nc_transcript_variant (*)                                   LOW
+nc_transcript                                     nc_transcript_variant_                                      LOW
 NMD_transcript                                    NMD_transcript_variant_                                     LOW
 incomplete_terminal_codon                         incomplete_terminal_codon_variant_                          LOW
-nc_exon                                           non_coding_transcript_exon_variant_                         LOW
+nc_exon                                           non_coding_exon_variant_                                    LOW
 transcript_ablation                               transcript_ablation_                                        LOW
 transcript_amplification                          transcript_amplification_                                   LOW
 feature elongation                                feature_elongation_                                         LOW
@@ -376,7 +376,7 @@ feature truncation                                feature_truncation_           
 .. _mature_miRNA_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001620
 .. _missense_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001583
 .. _NMD_transcript_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001621
-.. _non_coding_transcript_exon_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001792
+.. _non_coding_exon_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001792
 .. _rare_amino_acid_variant: http://sequenceontology.org/browser/current_svn/term/SO:0002008
 .. _regulatory_region_ablation: http://sequenceontology.org/browser/current_svn/term/SO:0001894
 .. _regulatory_region_amplification: http://sequenceontology.org/browser/current_svn/term/SO:0001891
@@ -397,3 +397,4 @@ feature truncation                                feature_truncation_           
 .. _transcript_amplification: http://sequenceontology.org/browser/current_svn/term/SO:0001889
 .. _transcript_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001576
 .. _upstream_gene_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001631
+.. _nc_transcript_variant: http://www.sequenceontology.org/browser/current_svn/term/SO:0001619
