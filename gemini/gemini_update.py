@@ -31,8 +31,9 @@ def release(parser, args):
             pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
                     "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
                     "pyzmq", "pandas", "scipy"]
+            channels = ["-c", "https://conda.binstar.org/collections/chapmanb/bcbio"]
             subprocess.check_call([conda_bin, "install", "--yes", "numpy"])
-            subprocess.check_call([conda_bin, "install", "--yes"] + pkgs)
+            subprocess.check_call([conda_bin, "install", "--yes"] + channels + pkgs)
         elif os.path.exists(activate_bin):
             pass
         else:
