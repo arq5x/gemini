@@ -317,62 +317,61 @@ sift_scores       FLOAT         SIFT prob. scores reflecting severity (Higher th
 Details of the ``impact`` and ``impact_severity`` columns
 ---------------------------------------------------------
 
-=====================  =======================================
-impact severity        impacts
-=====================  =======================================
-HIGH                   - exon_deleted
-                       - frame_shift
-                       - splice_acceptor
-                       - splice_donor
-                       - start_loss
-                       - stop_gain
-                       - stop_loss
-                       - non_synonymous_start
-                       - transcript_codon_change
-                       - rare_amino_acid
-                       - chrom_large_del
-MED                    - non_syn_coding
-                       - inframe_codon_gain
-                       - inframe_codon_loss
-                       - inframe_codon_change
-                       - codon_change_del
-                       - codon_change_ins
-                       - UTR_5_del
-                       - UTR_3_del
-                       - splice_region
-                       - mature_miRNA
-                       - regulatory_region
-                       - TF_binding_site
-                       - regulatory_region_ablation
-                       - regulatory_region_amplification
-                       - TFBS_ablation
-                       - TFBS_amplification 
-LOW                    - synonymous_stop
-                       - synonymous_coding
-                       - UTR_5_prime
-                       - UTR_3_prime
-                       - intron
-                       - CDS
-                       - upstream
-                       - downstream
-                       - intergenic
-                       - intragenic
-                       - gene
-                       - transcript
-                       - exon
-                       - start_gain
-                       - synonymous_start
-                       - intron_conserved
-                       - nc_transcript
-                       - NMD_transcript
-                       - transcript_codon_change
-                       - incomplete_terminal_codon
-                       - nc_exon
-                       - transcript_ablation
-                       - transcript_amplification
-                       - feature elongation
-                       - feature truncation   
-=====================  =======================================
+=====================  =======================================  =================================================
+impact severity        impacts                                  SO_impacts
+=====================  =======================================  =================================================
+HIGH                   - exon_deleted                           - exon_loss_variant_
+                       - frame_shift                            - frameshift_variant_
+                       - splice_acceptor                        - splice_acceptor_variant_
+                       - splice_donor                           - splice_donor_variant_
+                       - start_loss                             - start_lost_
+                       - stop_gain                              - stop_gained_
+                       - stop_loss                              - stop_lost_
+                       - non_synonymous_start                   - initiator_codon_variant_
+                       - transcript_codon_change                - initiator_codon_variant_
+                       - rare_amino_acid                        - rare_amino_acid_variant_
+                       - chrom_large_del                        - chromosomal_deletion_
+MED                    - non_syn_coding                         - missense_variant_
+                       - inframe_codon_gain                     - inframe_insertion_
+                       - inframe_codon_loss                     - inframe_deletion_
+                       - inframe_codon_change                   - coding_sequence_variant_
+                       - codon_change_del                       - disruptive_inframe_deletion_
+                       - codon_change_ins                       - disruptive_inframe_insertion_
+                       - UTR_5_del                              - 5_prime_UTR_truncation_ + exon_loss_variant_
+                       - UTR_3_del                              - 3_prime_UTR_truncation_ + exon_loss_variant_
+                       - splice_region                          - splice_region_variant_
+                       - mature_miRNA                           - mature_miRNA_variant_
+                       - regulatory_region                      - regulatory_region_variant_
+                       - TF_binding_site                        - TF_binding_site_variant_
+                       - regulatory_region_ablation             - regulatory_region_ablation_
+                       - regulatory_region_amplification        - regulatory_region_amplification_
+                       - TFBS_ablation                          - TFBS_ablation_
+                       - TFBS_amplification                     - TFBS_amplification_
+LOW                    - synonymous_stop                        - stop_retained_variant_
+                       - synonymous_coding                      - synonymous_variant_
+                       - UTR_5_prime                            - 5_prime_UTR_variant_
+                       - UTR_3_prime                            - 3_prime_UTR_variant_
+                       - intron                                 - intron_variant_
+                       - CDS                                    - coding_sequence_variant_
+                       - upstream                               - upstream_gene_variant_
+                       - downstream                             - downstream_gene_variant_
+                       - intergenic                             - intergenic_variant_
+                       - intragenic                             - intragenic_variant_
+                       - gene                                   - gene_variant_
+                       - transcript                             - transcript_variant_
+                       - exon                                   - exon_variant_
+                       - start_gain                             - 5_prime_UTR_premature_start_codon_gain_variant_
+                       - synonymous_start                       - start_retained_variant_
+                       - intron_conserved                       - conserved_intron_variant_
+                       - nc_transcript                          - nc_transcript_variant_
+                       - NMD_transcript                         - NMD_transcript_variant_
+                       - incomplete_terminal_codon              - incomplete_terminal_codon_variant_
+                       - nc_exon                                - non_coding_exon_variant_
+                       - transcript_ablation                    - transcript_ablation_
+                       - transcript_amplification               - transcript_amplification_
+                       - feature elongation                     - feature_elongation_
+                       - feature truncation                     - feature_truncation_
+=====================  =======================================  =================================================
 
 |
 
@@ -478,3 +477,54 @@ mam_phenotype_id        STRING        | High level mammalian phenotype ID applie
 in_cosmic_census        BOOL          Are mutations in the gene implicated in cancer by the cancer gene census?
 ======================  ========      ===============================================================================
 
+
+.. _3_prime_UTR_truncation: http://sequenceontology.org/browser/current_svn/term/SO:0002015
+.. _3_prime_UTR_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001624
+.. _5_prime_UTR_premature_start_codon_gain_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001988
+.. _5_prime_UTR_truncation: http://sequenceontology.org/browser/current_svn/term/SO:0002013
+.. _5_prime_UTR_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001623
+.. _chromosomal_deletion: http://sequenceontology.org/browser/current_svn/term/SO:1000029
+.. _coding_sequence_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001580
+.. _conserved_intergenic_variant: http://sequenceontology.org/browser/current_svn/term/SO:0002017
+.. _conserved_intron_variant: http://sequenceontology.org/browser/current_svn/term/SO:0002018
+.. _disruptive_inframe_deletion: http://sequenceontology.org/browser/current_svn/term/SO:0001826
+.. _disruptive_inframe_insertion: http://sequenceontology.org/browser/current_svn/term/SO:0001824
+.. _downstream_gene_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001632
+.. _exon_loss_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001572
+.. _exon_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001791
+.. _feature_elongation: http://sequenceontology.org/browser/current_svn/term/SO:0001907
+.. _feature_truncation: http://sequenceontology.org/browser/current_svn/term/SO:0001906
+.. _frameshift_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001589
+.. _gene_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001564
+.. _incomplete_terminal_codon_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001626
+.. _inframe_deletion: http://sequenceontology.org/browser/current_svn/term/SO:0001822
+.. _inframe_insertion: http://sequenceontology.org/browser/current_svn/term/SO:0001821
+.. _initiator_codon_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001582
+.. _intergenic_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001628
+.. _intragenic_variant: http://sequenceontology.org/browser/current_svn/term/SO:0002011
+.. _intron_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001627
+.. _mature_miRNA_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001620
+.. _missense_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001583
+.. _NMD_transcript_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001621
+.. _non_coding_exon_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001792
+.. _rare_amino_acid_variant: http://sequenceontology.org/browser/current_svn/term/SO:0002008
+.. _regulatory_region_ablation: http://sequenceontology.org/browser/current_svn/term/SO:0001894
+.. _regulatory_region_amplification: http://sequenceontology.org/browser/current_svn/term/SO:0001891
+.. _regulatory_region_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001566
+.. _splice_acceptor_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001574
+.. _splice_donor_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001575
+.. _splice_region_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001630
+.. _start_lost: http://sequenceontology.org/browser/current_svn/term/SO:0002012
+.. _start_retained_variant: http://sequenceontology.org/browser/current_svn/term/SO:0002019
+.. _stop_gained: http://sequenceontology.org/browser/current_svn/term/SO:0001587
+.. _stop_lost: http://sequenceontology.org/browser/current_svn/term/SO:0001578
+.. _stop_retained_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001567
+.. _synonymous_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001819
+.. _TF_binding_site_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001782
+.. _TFBS_ablation: http://sequenceontology.org/browser/current_svn/term/SO:0001895
+.. _TFBS_amplification: http://sequenceontology.org/browser/current_svn/term/SO:0001892
+.. _transcript_ablation: http://sequenceontology.org/browser/current_svn/term/SO:0001893
+.. _transcript_amplification: http://sequenceontology.org/browser/current_svn/term/SO:0001889
+.. _transcript_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001576
+.. _upstream_gene_variant: http://sequenceontology.org/browser/current_svn/term/SO:0001631
+.. _nc_transcript_variant: http://www.sequenceontology.org/browser/current_svn/term/SO:0001619
