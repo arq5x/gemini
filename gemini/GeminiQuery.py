@@ -499,17 +499,6 @@ class GeminiQuery(object):
                             for x in variant_samples])))
 
                 # skip the record if it does not meet the user's genotype filter
-                # self.gt_filter = "all(gt_types[i]==HET for i in [0,1,2])"
-                #print gt_types, self.sample_info, all(gt_types[sample[0]]==const.HET for sample in self.sample_info)
-                #print self.gt_filter
-                #filt = compile(self.gt_filter, 'foo', 'eval')
-                #print eval(filt, globals())
-                #print locals()
-                #print "---"
-                #print globals()
-                #HET = gemini_constants.HET
-                #print locals()
-                #print globals()
                 if self.gt_filter and not eval(self.gt_filter, locals()):
                     continue
 
