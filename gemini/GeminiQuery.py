@@ -19,7 +19,6 @@ import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
 
-
 class RowFormat:
     """A row formatter to output rows in a custom format.  To provide
     a new output format 'foo', implement the class methods and set the
@@ -447,6 +446,7 @@ class GeminiQuery(object):
         # throw a continue and keep trying. the alternative is to just
         # recursively call self.next() if we need to skip, but this
         # can quickly exceed the stack.
+
         while (1):
             try:
                 row = self.c.next()
@@ -499,7 +499,18 @@ class GeminiQuery(object):
                             for x in variant_samples])))
 
                 # skip the record if it does not meet the user's genotype filter
-                if self.gt_filter and not eval(self.gt_filter):
+                # self.gt_filter = "all(gt_types[i]==HET for i in [0,1,2])"
+                #print gt_types, self.sample_info, all(gt_types[sample[0]]==const.HET for sample in self.sample_info)
+                #print self.gt_filter
+                #filt = compile(self.gt_filter, 'foo', 'eval')
+                #print eval(filt, globals())
+                #print locals()
+                #print "---"
+                #print globals()
+                #HET = gemini_constants.HET
+                #print locals()
+                #print globals()
+                if self.gt_filter and not eval(self.gt_filter, locals()):
                     continue
 
             fields = OrderedDict()
@@ -728,10 +739,25 @@ class GeminiQuery(object):
         to:
             "gt_types[2] == HET and gt_types[5] == HET"
         """
+
+        def _swap_genotype_for_number(token):
+            """
+            This is a bit of a hack to get around the fact that eval()
+            doesn't handle the imported constants well when also having to
+            find local variables.  This requires some eval/globals()/locals() fu
+            that has evaded me thus far. Just replacing HET, etc. with 1, etc. works.
+            """
+            if any(g in token for g in ['HET', 'HOM_ALT', 'HOM_REF', 'UNKNOWN']):
+                token = token.replace('HET', str(HET))
+                token = token.replace('HOM_ALT', str(HOM_ALT))
+                token = token.replace('HOM_REF', str(HOM_REF))
+                token = token.replace('UNKNOWN', str(UNKNOWN))
+            return token
+
         corrected_gt_filter = []
 
         # first try to identify wildcard rules.
-        wildcard_tokens = re.split(r'(\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
+        wildcard_tokens = re.split(r'(\(.+?\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
         for token in wildcard_tokens:
             # NOT a WILDCARD
             # We must then split on whitespace and
@@ -747,29 +773,50 @@ class GeminiQuery(object):
                         corrected = self._correct_genotype_col(t)
                         corrected_gt_filter.append(corrected)
                     else:
+                        t = _swap_genotype_for_number(t)
                         corrected_gt_filter.append(t)
             # IS a WILDCARD
             # e.g., "gt_types.(affected==1).(==HET)"
             elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
                 and '.(' in token and ').' in token:
                 # break the wildcard into its pieces. That is:
-                # (COLUMN).(WILDCARD).(WILDCARD_RULE)
-                (column, wildcard, wildcard_rule) = token.split('.')
+                # (COLUMN).(WILDCARD).(WILDCARD_RULE).(WILDCARD_OP)
+                # e.g, (gts).(phenotype==2).(==HET).(any)
+                if token.count('.') != 3 or \
+                   token.count('(') != 4 or \
+                   token.count(')') != 4:
+                    sys.exit("Wildcard filter should consist of 4 elements. Exiting.")
+
+                (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
 
                 # remove the syntactic parentheses
                 column = column.strip('(').strip(')')
                 wildcard = wildcard.strip('(').strip(')')
                 wildcard_rule = wildcard_rule.strip('(').strip(')')
-                
-                # convert "gt_types.(affected==1).(==HET)"
-                # to, e.g.,: gt_types[3] == HET and gt_types[9] == HET
-                sample_info = self._get_matching_sample_ids(wildcard)
-                for (idx, sample) in enumerate(sample_info):
-                    if idx < len(sample_info) - 1:
-                        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule + ' and '
-                    else:
-                        rule = column + '[' + str(sample[0]) + '] ' + wildcard_rule
-                    corrected_gt_filter.append(rule)
+                wildcard_op = wildcard_op.strip('(').strip(')')
+
+                # collect and save all of the samples that meet the wildcard criteria
+                # these will be used in the list comprehension for the eval expression
+                # constructed below.
+                self.sample_info = self._get_matching_sample_ids(wildcard)
+
+                # Replace HET, etc. with 1, et.c to avoid eval() issues.
+                wildcard_rule = _swap_genotype_for_number(wildcard_rule)
+
+                # build the rule based on the wildcard the user has supplied.
+                if wildcard_op in ["all", "any"]:
+                    rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info)"
+                elif wildcard_op == "none":
+                    rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info)"
+                elif "count" in wildcard_op:
+                    # break "count>=2" into ['', '>=2']
+                    tokens = wildcard_op.split('count')
+                    count_comp = tokens[len(tokens) - 1]
+                    rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info)" + count_comp
+                else:
+                    sys.exit("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
+
+                corrected_gt_filter.append(rule)
             else:
                 if len(token) > 0:
                     corrected_gt_filter.append(token)
