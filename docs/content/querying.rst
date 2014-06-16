@@ -152,6 +152,10 @@ Obviously, this can become tedious when a project involves hundreds or thousands
 --- if you wanted to see genotype information for the 345 of 1145 affected samples in your study,
 you would have to type each and every column.sample name out. Brutal.
 
+-----------------------------------------------------------
+The "*" wildcard
+-----------------------------------------------------------
+
 To get around this, one can bulk-select sample genotype information using "wildcards". The column and the wildcard must each be surrounded with parentheses and separated by a period. The "*" is a shortcut (wildcard) meaning "all samples".
 
 .. note::
@@ -174,6 +178,10 @@ For example, a shortcut to reporting the genotype for *all* samples (in this cas
   chr10 135336655 135336656 G A SPRN  ./. A/A ./. A/A
   chr10 135369531 135369532 T C SYCE1 T/T T/C T/C T/T
   chr16 72057434  72057435  C T DHODH C/T C/C C/C C/C
+
+-----------------------------------------------------------
+Wildcards based on sample attributes
+-----------------------------------------------------------
 
 To report the genotypes for solely those samples that are affected (phenotype == 2) with the phenotype in question, one could do the following:
 
@@ -311,49 +319,137 @@ one would have enter each of the 100 samples from the command line as follows:
                                     gt_depths.sample3 >= 20 and \
                                     ...
                                     gt_depths.sample100 >= 20" \
-                       test.snpEff.vcf.db
+                       extended_ped.db
 
-Obviously, this is deeply painful. There is now an option to allow wildcards to prevent this.  
-The structure of the wildcard ``--gt-filters`` is ``(COLUMN).(WILDCARD).(WILDCARD_RULE)``. For example,
-using wildcards, the above could be converted to:
+
+-----------------------------------------------------------
+The basics.
+-----------------------------------------------------------
+
+Obviously, this is deeply painful. Thankfully, there an option allowing the use of "wildcards" to prevent this. 
+
+.. note::
+
+  The syntax of the wildcard ``--gt-filters`` is ``(COLUMN).(SAMPLE_WILDCARD).(SAMPLE_WILDCARD_RULE).(RULE_ENFORCEMENT)``.
+
+For example, using wildcards, the above could be converted to:
 
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_depths).(*).(>=20)" \
-                       test.snpEff.vcf.db
-
-
-.. note::
-
-  The syntax of the wildcard ``--gt-filters`` is ``(COLUMN).(WILDCARD).(WILDCARD_RULE)``.
+                       --gt-filter "(gt_depths).(*).(>=20).(all)" \
+                       extended_ped.db
 
 
 Obviously, this makes things much simpler.
 
 
+-----------------------------------------------------------
+The ``all`` operator
+-----------------------------------------------------------
+
 One can also apply wildcards that select samples based on the values in specific 
 columns in the ``samples`` table. For example, let's imagine we wanted to require that variants
-are returned only in cases where the affected individuals in the study (i.e., the ``phenotype`` column
-in the ``samples`` table is equal to ``2``) have non-reference genotypes. We could do the following:
+are returned only in cases where *ALL* the affected individuals in the study (i.e., the ``phenotype`` column in the ``samples`` table is equal to ``2``) have non-reference genotypes. We could do the following:
 
 .. code-block:: bash
 
-  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF)" \
-                       test.snpEff.vcf.db
+  $ gemini query --header \
+                 -q "select chrom, start, end, \
+                            ref, alt, gene, (gts).(phenotype==2) \
+                     from variants" \
+                 --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all)" \
+                 extended_ped.db
+  chrom start end ref alt gene  gts.M10478  gts.M10500
+  chr10 1142207 1142208 T C WDR37 C/C C/C
+  chr10 48003991  48003992  C T ASAH2C  C/T C/T
+  chr10 52004314  52004315  T C ASAH2 ./. C/C
+  chr10 52497528  52497529  G C ASAH2B  C/C C/C
+  chr10 135210790 135210791 T C MTG1.1  C/C C/C
+  chr10 135336655 135336656 G A SPRN  A/A ./.
+  chr10 135369531 135369532 T C SYCE1 T/C T/C
 
-
-Or perhaps we wanted to be more restrictive. We could also enforce that the affected individuals also
-had at least 20 aligned reads at such variant sites:
+Or perhaps we wanted to be more restrictive. We could also enforce that the affected individuals also had at least 20 aligned reads at such variant sites:
 
 .. code-block:: bash
 
-  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF) and \
-                                    (gt_depths).(phenotype==2).(>=20)" \
-                       test.snpEff.vcf.db
+  $ gemini query --header \
+                 -q "select chrom, start, end, \
+                            ref, alt, gene, \
+                            (gts).(phenotype==2), (gt_depths).(phenotype==2) \
+                     from variants" \
+                 --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
+                              and \
+                              (gt_depths).(phenotype==2).(>=20).(all)" \
+                 extended_ped.db
+  chrom start end ref alt gene  gts.M10478  gts.M10500  gt_depths.M10478  gt_depths.M10500
+  chr10 1142207 1142208 T C WDR37 C/C C/C 29  24
+  chr10 48003991  48003992  C T ASAH2C  C/T C/T 38  44
+  chr10 135369531 135369532 T C SYCE1 T/C T/C 32  21
 
+-----------------------------------------------------------
+The ``any`` operator
+-----------------------------------------------------------
+
+The examples provided thus far have deomnstrated how to enforce that *ALL* of the samples meeting specific criteria meet the same genotype column restrictions. However, clearly there are cases where one would want to be less restrictive. In order to accomondate such queries, there are three other enforcement operators allowed: ``any``, ``none``, and ``count``.
+
+For example, perhaps we want to relax the above query a bit and only require that at least one (i.e., ``any``) of the affected samples has depth > 20:
+
+.. code-block:: bash
+
+  $ gemini query --header \
+                 -q "select chrom, start, end, \
+                            ref, alt, gene, \
+                            (gts).(phenotype==2), (gt_depths).(phenotype==2) \
+                     from variants" \
+                 --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
+                              and \
+                              (gt_depths).(phenotype==2).(>=20).(any)" \
+                 extended_ped.db
+
+-----------------------------------------------------------
+The ``none`` operator
+-----------------------------------------------------------
+
+Or we enforce that ``none`` of the affected samples have depth less than 10:
+
+.. code-block:: bash
+
+  $ gemini query --header \
+                 -q "select chrom, start, end, \
+                            ref, alt, gene, \
+                            (gts).(phenotype==2), (gt_depths).(phenotype==2) \
+                     from variants" \
+                 --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
+                              and \
+                              (gt_depths).(phenotype==2).(<10).(none)" \
+                 extended_ped.db
+
+-----------------------------------------------------------
+The ``count`` operator
+-----------------------------------------------------------
+
+Finally, we could enforce that at most 2 of all the samples in the study have depths < 10:
+
+.. code-block:: bash
+
+  $ gemini query --header \
+                 -q "select chrom, start, end, \
+                            ref, alt, gene, \
+                            (gts).(phenotype==2), (gt_depths).(phenotype==2) \
+                     from variants" \
+                 --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
+                              and \
+                              (gt_depths).(phenotype==2).(<10).(count <= 2)" \
+                 extended_ped.db
+
+.. note::
+
+  The ``count`` operator allows the following comparisons: ``>``, ``>=``, ``<``, ``<=``, and ``!=``.
+
+-----------------------------------------------------------
+Other details
+-----------------------------------------------------------
 
 The system is fairly flexible in that it allows one to wildcard-select samples based on custom columns 
 that have been added to the ``samples`` table based upon a custom PED file.  For example, let's imaging our
@@ -362,17 +458,17 @@ custom PED file had an extra column defining the hair color of each sample. We c
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(hair_color='blue').(==HET)" \
-                       test.snpEff.vcf.db
+                       --gt-filter "(gt_types).(hair_color='blue').(==HET).(all)" \
+                       extended_ped.db
 
 Or possibly, you want to stratify based on sub-population:
 
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(population='CEU').(==HET) and " \
-                                    (gt_types).(population='YRI').(==HOM_ALT)" \
-                       test.snpEff.vcf.db
+                       --gt-filter "(gt_types).(population='CEU').(==HET).(all) and " \
+                                    (gt_types).(population='YRI').(==HOM_ALT).(any)" \
+                       extended_ped.db
 
 
 One can also base the wildcard on multiple criteria (in this case, brown hair and affected):
@@ -380,18 +476,18 @@ One can also base the wildcard on multiple criteria (in this case, brown hair an
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET)" \
-                       test.snpEff.vcf.db
+                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET).(all)" \
+                       extended_ped.db
 
 Lastly, wildcards can, of course, be combined with non-wildcard criteria:
 
 .. code-block:: bash
 
   $ gemini query -q "select chrom, start, end, gene from variants" \
-                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET) \
+                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET).(all) \
                                      and \
                                     gt_types.M128215 == HOM_REF" \
-                      test.snpEff.vcf.db
+                      extended_ped.db
 
 Hopefully this gives you a sense of what you can do with the "wildcard" genotype filter functionality.
 
@@ -560,7 +656,7 @@ To report in JSON format, use the ``--format json`` option. For example:
 If you would to use tools such as PLINK that use
 the PED format, you can dump out a set of variants
 matching any query in TPED (Transposed PED) format
-by adding the ``--tped``flag to your query:
+by adding the ``--tped`` flag to your query:
 
 .. code-block:: bash
 

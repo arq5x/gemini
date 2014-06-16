@@ -782,6 +782,11 @@ class GeminiQuery(object):
                 # break the wildcard into its pieces. That is:
                 # (COLUMN).(WILDCARD).(WILDCARD_RULE).(WILDCARD_OP)
                 # e.g, (gts).(phenotype==2).(==HET).(any)
+                if token.count('.') != 3 or \
+                   token.count('(') != 4 or \
+                   token.count(')') != 4:
+                    sys.exit("Wildcard filter should consist of 4 elements. Exiting.")
+
                 (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
 
                 # remove the syntactic parentheses
