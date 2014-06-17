@@ -36,7 +36,7 @@ framework with the **load** submodule:
     $ gemini load -v my.vcf my.db
 
 In this step, `gemini` reads and loads the my.vcf file into a SQLite database 
-named my.db, whose structure is described `here <http://nowhere>`_.
+named my.db, whose structure is described `here <http://gemini.readthedocs.org/en/latest/content/database_schema.html>`_.
 While loading the database, `gemini` computes many additional population genetics 
 statistics that support downstream analyses. It also stores the genotypes for 
 each sample at each variant in an efficient data structure that minimizes the 
