@@ -16,6 +16,7 @@ class EffectDetails(object):
         self.effect_severity = severity
         self.effect_name = impact_string
         self.anno_id = counter
+        fields.pop("consequence", None)
         self.codon_change = fields.pop("codons", None)
         self.aa_change = fields.pop("amino_acids", None)
         self.ensembl_gene = fields.pop("gene", None)
@@ -28,7 +29,7 @@ class EffectDetails(object):
         self.aa_length = fields.pop("protein_position", None)
         self.biotype = fields.pop("biotype", None)
         self.warnings = fields.pop("warning", None)
-        self.extra_fields = fields
+        self.extra_fields = {"vep_%s" % k: v for k, v in fields.items()}
         self.consequence = effect_dict[self.effect_name] if self.effect_severity is not None else self.effect_name
         self.so = self.effect_name  # VEP impacts are SO by default
 
