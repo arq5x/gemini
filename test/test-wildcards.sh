@@ -258,3 +258,20 @@ gemini query --header -q "select chrom, start, end, ref, alt, (gts).(*) from var
              --gt-filter "(gt_types).(*).(==HOM_ALT)" extended_ped.db 2> obs
 check obs exp
 rm obs exp
+
+########################################################################
+# 19. Test multiple wildcard on same column
+########################################################################
+echo "    wildcard.t19...\c"
+echo "chrom	start	end	ref	alt	gene	gts.M10475	gts.M10478	gts.M10500	gts.M128215
+chr10	1142207	1142208	T	C	WDR37	C/C	C/C	C/C	C/C
+chr10	48003991	48003992	C	T	ASAH2C	T/T	C/T	C/T	C/C
+chr10	52004314	52004315	T	C	ASAH2	./.	./.	C/C	C/C
+chr10	52497528	52497529	G	C	ASAH2B	./.	C/C	C/C	./.
+chr10	135210790	135210791	T	C	MTG1.1	T/T	C/C	C/C	T/T
+chr10	135336655	135336656	G	A	SPRN	./.	A/A	./.	A/A
+chr10	135369531	135369532	T	C	SYCE1	T/T	T/C	T/C	T/T" > exp
+gemini query --header -q "select chrom, start, end, ref, alt, gene, (gts).(*) from variants" \
+             --gt-filter "((gt_types).(phenotype==1).(!=HOM_REF).(count>=1) and (gt_types).(phenotype==2).(!=HOM_REF).(count>=1))" extended_ped.db > obs
+check obs exp
+rm obs exp

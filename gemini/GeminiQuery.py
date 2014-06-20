@@ -697,7 +697,7 @@ class GeminiQuery(object):
         query can be applied to the gt_* columns.
         """
         query = 'SELECT sample_id, name FROM samples '
-        if wildcard != "*":
+        if wildcard.strip() != "*":
            query += ' WHERE ' + wildcard
     
         sample_info = [] # list of sample_id/name tuples
@@ -746,7 +746,11 @@ class GeminiQuery(object):
         corrected_gt_filter = []
 
         # first try to identify wildcard rules.
-        wildcard_tokens = re.split(r'(\(\w+?\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
+        # (\s*gt\w+\) handles both
+        #    (gt_types).(*).(!=HOM_REF).(all)
+        # and
+        #    (   gt_types).(*).(!=HOM_REF).(all)
+        wildcard_tokens = re.split(r'(\(\s*gt\w+\s*\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
         for token in wildcard_tokens:
             # NOT a WILDCARD
             # We must then split on whitespace and
@@ -779,10 +783,10 @@ class GeminiQuery(object):
                 (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
 
                 # remove the syntactic parentheses
-                column = column.strip('(').strip(')')
-                wildcard = wildcard.strip('(').strip(')')
-                wildcard_rule = wildcard_rule.strip('(').strip(')')
-                wildcard_op = wildcard_op.strip('(').strip(')')
+                column = column.strip('(').strip(')').strip()
+                wildcard = wildcard.strip('(').strip(')').strip()
+                wildcard_rule = wildcard_rule.strip('(').strip(')').strip()
+                wildcard_op = wildcard_op.strip('(').strip(')').strip()
 
                 # collect and save all of the samples that meet the wildcard criteria
                 # these will be used in the list comprehension for the eval expression

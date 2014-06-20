@@ -448,7 +448,46 @@ Finally, we could enforce that at most 2 of all the samples in the study have de
   The ``count`` operator allows the following comparisons: ``>``, ``>=``, ``<``, ``<=``, and ``!=``.
 
 -----------------------------------------------------------
-Other details
+Example scenario.
+-----------------------------------------------------------
+One usage of the wildcard functionality is screening for variants
+that are present in affected individuals yet absent from unaffected individuals (this is obviously an idealized scenario).
+
+.. code-block:: bash
+
+  $ gemini query --header \
+                 -q "select chrom, start, end, \
+                            ref, alt, gene, \
+                            (gts).(*) \
+                     from variants" \
+                 --gt-filter "(gt_types).(phenotype==1).(==HOM_REF).(all) \
+                              and \
+                              (gt_depths).(phenotype==2).(==HOM_REF).(none)" \
+                 extended_ped.db
+
+
+-----------------------------------------------------------
+More complexity.
+-----------------------------------------------------------
+One can also combine wildcard filters with "basic" genotype filters
+to create more complex logic.
+
+.. code-block:: bash
+
+  $ gemini query --header \
+                 -q "select chrom, start, end, \
+                            ref, alt, gene, \
+                            (gts).(*) \
+                     from variants" \
+                 --gt-filter "((gt_types).(phenotype==1).(==HOM_REF).(all) \
+                                and \
+                               (gt_depths).(phenotype==2).(==HOM_REF).(none)) \
+                              or gt.NA12878 == HET" \
+                 extended_ped.db
+
+
+-----------------------------------------------------------
+Other details.
 -----------------------------------------------------------
 
 The system is fairly flexible in that it allows one to wildcard-select samples based on custom columns 
