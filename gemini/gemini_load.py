@@ -10,6 +10,7 @@ import subprocess
 from cluster_helper.cluster import cluster_view
 import database as gemini_db
 from gemini_load_chunk import GeminiLoader
+import gemini_annotate
 import uuid
 import time
 import datetime
@@ -64,17 +65,20 @@ def load_singlecore(args):
 
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
+    gemini_annotate.add_extras(args.db, [args.db])
 
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)
     chunks = load_chunks_multicore(grabix_file, args)
     merge_chunks_multicore(chunks, args.db)
+    gemini_annotate.add_extras(args.db, chunks)
 
 def load_ipython(args):
     grabix_file = bgzip(args.vcf)
     with cluster_view(*get_ipython_args(args)) as view:
         chunks = load_chunks_ipython(grabix_file, args, view)
         merge_chunks_ipython(chunks, args.db, view)
+    gemini_annotate.add_extras(args.db, chunks)
 
 def merge_chunks(chunks, db):
     cmd = get_merge_chunks_cmd(chunks, db)

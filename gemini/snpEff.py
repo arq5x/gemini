@@ -20,6 +20,7 @@ class EffectDetails(object):
         self.impact = fields[1] if fields[1] != '' else None
         self.codon = fields[2] if fields[2] != '' else None
         self.aa_change = fields[3] if fields[3] != '' else None
+        self.extra_fields = {}
 
         # snpEff >= v3.0 includes aa_length
         if snp_eff_version is not None and snp_eff_version >= 3:
