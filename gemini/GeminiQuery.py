@@ -746,7 +746,7 @@ class GeminiQuery(object):
         corrected_gt_filter = []
 
         # first try to identify wildcard rules.
-        wildcard_tokens = re.split(r'(\(.+?\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
+        wildcard_tokens = re.split(r'(\(\w+?\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
         for token in wildcard_tokens:
             # NOT a WILDCARD
             # We must then split on whitespace and
