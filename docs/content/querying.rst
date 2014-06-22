@@ -355,9 +355,8 @@ are returned only in cases where *ALL* the affected individuals in the study (i.
 .. code-block:: bash
 
   $ gemini query --header \
-                 -q "select chrom, start, end, \
-                            ref, alt, gene, (gts).(phenotype==2) \
-                     from variants" \
+                 -q "SELECT chrom, start, end, ref, alt, gene, (gts).(phenotype==2) \
+                     FROM variants" \
                  --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all)" \
                  extended_ped.db
   chrom start end ref alt gene  gts.M10478  gts.M10500
@@ -374,10 +373,9 @@ Or perhaps we wanted to be more restrictive. We could also enforce that the affe
 .. code-block:: bash
 
   $ gemini query --header \
-                 -q "select chrom, start, end, \
-                            ref, alt, gene, \
+                 -q "SELECT chrom, start, end, ref, alt, gene, \
                             (gts).(phenotype==2), (gt_depths).(phenotype==2) \
-                     from variants" \
+                     FROM variants" \
                  --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
                               and \
                               (gt_depths).(phenotype==2).(>=20).(all)" \
@@ -398,10 +396,9 @@ For example, perhaps we want to relax the above query a bit and only require tha
 .. code-block:: bash
 
   $ gemini query --header \
-                 -q "select chrom, start, end, \
-                            ref, alt, gene, \
+                 -q "SELECT chrom, start, end, ref, alt, gene, \
                             (gts).(phenotype==2), (gt_depths).(phenotype==2) \
-                     from variants" \
+                     FROM variants" \
                  --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
                               and \
                               (gt_depths).(phenotype==2).(>=20).(any)" \
@@ -416,10 +413,9 @@ Or we enforce that ``none`` of the affected samples have depth less than 10:
 .. code-block:: bash
 
   $ gemini query --header \
-                 -q "select chrom, start, end, \
-                            ref, alt, gene, \
+                 -q "SELECT chrom, start, end, ref, alt, gene, \
                             (gts).(phenotype==2), (gt_depths).(phenotype==2) \
-                     from variants" \
+                     FROM variants" \
                  --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
                               and \
                               (gt_depths).(phenotype==2).(<10).(none)" \
@@ -434,10 +430,9 @@ Finally, we could enforce that at most 2 of all the samples in the study have de
 .. code-block:: bash
 
   $ gemini query --header \
-                 -q "select chrom, start, end, \
-                            ref, alt, gene, \
+                 -q "SELECT chrom, start, end, ref, alt, gene, \
                             (gts).(phenotype==2), (gt_depths).(phenotype==2) \
-                     from variants" \
+                     FROM variants" \
                  --gt-filter "(gt_types).(phenotype==2).(!=HOM_REF).(all) \
                               and \
                               (gt_depths).(phenotype==2).(<10).(count <= 2)" \
