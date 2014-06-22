@@ -451,10 +451,8 @@ that are present in affected individuals yet absent from unaffected individuals 
 .. code-block:: bash
 
   $ gemini query --header \
-                 -q "select chrom, start, end, \
-                            ref, alt, gene, \
-                            (gts).(*) \
-                     from variants" \
+                 -q "SELECT chrom, start, end, ref, alt, gene, (gts).(*) \
+                     FROM variants" \
                  --gt-filter "(gt_types).(phenotype==1).(==HOM_REF).(all) \
                               and \
                               (gt_depths).(phenotype==2).(==HOM_REF).(none)" \
@@ -470,10 +468,8 @@ to create more complex logic.
 .. code-block:: bash
 
   $ gemini query --header \
-                 -q "select chrom, start, end, \
-                            ref, alt, gene, \
-                            (gts).(*) \
-                     from variants" \
+                 -q "SELECT chrom, start, end, ref, alt, gene, (gts).(*) \
+                     FROM variants" \
                  --gt-filter "((gt_types).(phenotype==1).(==HOM_REF).(all) \
                                 and \
                                (gt_depths).(phenotype==2).(==HOM_REF).(none)) \
@@ -491,37 +487,38 @@ custom PED file had an extra column defining the hair color of each sample. We c
 
 .. code-block:: bash
 
-  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(hair_color='blue').(==HET).(all)" \
-                       extended_ped.db
+  $ gemini query -q "SELECT chrom, start, end, ref, alt, gene FROM variants" \
+                 --gt-filter "(gt_types).(hair_color='blue').(==HET).(all)" \
+                 extended_ped.db
 
 Or possibly, you want to stratify based on sub-population:
 
 .. code-block:: bash
 
-  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(population='CEU').(==HET).(all) and " \
-                                    (gt_types).(population='YRI').(==HOM_ALT).(any)" \
-                       extended_ped.db
+  $ gemini query -q "SELECT chrom, start, end, ref, alt, gene FROM variants" \
+                 --gt-filter "(gt_types).(population='CEU').(==HET).(all) \
+                               and \
+                              (gt_types).(population='YRI').(==HOM_ALT).(any)" \
+                 extended_ped.db
 
 
 One can also base the wildcard on multiple criteria (in this case, brown hair and affected):
 
 .. code-block:: bash
 
-  $ gemini query -q "select chrom, start, end, ref, alt, gene from variants" \
-                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET).(all)" \
-                       extended_ped.db
+  $ gemini query -q "SELECT chrom, start, end, ref, alt, gene FROM variants" \
+                 --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET).(all)" \
+                 extended_ped.db
 
 Lastly, wildcards can, of course, be combined with non-wildcard criteria:
 
 .. code-block:: bash
 
-  $ gemini query -q "select chrom, start, end, gene from variants" \
-                       --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET).(all) \
-                                     and \
-                                    gt_types.M128215 == HOM_REF" \
-                      extended_ped.db
+  $ gemini query -q "SELECT chrom, start, end, gene FROM variants" \
+                 --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET).(all) \
+                               and \
+                              gt_types.M128215 == HOM_REF" \
+                 extended_ped.db
 
 Hopefully this gives you a sense of what you can do with the "wildcard" genotype filter functionality.
 
