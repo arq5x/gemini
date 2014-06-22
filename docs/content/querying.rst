@@ -445,7 +445,7 @@ Finally, we could enforce that at most 2 of all the samples in the study have de
 
 .. note::
 
-  The ``count`` operator allows the following comparisons: ``>``, ``>=``, ``<``, ``<=``, and ``!=``.
+  The ``count`` operator allows the following comparisons: ``>``, ``>=``, ``<``, ``<=``, ``==``, ``<>``, and ``!=``.
 
 -----------------------------------------------------------
 Example scenario.
