@@ -50,6 +50,19 @@ This will create the variant_effect_predictor directory. Now do the following fo
 By default this would install the API's, bioperl-1.2.3 and the cache files (in 
 the $HOME/.vep directory).
 
+Homebrew VEP installation
+-------------------------
+
+If you are a `Homebrew <http://brew.sh/>`_ or `Linuxbrew <http://brew.sh/linuxbrew/>`_
+user, there is an automated recipe to install the main VEP script and plugins in
+the `CloudBioLinux homebrew repository <https://github.com/chapmanb/homebrew-cbl>`_:
+
+.. code-block:: bash
+
+    $ brew tap chapmanb/cbl
+    $ brew update
+    $ brew install vep
+
 Manual installation of VEP
 --------------------------
 
@@ -119,6 +132,24 @@ VEP fields specified as below:
 A documentation for the above specified options may be found at 
 http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
 
+As of GEMINI version 0.8.0, you can also run VEP with additional fields, which
+will be automatically added to the variants table as columns. As an example,
+run VEP on your VCF with the `dbNSFP <https://github.com/ensembl-variation/VEP_plugins/blob/master/dbNSFP.pm>`_
+and `LOFTEE <https://github.com/konradjk/loftee>`_ plugins to annotate potential high
+impact variations:
+
+.. code-block:: bash
+
+    $ variant_effect_predictor.pl --sift b --polyphen b --symbol --numbers --biotype \
+    --total_length --canonical --ccds \
+    --fields Consequence,Codons,Amino_acids,Gene,SYMBOL,Feature,EXON,PolyPhen,SIFT,Protein_position,BIOTYPE,CANONICAL,CCDS,RadialSVM_score,RadialSVM_pred,LR_score,LR_pred,CADD_raw,CADD_phred,Reliability_index,LoF,LoF_filter,LoF_flags \
+    --plugin dbNSFP,/path/to/dbNSFP_v2.5.gz,RadialSVM_score,RadialSVM_pred,LR_score,LR_pred,CADD_raw,CADD_phred,Reliability_index \
+    --plugin LoF,human_ancestor_fa=/path/to/human_ancestor.fa
+
+Feeding this into GEMINI produces a variants table with columns for each of the
+additional VEP metrics. The annotation loader names each column by prefixing
+``vep_`` to the origin VEP name, so select on ``vep_radialsvm_score`` or
+``vep_lof_filter`` in the final database.
 
 Stepwise installation and usage of SnpEff
 =======================================

@@ -9,6 +9,8 @@ Release History
 1. Suppress openpyxl/pandas warnings (thanks to @chapmanb)
 2. Fix unit tests to account for cases where a user has not downloaded the CADD or GERP annotation files.
    Thanks to Xialoin Zhu and Daniel Swensson for reporting this and to Uma Paila for correcting it.
+3. Support arbitrary annotation supplied to VEP, which translate into queryable
+   columns in the main variant table.
 
 0.7.0
 =======================================
