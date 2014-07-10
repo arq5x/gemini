@@ -41,6 +41,8 @@ def _add_necessary_columns(args, custom_columns):
         custom_columns += ", gene"
     if custom_columns.find("start") < 0:
         custom_columns += ", start"
+    if custom_columns.find("alt") < 0:
+        custom_columns += ", alt"
         
     return custom_columns
 
