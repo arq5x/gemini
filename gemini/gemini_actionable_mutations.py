@@ -6,16 +6,9 @@ import gemini_subjects
 from dgidb import query_dgidb
 import GeminiQuery
 
-def get_tumor_normal_pairs(args):
-    conn = sqlite3.connect(args.db)
-    conn.isolation_level = None
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    return gemini_subjects.get_families(c)
-
 def get_actionable_mutations(parser, args):
 
-    t_n_pairs = get_tumor_normal_pairs(args)
+    t_n_pairs = gemini_subjects.get_families(args.db)
 
     query = "SELECT variants.chrom, start, end, ref, alt, \
                     variants.gene, impact, is_somatic, \
