@@ -112,7 +112,7 @@ def get_homozygosity_runs(args):
               WHERE type = 'snp' \
               AND   filter is NULL \
               AND   depth >= " + str(args.min_total_depth) + \
-              " ORDER BY chrom, end LIMIT 40000"
+              " ORDER BY chrom, end"
 
     sys.stderr.write("LOG: Querying and ordering variants by chromosomal position.\n")
     gq.run(query, needs_genotypes=True)
@@ -136,7 +136,7 @@ def get_homozygosity_runs(args):
         gt_types = row['gt_types']
         gt_depths = row['gt_depths']
         curr_chrom = row['chrom']
-        
+
         # the chromosome has changed. search for ROHs in the previous chrom
         if curr_chrom != prev_chrom and prev_chrom is not None:
             sweep_genotypes_for_rohs(args, prev_chrom, samples)
