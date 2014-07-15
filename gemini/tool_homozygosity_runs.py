@@ -138,6 +138,11 @@ def get_homozygosity_runs(args):
     if args.samples is not None:
         sample_filter = args.samples.strip().split(",")
         for sample in sample_filter:
+            try:
+                idx = smp2idx[sample]
+            except:
+                sys.exit("ERROR: Sample %s could not be found. Exiting.\n" \
+                    % (sample))
             sm_index.append(smp2idx[sample])
     else:
         for sample in smp2idx:
