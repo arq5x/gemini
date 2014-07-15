@@ -924,32 +924,38 @@ def main():
     parser_hom_run.add_argument('--min-snps',
             dest='min_snps',
             metavar="INTEGER",
+            type=int,
             default=25,
             help='Minimum number of homozygous snps expected in a run (def. 25)')
     parser_hom_run.add_argument('--min-total-depth',
             dest='min_total_depth',
             metavar="INTEGER",
+            type=int,
             default=20,
             help="""The minimum overall sequencing depth required""" 
                  """for a SNP to be considered (def = 20).""")
     parser_hom_run.add_argument('--min-gt-depth',
             dest='min_genotype_depth',
             metavar="INTEGER",
-            default=10,
+            type=int,
+            default=0,
             help="""The minimum required sequencing depth underlying a given sample's genotype""" 
-                 """for a SNP to be considered (def = 10).""")
+                 """for a SNP to be considered (def = 0).""")
     parser_hom_run.add_argument('--min-size',
             metavar="INTEGER",
             dest='min_size',
-            default=100000,
+            type=int,
+            default=50000,
             help='Minimum run size in base pairs (def. 100000)')
     parser_hom_run.add_argument('--max-hets',
             metavar="INTEGER",
             dest='max_hets',
+            type=int,
             default=1,
             help='Maximum number of allowed hets in the run (def. 1)')
     parser_hom_run.add_argument('--max-unknowns',
             metavar="INTEGER",
+            type=int,
             dest='max_unknowns',
             default=3,
             help='Maximum number of allowed unknowns in the run (def. 3)')

@@ -15,6 +15,47 @@ class Site(object):
         self.gt_type = None
 
 
+def _prune_run(run):
+    """
+    Prune the current run of genotypes.
+
+    Remove genotypes from the left of the first 
+    non-homozygous genotype, since, owing to the
+    same logic behind run length encoding, those
+    genotypes cannot be part of a longer run than
+    we have seen before.
+
+    For example:
+
+    breaks   =       *       *       *
+    run      = H H H h H H H U H H H h H H H H H H
+    prune_1  =         H H H U H H H h H H H H H H
+    prune_2  =                 H H H h H H H H H H
+    prune_3  =                         H H H H H H
+    """
+
+    try:
+        first_het_idx = run.index('H')
+    except:
+        first_het_idx = None
+
+    try:
+        first_unk_idx = run.index('U')
+    except:
+        first_unk_idx = None
+
+    if first_het_idx is not None and first_unk_idx is not None:
+        idx_of_first_disruption = min(run.index('H'), run.index('U')) 
+    elif first_het_idx is not None:
+        idx_of_first_disruption = first_het_idx
+    elif first_unk_idx is not None:
+        idx_of_first_disruption = first_unk_idx
+    else:
+        # no interuptions, return an empty list
+        return []
+    return run[idx_of_first_disruption+1:]
+
+
 def sweep_genotypes_for_rohs(args, chrom, samples):
     """
     Sweep through the genotypes for each sample in search of ROHs.
@@ -48,7 +89,7 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
             # retain the last homozygote from previous
             # run. See function docs for details
             if len(curr_run):
-                curr_run = [curr_run[-1]]
+                curr_run = _prune_run(curr_run)
 
             # sweep through the active sites until we encounter 
             # too many HETS or UNKNOWN genotypes.
@@ -78,9 +119,11 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
                         run_start, run_end, 
                         len(curr_run), round(density_per_kb, 2), 
                         run_length])
+            else:
+                curr_run = []
 
             # reset for next run
-            hom_count = 0
+            hom_count = 1
             het_count = 0
             unk_count = 0
 
@@ -112,7 +155,7 @@ def get_homozygosity_runs(args):
               WHERE type = 'snp' \
               AND   filter is NULL \
               AND   depth >= " + str(args.min_total_depth) + \
-              " ORDER BY chrom, end"
+              " ORDER BY chrom, end limit 30000"
 
     sys.stderr.write("LOG: Querying and ordering variants by chromosomal position.\n")
     gq.run(query, needs_genotypes=True)
