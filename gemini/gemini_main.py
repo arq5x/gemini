@@ -22,6 +22,7 @@ import tool_pathways
 import tool_lof_sieve
 import tool_interactions
 import tool_burden_tests
+import tool_homozygosity_runs
 
 
 def examples(parser, args):
@@ -911,6 +912,52 @@ def main():
                                action="append", default=[], choices=["gerp_bp","cadd_score"])
     parser_update.set_defaults(func=gemini_update.release)
 
+
+    #########################################
+    # $ gemini roh
+    #########################################
+    parser_hom_run = subparsers.add_parser('roh',
+            help='Identify runs of homozygosity')
+    parser_hom_run.add_argument('db',
+            metavar='db',
+            help='The name of the database to be created.')
+    parser_hom_run.add_argument('--min-snps',
+            dest='min_snps',
+            metavar="INTEGER",
+            default=25,
+            help='Minimum number of homozygous snps expected in a run (def. 25)')
+    parser_hom_run.add_argument('--min-total-depth',
+            dest='min_total_depth',
+            metavar="INTEGER",
+            default=20,
+            help="""The minimum overall sequencing depth required""" 
+                 """for a SNP to be considered (def = 20).""")
+    parser_hom_run.add_argument('--min-gt-depth',
+            dest='min_genotype_depth',
+            metavar="INTEGER",
+            default=10,
+            help="""The minimum required sequencing depth underlying a given sample's genotype""" 
+                 """for a SNP to be considered (def = 10).""")
+    parser_hom_run.add_argument('--min-size',
+            metavar="INTEGER",
+            dest='min_size',
+            default=100000,
+            help='Minimum run size in base pairs (def. 100000)')
+    parser_hom_run.add_argument('--max-hets',
+            metavar="INTEGER",
+            dest='max_hets',
+            default=1,
+            help='Maximum number of allowed hets in the run (def. 1)')
+    parser_hom_run.add_argument('--max-unknowns',
+            metavar="INTEGER",
+            dest='max_unknowns',
+            default=3,
+            help='Maximum number of allowed unknowns in the run (def. 3)')
+    parser_hom_run.add_argument('-s',
+            dest='samples',
+            default=None,
+            help='Comma separated list of samples to screen for ROHs. e.g S120,S450')
+    parser_hom_run.set_defaults(func=tool_homozygosity_runs .run)
 
     #######################################################
     # parse the args and call the selected function
