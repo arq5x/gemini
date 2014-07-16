@@ -58,6 +58,7 @@ def load_singlecore(args):
     gemini_loader.store_version()
     gemini_loader.populate_from_vcf()
 
+
     if not args.skip_gene_tables and not args.test_mode:
         gemini_loader.update_gene_table()
     if not args.test_mode:
