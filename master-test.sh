@@ -97,6 +97,9 @@ bash test-de-novo.sh
 # Test wildcards
 bash test-wildcards.sh
 
+# Test ROH
+bash test-roh.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot
