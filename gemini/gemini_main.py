@@ -963,8 +963,7 @@ def main():
             dest='samples',
             default=None,
             help='Comma separated list of samples to screen for ROHs. e.g S120,S450')
-    parser_hom_run.set_defaults(func=tool_homozygosity_runs .run)
-
+    parser_hom_run.set_defaults(func=tool_homozygosity_runs.run)
     #######################################################
     # parse the args and call the selected function
     #######################################################
