@@ -920,7 +920,7 @@ def main():
             help='Identify runs of homozygosity')
     parser_hom_run.add_argument('db',
             metavar='db',
-            help='The name of the database to be created.')
+            help='The name of the database to be queried.')
     parser_hom_run.add_argument('--min-snps',
             dest='min_snps',
             metavar="INTEGER",
