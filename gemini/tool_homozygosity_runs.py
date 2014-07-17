@@ -106,15 +106,14 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
                 
                 run_start = min(c for c in curr_run if c not in ['H', 'U'])
                 run_end = max(c for c in curr_run if c not in ['H', 'U'])
-                #print curr_run, run_start, run_end
                 run_length = run_end - run_start
                 
                 # report the run if it is long enough.
                 if run_length >= args.min_size:
-                    density_per_kb = float (int(len(curr_run)) * 1000) / run_length
-                    print "\t".join(str(s) for s in [sample, chrom, 
-                        run_start, run_end, 
-                        hom_count, round(density_per_kb, 2), 
+                    density_per_kb = float(len(curr_run) * 1000) / float(run_length)
+                    print "\t".join(str(s) for s in [chrom, 
+                        run_start, run_end, sample, 
+                        hom_count, round(density_per_kb, 4), 
                         run_length])
             else:
                 curr_run = []
@@ -161,8 +160,8 @@ def get_homozygosity_runs(args):
     sys.stderr.write("LOG: Querying and ordering variants by chromosomal position.\n")
     gq.run(query, needs_genotypes=True)
 
-    print "\t".join(['sample','chrom',
-        'run_start','run_end',
+    print "\t".join(['chrom',
+        'start', 'end', 'sample', 
         'num_of_snps','density_per_kb',
         'run_length_in_bp'])  
     
@@ -171,7 +170,6 @@ def get_homozygosity_runs(args):
     prev_chrom = None
     curr_chrom = None
     for row in gq:
-
         variants_seen += 1
         if variants_seen % 10000 == 0:
             sys.stderr.write("LOG: Loaded %d variants. Current variant on %s, position %d.\n" \

@@ -945,7 +945,7 @@ def main():
             metavar="INTEGER",
             dest='min_size',
             type=int,
-            default=50000,
+            default=100000,
             help='Minimum run size in base pairs (def. 100000)')
     parser_hom_run.add_argument('--max-hets',
             metavar="INTEGER",
