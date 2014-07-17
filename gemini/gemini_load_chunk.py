@@ -51,8 +51,10 @@ class GeminiLoader(object):
 
         self.buffer_size = buffer_size
         self._get_anno_version()
-        self._get_gene_detailed()
-        self._get_gene_summary()
+        
+        if not args.skip_gene_tables:
+            self._get_gene_detailed()
+            self._get_gene_summary()
 
         if self.args.anno_type == "VEP":
             self._effect_fields = self._get_vep_csq(self.vcf_reader)
