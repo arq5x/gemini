@@ -894,7 +894,7 @@ def main():
     # $ gemini actionable_mutations
     #########################################
     parser_actionable_mut = subparsers.add_parser("actionable_mutations",
-                          help="Retriev genes with actionable somatic mutations via COSMIC and DGIdb.")
+                          help="Retrieve genes with actionable somatic mutations via COSMIC and DGIdb.")
     parser_actionable_mut.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
     parser_actionable_mut.set_defaults(func=gemini_actionable_mutations.get_actionable_mutations)
