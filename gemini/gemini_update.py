@@ -13,11 +13,13 @@ def release(parser, args):
     url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
     repo = "https://github.com/arq5x/gemini.git"
     # update locally isolated python
-    gemini_cmd = os.path.join(os.path.dirname(sys.executable), "gemini")
-    pip_bin = os.path.join(os.path.dirname(sys.executable), "pip")
-    ei_bin = os.path.join(os.path.dirname(sys.executable), "easy_install")
-    activate_bin = os.path.join(os.path.dirname(sys.executable), "activate")
-    conda_bin = os.path.join(os.path.dirname(sys.executable), "conda")
+    base = os.path.dirname(os.path.realpath(sys.executable))
+    gemini_cmd = os.path.join(base, "gemini")
+    pip_bin = os.path.join(base, "pip")
+    ei_bin = os.path.join(base, "easy_install")
+    activate_bin = os.path.join(base, "activate")
+    conda_bin = os.path.join(base, "conda")
+    print conda_bin
     if not args.dataonly:
         # Work around issue with distribute where asks for 'distribute==0.0'
         # try:
@@ -28,10 +30,10 @@ def release(parser, args):
         #     except subprocess.CalledProcessError:
         #         pass
         if os.path.exists(conda_bin):
-            pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
+            pkgs = ["bx-python", "conda", "cython", "ipython", "jinja2", "nose", "numpy",
                     "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
                     "pyzmq", "pandas", "scipy"]
-            channels = ["-c", "https://conda.binstar.org/collections/chapmanb/bcbio"]
+            channels = ["-c", "https://conda.binstar.org/bcbio"]
             subprocess.check_call([conda_bin, "install", "--yes", "numpy"])
             subprocess.check_call([conda_bin, "install", "--yes"] + channels + pkgs)
         elif os.path.exists(activate_bin):
