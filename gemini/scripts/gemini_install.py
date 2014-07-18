@@ -28,7 +28,7 @@ remotes = {"requirements":
            "gemini":
            "https://github.com/arq5x/gemini.git",
            "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-3.3.0-%s-x86_64.sh"}
+           "http://repo.continuum.io/miniconda/Miniconda-3.5.5-%s-x86_64.sh"}
 
 def main(args):
     check_dependencies()
@@ -75,9 +75,6 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     #         pass
     # Ensure latest version of fabric for running CloudBioLinux
     subprocess.check_call([anaconda["pip"], "install", "fabric>=1.7.0"])
-    # Install problem dependency separately: bx-python
-    subprocess.check_call([anaconda["pip"], "install", "--upgrade",
-                           "https://bitbucket.org/james_taylor/bx-python/get/tip.tar.bz2"])
     # allow downloads excluded in recent pip (1.5 or greater) versions
     try:
         p = subprocess.Popen([anaconda["pip"], "--version"], stdout=subprocess.PIPE)
@@ -111,10 +108,10 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
             "cmd": os.path.join(anaconda["dir"], "bin", "gemini")}
 
 def install_conda_pkgs(anaconda):
-    pkgs = ["cython", "ipython", "jinja2", "nose", "numpy",
+    pkgs = ["bx-python", "conda", "cython", "ipython", "jinja2", "nose", "numpy",
             "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
             "pyzmq", "pandas", "scipy"]
-    channels = ["-c", "https://conda.binstar.org/collections/chapmanb/bcbio"]
+    channels = ["-c", "https://conda.binstar.org/bcbio"]
     subprocess.check_call([anaconda["conda"], "install", "--yes", "numpy"])
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
 
