@@ -1,28 +1,8 @@
 #!/usr/bin/env python
-
 import os.path
 import sys
 import argparse
-import gemini_load
-import gemini_load_chunk
-import gemini_query
-import \
-    gemini_region, gemini_stats, gemini_dump, \
-    gemini_annotate, gemini_windower, \
-    gemini_browser, gemini_dbinfo, gemini_merge_chunks, gemini_update, \
-    gemini_amend, gemini_set_somatic, gemini_actionable_mutations
-
 import gemini.version
-
-import tool_compound_hets
-import tool_autosomal_recessive
-import tool_autosomal_dominant
-import tool_de_novo_mutations
-import tool_pathways
-import tool_lof_sieve
-import tool_interactions
-import tool_burden_tests
-import tool_homozygosity_runs
 
 
 def examples(parser, args):
@@ -65,9 +45,7 @@ def examples(parser, args):
 
     exit()
 
-
 def main():
-
     #########################################
     # create the top-level parser
     #########################################
@@ -150,7 +128,11 @@ def main():
                          help='Load in test mode (faster)',
                          default=False)
 
-    parser_load.set_defaults(func=gemini_load.load)
+    def load_fn(parser, args):
+        import gemini_load
+        gemini_load.load(parser, args)
+
+    parser_load.set_defaults(func=load_fn)
     #########################################
     # $ gemini amend
     #########################################
@@ -163,7 +145,10 @@ def main():
                               metavar='sample',
                               default=None,
                               help='New sample information file to load')
-    parser_amend.set_defaults(func=gemini_amend.amend)
+    def amend_fn(parser, args):
+        import gemini_amend
+        gemini_amend.amend(parser, args)
+    parser_amend.set_defaults(func=amend_fn)
 
     #########################################
     # $ gemini load_chunk
@@ -232,7 +217,10 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
-    parser_loadchunk.set_defaults(func=gemini_load_chunk.load)
+    def loadchunk_fn(parser, args):
+        import gemini_load_chunk
+        gemini_load_chunk.load(parser, args)
+    parser_loadchunk.set_defaults(func=loadchunk_fn)
 
     #########################################
     # $ gemini merge_chunks
@@ -247,7 +235,10 @@ def main():
             dest='chunkdbs',
             action='append')
 
-    parser_mergechunks.set_defaults(func=gemini_merge_chunks.merge_chunks)
+    def mergechunk_fn(parser, args):
+        import gemini_merge_chunks
+        gemini_merge_chunks.merge_chunks(parser, args)
+    parser_mergechunks.set_defaults(func=mergechunk_fn)
 
     #########################################
     # $ gemini query
@@ -331,8 +322,11 @@ def main():
                               action='store_true',
                               help='Request drug-gene interaction info from DGIdb.',
                               default=False)
+    def query_fn(parser, args):
+        import gemini_query
+        gemini_query.query(parser, args)
 
-    parser_query.set_defaults(func=gemini_query.query)
+    parser_query.set_defaults(func=query_fn)
 
     #########################################
     # $ gemini dump
@@ -372,7 +366,10 @@ def main():
                              action='store_true',
                              default=False,
                              help='Output sample information to TFAM format.')
-    parser_dump.set_defaults(func=gemini_dump.dump)
+    def dump_fn(parser, args):
+        import gemini_dump
+        gemini_dump.dump(parser, args)
+    parser_dump.set_defaults(func=dump_fn)
 
     #########################################
     # $ gemini region
@@ -414,7 +411,10 @@ def main():
                               dest='format',
                               default='default',
                               help='Format of output (JSON, TPED or default)')
-    parser_region.set_defaults(func=gemini_region.region)
+    def region_fn(parser, args):
+        import gemini_region
+        gemini_region.region(parser, args)
+    parser_region.set_defaults(func=region_fn)
 
     #########################################
     # $ gemini stats
@@ -473,7 +473,10 @@ def main():
             dest='gt_filter',
             metavar='STRING',
             help='Restrictions to apply to genotype values')
-    parser_stats.set_defaults(func=gemini_stats.stats)
+    def stats_fn(parser, args):
+        import gemini_stats
+        gemini_stats.stats(parser, args)
+    parser_stats.set_defaults(func=stats_fn)
 
     #########################################
     # gemini annotate
@@ -508,7 +511,10 @@ def main():
                   'in the event that a variant overlaps multiple annotations '
                   'in your annotation file (-f).'
                   'Any of {mean, median, min, max, mode, list, uniq_list, first, last}')
-    parser_get.set_defaults(func=gemini_annotate.annotate)
+    def annotate_fn(parser, args):
+        import gemini_annotate
+        gemini_annotate.annotate(parser, args)
+    parser_get.set_defaults(func=annotate_fn)
 
     #########################################
     # gemini windower
@@ -536,7 +542,10 @@ def main():
             help='The operation that should be applied to the -t values.',
             choices=['mean', 'median', 'min', 'max', 'collapse'],
             default='mean')
-    parser_get.set_defaults(func=gemini_windower.windower)
+    def windower_fn(parser, args):
+        import gemini_windower
+        gemini_windower.windower(parser, args)
+    parser_get.set_defaults(func=windower_fn)
 
     #########################################
     # gemini db_info
@@ -546,7 +555,10 @@ def main():
     parser_get.add_argument('db',
             metavar='db',
             help='The name of the database to be updated.')
-    parser_get.set_defaults(func=gemini_dbinfo.db_info)
+    def dbinfo_fn(parser, args):
+        import gemini_dbinfo
+        gemini_dbinfo.db_info(parser, args)
+    parser_get.set_defaults(func=dbinfo_fn)
 
     #########################################
     # $ gemini comp_hets
@@ -577,7 +589,10 @@ def main():
             help='Ignore phasing when screening for compound hets. \
                   Candidates are inherently _putative_.',
             default=False)
-    parser_comp_hets.set_defaults(func=tool_compound_hets.run)
+    def comp_hets_fn(parser, args):
+        import tool_compound_hets
+        tool_compound_hets.run(parser, args)
+    parser_comp_hets.set_defaults(func=comp_hets_fn)
 
     #########################################
     # $ gemini pathways
@@ -599,7 +614,10 @@ def main():
             action='store_true',
             help='Report pathways for indivs/genes/sites with LoF variants',
             default=False)
-    parser_pathway.set_defaults(func=tool_pathways.pathways)
+    def pathway_fn(parser, args):
+        import tool_pathways
+        tool_pathways.pathways(parser, args)
+    parser_pathway.set_defaults(func=pathway_fn)
 
     #########################################
     # $ gemini lof_sieve
@@ -609,7 +627,10 @@ def main():
     parser_lof_sieve.add_argument('db',
             metavar='db',
             help='The name of the database to be queried')
-    parser_lof_sieve.set_defaults(func=tool_lof_sieve.lof_sieve)
+    def lof_sieve_fn(parser, args):
+        import tool_lof_sieve
+        tool_lof_sieve.lof_sieve(parser, args)
+    parser_lof_sieve.set_defaults(func=lof_sieve_fn)
 
     #########################################
     # $ gemini burden
@@ -662,7 +683,10 @@ def main():
                                metavar='db',
                                help='The name of the database to be queried.')
 
-    parser_burden.set_defaults(func=tool_burden_tests.burden)
+    def burden_fn(parser, args):
+        import tool_burden_tests
+        tool_burden_tests.burden(parser, args)
+    parser_burden.set_defaults(func=burden_fn)
 
     #########################################
     # $ gemini interactions
@@ -685,7 +709,10 @@ def main():
             help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',
             action='store_true',
             default=False)
-    parser_interaction.set_defaults(func=tool_interactions.genequery)
+    def interactions_fn(parser, args):
+        import tool_interactions
+        tool_interactions.genequery(parser, args)
+    parser_interaction.set_defaults(func=interactions_fn)
 
     #########################################
     # gemini lof_interactions
@@ -704,7 +731,10 @@ def main():
             help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',
             action='store_true',
             default=False)
-    parser_interaction.set_defaults(func=tool_interactions.lofgenequery)
+    def lof_interactions_fn(parser, args):
+        import tool_interactions
+        tool_interactions.lofgenequery(parser, args)
+    parser_interaction.set_defaults(func=lof_interactions_fn)
 
     #########################################
     # $ gemini autosomal_recessive
@@ -736,11 +766,10 @@ def main():
               sequence depth (genotype DP) req'd for\
               each sample (def. = 0)",
             default=0)
-    #parser_auto_rec.add_argument('--gt-filter',
-    #        dest='gt_filter',
-    #        metavar='STRING',
-    #        help='Restrictions to apply to genotype values (Python syntax)')
-    parser_auto_rec.set_defaults(func=tool_autosomal_recessive.run)
+    def autosomal_recessive_fn(parser, args):
+        import tool_autosomal_recessive
+        tool_autosomal_recessive.run(parser, args)
+    parser_auto_rec.set_defaults(func=autosomal_recessive_fn)
 
     #########################################
     # $ gemini autosomal_dominant
@@ -772,11 +801,10 @@ def main():
               sequence depth (genotype DP) req'd for\
               each sample (def. = 0)",
             default=0)
-    #parser_auto_dom.add_argument('--gt-filter',
-    #        dest='gt_filter',
-    #        metavar='STRING',
-    #        help='Restrictions to apply to genotype values (Python syntax)')
-    parser_auto_dom.set_defaults(func=tool_autosomal_dominant.run)
+    def autosomal_dominant_fn(parser, args):
+        import tool_autosomal_dominant
+        tool_autosomal_dominant.run(parser, args)
+    parser_auto_dom.set_defaults(func=autosomal_dominant_fn)
 
     #########################################
     # $ gemini de_novo
@@ -795,10 +823,6 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
-    #parser_de_novo.add_argument('--gt-filter',
-    #        dest='gt_filter',
-    #        metavar='STRING',
-    #        help='Restrictions to apply to genotype values (Python syntax)')
     parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
             type=int,
@@ -806,7 +830,10 @@ def main():
                   sequence depth (genotype DP) req'd for\
                   each sample (def. = 0)",
             default=0)
-    parser_de_novo.set_defaults(func=tool_de_novo_mutations.run)
+    def de_novo_fn(parser, args):
+        import tool_de_novo_mutations
+        tool_de_novo_mutations.run(parser, args)
+    parser_de_novo.set_defaults(func=de_novo_fn)
 
     #########################################
     # $ gemini browser
@@ -815,8 +842,10 @@ def main():
             help='Browser interface to gemini')
     parser_browser.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
-    parser_browser.set_defaults(func=gemini_browser.browser_main)
-
+    def browser_fn(parser, args):
+        import gemini_browser
+        gemini_browser.browser_main(parser, args)
+    parser_browser.set_defaults(func=browser_fn)
 
 
     #########################################
@@ -826,7 +855,6 @@ def main():
                           help="Tag somatic mutations (is_somatic) by comparint tumor/normal pairs.")
     parser_set_somatic.add_argument('db', metavar='db',
             help='The name of the database to be updated.')
-    parser_set_somatic.set_defaults(func=gemini_set_somatic.set_somatic)
 
     parser_set_somatic.add_argument('--min-depth',
             dest='min_depth',
@@ -889,6 +917,10 @@ def main():
             help='Don\'t set the is_somatic flag, just report what _would_ be set. For testing parameters.',
             default=False)
 
+    def set_somatic_fn(parser, args):
+        import gemini_set_somatic
+        gemini_set_somatic.set_somatic(parser, args)
+    parser_set_somatic.set_defaults(func=set_somatic_fn)
 
     #########################################
     # $ gemini actionable_mutations
@@ -897,7 +929,10 @@ def main():
                           help="Retrieve genes with actionable somatic mutations via COSMIC and DGIdb.")
     parser_actionable_mut.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
-    parser_actionable_mut.set_defaults(func=gemini_actionable_mutations.get_actionable_mutations)
+    def get_actionable_mut_fn(parser, args):
+        import gemini_actionable_mutations
+        gemini_actionable_mutations.get_actionable_mutations(parser, args)
+    parser_actionable_mut.set_defaults(func=get_actionable_mut_fn)
 
 
     #########################################
@@ -910,7 +945,10 @@ def main():
                                action="store_true", default=False)
     parser_update.add_argument("--extra", help="Add additional non-standard genome annotations to include",
                                action="append", default=[], choices=["gerp_bp","cadd_score"])
-    parser_update.set_defaults(func=gemini_update.release)
+    def update_fn(parser, args):
+        import gemini_update
+        gemini_update.release(parser, args)
+    parser_update.set_defaults(func=update_fn)
 
 
     #########################################
@@ -932,14 +970,14 @@ def main():
             metavar="INTEGER",
             type=int,
             default=20,
-            help="""The minimum overall sequencing depth required""" 
+            help="""The minimum overall sequencing depth required"""
                  """for a SNP to be considered (def = 20).""")
     parser_hom_run.add_argument('--min-gt-depth',
             dest='min_genotype_depth',
             metavar="INTEGER",
             type=int,
             default=0,
-            help="""The minimum required sequencing depth underlying a given sample's genotype""" 
+            help="""The minimum required sequencing depth underlying a given sample's genotype"""
                  """for a SNP to be considered (def = 0).""")
     parser_hom_run.add_argument('--min-size',
             metavar="INTEGER",
@@ -963,7 +1001,10 @@ def main():
             dest='samples',
             default=None,
             help='Comma separated list of samples to screen for ROHs. e.g S120,S450')
-    parser_hom_run.set_defaults(func=tool_homozygosity_runs.run)
+    def homozygosity_runs_fn(parser, args):
+        from tool_homozygosity_runs import run
+        run(parser, args)
+    parser_hom_run.set_defaults(func=homozygosity_runs_fn)
     #######################################################
     # parse the args and call the selected function
     #######################################################

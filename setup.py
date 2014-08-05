@@ -1,18 +1,8 @@
-import ez_setup
-ez_setup.use_setuptools()
-
-import glob
 import os
-import sys
 from setuptools import setup
-from distutils.extension import Extension
-
-if 'setuptools.extension' in sys.modules:
-    m = sys.modules['setuptools.extension']
-    m.Extension.__dict__ = m._Extension.__dict__
 
 version_py = os.path.join(os.path.dirname(__file__), 'gemini', 'version.py')
-version = open(version_py).read().strip().split('=')[-1].replace('"','')
+version = open(version_py).read().strip().split('=')[-1].replace('"', '')
 long_description = """
 ``gemini`` is a database framework for exploring genetic variation'
 """
@@ -24,7 +14,7 @@ setup(
         name="gemini",
         version=version,
         install_requires=install_requires,
-        requires = ['python (>=2.5, <3.0)'],
+        requires=['python (>=2.5, <3.0)'],
         packages=['gemini',
                   'gemini.scripts',
                   'gemini.data'],
@@ -32,10 +22,10 @@ setup(
         description='A database framework for exploring genetic variation',
         long_description=long_description,
         url="http://gemini.readthedocs.org",
-        package_dir = {'gemini': "gemini"},
-        package_data = {'gemini': [
+        package_dir={'gemini': "gemini"},
+        package_data={'gemini': [
             'static/css/gemini.css',
-            'static/img/gemini.png', 
+            'static/img/gemini.png',
             'static/third_party/bootstrap/css/*',
             'static/third_party/bootstrap/img/*',
             'static/third_party/bootstrap/js/*',
@@ -43,9 +33,9 @@ setup(
             'static/third_party/jquery-ui/jquery-ui.min.js',
             'views/*'
             ]},
-        zip_safe = False,
+        zip_safe=False,
         include_package_data=True,
-        scripts = ['gemini/scripts/gemini'],
+        scripts=['gemini/scripts/gemini'],
         author_email="arq5x@virginia.edu",
         classifiers=[
             'Development Status :: 4 - Beta',

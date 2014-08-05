@@ -17,6 +17,7 @@ def amend_sample(args):
     ped_dict = load_ped_file(args.sample)
     header = get_ped_fields(args.sample)
     with database_transaction(args.db) as c:
+        add_columns(header, c)
         for k, v in loaded_subjects.items():
             if k in ped_dict:
                 item_list = map(quote_string, ped_dict[k])
@@ -25,3 +26,12 @@ def amend_sample(args):
                 sql_query = "update samples set {0} where sample_id={1}"
                 c.execute(sql_query.format(set_str, v.sample_id))
 
+def add_columns(header, c):
+    """
+    add any missing columns to the samples table
+    """
+    for column in header:
+        try:
+            c.execute('ALTER TABLE samples ADD COLUMN {0}'.format(column))
+        except:
+            pass

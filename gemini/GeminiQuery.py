@@ -148,11 +148,20 @@ class CarrierSummary(RowFormat):
 
 class TPEDRowFormat(RowFormat):
 
+    X_PAR_REGIONS = [(60001, 2699520), (154931044, 155260560)]
+    Y_PAR_REGIONS = [(10001, 2649520), (59034050, 59363566)]
+
     name = "tped"
     NULL_GENOTYPES = ["."]
+    PED_MISSING = ["0", "0"]
+    VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
+    POSSIBLE_HAPLOID = ["X", "Y"]
 
     def __init__(self, args):
-        pass
+        gq = GeminiQuery(args.db)
+        subjects = get_subjects(args)
+        # get samples in order of genotypes
+        self.samples = [gq.idx_to_sample_object[x] for x in range(len(subjects))]
 
     def format(self, row):
         VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
@@ -161,11 +170,11 @@ class TPEDRowFormat(RowFormat):
         start = str(row.row['start'])
         end = str(row.row['end'])
         geno = [re.split('\||/', x) for x in row.row['gts'].split(",")]
-        geno = [["0", "0"] if any([y in self.NULL_GENOTYPES for y in x])
-                else x for x in geno]
+        geno = [self._fix_genotype(chrom, start, genotype, self.samples[i].sex)
+                for i, genotype in enumerate(geno)]
         genotypes = " ".join(list(flatten(geno)))
         alleles = "|".join(set(list(flatten(geno))).difference("0"))
-        name = chrom + ":" +  start + "-" + end + ":" + alleles
+        name = chrom + ":" +  start + "-" + end + ":" + alleles + ":" + str(row['variant_id'])
         return " ".join([chrom, name, "0", start, genotypes])
 
     def format_query(self, query):
@@ -178,9 +187,59 @@ class TPEDRowFormat(RowFormat):
         num_alleles = len(set(geno).difference(self.NULL_GENOTYPES))
         return num_alleles > 0 and num_alleles <= 2 and row['type'] != "sv"
 
+    def _is_haploid(self, genotype):
+        return len(genotype) < 2
+
+    def _has_missing(self, genotype):
+        return any([allele in self.NULL_GENOTYPES for allele in genotype])
+
+    def _is_heterozygote(self, genotype):
+        return len(genotype) == 2 and (genotype[0] != genotype[1])
+
+    def _in_PAR(self, chrom, start):
+        if chrom == "X":
+            for region in self.X_PAR_REGIONS:
+                if start > region[0] and start < region[1]:
+                    return True
+        elif chrom == "Y":
+            for region in self.Y_PAR_REGIONS:
+                if start > region[0] and start < region[1]:
+                    return True
+        return False
+
+    def _fix_genotype(self, chrom, start, genotype, sex):
+        """
+        the TPED format has to have both alleles set, even if it is haploid.
+        this fixes that setting Y calls on the female to missing,
+        heterozygotic calls on the male non PAR regions to missing and haploid
+        calls on non-PAR regions to be the haploid call for both alleles
+        """
+        if sex == "2":
+            # set female Y calls and haploid calls to missing
+            if self._is_haploid(genotype) or chrom == "Y" or self._has_missing(genotype):
+                return self.PED_MISSING
+            return genotype
+        if chrom in self.POSSIBLE_HAPLOID and sex == "1":
+            # remove the missing genotype calls
+            genotype = [x for x in genotype if x not in self.NULL_GENOTYPES]
+            # if all genotypes are missing skip
+            if not genotype:
+                return self.PED_MISSING
+            # heterozygote males in non PAR regions are a mistake
+            if self._is_heterozygote(genotype) and not self._in_PAR(chrom, start):
+                return self.PED_MISSING
+            # set haploid males to be homozygous for the allele
+            if self._is_haploid(genotype):
+                return [genotype[0], genotype[0]]
+
+        # if a genotype is missing or is haploid set it to missing
+        if self._has_missing(genotype) or self._is_haploid(genotype):
+            return self.PED_MISSING
+        else:
+            return genotype
+
     def header(self, fields):
         return None
-
 
 class JSONRowFormat(RowFormat):
 
@@ -365,7 +424,7 @@ class GeminiQuery(object):
         if predicates:
             self.predicates += predicates
 
-        # make sure the SELECT columns are separated by a 
+        # make sure the SELECT columns are separated by a
         # comma and a space. then tokenize by spaces.
         self.query = self.query.replace(',', ', ')
         self.query_pieces = self.query.split()
@@ -382,8 +441,8 @@ class GeminiQuery(object):
                 self.query_type = "select-genotypes"
             else:
                 self.gt_filter = self._correct_genotype_filter()
-                self.query_type = "filter-genotypes" 
-        
+                self.query_type = "filter-genotypes"
+
         self._apply_query()
         self.query_executed = True
 
@@ -466,10 +525,10 @@ class GeminiQuery(object):
             hom_ref_names = []
             unknown_names = []
             info = None
-            
+
             if 'info' in self.report_cols:
                 info = compression.unpack_ordereddict_blob(row['info'])
-            
+
             if self._query_needs_genotype_info():
                 gts = compression.unpack_genotype_blob(row['gts'])
                 gt_types = \
@@ -582,7 +641,7 @@ class GeminiQuery(object):
             self.conn.row_factory = sqlite3.Row
             self.c = self.conn.cursor()
 
-    def _collect_sample_table_columns(self):            
+    def _collect_sample_table_columns(self):
         """
         extract the column names in the samples table into a list
         """
@@ -592,7 +651,7 @@ class GeminiQuery(object):
     def _is_gt_filter_safe(self):
         """
         Test to see if the gt_filter string is potentially malicious.
-        
+
         A future improvement would be to use pyparsing to
         traverse and directly validate the string.
         """
@@ -634,7 +693,7 @@ class GeminiQuery(object):
         """
         if self.needs_genes:
             self.query = self._add_gene_col_to_query()
- 
+
         if self._query_needs_genotype_info():
             # break up the select statement into individual
             # pieces and replace genotype columns using sample
@@ -692,14 +751,14 @@ class GeminiQuery(object):
     def _get_matching_sample_ids(self, wildcard):
         """
         Helper function to convert a sample wildcard
-        to a list of tuples reflecting the sample indices 
+        to a list of tuples reflecting the sample indices
         and sample names so that the wildcard
         query can be applied to the gt_* columns.
         """
         query = 'SELECT sample_id, name FROM samples '
         if wildcard.strip() != "*":
            query += ' WHERE ' + wildcard
-    
+
         sample_info = [] # list of sample_id/name tuples
         self.c.execute(query)
         for row in self.c:
@@ -709,16 +768,16 @@ class GeminiQuery(object):
 
     def _correct_genotype_filter(self):
         """
-        This converts a raw genotype filter that contains 
+        This converts a raw genotype filter that contains
         'wildcard' statements into a filter that can be eval()'ed.
-        Specifically, we must convert a _named_ genotype index 
-        to a _numerical_ genotype index so that the appropriate 
-        value can be extracted for the sample from the genotype 
+        Specifically, we must convert a _named_ genotype index
+        to a _numerical_ genotype index so that the appropriate
+        value can be extracted for the sample from the genotype
         numpy arrays.
 
         For example, without WILDCARDS, this converts:
         --gt-filter "(gt_types.1478PC0011 == 1)"
-        
+
         to:
         (gt_types[11] == 1)
 
@@ -877,7 +936,7 @@ class GeminiQuery(object):
 
             select_clause = ",".join(select_tokens) + \
                         ", gene "
-            
+
             self.query = "select " + select_clause + rest_of_query
 
         return self.query
@@ -911,7 +970,7 @@ class GeminiQuery(object):
         (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
         for token in select_tokens:
-            
+
             # it is a WILDCARD
             if (token.find("gt") >= 0 or token.find("GT") >= 0) \
                 and '.(' in token and ').' in token:
@@ -926,7 +985,7 @@ class GeminiQuery(object):
                 # convert "gt_types.(affected==1)"
                 # to: gt_types[3] == HET and gt_types[9] == HET
                 sample_info = self._get_matching_sample_ids(wildcard)
-                
+
                 # maintain a list of the sample indices that should
                 # be displayed as a result of the SELECT'ed wildcard
                 wildcard_indices = []
@@ -959,7 +1018,7 @@ class GeminiQuery(object):
 
     def _info_dict_to_string(self, info):
         """
-        Flatten the VCF info-field OrderedDict into a string, 
+        Flatten the VCF info-field OrderedDict into a string,
         including all arrays for allelic-level info.
         """
         if info is not None:
@@ -968,7 +1027,7 @@ class GeminiQuery(object):
                              for (key, value) in info.items()])
         else:
             return None
-    
+
     def _tokenize_query(self):
         tokens = list(flatten([x.split(",") for x in self.query.split(" ")]))
         return tokens
@@ -978,7 +1037,7 @@ class GeminiQuery(object):
         requested_genotype = "variants" in tokens and \
                             (any([x.startswith("gt") for x in tokens]) or \
                              any([x.startswith("(gt") for x in tokens]) or \
-                             any(".gt" in x for x in tokens))   
+                             any(".gt" in x for x in tokens))
         return requested_genotype or \
                self.include_gt_cols or \
                self.show_variant_samples or \

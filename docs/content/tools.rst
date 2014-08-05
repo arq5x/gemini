@@ -1270,6 +1270,62 @@ are the control samples and which are the case samples:
 If you would rather consider all nonsynonymous variants for the C-alpha test rather
 than just the medium and high impact variants, add the ``--nonsynonymous`` flag.
 
+
+===========================================================================
+``ROH``: Identifying runs of homozygosity
+===========================================================================
+Runs of homozygosity are long stretches of homozygous genotypes that reflect
+segments shared identically by descent and are a result of consanguinity or
+natural selection. Consanguinity elevates the occurrence of rare recessive 
+diseases (e.g. cystic fibrosis) that represent homozygotes for strongly deleterious 
+mutations. Hence, the identification of these runs holds medical value. 
+
+The 'roh' tool in GEMINI returns runs of homozygosity identified in whole genome data. 
+The tool basically looks at every homozygous position on the chromosome as a possible
+start site for the run and looks for those that could give rise to a potentially long 
+stretch of homozygous genotypes. 
+
+For e.g. for the given example allowing ``1 HET`` genotype (h) and ``2 UKW`` genotypes (u) 
+the possible roh runs (H) would be:
+
+
+.. code-block:: bash
+
+	genotype_run = H H H H h H H H H u H H H H H u H H H H H H H h H H H H H h H H H H H
+	roh_run1     = H H H H h H H H H u H H H H H u H H H H H H H
+	roh_run2     =           H H H H u H H H H H u H H H H H H H h H H H H H
+	roh_run3     =                     H H H H H u H H H H H H H h H H H H H
+	roh_run4     =                                 H H H H H H H h H H H H H
+
+roh returned for --min-snps = 20 would be:
+
+.. code-block:: bash
+	
+	roh_run1     = H H H H h H H H H u H H H H H u H H H H H H H
+	roh_run2     =           H H H H u H H H H H u H H H H H H H h H H H H H
+
+As you can see, the immediate homozygous position right of a break (h or u) would be the possible 
+start of a new roh run and genotypes to the left of a break are pruned since they cannot 
+be part of a longer run than we have seen before.
+
+
+
+Return ``roh`` with minimum of 50 snps, a minimum run length of 1 mb and a minimum sample depth of 20 
+for sample S138 (with default values for allowed number of HETS, UNKS and total depth). 
+
+.. code-block:: bash
+
+	$ gemini roh --min-snps 50 \
+	           --min-gt-depth 20 \
+			   --min-size 1000000 \
+			   -s S138 \
+			   roh_run.db
+	chrom	start	end	sample	num_of_snps	density_per_kb	run_length_in_bp
+	chr2 233336080 234631638 S138 2583 1.9953 1295558
+	chr2	238341281	239522281	S138	2899	2.4555	1181000
+
+
+
 ===========================================================================
 ``db_info``: List the gemini database tables and columns
 ===========================================================================
