@@ -9,7 +9,7 @@ check()
 export -f check
 
 cd test
-
+rm ./*.db
 
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
