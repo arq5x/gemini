@@ -388,6 +388,9 @@ class GeminiQuery(object):
         # needed for gt-filter wildcard support.
         self._collect_sample_table_columns()
 
+        # list of samples ids for each clause in the --gt-filter
+        self.sample_info = collections.defaultdict(list)
+
         # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323
         self.sample_to_idx = util.map_samples_to_indices(self.c)
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
@@ -810,7 +813,7 @@ class GeminiQuery(object):
         # and
         #    (   gt_types).(*).(!=HOM_REF).(all)
         wildcard_tokens = re.split(r'(\(\s*gt\w+\s*\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
-        for token in wildcard_tokens:
+        for token_idx, token in enumerate(wildcard_tokens):
             # NOT a WILDCARD
             # We must then split on whitespace and
             # correct the gt_* columns:
@@ -848,30 +851,31 @@ class GeminiQuery(object):
                 wildcard_op = wildcard_op.strip('(').strip(')').strip()
 
                 # collect and save all of the samples that meet the wildcard criteria
+                # for each clause.
                 # these will be used in the list comprehension for the eval expression
                 # constructed below.
-                self.sample_info = self._get_matching_sample_ids(wildcard)
+                self.sample_info[token_idx] = self._get_matching_sample_ids(wildcard)
 
                 # Replace HET, etc. with 1, et.c to avoid eval() issues.
                 wildcard_rule = _swap_genotype_for_number(wildcard_rule)
 
                 # build the rule based on the wildcard the user has supplied.
                 if wildcard_op in ["all", "any"]:
-                    rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info)"
+                    rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])"
                 elif wildcard_op == "none":
-                    rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info)"
+                    rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])"
                 elif "count" in wildcard_op:
                     # break "count>=2" into ['', '>=2']
                     tokens = wildcard_op.split('count')
                     count_comp = tokens[len(tokens) - 1]
-                    rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info)" + count_comp
+                    rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])" + count_comp
                 else:
                     sys.exit("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
 
                 corrected_gt_filter.append(rule)
             else:
                 if len(token) > 0:
-                    corrected_gt_filter.append(token)
+                    corrected_gt_filter.append(token.lower())
 
         return " ".join(corrected_gt_filter)
 
