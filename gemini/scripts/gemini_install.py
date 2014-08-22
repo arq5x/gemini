@@ -112,7 +112,6 @@ def install_conda_pkgs(anaconda):
             "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
             "pyzmq", "pandas", "scipy"]
     channels = ["-c", "https://conda.binstar.org/bcbio"]
-    subprocess.check_call([anaconda["conda"], "install", "--yes", "numpy"])
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
 
 def install_anaconda_python(args, remotes):
