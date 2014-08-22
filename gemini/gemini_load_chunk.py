@@ -64,7 +64,7 @@ class GeminiLoader(object):
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
         """
-        database.insert_resources(self.c, annotations.get_resources())
+        database.insert_resources(self.c, annotations.get_resources( self.args ))
 
     def store_version(self):
         """Create table documenting which gemini version was used for this db.
@@ -511,7 +511,7 @@ class GeminiLoader(object):
         i = 0
         table_contents = detailed_list = []
         
-        config = read_gemini_config()
+        config = read_gemini_config( args = self.args )
         path_dirname = config["annotation_dir"]
         file_handle = os.path.join(path_dirname, 'detailed_gene_table_v75')
         
@@ -537,7 +537,7 @@ class GeminiLoader(object):
         i = 0
         contents = summary_list = []
         
-        config = read_gemini_config()
+        config = read_gemini_config( args = self.args )
         path_dirname = config["annotation_dir"]
         file = os.path.join(path_dirname, 'summary_gene_table_v75')
         
@@ -560,7 +560,7 @@ class GeminiLoader(object):
     def update_gene_table(self):
         """
         """
-        gene_table.update_cosmic_census_genes(self.c)
+        gene_table.update_cosmic_census_genes(self.c, self.args)
 
     def _init_sample_gt_counts(self):
         """
@@ -609,7 +609,7 @@ def load(parser, args):
         exit("\nERROR: Unsupported selection for -t\n")
 
     # collect of the the add'l annotation files
-    annotations.load_annos()
+    annotations.load_annos( args )
 
     # create a new gemini loader and populate
     # the gemini db and files from the VCF

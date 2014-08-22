@@ -53,6 +53,9 @@ def main():
     parser.add_argument("-v", "--version", help="Installed gemini version",
                         action="version",
                         version="%(prog)s " + str(gemini.version.__version__))
+    parser.add_argument('--annotation-dir', dest='annotation_dir',
+                             help='Path to the annotation database.\n'
+                                'This argument is optional and if given will take precedence over the default location stored in the gemini config file.')
     subparsers = parser.add_subparsers(title='[sub-commands]', dest='command')
 
     #########################################

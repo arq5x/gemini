@@ -12,8 +12,8 @@ from gemini.config import read_gemini_config
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
 
-def get_anno_files():
-    config = read_gemini_config()
+def get_anno_files( args ):
+    config = read_gemini_config( args = args )
     anno_dirname = config["annotation_dir"]
     # Default annotations -- always found
     annos = {
@@ -153,7 +153,7 @@ ThousandGInfo = collections.namedtuple("ThousandGInfo",
                                         aaf_AFR \
                                         aaf_EUR")
 
-def load_annos():
+def load_annos( args ):
     """
     Populate a dictionary of Tabixfile handles for
     each annotation file.  Other modules can then
@@ -163,7 +163,7 @@ def load_annos():
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
     """
-    anno_files = get_anno_files()
+    anno_files = get_anno_files( args )
     for anno in anno_files: 
         try:
             # .gz denotes Tabix files.
@@ -784,8 +784,8 @@ def get_encode_chromhmm_segs(var):
     return ENCODESegInfo(None, None, None, None, None, None)
 
 
-def get_resources():
+def get_resources( args ):
     """Retrieve list of annotation resources loaded into gemini.
     """
-    anno_files = get_anno_files()
+    anno_files = get_anno_files( args )
     return [(n, os.path.basename(anno_files[n])) for n in sorted(anno_files.keys())]

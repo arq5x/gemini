@@ -52,13 +52,13 @@ class gene_summary:
         return ",".join([self.chrom, self.gene, self.is_hgnc, self.ensembl_gene_id, self.hgnc_id, self.synonym, self.rvis, 
                          self.strand, self.transcript_min_start, self.transcript_max_end, self.mam_phenotype])
          
-def update_cosmic_census_genes(cursor):
+def update_cosmic_census_genes( cursor, args ):
     """
     Update the gene summary table with
     whether or not a given gene is in the
     COSMIC cancer gene census
     """
-    config = read_gemini_config()
+    config = read_gemini_config( args= args )
     path_dirname = config["annotation_dir"]
     file = os.path.join(path_dirname, 'cancer_gene_census.20140120.tsv')
     

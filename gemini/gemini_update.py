@@ -58,7 +58,7 @@ def release(parser, args):
                                    "git+%s" % repo])
         print "Gemini upgraded to latest version"
     # update datafiles
-    config = gemini.config.read_gemini_config()
+    config = gemini.config.read_gemini_config( args = args )
     extra_args = ["--extra=%s" % x for x in args.extra]
     subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]] + extra_args)
     print "Gemini data files updated"
