@@ -42,10 +42,10 @@ def main(args):
     print "Installing gemini..."
     install_conda_pkgs(anaconda)
     gemini = install_gemini(anaconda, remotes, args.datadir, args.tooldir, args.sudo)
-    cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
-    fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir,
-                              "ubuntu", args.sudo)
     if args.install_tools:
+        cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
+        fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir,
+                              "ubuntu", args.sudo)
         print "Installing associated tools..."
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     os.chdir(work_dir)
