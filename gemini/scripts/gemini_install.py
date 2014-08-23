@@ -20,9 +20,14 @@ import os
 import shutil
 import subprocess
 import sys
+import urllib2
 
-remotes = {"requirements":
+remotes = {"requirements_pip":
            "https://raw.github.com/arq5x/gemini/master/requirements.txt",
+            "requirements_conda":
+           "",
+            "versioned_installations":
+            "https://raw.githubusercontent.com/bgruening/gemini/versioned_installation/versioning/",
            "cloudbiolinux":
            "https://github.com/chapmanb/cloudbiolinux.git",
            "gemini":
@@ -36,16 +41,26 @@ def main(args):
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
     os.chdir(work_dir)
+
+    if args.gemini_version != 'latest':
+        requirements_pip = os.path.join( remotes['versioned_installations'], args.gemini_version, 'requirements_pip.txt' )
+        requirements_conda = os.path.join( remotes['versioned_installations'], args.gemini_version, 'requirements_conda.txt' )
+        try:
+            urllib2.urlopen( requirements_pip )
+        except:
+            sys.exit('Gemini version %s could not be found. Try the latest version.' % args.gemini_version)
+        remotes.update( {'requirements_pip': requirements_pip, 'requirements_conda': requirements_conda} )
+
     print "Installing isolated base python installation"
     make_dirs(args)
     anaconda = install_anaconda_python(args, remotes)
     print "Installing gemini..."
-    install_conda_pkgs(anaconda)
+    install_conda_pkgs(anaconda, remotes, args)
     gemini = install_gemini(anaconda, remotes, args.datadir, args.tooldir, args.sudo)
-    cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
-    fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir,
-                              "ubuntu", args.sudo)
     if args.install_tools:
+        cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
+        fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir,
+                              "ubuntu", args.sudo)
         print "Installing associated tools..."
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     os.chdir(work_dir)
@@ -85,7 +100,7 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     if pip_version >= "1.5":
         for req in ["python-graph-core", "python-graph-dot"]:
             pip_compat += ["--allow-external", req, "--allow-unverified", req]
-    subprocess.check_call([anaconda["pip"], "install"] + pip_compat + ["-r", remotes["requirements"]])
+    subprocess.check_call([anaconda["pip"], "install"] + pip_compat + ["-r", remotes["requirements_pip"]])
     python_bin = os.path.join(anaconda["dir"], "bin", "python")
     _cleanup_problem_files(anaconda["dir"])
     _add_missing_inits(python_bin)
@@ -107,12 +122,14 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
             "python": python_bin,
             "cmd": os.path.join(anaconda["dir"], "bin", "gemini")}
 
-def install_conda_pkgs(anaconda):
-    pkgs = ["bx-python", "conda", "cython", "ipython", "jinja2", "nose", "numpy",
+def install_conda_pkgs(anaconda, remotes, args):
+    if args.gemini_version != 'latest':
+        pkgs = ["--file", remotes['requirements_conda']]
+    else:
+        pkgs = ["bx-python", "conda", "cython", "ipython", "jinja2", "nose", "numpy",
             "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
             "pyzmq", "pandas", "scipy"]
     channels = ["-c", "https://conda.binstar.org/bcbio"]
-    subprocess.check_call([anaconda["conda"], "install", "--yes", "numpy"])
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
 
 def install_anaconda_python(args, remotes):
@@ -292,6 +309,8 @@ if __name__ == "__main__":
                         type=os.path.abspath)
     parser.add_argument("datadir", help="Directory to install gemini data files",
                         type=os.path.abspath)
+    parser.add_argument("--gemini-version", dest="gemini_version", default="latest",
+                        help="Install one specific gemini version with a fixed dependency chain.")
     parser.add_argument("--nosudo", help="Specify we cannot use sudo for commands",
                         dest="sudo", action="store_false", default=True)
     parser.add_argument("--notools", help="Do not install tool dependencies",
