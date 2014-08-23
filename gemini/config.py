@@ -42,7 +42,7 @@ def _get_config_file(dirs=None, use_globals=True):
                      "http://gemini.readthedocs.org/en/latest/content/installation.html"
                      .format(CONFIG_FILE, dnames))
 
-def read_gemini_config(dirs=None, allow_missing=False, use_globals=True):
+def read_gemini_config(dirs=None, allow_missing=False, use_globals=True, args=None):
     try:
         fname = _get_config_file(dirs, use_globals=use_globals)
     except ValueError:
@@ -51,7 +51,12 @@ def read_gemini_config(dirs=None, allow_missing=False, use_globals=True):
         else:
             raise
     with open(fname) as in_handle:
-        return yaml.load(in_handle)
+        config = yaml.load(in_handle)
+    if args and args.annotation_dir:
+        # If --annotation-dir is given via commandline interface, we will overwrite the
+        # location from the config file
+        config["annotation_dir"] = args.annotation_dir
+    return config
 
 def _find_best_config_file(dirs=None):
     dirs = [] if dirs is None else dirs

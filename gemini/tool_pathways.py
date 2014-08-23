@@ -20,7 +20,7 @@ def get_pathways(args):
                    '68': 'kegg_pathways_ensembl68', '69': 'kegg_pathways_ensembl69',
                    '70': 'kegg_pathways_ensembl70', '71': 'kegg_pathways_ensembl71'}
 
-    config = read_gemini_config()
+    config = read_gemini_config( args = args )
     path_dirname = config["annotation_dir"]
     if args.version in version_dic:
         path_file = os.path.join(path_dirname, version_dic[args.version])
