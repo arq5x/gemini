@@ -27,7 +27,7 @@ remotes = {"requirements_pip":
             "requirements_conda":
            "",
             "versioned_installations":
-            "https://raw.githubusercontent.com/bgruening/gemini/versioned_installation/versioning/",
+            "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
            "cloudbiolinux":
            "https://github.com/chapmanb/cloudbiolinux.git",
            "gemini":
