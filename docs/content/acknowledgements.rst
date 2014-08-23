@@ -10,3 +10,4 @@ made by the following:
 - Brad Chapman, HSPH
 - Rory Kirchner, HSPH
 - Oliver Hofmann, HSPH
+- Björn Grüning, University of Freiburg
