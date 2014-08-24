@@ -2,6 +2,13 @@
 Release History
 #############################
 
+0.9.2 (in progress)
+===================
+1. Provide an ``--annotation-dir`` argument that specifies the path the
+   annotation databases, to overwrite configured data inputs. Thanks to Björn Grüning,
+2. Support reproducible versioned installs of GEMINI with Python
+   dependencies. Enables Galaxy integration. Thanks to Björn Grüning,
+
 0.8.0
 =======================================
 1. Support arbitrary annotation supplied to VEP, which translate into queryable
