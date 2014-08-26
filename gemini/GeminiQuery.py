@@ -169,16 +169,17 @@ class TPEDRowFormat(RowFormat):
         chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
         start = str(row.row['start'])
         end = str(row.row['end'])
+        ref = row['ref']
+        alt = row['alt']
         geno = [re.split('\||/', x) for x in row.row['gts'].split(",")]
         geno = [self._fix_genotype(chrom, start, genotype, self.samples[i].sex)
                 for i, genotype in enumerate(geno)]
         genotypes = " ".join(list(flatten(geno)))
-        alleles = "|".join(set(list(flatten(geno))).difference("0"))
-        name = chrom + ":" +  start + "-" + end + ":" + alleles + ":" + str(row['variant_id'])
+        name = chrom + ":" +  start + "-" + end + ":" + ref + "|" + alt + ":" + str(row['variant_id'])
         return " ".join([chrom, name, "0", start, genotypes])
 
     def format_query(self, query):
-        NEED_COLUMNS = ["chrom", "rs_ids", "start", "gts", "type", "variant_id"]
+        NEED_COLUMNS = ["chrom", "rs_ids", "start", "ref", "alt", "gts", "type", "variant_id"]
         return ensure_columns(query, NEED_COLUMNS)
 
     def predicate(self, row):
