@@ -14,7 +14,7 @@ import yaml
 
 CONFIG_FILE = "gemini-config.yaml"
 
-def get_config_dirs():
+def get_config_dirs(use_globals=True):
     virtualenv_loc = __file__.find("gemini-virtualenv")
     anaconda_loc = __file__.find("anaconda")
     if anaconda_loc >= 0:
@@ -25,13 +25,14 @@ def get_config_dirs():
         dirs = [os.path.join(base), os.path.join(base, "gemini")]
     else:
         dirs = []
-    dirs.append("/usr/local/share/gemini")
-    dirs.append(os.path.join(os.environ["HOME"], ".gemini"))
+    if use_globals:
+        dirs.append("/usr/local/share/gemini")
+        dirs.append(os.path.join(os.environ["HOME"], ".gemini"))
     return dirs
 
-def _get_config_file(dirs=None):
+def _get_config_file(dirs=None, use_globals=True):
     dirs = [] if dirs is None else dirs
-    dnames = dirs + get_config_dirs()
+    dnames = dirs + get_config_dirs(use_globals=use_globals)
     for dname in dnames:
         fname = os.path.join(dname, CONFIG_FILE)
         if os.path.exists(fname):
@@ -41,16 +42,21 @@ def _get_config_file(dirs=None):
                      "http://gemini.readthedocs.org/en/latest/content/installation.html"
                      .format(CONFIG_FILE, dnames))
 
-def read_gemini_config(dirs=None, allow_missing=False):
+def read_gemini_config(dirs=None, allow_missing=False, use_globals=True, args=None):
     try:
-        fname = _get_config_file(dirs)
+        fname = _get_config_file(dirs, use_globals=use_globals)
     except ValueError:
         if allow_missing:
             return {}
         else:
             raise
     with open(fname) as in_handle:
-        return yaml.load(in_handle)
+        config = yaml.load(in_handle)
+    if args and hasattr(args, "annotation_dir") and args.annotation_dir:
+        # If --annotation-dir is given via commandline interface, we will overwrite the
+        # location from the config file
+        config["annotation_dir"] = args.annotation_dir
+    return config
 
 def _find_best_config_file(dirs=None):
     dirs = [] if dirs is None else dirs
@@ -65,7 +71,7 @@ def _find_best_config_file(dirs=None):
 
 def write_gemini_config(new_config, dirs=None):
     try:
-        fname = _get_config_file(dirs)
+        fname = _get_config_file(dirs, use_globals=False)
     except ValueError:
         fname = _find_best_config_file(dirs)
     if not os.path.exists(os.path.dirname(fname)):

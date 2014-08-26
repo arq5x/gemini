@@ -73,6 +73,8 @@ class GeminiInheritanceModelFactory(object):
                 family_filter = family.get_auto_dominant_filter()
             elif self.model == "de_novo":
                 family_filter = family.get_de_novo_filter()
+            elif self.model == "mendel_violations":
+                family_filter = family.get_mendelian_violation_filter()
 
             if family_filter != "False" and family_filter is not None:
                 self.family_masks.append(family_filter)

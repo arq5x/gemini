@@ -413,6 +413,158 @@ class Family(object):
         mask += " )"
         return mask
 
+    def get_mendelian_violation_filter(self):
+        """
+        Generate Mendelian violation eval() filter to apply for this family.
+        For example:
+
+        '(gt_types[57] == HOM_REF and \  # mom
+          gt_types[58] == HOM_REF and \  # dad
+          gt_types[11] == HET)'          # affected child
+
+          # [G/G]---(G/G)
+          #       |
+          #     (A/G)
+        """
+
+        # identify which samples are the parents in the family.
+        # Fail if both parents are not found
+        if not self.find_parents():
+            sys.stderr.write("WARNING: Unable to find parents for family (%s). "
+                 "GEMINI is currently only able to identify candidates "
+                 "from two generational families.\n"
+                 % self.family_id)
+            return "False"
+
+        # outer start paren
+        mask = "("
+
+        for i, child in enumerate(self.children):
+
+            ##################################################
+            # Plausible de novos
+            ##################################################
+            # DAD = HOM_REF; MOM = HOM_REF; KID = HET (De novo)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET) + ")"
+
+            mask += " or "
+
+            # DAD = HOM_ALT; MOM = HOM_ALT; KID = HET (De novo)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET) + ")"
+
+            ##################################################
+            # Implausible de novos
+            ##################################################
+            mask += " or "
+
+            # DAD = HOM_REF; MOM = HOM_REF; KID = HOM_ALT (Implausible de novo)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+
+            mask += " or "
+
+            # DAD = HOM_ALT; MOM = HOM_ALT; KID = HOM_REF (Implausible de novo)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+
+            ##################################################
+            # Uniparental disomies
+            ##################################################
+            mask += " or "
+
+            # DAD = HOM_REF; MOM = HOM_ALT; KID = HOM_REF (Uniparental disomy)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+
+            mask += " or "
+
+            # DAD = HOM_REF; MOM = HOM_ALT; KID = HOM_ALT (Uniparental disomy)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+
+            mask += " or "
+
+            # DAD = HOM_ALT; MOM = HOM_REF; KID = HOM_REF (Uniparental disomy)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+
+            mask += " or "
+
+            # DAD = HOM_ALT; MOM = HOM_REF; KID = HOM_ALT (Uniparental disomy)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+
+            ##################################################
+            # Losses of heterozygosity
+            ##################################################
+            mask += " or "
+
+            # DAD = HOM_REF; MOM = HET; KID = HOM_ALT (Loss of heterozygosity)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HET)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+
+            mask += " or "
+
+            # DAD = HOM_ALT; MOM = HET; KID = HOM_REF (Loss of heterozygosity)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HET)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+
+            mask += " or "
+
+            # DAD = HET; MOM = HOM_REF; KID = HOM_ALT (Loss of heterozygosity)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HET)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+
+            mask += " or "
+
+            # DAD = HET; MOM = HOM_ALT; KID = HOM_REF (Loss of heterozygosity)
+            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HET)
+            mask += " and "
+            mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
+            mask += " and "
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+
+        # outer end paren
+        mask += ")"
+
+        return mask
+
+
     def get_genotype_columns(self):
         """
         Return the indices into the gts numpy array for the parents

@@ -72,7 +72,7 @@ def sample_gene_interactions(c, args, idx_to_sample):
     #fetch variant gene dict for all samples
     samples = get_variant_genes(c, args, idx_to_sample)
     #file handle for fetching the hprd graph
-    config = read_gemini_config()
+    config = read_gemini_config( args = args )
     path_dirname = config["annotation_dir"]
     file_graph = os.path.join(path_dirname, 'hprd_interaction_graph')
     #load the graph using cPickle and close file handle
@@ -146,7 +146,7 @@ def sample_gene_interactions(c, args, idx_to_sample):
 def sample_lof_interactions(c, args, idx_to_sample, samples):
     lof = get_lof_genes(c, args, idx_to_sample)
     #file handle for fetching the hprd graph
-    config = read_gemini_config()
+    config = read_gemini_config( args = args )
     path_dirname = config["annotation_dir"]
     file_graph = os.path.join(path_dirname, 'hprd_interaction_graph')
     #load the graph using cPickle and close file handle
