@@ -18,8 +18,8 @@ The recommended Gemini install location is /usr/local/share/gemini.
 """
 
 anno_files = \
-['dbsnp.138.vcf.gz',
-'clinvar_20140303.vcf.gz',
+['dbsnp.hg19.b141.vcf.gz',
+'clinvar_20140807.vcf.gz',
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
 'hg19.pfam.ucscgenes.bed.gz',
@@ -46,7 +46,7 @@ anno_files = \
 'hprd_interaction_graph',
 'cse-hiseq-8_4-2013-02-20.bed.gz',
 'hg19.vista.enhancers.20131108.bed.gz',
-'hg19.cosmic.v67.20131024.gz',
+'cosmic-v68-GRCh37.vcf.gz',
 'detailed_gene_table_v75',
 'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv'
@@ -57,11 +57,12 @@ toadd_anno_files = []
 
 anno_versions = {
     "GRCh37-gms-mappability.vcf.gz": 2,
-    "dbsnp.138.vcf.gz": 2,
-    "clinvar_20140303.vcf.gz": 3,
+    "dbsnp.hg19.b141.vcf.gz": 3,
+    "clinvar_20140807.vcf.gz": 4,
     "hg19.rmsk.bed.gz": 2,
     "detailed_gene_table_v75": 2,
-    "summary_gene_table_v75": 2}
+    "summary_gene_table_v75": 2,
+    "cosmic-v68-GRCh37.vcf.gz": 2}
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
     """Download required annotation files.

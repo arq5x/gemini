@@ -19,8 +19,8 @@ def get_anno_files( args ):
     annos = {
      'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
      'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-     'dbsnp': os.path.join(anno_dirname, 'dbsnp.138.vcf.gz'),
-     'clinvar': os.path.join(anno_dirname, 'clinvar_20140303.vcf.gz'),
+     'dbsnp': os.path.join(anno_dirname, 'dbsnp.hg19.b141.vcf.gz'),
+     'clinvar': os.path.join(anno_dirname, 'clinvar_20140807.vcf.gz'),
      'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
      'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
      'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
@@ -45,7 +45,7 @@ def get_anno_files( args ):
                                            'encode.6celltypes.consensus.bedg.gz'),
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz')
+     'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.vcf.gz')
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
@@ -437,7 +437,7 @@ def get_cosmic_info(var):
     """
     # report the first overlapping ClinVar variant Most often, just one).
     cosmic_ids = []
-    for hit in annotations_in_region(var, "cosmic", "vcf", "ucsc"):
+    for hit in annotations_in_region(var, "cosmic", "vcf", "grch37"):
         cosmic_ids.append(hit.id)
     return ",".join(cosmic_ids) if len(cosmic_ids) > 0 else None
 
