@@ -199,6 +199,10 @@ def load_chunks_multicore(grabix_file, args):
     if args.skip_info_string is True:
         skip_info_string = "--skip-info-string"
 
+    annotation_dir = ""
+    if hasattr(args, "annotation_dir") and args.annotation_dir:
+        annotation_dir = "--annotation-dir " + args.annotation_dir
+
     submit_command = "{cmd}"
     vcf, _ = os.path.splitext(grabix_file)
     chunk_steps = get_chunk_steps(grabix_file, args)
@@ -304,7 +308,7 @@ def cleanup_temp_db_files(chunk_dbs):
 
 def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
-    gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
+    gemini_load_cmd = ("gemini {annotation_dir} load_chunk -v - {anno_type} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
                        " {skip_gerp_bp} {skip_gene_tables} {skip_cadd}"
                        " {passonly} {skip_info_string} {test_mode}"
