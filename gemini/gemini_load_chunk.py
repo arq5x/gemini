@@ -300,6 +300,7 @@ class GeminiLoader(object):
         gerp_el = annotations.get_gerp_elements(var)
         vista_enhancers = annotations.get_vista_enhancers(var)
         cosmic_ids = annotations.get_cosmic_info(var)
+        fitcons = annotations.get_fitcons(var)
 
         #load CADD scores by default
         if self.args.skip_cadd is False:
@@ -469,7 +470,8 @@ class GeminiLoader(object):
                    cosmic_ids,
                    pack_blob(info),
                    cadd_raw,
-                   cadd_scaled]
+                   cadd_scaled,
+                   fitcons]
 
         return variant, variant_impacts, extra_fields
 

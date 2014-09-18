@@ -8,6 +8,9 @@ Release History
    annotation databases, to overwrite configured data inputs. Thanks to Björn Grüning,
 2. Support reproducible versioned installs of GEMINI with Python
    dependencies. Enables Galaxy integration. Thanks to Björn Grüning,
+3. Add `fitCons <http://biorxiv.org/content/early/2014/09/11/006825>` scores as
+   an additional measure of potential function in variants of interest, supplementing
+   existing CADD and dbNSFP approaches.
 
 0.8.0
 =======================================

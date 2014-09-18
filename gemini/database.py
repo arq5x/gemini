@@ -37,6 +37,7 @@ def index_variation(cursor):
     cursor.execute('''create index var_omim_idx on variants(in_omim)''')
     cursor.execute('''create index var_cadd_raw_idx on variants(cadd_raw)''')
     cursor.execute('''create index var_cadd_scaled_idx on variants(cadd_scaled)''')
+    cursor.execute('''create index var_fitcons_idx on variants(fitcons)''')
 
 
 def index_variation_impacts(cursor):
@@ -204,6 +205,7 @@ def create_tables(cursor):
                     info blob,                                  \
                     cadd_raw float,                             \
                     cadd_scaled float,                          \
+                    fitcons float,                              \
                     PRIMARY KEY(variant_id ASC))''')
 
     cursor.execute('''create table if not exists variant_impacts  (   \
@@ -312,7 +314,7 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?)', variant)
+                                                             ?,?,?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -340,7 +342,7 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?)', buffer)
+                                                         ?,?,?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
