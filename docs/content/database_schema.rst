@@ -206,6 +206,14 @@ cadd_raw                  FLOAT         | Raw ``CADD`` scores for scoring delete
                                         | Details: http://www.ncbi.nlm.nih.gov/pubmed/24487276
 cadd_scaled               FLOAT         | Scaled ``CADD`` scores (Phred like) for scoring deleteriousness of SNV's
                                         | Details: http://www.ncbi.nlm.nih.gov/pubmed/24487276
+fitcons                   FLOAT         | fitCons scores estimating the probability that a point mutation
+                                        | at each position in a genome will influence fitness.
+                                        | Higher scores have more potential for interesting genomic function.
+                                        | Common ranges: 0.05-0.35 for non-coding and 0.4-0.8 for coding
+                                        | Provides integerated highly significant scores (i6-0).
+                                        | http://haldanessieve.org/2014/09/12/our-paper-probabilities-of-fitness-consequences-for-point-mutations-across-the-human-genome/
+                                        | http://biorxiv.org/content/early/2014/09/11/006825
+                                        | http://genome-mirror.bscb.cornell.edu/cgi-bin/hgTrackUi?hgsid=37121_t2bCeEgzaA9R4buMtIv5jbR0uLhZ&g=fc1
 ========================  ========      ==============================================================================================
 
 **Note:**

@@ -45,7 +45,8 @@ def get_anno_files( args ):
                                            'encode.6celltypes.consensus.bedg.gz'),
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz')
+     'cosmic': os.path.join(anno_dirname, 'hg19.cosmic.v67.20131024.gz'),
+     'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bw")
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
@@ -378,6 +379,17 @@ def get_vista_enhancers(var):
         vista_enhancers.append(hit[4])
     return ",".join(vista_enhancers) if len(vista_enhancers) > 0 else None
 
+def get_fitcons(var):
+    chrom, start, end = _get_var_coords(var, "ucsc")
+    anno = annos["fitcons"]
+    try:
+        summary = anno.summarize(str(chrom), start, end, end - start)
+        if summary.max_val[0] >= 0:
+            return summary.max_val[0]
+        else:
+            return None
+    except AttributeError:
+        return None
 
 def get_cadd_scores(var):
     """
