@@ -45,7 +45,7 @@ def get_anno_files( args ):
                                            'encode.6celltypes.consensus.bedg.gz'),
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-     'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bw")
+     'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bw"),
      'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.vcf.gz')
     }
     # optional annotations
