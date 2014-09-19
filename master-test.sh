@@ -35,6 +35,9 @@ bash test-columns.sh
 # Test cadd scores
 bash test-cadd.sh
 
+# Test cosmic
+bash test-cosmic.sh
+
 # Test loading functionality
 bash test-load.sh
 
