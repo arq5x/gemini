@@ -149,7 +149,7 @@ aaf_1kg_all               FLOAT         Global allele frequency (based on AC/AN)
 
 
 Disease phenotype info (from ClinVar).
-........................
+.......................................
 ========================  ========      ==============================================================================================
 ========================  ========      ==============================================================================================
 in_omim                   BOOL          | 0 : Absence of the variant in OMIM database
@@ -181,8 +181,8 @@ clinvar_on_diag_assay     BOOL          Variation is interrogated in a clinical 
 
 Genome annotations
 ........................
-========================  ========      ==============================================================================================
-========================  ========      ==============================================================================================
+========================  ========      =========================================================================================================================================
+========================  ========      =========================================================================================================================================
 exome_chip                BOOL          Whether an SNP is on the Illumina HumanExome Chip
 cyto_band                 STRING        Chromosomal cytobands that a variant overlaps
 rmsk                      STRING        | A comma-separated list of RepeatMasker annotations that the variant overlaps.
@@ -214,7 +214,7 @@ fitcons                   FLOAT         | fitCons scores estimating the probabil
                                         | http://haldanessieve.org/2014/09/12/our-paper-probabilities-of-fitness-consequences-for-point-mutations-across-the-human-genome/
                                         | http://biorxiv.org/content/early/2014/09/11/006825
                                         | http://genome-mirror.bscb.cornell.edu/cgi-bin/hgTrackUi?hgsid=37121_t2bCeEgzaA9R4buMtIv5jbR0uLhZ&g=fc1
-========================  ========      ==============================================================================================
+========================  ========      =========================================================================================================================================
 
 **Note:**
 ``CADD`` scores (http://cadd.gs.washington.edu/) are Copyright 2013 University of Washington and Hudson-Alpha Institute for Biotechnology 
