@@ -2,6 +2,7 @@
 
 # native Python imports
 import os.path
+import shutil
 import sys
 import sqlite3
 
@@ -96,7 +97,7 @@ def get_merge_chunks_cmd(chunks, db):
 
 def merge_chunks_ipython(chunks, db, view):
     if len(chunks) == 1:
-        os.rename(chunks[0], db)
+        shutil.move(chunks[0], db)
         return db
     else:
         sub_merges = get_chunks_to_merge(chunks)
@@ -110,7 +111,7 @@ def merge_chunks_multicore(chunks, db):
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
         print st, "indexing final database."
 
-        os.rename(chunks[0], db)
+        shutil.move(chunks[0], db)
         main_conn = sqlite3.connect(db)
         main_conn.isolation_level = None
         main_curr = main_conn.cursor()
