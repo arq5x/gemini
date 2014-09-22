@@ -56,11 +56,11 @@ class StructuralVariant(object):
             if self.var.ALT[0][0] == '[': #[19:8195598[C
                 return "-" 
             elif self.var.ALT[0][0] == ']': #]19:4529597]A
-                return "+"
-            elif self.var.ALT[0][1] == '[': #A[19:8417020[
-                return "+" 
-            elif self.var.ALT[0][1] == ']': #T]19:8195491]
                 return "-"
+            elif self.var.ALT[0][-1] == '[': #A[19:8417020[
+                return "+" 
+            elif self.var.ALT[0][-1] == ']': #T]19:8195491]
+                return "+"
 
         # single-line SV
         else:
