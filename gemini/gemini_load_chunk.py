@@ -390,7 +390,6 @@ class GeminiLoader(object):
         if var.ID is not None and var.ID != ".":
             vcf_id = var.ID
 
-        print var.POS
         # build up numpy arrays for the genotype information.
         # these arrays will be pickled-to-binary, compressed,
         # and loaded as SqlLite BLOB values (see compression.pack_blob)
