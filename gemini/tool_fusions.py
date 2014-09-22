@@ -50,7 +50,7 @@ def get_fusions(args):
 
     curr = None
     prev = None
-    events = defaultdict(list)
+    events = []
     gq.run(query)
     for row in gq:
         curr = row['sv_event_id']
@@ -58,13 +58,13 @@ def get_fusions(args):
         if curr != prev and prev is not None:
             # did both ends of the sv meet all the query criteria
             # and are both ends on the same strand?
-            if len(events[prev]) == 2 and \
-                (events[prev][0]['sv_strand'] == events[prev][1]['sv_strand']):
-                report_fusion(events[prev])
+            if len(events) == 2 and \
+                (events[0]['sv_strand'] == events[1]['sv_strand']):
+                report_fusion(events)
             # we are done with this candidate
-            del events[prev]   
+            events = []   
         else:
-            events[curr].append(row)
+            events.append(row)
         prev = curr
 
 def run(parser, args):
