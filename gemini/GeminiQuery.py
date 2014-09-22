@@ -269,7 +269,8 @@ class GeminiRow(object):
     def __init__(self, row, gts=None, gt_types=None,
                  gt_phases=None, gt_depths=None,
                  gt_ref_depths=None, gt_alt_depths=None,
-                 gt_quals=None, variant_samples=None,
+                 gt_quals=None, gt_copy_numbers=None,
+                 variant_samples=None,
                  HET_samples=None, HOM_ALT_samples=None,
                  HOM_REF_samples=None, UNKNOWN_samples=None,
                  info=None,formatter=DefaultRowFormat(None)):
@@ -282,9 +283,10 @@ class GeminiRow(object):
         self.gt_ref_depths = gt_ref_depths
         self.gt_alt_depths = gt_alt_depths
         self.gt_quals = gt_quals
+        self.gt_copy_numbers = gt_copy_numbers
         self.gt_cols = ['gts', 'gt_types', 'gt_phases',
                         'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
-                        'gt_quals', "variant_samples", "HET_samples", "HOM_ALT_samples", "HOM_REF_samples"]
+                        'gt_quals', 'gt_copy_numbers', "variant_samples", "HET_samples", "HOM_ALT_samples", "HOM_REF_samples"]
         self.formatter = formatter
         self.variant_samples = variant_samples
         self.HET_samples = HET_samples
@@ -523,6 +525,7 @@ class GeminiQuery(object):
             gt_ref_depths = None
             gt_alt_depths = None
             gt_quals = None
+            gt_copy_numbers = None
             variant_names = []
             het_names = []
             hom_alt_names = []
@@ -547,6 +550,8 @@ class GeminiQuery(object):
                     compression.unpack_genotype_blob(row['gt_alt_depths'])
                 gt_quals = \
                     compression.unpack_genotype_blob(row['gt_quals'])
+                gt_copy_numbers = \
+                    compression.unpack_genotype_blob(row['gt_copy_numbers'])
                 variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
                                    y == HOM_ALT]
                 variant_names = [self.idx_to_sample[x] for x in variant_samples]
@@ -608,6 +613,9 @@ class GeminiQuery(object):
                         elif col == "gt_alt_depths":
                             fields[col] = \
                                 ','.join(str(d) for d in gt_alt_depths)
+                        elif col == "gt_copy_numbers":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_copy_numbers)
 
             if self.show_variant_samples:
                 fields["variant_samples"] = \
@@ -621,7 +629,7 @@ class GeminiQuery(object):
 
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
                                    gt_depths, gt_ref_depths, gt_alt_depths,
-                                   gt_quals, variant_names, het_names, hom_alt_names,
+                                   gt_quals, gt_copy_numbers, variant_names, het_names, hom_alt_names,
                                    hom_ref_names, unknown_names, info,
                                    formatter=self.formatter)
 
@@ -674,8 +682,8 @@ class GeminiQuery(object):
 
         # make sure a "gt" col is in the string
         valid_cols = ["gts.", "gt_types.", "gt_phases.", "gt_quals.",
-                      "gt_depths.", "gt_ref_depths.", "gt_alt_depths.",
-                      "(gts).", "(gt_types).", "(gt_phases).", "(gt_quals).",
+                      "gt_depths.", "gt_ref_depths.", "gt_alt_depths.", "gt_copy_numbers.",
+                      "(gts).", "(gt_types).", "(gt_phases).", "(gt_quals).", "(gt_copy_numbers).",
                       "(gt_depths).", "(gt_ref_depths).", "(gt_alt_depths)."]
         if any(s in self.gt_filter for s in valid_cols):
             return True
@@ -915,12 +923,12 @@ class GeminiQuery(object):
         if len(select_clause_list) > 0:
             select_clause = ",".join(select_clause_list) + \
                     ", gts, gt_types, gt_phases, gt_depths, \
-                       gt_ref_depths, gt_alt_depths, gt_quals "
+                       gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers "
 
         else:
             select_clause = ",".join(select_clause_list) + \
                     " gts, gt_types, gt_phases, gt_depths, \
-                      gt_ref_depths, gt_alt_depths, gt_quals "
+                      gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, "
 
         self.query = "select " + select_clause + rest_of_query
 

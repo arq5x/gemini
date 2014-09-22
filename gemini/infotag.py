@@ -66,6 +66,12 @@ def is_somatic(var):
     """
     return var.INFO.get('SOMATIC')
 
+def get_somatic_score(var):
+    """
+    Return the somatic mutation likelihood score
+    """
+    return var.INFO.get('SSC')
+
 
 def get_depth(var):
     """

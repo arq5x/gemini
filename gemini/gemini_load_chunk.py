@@ -21,6 +21,7 @@ import annotations
 import func_impact
 import severe_impact
 import popgen
+import structural_variants as svs
 from gemini_constants import *
 from compression import pack_blob
 from gemini.config import read_gemini_config
@@ -371,6 +372,7 @@ class GeminiLoader(object):
             gt_ref_depths = np.array(var.gt_ref_depths, np.int32)  # 2 21 0 -1
             gt_alt_depths = np.array(var.gt_alt_depths, np.int32)  # 8 16 0 -1
             gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
+            gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
 
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
@@ -382,6 +384,7 @@ class GeminiLoader(object):
             gt_ref_depths = None
             gt_alt_depths = None
             gt_quals = None
+            gt_copy_numbers = None
 
         if self.args.skip_info_string is False:
             info = var.INFO
@@ -404,6 +407,11 @@ class GeminiLoader(object):
                               impact.sift_pred, impact.sift_score]
                 variant_impacts.append(var_impact)
 
+        # extract structural variants
+        sv = svs.StructuralVariant(var)
+        ci_left = sv.get_ci_left()
+        ci_right = sv.get_ci_right()
+
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         if extra_fields:
@@ -415,9 +423,20 @@ class GeminiLoader(object):
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), pack_blob(gt_depths),
                    pack_blob(gt_ref_depths), pack_blob(gt_alt_depths),
-                   pack_blob(gt_quals),
+                   pack_blob(gt_quals), pack_blob(gt_copy_numbers),
                    call_rate, in_dbsnp,
                    rs_ids,
+                   ci_left[0],
+                   ci_left[1], 
+                   ci_right[0],
+                   ci_right[1],
+                   sv.get_length(), 
+                   sv.is_precise(),
+                   sv.get_sv_tool(),
+                   sv.get_evidence_type(),
+                   sv.get_event_id(),
+                   sv.get_mate_id(),
+                   sv.get_strand(),
                    clinvar_info.clinvar_in_omim,
                    clinvar_info.clinvar_sig,
                    clinvar_info.clinvar_disease_name,
@@ -449,6 +468,7 @@ class GeminiLoader(object):
                    infotag.get_allele_count(var), infotag.get_allele_bal(var),
                    infotag.in_hm2(var), infotag.in_hm3(var),
                    infotag.is_somatic(var),
+                   infotag.get_somatic_score(var),
                    esp.found, esp.aaf_EA,
                    esp.aaf_AA, esp.aaf_ALL,
                    esp.exome_chip, thousandG.found,

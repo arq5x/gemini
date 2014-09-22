@@ -110,9 +110,21 @@ def create_tables(cursor):
                     gt_ref_depths blob,                         \
                     gt_alt_depths blob,                         \
                     gt_quals blob,                              \
+                    gt_copy_numbers blob,                       \
                     call_rate float,                            \
                     in_dbsnp bool,                              \
                     rs_ids text default NULL,                   \
+                    sv_cipos_start_left integer,                \
+                    sv_cipos_end_left integer,                  \
+                    sv_cipos_start_right integer,               \
+                    sv_cipos_end_right integer,                 \
+                    sv_length integer,                          \
+                    sv_is_precise bool,                         \
+                    sv_tool text,                               \
+                    sv_evidence_type text,                      \
+                    sv_event_id text,                           \
+                    sv_mate_id text,                            \
+                    sv_strand text,                             \
                     in_omim bool,                               \
                     clinvar_sig text default NULL,              \
                     clinvar_disease_name text default NULL,     \
@@ -174,7 +186,8 @@ def create_tables(cursor):
                     allele_bal float default NULL,              \
                     in_hm2 bool,                                \
                     in_hm3 bool,                                \
-                    is_somatic,                                 \
+                    is_somatic bool,                            \
+                    somatic_score float,                        \
                     in_esp bool,                                \
                     aaf_esp_ea decimal(2,7),                    \
                     aaf_esp_aa decimal(2,7),                    \
@@ -314,7 +327,8 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?)', variant)
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?,?,?,?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -342,7 +356,8 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?)', buffer)
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?,?,?,?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
