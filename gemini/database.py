@@ -38,6 +38,7 @@ def index_variation(cursor):
     cursor.execute('''create index var_cadd_raw_idx on variants(cadd_raw)''')
     cursor.execute('''create index var_cadd_scaled_idx on variants(cadd_scaled)''')
     cursor.execute('''create index var_fitcons_idx on variants(fitcons)''')
+    cursor.execute('''create index var_sv_event_idx on variants(sv_event_id)''')
 
 
 def index_variation_impacts(cursor):
