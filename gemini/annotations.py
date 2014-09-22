@@ -154,6 +154,8 @@ ThousandGInfo = collections.namedtuple("ThousandGInfo",
                                         aaf_AFR \
                                         aaf_EUR")
 
+GmsTechs = collections.namedtuple("GmsTechs", "illumina solid iontorrent")
+
 def load_annos( args ):
     """
     Populate a dictionary of Tabixfile handles for
@@ -685,7 +687,6 @@ def get_gms(var):
     """Return Genome Mappability Scores for multiple technologies.
     """
     techs = ["illumina", "solid", "iontorrent"]
-    GmsTechs = collections.namedtuple("GmsTechs", techs)
     hit = _get_first_vcf_hit(
         annotations_in_region(var, "gms", "vcf", "grch37"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}

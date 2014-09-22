@@ -136,6 +136,7 @@ def main():
         gemini_load.load(parser, args)
 
     parser_load.set_defaults(func=load_fn)
+
     #########################################
     # $ gemini amend
     #########################################
@@ -1039,6 +1040,27 @@ def main():
         from tool_homozygosity_runs import run
         run(parser, args)
     parser_hom_run.set_defaults(func=homozygosity_runs_fn)
+    
+
+    #########################################
+    # $ gemini fusions
+    #########################################
+    parser_fusions = subparsers.add_parser('fusions',
+                                         help="Identify somatic fusion genes from a GEMINI database.")
+    parser_fusions.add_argument('db',
+                              metavar='db',
+                              help='The name of the database to be queried.')
+    parser_fusions.add_argument('--sample',
+                              metavar='sample',
+                              default=None,
+                              help='New sample information file to load')
+    def fusions_fn(parser, args):
+        from tool_fusions import run
+        run(parser, args)
+    parser_fusions.set_defaults(func=fusions_fn)
+
+
+
     #######################################################
     # parse the args and call the selected function
     #######################################################
