@@ -928,7 +928,7 @@ class GeminiQuery(object):
         else:
             select_clause = ",".join(select_clause_list) + \
                     " gts, gt_types, gt_phases, gt_depths, \
-                      gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, "
+                      gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers "
 
         self.query = "select " + select_clause + rest_of_query
 
