@@ -17,7 +17,7 @@ def report_fusion(event):
     end1 = event.pop()
     end2 = event.pop()
     
-    # if exlcusion:
+    # if exclusion:
     #   continue
     # if exclusion:
     #   continue
@@ -48,10 +48,6 @@ def get_fusions(args):
                ORDER BY sv_event_id
             """
 
-    # First pass.  collect all of the candidate SVs where
-    #    1. both ends overlap a gene.
-    #    2. both ends are on the same strand.
-    # this assumes the rows are coming in order by event_id
     curr = None
     prev = None
     events = defaultdict(list)
