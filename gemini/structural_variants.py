@@ -34,7 +34,7 @@ class StructuralVariant(object):
             return self.var.INFO.get('SVLEN')[0]
 
     def get_evidence_type(self):
-        return self.var.INFO.get('EV')
+        return self.var.INFO.get('EVTYPE')
 
     def get_event_id(self):
         return self.var.INFO.get('EVENT')
@@ -63,5 +63,11 @@ class StructuralVariant(object):
                 return "+-"
 
         # single-line SV
+        elif self.var.INFO.get('SVTYPE') == 'DEL':
+            return "++"
+        elif self.var.INFO.get('SVTYPE') == 'DUP':
+            return "++"
+        elif self.var.INFO.get('SVTYPE') == 'INV':
+            return "+-"
         else:
             return None
