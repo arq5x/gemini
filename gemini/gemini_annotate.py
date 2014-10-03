@@ -317,7 +317,7 @@ def add_extras(gemini_db, chunk_dbs):
     header_files = []
     for chunk in chunk_dbs:
         extra_file, header_file = get_extra_files(chunk)
-        if os.path.exists(extra_file):
+        if os.path.exists(extra_file) and os.path.getsize(extra_file) > 0:
             extra_files.append(extra_file)
             assert os.path.exists(header_file)
             header_files.append(header_file)
