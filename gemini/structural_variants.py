@@ -54,13 +54,13 @@ class StructuralVariant(object):
         # multi-line SV
         if self.var.INFO.get('SVTYPE') == 'BND':
             if self.var.ALT[0][0] == '[': #[19:8195598[C
-                return "-" 
+                return "-+"
             elif self.var.ALT[0][0] == ']': #]19:4529597]A
-                return "-"
+                return "--"
             elif self.var.ALT[0][-1] == '[': #A[19:8417020[
-                return "+" 
+                return "++"
             elif self.var.ALT[0][-1] == ']': #T]19:8195491]
-                return "+"
+                return "+-"
 
         # single-line SV
         else:
