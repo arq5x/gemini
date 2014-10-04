@@ -3,10 +3,10 @@ class StructuralVariant(object):
         self.var = var
 
     def is_precise(self):
-        if self.var.INFO.get('PRECISE') is not None:
-            return True
-        else:
+        if self.var.INFO.get('IMPRECISE') is not None:
             return False
+        else:
+            return True
 
     def get_ci_left(self):
         cipos = self.var.INFO.get('CIPOS')
