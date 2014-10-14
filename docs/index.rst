@@ -3,7 +3,7 @@
 =================================================================
 
 .. image:: images/overview.png
-    :width: 300pt
+    :width: 500pt
     :align: center
 
 
