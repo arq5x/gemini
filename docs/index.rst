@@ -2,6 +2,11 @@
 **GEMINI**: *a flexible framework for exploring genome variation*
 =================================================================
 
+.. image:: images/overview.png
+    :width: 300pt
+    :align: center
+
+
 =================
 Overview
 =================
@@ -13,7 +18,7 @@ an integrated database framework, ``GEMINI`` provides a simple, flexible, yet
 very powerful system for exploring genetic variation for for disease and
 population genetics.
 
-Using the GEMINI framework begins by loading a VCF file into a
+Using the GEMINI framework begins by loading a VCF file (and an optional PED file) into a
 database.  Each variant is automatically annotated by comparing it to several
 genome annotations from source such as ENCODE tracks, UCSC tracks, OMIM, dbSNP,
 KEGG, and HPRD.  All of this information is stored in portable
