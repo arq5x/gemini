@@ -110,7 +110,7 @@ def get_map_qual_zero(var):
     Return the total counts of mapping quality zero reads,
     or None if it isn't present in the VCF.
     """
-    return var.INFO.get('MQ0')
+    return _safe_single_attr(var.INFO.get('MQ0'))
 
 
 def get_num_of_alleles(var):

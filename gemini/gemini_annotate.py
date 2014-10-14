@@ -88,8 +88,10 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
 
             # update_data starts out as a list of the values that should
             # be used to populate the new columns for the current row.
-            update_data = get_val_fn(annotations_in_region(row, anno,
-                                                           "tuple", naming))
+            # Prefer no pysam parsing over tuple parsing to work around bug in pysam 0.8.0
+            # https://github.com/pysam-developers/pysam/pull/44
+            update_data = get_val_fn(annotations_in_region(row, anno, None, naming))
+            #update_data = get_val_fn(annotations_in_region(row, anno, "tuple", naming))
             # were there any hits for this row?
             if len(update_data) > 0:
                 # we add the primary key to update_data for the
@@ -172,6 +174,8 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
 
         hit_list = defaultdict(list)
         for hit in hits:
+            if isinstance(hit, basestring):
+                hit = hit.split("\t")
             try:
                 for idx, col_idx in enumerate(col_idxs):
                     hit_list[idx].append(hit[int(col_idx) - 1])
@@ -313,7 +317,7 @@ def add_extras(gemini_db, chunk_dbs):
     header_files = []
     for chunk in chunk_dbs:
         extra_file, header_file = get_extra_files(chunk)
-        if os.path.exists(extra_file):
+        if os.path.exists(extra_file) and os.path.getsize(extra_file) > 0:
             extra_files.append(extra_file)
             assert os.path.exists(header_file)
             header_files.append(header_file)
