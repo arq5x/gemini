@@ -30,7 +30,7 @@ anno_files = \
 'hg19.rmsk.bed.gz',
 'hg19.segdup.bed.gz',
 'ESP6500SI.all.snps_indels.vcf.gz',
-'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz',
+'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz',
 'genetic_map_HapMapII_GRCh37.gz',
 'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz',
 'encode.6celltypes.consensus.bedg.gz',
@@ -60,6 +60,7 @@ custom_downloads = {"hg19_fitcons_fc-i6-0_V1-01.bw":
 toadd_anno_files = []
 
 anno_versions = {
+    "ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz": 2,
     "GRCh37-gms-mappability.vcf.gz": 2,
     "dbsnp.hg19.b141.vcf.gz": 3,
     "clinvar_20140807.vcf.gz": 4,

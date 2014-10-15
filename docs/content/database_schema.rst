@@ -126,8 +126,8 @@ info                      BLOB          Stores the ``INFO`` field of the VCF
 
 Population information
 ........................
-========================  ========      ==============================================================================================
-========================  ========      ==============================================================================================
+========================  =========     =================================================================================================
+========================  =========     =================================================================================================
 in_dbsnp                  BOOL          | Is this variant found in dbSnp (build 137)?
                                         | 0 : Absence of the variant in dbsnp
                                         | 1 : Presence of the variant in dbsnp
@@ -135,16 +135,17 @@ rs_ids                    STRING        | A comma-separated list of rs ids for v
 in_hm2                    BOOL          Whether the variant was part of HapMap2.
 in_hm3                    BOOL          Whether the variant was part of HapMap3.
 in_esp                    BOOL          Presence/absence of the variant in the ESP project data
-in_1kg                    BOOL          Presence/absence of the variant in the 1000 genome project data
+in_1kg                    BOOL          Presence/absence of the variant in the 1000 genome project data (phase 3)
 aaf_esp_ea                FLOAT         Minor Allele Frequency of the variant for European Americans in the ESP project
 aaf_esp_aa                FLOAT         Minor Allele Frequency of the variant for African Americans in the ESP project
 aaf_esp_all               FLOAT         Minor Allele Frequency of the variant w.r.t both groups in the ESP project
-aaf_1kg_amr               FLOAT         Allele Frequency of the variant for samples in AMR based on AC/AN (1000g project)
-aaf_1kg_asn               FLOAT         Allele frequency of the variant for samples in ASN based on AC/AN (1000g project)
-aaf_1kg_afr               FLOAT         Allele frequency of the variant for samples in AFR based on AC/AN (1000g project)
-aaf_1kg_eur               FLOAT         Allele Frequency of the variant for samples in EUR based on AC/AN (1000g project)
-aaf_1kg_all               FLOAT         Global allele frequency (based on AC/AN) (1000g project) 
-========================  ========      ==============================================================================================
+aaf_1kg_amr               FLOAT         Allele frequency of the variant in AMR population based on AC/AN (1000g project, phase 3)
+aaf_1kg_eas               FLOAT         Allele frequency of the variant in EAS population based on AC/AN (1000g project, phase 3)
+aaf_1kg_sas               FLOAT         Allele frequency of the variant in SAS population based on AC/AN (1000g project, phase 3)
+aaf_1kg_afr               FLOAT         Allele frequency of the variant in AFR population based on AC/AN (1000g project, phase 3)
+aaf_1kg_eur               FLOAT         Allele frequency of the variant in EUR population based on AC/AN (1000g project, phase 3)
+aaf_1kg_all               FLOAT         Global allele frequency (based on AC/AN) (1000g project - phase 3) 
+========================  =========     =================================================================================================
 
 
 

@@ -21,16 +21,17 @@ rm obs exp
 ################################################################################
 
 echo "    pop_metrics.t2...\c"
-echo "0	None	None	None	None	None
-0	None	None	None	None	None
-1	0.65	0.87	0.65	0.33	0.7
-0	None	None	None	None	None
-0	None	None	None	None	None
-1	0.0032	None	0.01	None	0.01
-0	None	None	None	None	None
-0	None	None	None	None	None
-1	1	0.99	1	1	0.99" > exp
-gemini query -q "select in_1kg, aaf_1kg_all, aaf_1kg_asn, aaf_1kg_amr, aaf_1kg_afr, aaf_1kg_eur from variants" test2.snpeff.db \
+echo "in_1kg	aaf_1kg_all	aaf_1kg_eas	aaf_1kg_sas	aaf_1kg_amr	aaf_1kg_afr	aaf_1kg_eur
+0	None	None	None	None	None	None
+1	0.0189696	0.003	0.0153	0.036	0.0015	0.0497
+0	None	None	None	None	None	None
+1	0.0367412	0.001	0.045	0.0418	0.0045	0.1034
+1	0.688099	0.876	0.8098	0.6254	0.407	0.7942
+1	0.00279553	0	0.0041	0.0072	0	0.005
+1	0.000599042	0	0.0031	0	0	0
+0	None	None	None	None	None	None
+1	1	1	1	1	1	1" > exp
+gemini query --header -q "select in_1kg, aaf_1kg_all, aaf_1kg_eas, aaf_1kg_sas, aaf_1kg_amr, aaf_1kg_afr, aaf_1kg_eur from variants" test2.snpeff.db \
 > obs
 check obs exp
 rm obs exp
