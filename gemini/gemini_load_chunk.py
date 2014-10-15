@@ -501,7 +501,7 @@ class GeminiLoader(object):
                    esp.found, esp.aaf_EA,
                    esp.aaf_AA, esp.aaf_ALL,
                    esp.exome_chip, thousandG.found,
-                   thousandG.aaf_AMR, thousandG.aaf_ASN,
+                   thousandG.aaf_AMR, thousandG.aaf_EAS, thousandG.aaf_SAS,
                    thousandG.aaf_AFR, thousandG.aaf_EUR,
                    thousandG.aaf_ALL, grc,
                    gms.illumina, gms.solid,

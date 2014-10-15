@@ -30,7 +30,7 @@ def get_anno_files( args ):
      'esp': os.path.join(anno_dirname,
                          'ESP6500SI.all.snps_indels.vcf.gz'),
      '1000g': os.path.join(anno_dirname,
-                           'ALL.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.2012Oct12.vcf.gz'),
+                           'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz'),
      'recomb': os.path.join(anno_dirname,
                             'genetic_map_HapMapII_GRCh37.gz'),
      'gms': os.path.join(anno_dirname,
@@ -150,7 +150,8 @@ ThousandGInfo = collections.namedtuple("ThousandGInfo",
                                        "found \
                                         aaf_ALL \
                                         aaf_AMR \
-                                        aaf_ASN \
+                                        aaf_EAS \
+                                        aaf_SAS \
                                         aaf_AFR \
                                         aaf_EUR")
 
@@ -607,8 +608,8 @@ def get_1000G_info(var):
             found = True
 
     return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'),
-                         info_map.get('ASN_AF'), info_map.get('AFR_AF'),
-                         info_map.get('EUR_AF'))
+                         info_map.get('EAS_AF'), info_map.get('SAS_AF'), 
+                         info_map.get('AFR_AF'), info_map.get('EUR_AF'))
 
 
 def get_rmsk_info(var):
