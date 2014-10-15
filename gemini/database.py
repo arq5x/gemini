@@ -196,7 +196,8 @@ def create_tables(cursor):
                     exome_chip bool,                            \
                     in_1kg bool,                                \
                     aaf_1kg_amr decimal(2,7),                   \
-                    aaf_1kg_asn decimal(2,7),                   \
+                    aaf_1kg_eas decimal(2,7),                   \
+                    aaf_1kg_sas decimal(2,7),                   \
                     aaf_1kg_afr decimal(2,7),                   \
                     aaf_1kg_eur decimal(2,7),                   \
                     aaf_1kg_all decimal(2,7),                   \
@@ -329,7 +330,7 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?)', variant)
+                                                             ?,?,?,?,?,?,?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -358,7 +359,7 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?)', buffer)
+                                                         ?,?,?,?,?,?,?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
