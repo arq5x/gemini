@@ -1054,6 +1054,22 @@ def main():
                               metavar='sample',
                               default=None,
                               help='New sample information file to load')
+    parser_fusions.add_argument('--in_cosmic_census',
+                                action='store_true',
+                                help='One or both genes in fusion is in COSMIC cancer census')
+    parser_fusions.add_argument('--min_qual',
+                                dest='min_qual',
+                                metavar='FLOAT',
+                                type=float,
+                                default=None,
+                                help='The min variant quality (VCF QUAL) (def: %(default)s).')
+    parser_fusions.add_argument('--evidence_type',
+                                metavar='STR',
+                                dest='evidence_type',
+                                type=str,
+                                default=None,
+                                help='The supporting evidence types for the variant ("PE", "SR", or "PE,SR").')
+
     def fusions_fn(parser, args):
         from tool_fusions import run
         run(parser, args)
