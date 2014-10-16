@@ -653,6 +653,7 @@ class GeminiQuery(object):
             self.conn.row_factory = sqlite3.Row
             self.c = self.conn.cursor()
 
+
     def _collect_sample_table_columns(self):
         """
         extract the column names in the samples table into a list
@@ -667,7 +668,7 @@ class GeminiQuery(object):
         A future improvement would be to use pyparsing to
         traverse and directly validate the string.
         """
-        if self.gt_filter is None:
+        if self.gt_filter is None or len(self.gt_filter.strip()) == 0:
             return True
 
         # avoid builtins
