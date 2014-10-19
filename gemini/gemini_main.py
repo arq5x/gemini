@@ -894,49 +894,49 @@ def main():
     parser_set_somatic.add_argument('--min-depth',
             dest='min_depth',
             type=float,
-            default=30,
+            default=None,
             help='The min combined depth for tumor + normal (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-qual',
             dest='min_qual',
             type=float,
-            default=30,
+            default=None,
             help='The min variant quality (VCF QUAL) (def: %(default)s).')
 
     parser_set_somatic.add_argument('--max-norm-alt-freq',
             dest='max_norm_alt_freq',
             type=float,
-            default=0.03,
+            default=None,
             help='The max freq. of the alt. allele in the normal sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--max-norm-alt-count',
             dest='max_norm_alt_count',
             type=int,
-            default=2,
+            default=None,
             help='The max count. of the alt. allele in the normal sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-norm-depth',
             dest='min_norm_depth',
             type=int,
-            default=10,
+            default=None,
             help='The minimum depth allowed in the normal sample to believe somatic (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-alt-freq',
             dest='min_tumor_alt_freq',
             type=float,
-            default=0.05,
+            default=None,
             help='The min freq. of the alt. allele in the tumor sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-alt-count',
             dest='min_tumor_alt_count',
             type=int,
-            default=2,
+            default=None,
             help='The min count. of the alt. allele in the tumor sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-depth',
             dest='min_tumor_depth',
             type=int,
-            default=10,
+            default=None,
             help='The minimum depth allowed in the tumor sample to believe somatic (def: %(default)s).')
 
     parser_set_somatic.add_argument('--chrom',
@@ -1054,6 +1054,22 @@ def main():
                               metavar='sample',
                               default=None,
                               help='New sample information file to load')
+    parser_fusions.add_argument('--in_cosmic_census',
+                                action='store_true',
+                                help='One or both genes in fusion is in COSMIC cancer census')
+    parser_fusions.add_argument('--min_qual',
+                                dest='min_qual',
+                                metavar='FLOAT',
+                                type=float,
+                                default=None,
+                                help='The min variant quality (VCF QUAL) (def: %(default)s).')
+    parser_fusions.add_argument('--evidence_type',
+                                metavar='STR',
+                                dest='evidence_type',
+                                type=str,
+                                default=None,
+                                help='The supporting evidence types for the variant ("PE", "SR", or "PE,SR").')
+
     def fusions_fn(parser, args):
         from tool_fusions import run
         run(parser, args)

@@ -3,10 +3,10 @@ class StructuralVariant(object):
         self.var = var
 
     def is_precise(self):
-        if self.var.INFO.get('PRECISE') is not None:
-            return True
-        else:
+        if self.var.INFO.get('IMPRECISE') is not None:
             return False
+        else:
+            return True
 
     def get_ci_left(self):
         cipos = self.var.INFO.get('CIPOS')
@@ -34,7 +34,7 @@ class StructuralVariant(object):
             return self.var.INFO.get('SVLEN')[0]
 
     def get_evidence_type(self):
-        return self.var.INFO.get('EV')
+        return self.var.INFO.get('EVTYPE')
 
     def get_event_id(self):
         return self.var.INFO.get('EVENT')
@@ -54,14 +54,20 @@ class StructuralVariant(object):
         # multi-line SV
         if self.var.INFO.get('SVTYPE') == 'BND':
             if self.var.ALT[0][0] == '[': #[19:8195598[C
-                return "-" 
+                return "-+"
             elif self.var.ALT[0][0] == ']': #]19:4529597]A
-                return "-"
+                return "--"
             elif self.var.ALT[0][-1] == '[': #A[19:8417020[
-                return "+" 
+                return "++"
             elif self.var.ALT[0][-1] == ']': #T]19:8195491]
-                return "+"
+                return "+-"
 
         # single-line SV
+        elif self.var.INFO.get('SVTYPE') == 'DEL':
+            return "++"
+        elif self.var.INFO.get('SVTYPE') == 'DUP':
+            return "++"
+        elif self.var.INFO.get('SVTYPE') == 'INV':
+            return "+-"
         else:
             return None
