@@ -210,10 +210,10 @@ def _variant_T_term(p_0, n_i, y_i):
     return (y_i - n_i * p_0)**2 - n_i * p_0 * (1 - p_0)
 
 
-def _nonsynonymous_variants(db):
+def _nonsynonymous_variants(args):
     query = ("SELECT variant_id, gene from variants WHERE "
              "codon_change != 'None'")
-    gq = GeminiQuery.GeminiQuery(db)
+    gq = GeminiQuery.GeminiQuery(args.db)
     gq.run(query, show_variant_samples=True)
     return gq
 
