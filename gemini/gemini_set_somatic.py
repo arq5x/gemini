@@ -11,21 +11,23 @@ def tag_somatic_mutations(args):
 
     gq = GeminiQuery.GeminiQuery(args.db)
 
+    depth_string, qual_string, chrom_string = ("", "", "")
+    if args.min_depth:
+        depth_string = " AND depth >= %s" % args.min_depth
+    if args.min_qual:
+        qual_string = " AND qual >= %s" % args.min_qual
+    if args.chrom:
+        chrom_string = " AND chrom = '%s'" % args.chrom
+
     if args.chrom is None:
         query = "SELECT variant_id, chrom, start, end, \
                         ref, alt, gene, impact, gts, gt_types, \
                         gt_ref_depths, gt_alt_depths \
                  FROM variants \
-                 WHERE depth >= " + str(args.min_depth) + \
-                 " AND   qual >= " + str(args.min_qual) 
-    else:
-        query = "SELECT variant_id, chrom, start, end, \
-                ref, alt, gene, impact, gts, gt_types, \
-                gt_ref_depths, gt_alt_depths \
-         FROM variants \
-         WHERE depth >= " + str(args.min_depth) + \
-         " AND qual >= " + str(args.min_qual) + \
-         " AND chrom = \'" + args.chrom + "\'"
+                 WHERE 1 \
+                 %s \
+                 %s \
+                 %s" % (depth_string, qual_string, chrom_string)
 
     gq.run(query)
     smp2idx = gq.sample_to_idx
@@ -39,8 +41,7 @@ def tag_somatic_mutations(args):
                         'chrom', 'start', 'end', 'ref', 'alt', 'gene'])
 
     for row in gq:
-
-        # we can skip varinats where all genotypes are identical
+        # we can skip variants where all genotypes are identical
         if len(set(row['gt_types'])) == 1:
             continue
 
@@ -75,10 +76,9 @@ def tag_somatic_mutations(args):
             # mutations if in this block.
             if (nrm_gt_type == HOM_REF and tum_gt_type != HOM_REF):
 
-               
                tum_ref_depth = row['gt_ref_depths'][tum_idx]
                nrm_ref_depth = row['gt_ref_depths'][nrm_idx]
-
+               
                tum_alt_depth = row['gt_alt_depths'][tum_idx]
                nrm_alt_depth = row['gt_alt_depths'][nrm_idx]
 
@@ -91,16 +91,22 @@ def tag_somatic_mutations(args):
                   tum_depth < args.min_tumor_depth):
                   continue
 
-               tum_alt_freq = float(tum_alt_depth) / \
-                              (float(tum_alt_depth) + float(tum_ref_depth))
+               try:
+                   tum_alt_freq = float(tum_alt_depth) / \
+                                  (float(tum_alt_depth) + float(tum_ref_depth))
+               except ZeroDivisionError:
+                   tum_alt_freq = 'NA'
 
-               nrm_alt_freq = float(nrm_alt_depth) / \
-                              (float(nrm_alt_depth) + float(nrm_ref_depth))
+               try:
+                   nrm_alt_freq = float(nrm_alt_depth) / \
+                                  (float(nrm_alt_depth) + float(nrm_ref_depth))
+               except ZeroDivisionError:
+                   nrm_alt_freq = 'NA'
 
                # apply evidence thresholds.
-               if nrm_alt_freq > args.max_norm_alt_freq \
+               if (args.max_norm_alt_freq and nrm_alt_freq > args.max_norm_alt_freq) \
                   or \
-                  nrm_alt_depth > args.max_norm_alt_count:
+                  (args.max_norm_alt_count and nrm_alt_depth > args.max_norm_alt_count):
                   continue
 
                somatic_counter += 1
