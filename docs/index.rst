@@ -15,7 +15,7 @@ GEMINI (GEnome MINIng) is designed to be a flexible framework for exploring gene
 in the context of the wealth of genome annotations available for the human genome.
 By placing genetic variants, sample genotypes, and useful genome annotations into
 an integrated database framework, ``GEMINI`` provides a simple, flexible, yet
-very powerful system for exploring genetic variation for for disease and
+very powerful system for exploring genetic variation for disease and
 population genetics.
 
 Using the GEMINI framework begins by loading a VCF file (and an optional PED file) into a
