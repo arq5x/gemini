@@ -1016,7 +1016,8 @@ class GeminiQuery(object):
 
             # it is a basic genotype column
             elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
-                and '.(' not in token and not ').' in token:
+                and '.(' not in token and not ').' in token \
+                and token.find("length") == 0:     # e.g., no aa_lenGTh, etc. false positives
                 new_col = self._correct_genotype_col(token)
 
                 self.all_columns_new.append(new_col)
