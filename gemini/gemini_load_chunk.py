@@ -477,6 +477,7 @@ class GeminiLoader(object):
                    clinvar_info.clinvar_disease_acc,
                    clinvar_info.clinvar_in_locus_spec_db,
                    clinvar_info.clinvar_on_diag_assay,
+                   clinvar_info.clinvar_causal_allele,
                    pfam_domain, cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, gerp_bp, gerp_el,
                    hom_ref, het, hom_alt, unknown,

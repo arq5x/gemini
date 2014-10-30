@@ -137,6 +137,7 @@ def create_tables(cursor):
                     clinvar_disease_acc text default NULL,      \
                     clinvar_in_locus_spec_db bool,              \
                     clinvar_on_diag_assay bool,                 \
+                    clinvar_causal_allele bool,                 \
                     pfam_domain text,                           \
                     cyto_band text default NULL,                \
                     rmsk text default NULL,                     \
@@ -330,7 +331,7 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?)', variant)
+                                                             ?,?,?,?,?,?,?,?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -359,7 +360,7 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?)', buffer)
+                                                         ?,?,?,?,?,?,?,?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:

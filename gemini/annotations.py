@@ -68,6 +68,7 @@ class ClinVarInfo(object):
         self.clinvar_in_omim = None
         self.clinvar_in_locus_spec_db = None
         self.clinvar_on_diag_assay = None
+        self.clinvar_causal_allele = None
 
         self.origin_code_map = {'0': 'unknown',
                                 '1': 'germline',
@@ -103,7 +104,8 @@ class ClinVarInfo(object):
                           self.clinvar_disease_acc,
                           str(self.clinvar_in_omim),
                           str(self.clinvar_in_locus_spec_db),
-                          str(self.clinvar_on_diag_assay)])
+                          str(self.clinvar_on_diag_assay),
+                          str(self.clinvar_causal_allele)])
 
     def lookup_clinvar_origin(self, origin_code):
         try:
@@ -474,6 +476,7 @@ def get_clinvar_info(var):
     # clinvar_in_omim          = OM
     # clinvar_in_locus_spec_db = LSD
     # clinvar_on_diag_assay    = CDA
+    # clinvar_causal_allele    = CLNALLE=1
     """
 
     clinvar = ClinVarInfo()
@@ -510,6 +513,15 @@ def get_clinvar_info(var):
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
         clinvar.clinvar_on_diag_assay = 1 if 'CDA' in info_map else 0
 
+        causal_allele_number = int(info_map['CLNALLE']) or None
+        if causal_allele_number == -1 or causal_allele_number is None:
+          clinvar.clinvar_causal_allele = None
+        elif causal_allele_number == 0:
+          clinvar.clinvar_causal_allele = hit.ref
+        elif causal_allele_number > 0:
+          clinvar.clinvar_causal_allele = hit.alt[causal_allele_number - 1]
+
+        print clinvar.clinvar_causal_allele
     return clinvar
 
 
