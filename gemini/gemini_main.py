@@ -530,10 +530,12 @@ def main():
             help='The name of the database to be updated.')
     parser_get.add_argument('-w',
             dest='window_size',
+            type=int,
             default=1000000,
             help='The name of the column to be added to the variant table.')
     parser_get.add_argument('-s',
             dest='step_size',
+            type=int,
             default=0,
             help="The step size for the windows in bp.\n")
     parser_get.add_argument('-t',

@@ -45,9 +45,15 @@ def make_windows(c, args, temp_file):
     """
     # create our windows with pybedtools
     window = pbt.BedTool()
+
+    if args.step_size == 0:
+        args.step_size = args.window_size
+
     windows = window.window_maker(genome='hg19',
                                   w=args.window_size,
                                   s=args.step_size)
+
+
 
     # create a temp file ('.temp.pid') storing the requested stat
     # for each variant. Load this into a pybedtools BedTool
