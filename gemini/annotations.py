@@ -513,15 +513,13 @@ def get_clinvar_info(var):
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
         clinvar.clinvar_on_diag_assay = 1 if 'CDA' in info_map else 0
 
-        causal_allele_number = int(info_map['CLNALLE']) or None
+        causal_allele_number = int(info_map['CLNALLE'])
         if causal_allele_number == -1 or causal_allele_number is None:
           clinvar.clinvar_causal_allele = None
         elif causal_allele_number == 0:
           clinvar.clinvar_causal_allele = hit.ref
         elif causal_allele_number > 0:
           clinvar.clinvar_causal_allele = hit.alt[causal_allele_number - 1]
-
-        print clinvar.clinvar_causal_allele
     return clinvar
 
 
