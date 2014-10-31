@@ -43,13 +43,15 @@ def main(args):
     os.chdir(work_dir)
 
     if args.gemini_version != 'latest':
-        requirements_pip = os.path.join( remotes['versioned_installations'], args.gemini_version, 'requirements_pip.txt' )
-        requirements_conda = os.path.join( remotes['versioned_installations'], args.gemini_version, 'requirements_conda.txt' )
+        requirements_pip = os.path.join(remotes['versioned_installations'],
+                                        args.gemini_version, 'requirements_pip.txt')
+        requirements_conda = os.path.join(remotes['versioned_installations'],
+                                          args.gemini_version, 'requirements_conda.txt')
         try:
-            urllib2.urlopen( requirements_pip )
+            urllib2.urlopen(requirements_pip)
         except:
             sys.exit('Gemini version %s could not be found. Try the latest version.' % args.gemini_version)
-        remotes.update( {'requirements_pip': requirements_pip, 'requirements_conda': requirements_conda} )
+        remotes.update({'requirements_pip': requirements_pip, 'requirements_conda': requirements_conda})
 
     print "Installing isolated base python installation"
     make_dirs(args)
@@ -59,8 +61,7 @@ def main(args):
     gemini = install_gemini(anaconda, remotes, args.datadir, args.tooldir, args.sudo)
     if args.install_tools:
         cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
-        fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir,
-                              "ubuntu", args.sudo)
+        fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir, args.sudo)
         print "Installing associated tools..."
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     os.chdir(work_dir)
@@ -250,7 +251,7 @@ def _update_testdir_revision(gemini_cmd):
     else:
         subprocess.check_call(["git", "reset", "--hard", "HEAD"])
 
-def write_fabricrc(base_file, tooldir, datadir, distribution, use_sudo):
+def write_fabricrc(base_file, tooldir, datadir, use_sudo):
     out_file = os.path.join(os.getcwd(), os.path.basename(base_file))
     with open(base_file) as in_handle:
         with open(out_file, "w") as out_handle:
@@ -261,8 +262,6 @@ def write_fabricrc(base_file, tooldir, datadir, distribution, use_sudo):
                     line = "local_install = %s/install\n" % tooldir
                 elif line.startswith("data_files"):
                     line = "data_files = %s\n" % datadir
-                elif line.startswith("distribution"):
-                    line = "distribution = %s\n" % distribution
                 elif line.startswith("use_sudo"):
                     line = "use_sudo = %s\n" % use_sudo
                 elif line.startswith("edition"):

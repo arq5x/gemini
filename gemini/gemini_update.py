@@ -12,23 +12,15 @@ def release(parser, args):
     """
     url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
     repo = "https://github.com/arq5x/gemini.git"
+    cbl_repo = "https://github.com/chapmanb/cloudbiolinux.git"
     # update locally isolated python
     base = os.path.dirname(os.path.realpath(sys.executable))
     gemini_cmd = os.path.join(base, "gemini")
     pip_bin = os.path.join(base, "pip")
-    ei_bin = os.path.join(base, "easy_install")
+    fab_cmd = os.path.join(base, "fab")
     activate_bin = os.path.join(base, "activate")
     conda_bin = os.path.join(base, "conda")
-    print conda_bin
     if not args.dataonly:
-        # Work around issue with distribute where asks for 'distribute==0.0'
-        # try:
-        #     subprocess.check_call([ei_bin, "--upgrade", "distribute"])
-        # except subprocess.CalledProcessError:
-        #     try:
-        #         subprocess.check_call([pip_bin, "install", "--upgrade", "distribute"])
-        #     except subprocess.CalledProcessError:
-        #         pass
         if os.path.exists(conda_bin):
             pkgs = ["bx-python", "conda", "cython", "ipython", "jinja2", "nose", "numpy",
                     "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
@@ -57,8 +49,13 @@ def release(parser, args):
             subprocess.check_call([pip_bin, "install", "--upgrade", "--no-deps",
                                    "git+%s" % repo])
         print "Gemini upgraded to latest version"
+    if args.tooldir:
+        print "Upgrading associated tools..."
+        cbl = get_cloudbiolinux(cbl_repo)
+        fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.sudo)
+        install_tools(fab_cmd, cbl["tool_fabfile"], fabricrc)
     # update datafiles
-    config = gemini.config.read_gemini_config( args = args )
+    config = gemini.config.read_gemini_config(args=args)
     extra_args = ["--extra=%s" % x for x in args.extra]
     subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]] + extra_args)
     print "Gemini data files updated"
@@ -115,3 +112,47 @@ def _update_testdir_revision(gemini_cmd):
         pass
     else:
         subprocess.check_call(["git", "reset", "--hard", "HEAD"])
+
+# ## Tools
+
+def get_cloudbiolinux(repo):
+    base_dir = os.path.join(os.getcwd(), "cloudbiolinux")
+    if not os.path.exists(base_dir):
+        subprocess.check_call(["git", "clone", repo])
+    return {"fabricrc": os.path.join(base_dir, "config", "fabricrc.txt"),
+            "tool_fabfile": os.path.join(base_dir, "fabfile.py")}
+
+def write_fabricrc(base_file, tooldir, use_sudo):
+    out_file = os.path.join(os.getcwd(), os.path.basename(base_file))
+    with open(base_file) as in_handle:
+        with open(out_file, "w") as out_handle:
+            for line in in_handle:
+                if line.startswith("system_install"):
+                    line = "system_install = %s\n" % tooldir
+                elif line.startswith("local_install"):
+                    line = "local_install = %s/install\n" % tooldir
+                elif line.startswith("use_sudo"):
+                    line = "use_sudo = %s\n" % use_sudo
+                elif line.startswith("edition"):
+                    line = "edition = minimal\n"
+                out_handle.write(line)
+    return out_file
+
+def install_tools(fab_cmd, fabfile, fabricrc):
+    """Install 3rd party tools used by Gemini using a custom CloudBioLinux flavor.
+    """
+    tools = ["tabix", "grabix", "samtools", "bedtools"]
+    flavor_dir = os.path.join(os.getcwd(), "gemini-flavor")
+    if not os.path.exists(flavor_dir):
+        os.makedirs(flavor_dir)
+    with open(os.path.join(flavor_dir, "main.yaml"), "w") as out_handle:
+        out_handle.write("packages:\n")
+        out_handle.write("  - bio_nextgen\n")
+        out_handle.write("libraries:\n")
+    with open(os.path.join(flavor_dir, "custom.yaml"), "w") as out_handle:
+        out_handle.write("bio_nextgen:\n")
+        for tool in tools:
+            out_handle.write("  - %s\n" % tool)
+    cmd = [fab_cmd, "-f", fabfile, "-H", "localhost", "-c", fabricrc,
+           "install_biolinux:target=custom,flavor=%s" % flavor_dir]
+    subprocess.check_call(cmd)
