@@ -327,7 +327,7 @@ class GeminiLoader(object):
             in_segdup = None
             is_conserved = None
             esp = annotations.ESPInfo(None, None, None, None, None)
-            thousandG = annotations.ThousandGInfo(None, None, None, None, None, None)
+            thousandG = annotations.ThousandGInfo(None, None, None, None, None, None, None)
             recomb_rate = None
             gms = annotations.GmsTechs(None, None, None)
             grc = None
