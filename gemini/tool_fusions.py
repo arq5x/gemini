@@ -24,7 +24,6 @@ def report_fusion(event, subjects_dict, args):
         # query the table to test whether the END breakpoint lies in a gene
         gq = GeminiQuery.GeminiQuery(args.db)
 
-
         query = """SELECT gene,
                           strand,
                           in_cosmic_census
@@ -49,6 +48,10 @@ def report_fusion(event, subjects_dict, args):
             gene2_strand = row['strand']
             gene2_cosmic = row['in_cosmic_census']
             break # just get the first gene interrupted by the breakend
+
+        # Break if breakpoint2 is intergenic
+        if gene2 == None:
+            return
 
         # if SV is a deletion or duplication, genes must be same strand for fusion
         if sv['sub_type'] == 'DEL' or sv['sub_type'] == 'DUP':
