@@ -50,7 +50,8 @@ anno_files = \
 'detailed_gene_table_v75',
 'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv',
-'hg19_fitcons_fc-i6-0_V1-01.bw'
+'hg19_fitcons_fc-i6-0_V1-01.bw',
+'ExAC.r0.2.sites.vep.vcf.gz'
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}
 
