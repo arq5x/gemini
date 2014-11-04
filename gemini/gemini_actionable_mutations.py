@@ -17,8 +17,8 @@ def get_actionable_mutations(parser, args):
              WHERE variants.is_somatic = 1 \
              AND (variants.type = 'snp' \
                  OR variants.type = 'indel') \
-             AND (variants.is_exonic = 1 \
-                 OR variants.impact_severity = 'HIGH') \
+             AND (variants.impact_severity = 'HIGH' \
+                 OR variants.impact_severity = 'MED') \
              AND variants.chrom = gene_summary.chrom \
              AND variants.gene = gene_summary.gene \
              AND gene_summary.in_cosmic_census = 1"
