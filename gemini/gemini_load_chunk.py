@@ -304,6 +304,7 @@ class GeminiLoader(object):
             vista_enhancers = annotations.get_vista_enhancers(var)
             cosmic_ids = annotations.get_cosmic_info(var)
             fitcons = annotations.get_fitcons(var)
+            Exac = annotations.get_exac_info(var)
 
             #load CADD scores by default
             if self.args.skip_cadd is False:
@@ -328,6 +329,7 @@ class GeminiLoader(object):
             is_conserved = None
             esp = annotations.ESPInfo(None, None, None, None, None)
             thousandG = annotations.ThousandGInfo(None, None, None, None, None, None, None)
+            Exac = annotations.ExacInfo(None, None, None, None, None, None, None, None, None, None)
             recomb_rate = None
             gms = annotations.GmsTechs(None, None, None)
             grc = None
@@ -521,7 +523,14 @@ class GeminiLoader(object):
                    pack_blob(info),
                    cadd_raw,
                    cadd_scaled,
-                   fitcons]
+                   fitcons,
+                   Exac.found,
+                   Exac.aaf_ALL,
+                   Exac.adj_aaf_ALL,
+                   Exac.aaf_AFR, Exac.aaf_AMR,
+                   Exac.aaf_EAS, Exac.aaf_FIN,
+                   Exac.aaf_NFE, Exac.aaf_OTH,
+                   Exac.aaf_SAS]
 
         return variant, variant_impacts, extra_fields
 
