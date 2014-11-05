@@ -137,7 +137,7 @@ def create_tables(cursor):
                     clinvar_disease_acc text default NULL,      \
                     clinvar_in_locus_spec_db bool,              \
                     clinvar_on_diag_assay bool,                 \
-                    clinvar_causal_allele bool,                 \
+                    clinvar_causal_allele text,                 \
                     pfam_domain text,                           \
                     cyto_band text default NULL,                \
                     rmsk text default NULL,                     \
