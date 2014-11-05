@@ -281,10 +281,6 @@ class GeminiLoader(object):
             self.conn =  psycopg2.connect(dbname='postgres', host='localhost')
             self.conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             self.c = self.conn.cursor()
-            #self.c.execute('DROP DATABASE ' + 'gemini_test')
-            #self.c.execute('CREATE DATABASE ' + 'gemini_test')
-            database_postgresql.create_tables(self.c)
-            database_postgresql.create_sample_table(self.c, self.args)
 
     def _prepare_variation(self, var):
         """private method to collect metrics for a single variant (var) in a VCF file.
@@ -710,14 +706,18 @@ class GeminiLoader(object):
             self.c.execute("END")
         elif self.args.dbtype == "postgresql":
             self.c.execute("BEGIN TRANSACTION")
-            for idx, gt_counts in enumerate(self.sample_gt_counts):
-                self.c.execute("""insert into sample_genotype_counts values \
-                                (%s,%s,%s,%s,%s)""",
-                               [idx,
-                                int(gt_counts[HOM_REF]),  # hom_ref
-                                int(gt_counts[HET]),  # het
-                                int(gt_counts[HOM_ALT]),  # hom_alt
-                                int(gt_counts[UNKNOWN])])  # missing
+            # a hack to prevent loading the same data multiple times in PGSQL mode.
+            self.c.execute("select count(1) from samples")
+            count = self.c.fetchone()[0]
+            if count == 0:
+                for idx, gt_counts in enumerate(self.sample_gt_counts):
+                    self.c.execute("""insert into sample_genotype_counts values \
+                                    (%s,%s,%s,%s,%s)""",
+                                   [idx,
+                                    int(gt_counts[HOM_REF]),  # hom_ref
+                                    int(gt_counts[HET]),  # het
+                                    int(gt_counts[HOM_ALT]),  # hom_alt
+                                    int(gt_counts[UNKNOWN])])  # missing
             self.c.execute("END")
 
 

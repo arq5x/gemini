@@ -90,12 +90,23 @@ def create_indices(cursor):
     index_gene_summary(cursor)
 
 
+def drop_tables(cursor):
+    cursor.execute("DROP TABLE IF EXISTS variants")
+    cursor.execute("DROP TABLE IF EXISTS variant_impacts")
+    cursor.execute("DROP TABLE IF EXISTS sample_genotypes")
+    cursor.execute("DROP TABLE IF EXISTS sample_genotype_counts")
+    cursor.execute("DROP TABLE IF EXISTS resources")
+    cursor.execute("DROP TABLE IF EXISTS version")
+    cursor.execute("DROP TABLE IF EXISTS gene_detailed")
+    cursor.execute("DROP TABLE IF EXISTS gene_summary")
+
+
+
 def create_tables(cursor):
     """
     Create our master DB tables
     """
-    cursor.execute("DROP TABLE IF EXISTS variants")
-    cursor.execute('''create table variants  (                  \
+    cursor.execute('''create table if not exists variants  (                  \
                     chrom text,                                 \
                     start integer,                              \
                     \"end\" integer,                            \
@@ -115,9 +126,9 @@ def create_tables(cursor):
                     gt_ref_depths integer[],                    \
                     gt_alt_depths integer[],                    \
                     gt_quals float[],                           \
-                    gt_copy_numbers float[],                  \
+                    gt_copy_numbers float[],                    \
                     call_rate float,                            \
-                    in_dbsnp integer,                              \
+                    in_dbsnp integer,                           \
                     rs_ids text default NULL,                   \
                     sv_cipos_start_left integer,                \
                     sv_cipos_end_left integer,                  \
@@ -130,7 +141,7 @@ def create_tables(cursor):
                     sv_event_id text,                           \
                     sv_mate_id text,                            \
                     sv_strand text,                             \
-                    in_omim integer,                               \
+                    in_omim integer,                            \
                     clinvar_sig text default NULL,              \
                     clinvar_disease_name text default NULL,     \
                     clinvar_dbsource text default NULL,         \
@@ -228,8 +239,7 @@ def create_tables(cursor):
                     fitcons float,                              \
                     PRIMARY KEY(variant_id))''')
 
-    cursor.execute("DROP TABLE IF EXISTS variant_impacts")
-    cursor.execute('''create table variant_impacts  (   \
+    cursor.execute('''create table if not exists variant_impacts  (   \
                     variant_id integer,                               \
                     anno_id integer,                                  \
                     gene text,                                        \
@@ -251,13 +261,11 @@ def create_tables(cursor):
                     sift_score float,                                 \
                     PRIMARY KEY(variant_id, anno_id))''')
 
-    cursor.execute("DROP TABLE IF EXISTS sample_genotypes")
-    cursor.execute('''create table sample_genotypes (  \
+    cursor.execute('''create table if not exists sample_genotypes (  \
                     sample_id integer,                               \
                     gt_types integer[],                                   \
                     PRIMARY KEY(sample_id))''')
 
-    cursor.execute("DROP TABLE IF EXISTS sample_genotype_counts")
     cursor.execute('''create table if not exists sample_genotype_counts ( \
                      sample_id integer,                                   \
                      num_hom_ref integer,                                 \
@@ -266,15 +274,12 @@ def create_tables(cursor):
                      num_unknown integer,                                 \
                      PRIMARY KEY(sample_id))''')
 
-    cursor.execute("DROP TABLE IF EXISTS resources")
-    cursor.execute('''create table resources ( \
+    cursor.execute('''create table if not exists resources ( \
                      name text,                              \
                      resource text)''')
 
-    cursor.execute("DROP TABLE IF EXISTS version")
     cursor.execute('''create table if not exists version (version text)''')
     
-    cursor.execute("DROP TABLE IF EXISTS gene_detailed")
     cursor.execute('''create table if not exists gene_detailed (       \
                    uid integer,                                        \
                    chrom text,                                         \
@@ -297,7 +302,6 @@ def create_tables(cursor):
                    mam_phenotype_id text,                              \
                    PRIMARY KEY(uid))''')
     
-    cursor.execute("DROP TABLE IF EXISTS gene_summary")
     cursor.execute('''create table if not exists gene_summary (     \
                     uid integer,                                    \
                     chrom text,                                     \
@@ -323,7 +327,7 @@ def create_sample_table(cursor, args):
     optional_fields += fields[NUM_BUILT_IN:] + ["PRIMARY KEY(sample_id)"]
     optional = " text default NULL,".join(optional_fields)
     structure = '''{0}, {1}'''.format(required, optional)
-    creation = "DROP TABLE IF EXISTS samples; create table if not exists samples ({0})".format(structure)
+    creation = "create table if not exists samples ({0})".format(structure)
     cursor.execute(creation)
 
 def _insert_variation_one_per_transaction(cursor, buffer):
@@ -398,8 +402,14 @@ def insert_sample(cursor, sample_list):
     """
     placeholders = ",".join(list(repeat("%s", len(sample_list))))
     cursor.execute("BEGIN TRANSACTION")
-    cursor.execute("insert into samples values "
-                   "({0})".format(placeholders), sample_list)
+    
+    # a hack to prevent loading the same data multiple times in PGSQL mode.
+    cursor.execute("select count(1) from samples")
+    count = cursor.fetchone()[0]
+    if count == 0:
+        cursor.execute("insert into samples values "
+                       "({0})".format(placeholders), sample_list)
+    
     cursor.execute("END")
 
 def insert_gene_detailed(cursor, table_contents):

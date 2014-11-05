@@ -5,6 +5,8 @@ import os.path
 import shutil
 import sys
 import sqlite3
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 import annotations
 import subprocess
@@ -44,6 +46,22 @@ def load(parser, args):
     # collect of the the add'l annotation files
     annotations.load_annos( args )
 
+    if args.dbtype == "postgresql":
+        conn =  psycopg2.connect(dbname='postgres', host='localhost')
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        c = conn.cursor()
+        
+        # This doesn't seem to work. Why?
+        #c.execute('DROP DATABASE ' + 'gemini_test')
+        #c.execute('CREATE DATABASE ' + 'gemini_test')
+        import database_postgresql
+        database_postgresql.drop_tables(c)
+        database_postgresql.create_tables(c)
+        database_postgresql.create_sample_table(c, args)
+        conn.commit()
+        conn.close()
+
+
     if args.scheduler:
         load_ipython(args)
     elif args.cores > 1:
@@ -76,7 +94,10 @@ def load_singlecore(args):
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)
     chunks = load_chunks_multicore(grabix_file, args)
-    merge_chunks_multicore(chunks, args.db)
+    
+    if args.dbtype == "sqlite":
+        merge_chunks_multicore(chunks, args.db)
+
     gemini_annotate.add_extras(args.db, chunks)
 
 def load_ipython(args):
@@ -172,6 +193,10 @@ def load_chunks_multicore(grabix_file, args):
     if args.anno_type is not None:
         anno_type = "-t " + args.anno_type
 
+    dbtype = ""
+    if args.dbtype is not None:
+        dbtype = "--dbtype " + args.dbtype
+
     no_genotypes = ""
     if args.no_genotypes is True:
         no_genotypes = "--no-genotypes"
@@ -236,6 +261,10 @@ def load_chunks_ipython(grabix_file, args, view):
     anno_type = ""
     if args.anno_type is not None:
         anno_type = "-t " + args.anno_type
+
+    dbtype = ""
+    if args.dbtype is not None:
+        dbtype = "--dbtype " + args.dbtype
 
     no_genotypes = ""
     if args.no_genotypes is True:
@@ -309,7 +338,7 @@ def cleanup_temp_db_files(chunk_dbs):
 
 def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
-    gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
+    gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {dbtype} {ped_file}"
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
                        " {skip_gerp_bp} {skip_gene_tables} {skip_cadd}"
                        " {passonly} {skip_info_string} {test_mode}"

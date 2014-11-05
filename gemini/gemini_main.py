@@ -180,6 +180,11 @@ def main():
                                   dest='offset',
                                   help='The starting number for the variant_ids',
                                   default=None)
+    
+    parser_loadchunk.add_argument('--dbtype', dest='dbtype',
+                                  default="sqlite",
+                                  help="The type of database to use. Def=sqlite.")
+
     parser_loadchunk.add_argument('-p',
                                   dest='ped_file',
                                   help='Sample information file in PED+ format.',
