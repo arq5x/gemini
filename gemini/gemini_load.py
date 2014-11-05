@@ -62,12 +62,16 @@ def load_singlecore(args):
 
     if not args.skip_gene_tables and not args.test_mode:
         gemini_loader.update_gene_table()
-    if not args.test_mode:
-        gemini_loader.build_indices_and_disconnect()
 
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
+
     gemini_annotate.add_extras(args.db, [args.db])
+
+    if not args.test_mode:
+        gemini_loader.build_indices_and_disconnect()
+
+
 
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)

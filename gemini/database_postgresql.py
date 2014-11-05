@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sqlite3
+import  psycopg2
 import sys
 from itertools import repeat
 import contextlib
@@ -39,6 +39,9 @@ def index_variation(cursor):
     cursor.execute('''create index var_cadd_scaled_idx on variants(cadd_scaled)''')
     cursor.execute('''create index var_fitcons_idx on variants(fitcons)''')
     cursor.execute('''create index var_sv_event_idx on variants(sv_event_id)''')
+    # genotype array indices
+    cursor.execute('''create index vid_gt_idx on variants using GIN (gts)''')
+    cursor.execute('''create index vid_gt_types_idx on variants using GIN (gt_types)''')
 
 
 def index_variation_impacts(cursor):
@@ -91,10 +94,11 @@ def create_tables(cursor):
     """
     Create our master DB tables
     """
-    cursor.execute('''create table if not exists variants  (    \
+    cursor.execute("DROP TABLE IF EXISTS variants")
+    cursor.execute('''create table variants  (                  \
                     chrom text,                                 \
                     start integer,                              \
-                    end integer,                                \
+                    \"end\" integer,                            \
                     vcf_id text,                                \
                     variant_id integer,                         \
                     anno_id integer,                            \
@@ -104,16 +108,16 @@ def create_tables(cursor):
                     filter text,                                \
                     type text,                                  \
                     sub_type text,                              \
-                    gts blob,                                   \
-                    gt_types blob,                              \
-                    gt_phases blob,                             \
-                    gt_depths blob,                             \
-                    gt_ref_depths blob,                         \
-                    gt_alt_depths blob,                         \
-                    gt_quals blob,                              \
-                    gt_copy_numbers blob,                       \
+                    gts text[],                                 \
+                    gt_types integer[],                         \
+                    gt_phases integer[],                        \
+                    gt_depths integer[],                        \
+                    gt_ref_depths integer[],                    \
+                    gt_alt_depths integer[],                    \
+                    gt_quals float[],                           \
+                    gt_copy_numbers float[],                  \
                     call_rate float,                            \
-                    in_dbsnp bool,                              \
+                    in_dbsnp integer,                              \
                     rs_ids text default NULL,                   \
                     sv_cipos_start_left integer,                \
                     sv_cipos_end_left integer,                  \
@@ -126,7 +130,7 @@ def create_tables(cursor):
                     sv_event_id text,                           \
                     sv_mate_id text,                            \
                     sv_strand text,                             \
-                    in_omim bool,                               \
+                    in_omim integer,                               \
                     clinvar_sig text default NULL,              \
                     clinvar_disease_name text default NULL,     \
                     clinvar_dbsource text default NULL,         \
@@ -135,8 +139,8 @@ def create_tables(cursor):
                     clinvar_dsdb text default NULL,             \
                     clinvar_dsdbid text default NULL,           \
                     clinvar_disease_acc text default NULL,      \
-                    clinvar_in_locus_spec_db bool,              \
-                    clinvar_on_diag_assay bool,                 \
+                    clinvar_in_locus_spec_db integer,           \
+                    clinvar_on_diag_assay integer,              \
                     clinvar_causal_allele text,                 \
                     pfam_domain text,                           \
                     cyto_band text default NULL,                \
@@ -151,15 +155,15 @@ def create_tables(cursor):
                     num_hom_alt integer,                        \
                     num_unknown integer,                        \
                     aaf real,                                   \
-                    hwe decimal(2,7),                           \
-                    inbreeding_coeff decimal(2,7),              \
-                    pi decimal(2,7),                            \
-                    recomb_rate decimal(2,7),                   \
+                    hwe decimal(9,7),                           \
+                    inbreeding_coeff numeric,                   \
+                    pi numeric,                                 \
+                    recomb_rate numeric,                        \
                     gene text,                                  \
                     transcript text,                            \
-                    is_exonic bool,                             \
-                    is_coding bool,                             \
-                    is_lof bool,                                \
+                    is_exonic integer,                             \
+                    is_coding integer,                             \
+                    is_lof integer,                                \
                     exon text,                                  \
                     codon_change text,                          \
                     aa_change text,                             \
@@ -186,22 +190,22 @@ def create_tables(cursor):
                     qual_depth float default NULL,              \
                     allele_count integer default NULL,          \
                     allele_bal float default NULL,              \
-                    in_hm2 bool,                                \
-                    in_hm3 bool,                                \
-                    is_somatic bool,                            \
+                    in_hm2 integer,                                \
+                    in_hm3 integer,                                \
+                    is_somatic integer,                            \
                     somatic_score float,                        \
                     in_esp bool,                                \
-                    aaf_esp_ea decimal(2,7),                    \
-                    aaf_esp_aa decimal(2,7),                    \
-                    aaf_esp_all decimal(2,7),                   \
+                    aaf_esp_ea numeric,                    \
+                    aaf_esp_aa numeric,                    \
+                    aaf_esp_all numeric,                   \
                     exome_chip bool,                            \
                     in_1kg bool,                                \
-                    aaf_1kg_amr decimal(2,7),                   \
-                    aaf_1kg_eas decimal(2,7),                   \
-                    aaf_1kg_sas decimal(2,7),                   \
-                    aaf_1kg_afr decimal(2,7),                   \
-                    aaf_1kg_eur decimal(2,7),                   \
-                    aaf_1kg_all decimal(2,7),                   \
+                    aaf_1kg_amr numeric,                   \
+                    aaf_1kg_eas numeric,                   \
+                    aaf_1kg_sas numeric,                   \
+                    aaf_1kg_afr numeric,                   \
+                    aaf_1kg_eur numeric,                   \
+                    aaf_1kg_all numeric,                   \
                     grc text default NULL,                      \
                     gms_illumina float,                         \
                     gms_solid float,                            \
@@ -218,20 +222,21 @@ def create_tables(cursor):
                     encode_consensus_k562 text,                 \
                     vista_enhancers text,                       \
                     cosmic_ids text,                            \
-                    info blob,                                  \
+                    info BYTEA,                                  \
                     cadd_raw float,                             \
                     cadd_scaled float,                          \
                     fitcons float,                              \
-                    PRIMARY KEY(variant_id ASC))''')
+                    PRIMARY KEY(variant_id))''')
 
-    cursor.execute('''create table if not exists variant_impacts  (   \
+    cursor.execute("DROP TABLE IF EXISTS variant_impacts")
+    cursor.execute('''create table variant_impacts  (   \
                     variant_id integer,                               \
                     anno_id integer,                                  \
                     gene text,                                        \
                     transcript text,                                  \
-                    is_exonic bool,                                   \
-                    is_coding bool,                                   \
-                    is_lof bool,                                      \
+                    is_exonic integer,                                   \
+                    is_coding integer,                                   \
+                    is_lof integer,                                      \
                     exon text,                                        \
                     codon_change text,                                \
                     aa_change text,                                   \
@@ -244,32 +249,37 @@ def create_tables(cursor):
                     polyphen_score float,                             \
                     sift_pred text,                                   \
                     sift_score float,                                 \
-                    PRIMARY KEY(variant_id ASC, anno_id ASC))''')
+                    PRIMARY KEY(variant_id, anno_id))''')
 
-    cursor.execute('''create table if not exists sample_genotypes (  \
+    cursor.execute("DROP TABLE IF EXISTS sample_genotypes")
+    cursor.execute('''create table sample_genotypes (  \
                     sample_id integer,                               \
-                    gt_types BLOB,                                   \
-                    PRIMARY KEY(sample_id ASC))''')
+                    gt_types integer[],                                   \
+                    PRIMARY KEY(sample_id))''')
 
+    cursor.execute("DROP TABLE IF EXISTS sample_genotype_counts")
     cursor.execute('''create table if not exists sample_genotype_counts ( \
                      sample_id integer,                                   \
                      num_hom_ref integer,                                 \
                      num_het integer,                                     \
                      num_hom_alt integer,                                 \
                      num_unknown integer,                                 \
-                     PRIMARY KEY(sample_id ASC))''')
+                     PRIMARY KEY(sample_id))''')
 
-    cursor.execute('''create table if not exists resources ( \
+    cursor.execute("DROP TABLE IF EXISTS resources")
+    cursor.execute('''create table resources ( \
                      name text,                              \
                      resource text)''')
 
+    cursor.execute("DROP TABLE IF EXISTS version")
     cursor.execute('''create table if not exists version (version text)''')
     
+    cursor.execute("DROP TABLE IF EXISTS gene_detailed")
     cursor.execute('''create table if not exists gene_detailed (       \
                    uid integer,                                        \
                    chrom text,                                         \
                    gene text,                                          \
-                   is_hgnc bool,                                       \
+                   is_hgnc integer,                                       \
                    ensembl_gene_id text,                               \
                    transcript text,                                    \
                    biotype text,                                       \
@@ -285,13 +295,14 @@ def create_tables(cursor):
                    synonym text,                                       \
                    rvis_pct float,                                     \
                    mam_phenotype_id text,                              \
-                   PRIMARY KEY(uid ASC))''')
-                   
+                   PRIMARY KEY(uid))''')
+    
+    cursor.execute("DROP TABLE IF EXISTS gene_summary")
     cursor.execute('''create table if not exists gene_summary (     \
                     uid integer,                                    \
                     chrom text,                                     \
                     gene text,                                      \
-                    is_hgnc bool,                                   \
+                    is_hgnc integer,                                   \
                     ensembl_gene_id text,                           \
                     hgnc_id text,                                   \
                     transcript_min_start text,                      \
@@ -300,8 +311,8 @@ def create_tables(cursor):
                     synonym text,                                   \
                     rvis_pct float,                                 \
                     mam_phenotype_id text,                          \
-                    in_cosmic_census bool,                          \
-                    PRIMARY KEY(uid ASC))''')
+                    in_cosmic_census integer,                          \
+                    PRIMARY KEY(uid))''')
 
 def create_sample_table(cursor, args):
     NUM_BUILT_IN = 6
@@ -309,35 +320,35 @@ def create_sample_table(cursor, args):
     required = "sample_id integer"
     optional_fields = ["family_id", "name", "paternal_id", "maternal_id",
                        "sex", "phenotype"]
-    optional_fields += fields[NUM_BUILT_IN:] + ["PRIMARY KEY(sample_id ASC)"]
+    optional_fields += fields[NUM_BUILT_IN:] + ["PRIMARY KEY(sample_id)"]
     optional = " text default NULL,".join(optional_fields)
     structure = '''{0}, {1}'''.format(required, optional)
-    creation = "create table if not exists samples ({0})".format(structure)
+    creation = "DROP TABLE IF EXISTS samples; create table if not exists samples ({0})".format(structure)
     cursor.execute(creation)
 
 def _insert_variation_one_per_transaction(cursor, buffer):
     for variant in buffer:
         try:
             cursor.execute("BEGIN TRANSACTION")
-            cursor.execute('insert into variants values     (?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?)', variant)
+            cursor.execute('insert into variants values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
-        except sqlite3.IntegrityError, e:
+        except psycopg2.IntegrityError, e:
             cursor.execute("END TRANSACTION")
             continue
-        except sqlite3.ProgrammingError, e:
+        except psycopg2.ProgrammingError, e:
             print variant
             print "Error %s:" % (e.args[0])
             sys.exit(1)
@@ -348,22 +359,22 @@ def insert_variation(cursor, buffer):
     """
     try:
         cursor.execute("BEGIN TRANSACTION")
-        cursor.executemany('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?)', buffer)
+        cursor.executemany('insert into variants values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', buffer)
 
         cursor.execute("END TRANSACTION")
-    except sqlite3.ProgrammingError:
+    except psycopg2.ProgrammingError:
         cursor.execute("END TRANSACTION")
         _insert_variation_one_per_transaction(cursor, buffer)
 
@@ -373,9 +384,9 @@ def insert_variation_impacts(cursor, buffer):
     Populate the variant_impacts table with each variant in the buffer.
     """
     cursor.execute("BEGIN TRANSACTION")
-    cursor.executemany('insert into variant_impacts values (?,?,?,?,?,?,?,?, \
-                                                            ?,?,?,?,?,?,?,?, \
-                                                            ?,?,?)',
+    cursor.executemany('insert into variant_impacts values (%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                            %s,%s,%s,%s,%s,%s,%s,%s, \
+                                                            %s,%s,%s)',
                        buffer)
     cursor.execute("END")
 
@@ -385,7 +396,7 @@ def insert_sample(cursor, sample_list):
     Populate the samples with sample ids, names, and
     other indicative information.
     """
-    placeholders = ",".join(list(repeat("?", len(sample_list))))
+    placeholders = ",".join(list(repeat("%s", len(sample_list))))
     cursor.execute("BEGIN TRANSACTION")
     cursor.execute("insert into samples values "
                    "({0})".format(placeholders), sample_list)
@@ -393,17 +404,17 @@ def insert_sample(cursor, sample_list):
 
 def insert_gene_detailed(cursor, table_contents):
     cursor.execute("BEGIN TRANSACTION")
-    cursor.executemany('insert into gene_detailed values (?,?,?,?,?,?,?,?,?, \
-                                                          ?,?,?,?,?,?,?,?,?, \
-                                                          ?)',
+    cursor.executemany('insert into gene_detailed values (%s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                          %s,%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                          %s)',
                         table_contents)
     cursor.execute("END")
     
 
 def insert_gene_summary(cursor, contents):
     cursor.execute("BEGIN TRANSACTION")
-    cursor.executemany('insert into gene_summary values (?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?)', 
+    cursor.executemany('insert into gene_summary values (%s,%s,%s,%s,%s,%s,%s,%s, \
+                                                         %s,%s,%s,%s,%s)', 
                         contents)
     cursor.execute("END")
     
@@ -411,7 +422,7 @@ def insert_resources(cursor, resources):
     """Populate table of annotation resources used in this database.
     """
     cursor.execute("BEGIN TRANSACTION")
-    cursor.executemany('''insert into resources values (?,?)''', resources)
+    cursor.executemany('''insert into resources values (%s,%s)''', resources)
     cursor.execute("END")
 
 def insert_version(cursor, version):
@@ -419,7 +430,7 @@ def insert_version(cursor, version):
     gemini version was used for this database.
     """
     cursor.execute("BEGIN TRANSACTION")
-    cursor.execute('''insert into version values (?)''', (version,))
+    cursor.execute('''insert into version values (%s)''', (version,))
     cursor.execute("END")
 
 
@@ -427,8 +438,18 @@ def close_and_commit(cursor, connection):
     """
     Commit changes to the DB and close out DB cursor.
     """
+    print "committing"
     connection.commit()
-    cursor.close
+
+    #cursor.execute("""SELECT * FROM variants 
+    #                        WHERE gt_types[7] =1 
+    #                        AND   gt_types[9] =0 
+    #                        AND   gt_types[17] =2""")
+    #for row in cursor:
+    #    print row
+
+    #print "closing"
+    connection.close()
 
 
 def empty_tables(cursor):
@@ -437,17 +458,17 @@ def empty_tables(cursor):
 
 
 def update_gene_summary_w_cancer_census(cursor, genes):
-    update_qry = "UPDATE gene_summary SET in_cosmic_census = ? "
-    update_qry += " WHERE gene = ? and chrom = ?"
+    update_qry = "UPDATE gene_summary SET in_cosmic_census = %s "
+    update_qry += " WHERE gene = %s and chrom = %s"
     cursor.executemany(update_qry, genes)
 
-@contextlib.contextmanager
-def database_transaction(db):
-    conn = sqlite3.connect(db)
-    conn.isolation_level = None
-    cursor = conn.cursor()
-    cursor.execute('PRAGMA synchronous = OFF')
-    cursor.execute('PRAGMA journal_mode=MEMORY')
-    yield cursor
-    conn.commit
-    cursor.close()
+# @contextlib.contextmanager
+# def database_transaction(db):
+#     conn = sqlite3.connect(db)
+#     conn.isolation_level = None
+#     cursor = conn.cursor()
+#     cursor.execute('PRAGMA synchronous = OFF')
+#     cursor.execute('PRAGMA journal_mode=MEMORY')
+#     yield cursor
+#     conn.commit
+#     cursor.close()

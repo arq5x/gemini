@@ -114,6 +114,9 @@ def main():
                              default=1,
                              type=int,
                              help="Number of cores to use to load in parallel.")
+    parser_load.add_argument('--dbtype', dest='dbtype',
+                             default="sqlite",
+                             help="The type of database to use. Def=sqlite.")
     parser_load.add_argument('--scheduler', dest='scheduler', default=None,
                              choices=["lsf", "sge", "slurm", "torque"],
                              action=IPythonAction,

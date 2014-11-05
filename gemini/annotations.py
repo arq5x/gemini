@@ -603,10 +603,10 @@ def get_esp_info(var):
                 # Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
                         info_map['EXOME_CHIP'] == "no":
-                    exome_chip = 0
+                    exome_chip = False
                 elif info_map.get('EXOME_CHIP') is not None and \
                         info_map['EXOME_CHIP'] == "yes":
-                    exome_chip = 1
+                    exome_chip = True
 
     return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)
 

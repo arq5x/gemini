@@ -4,6 +4,8 @@
 import os.path
 import sys
 import sqlite3
+import  psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import numpy as np
 from itertools import repeat
 import json
@@ -17,6 +19,7 @@ from ped import default_ped_fields, load_ped_file
 import gene_table
 import infotag
 import database
+import database_postgresql
 import annotations
 import func_impact
 import severe_impact
@@ -32,7 +35,7 @@ class GeminiLoader(object):
     Object for creating and populating a gemini
     database and auxillary data files.
     """
-    def __init__(self, args, buffer_size=10000):
+    def __init__(self, args, buffer_size=100):
         self.args = args
 
         # create the gemini database
@@ -65,12 +68,19 @@ class GeminiLoader(object):
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
         """
-        database.insert_resources(self.c, annotations.get_resources( self.args ))
+        if self.args.dbtype == "sqlite":
+            database.insert_resources(self.c, annotations.get_resources( self.args ))
+        elif self.args.dbtype == "postgresql":
+            database_postgresql.insert_resources(self.c, annotations.get_resources( self.args ))
+
 
     def store_version(self):
         """Create table documenting which gemini version was used for this db.
         """
-        database.insert_version(self.c, version.__version__)
+        if self.args.dbtype == "sqlite":
+            database.insert_version(self.c, version.__version__)
+        elif self.args.dbtype == "postgresql":
+            database_postgresql.insert_version(self.c, version.__version__)
 
     def _get_vid(self):
         if hasattr(self.args, 'offset'):
@@ -112,8 +122,14 @@ class GeminiLoader(object):
                 if buffer_count >= self.buffer_size:
                     sys.stderr.write("pid " + str(os.getpid()) + ": " +
                                      str(self.counter) + " variants processed.\n")
-                    database.insert_variation(self.c, self.var_buffer)
-                    database.insert_variation_impacts(self.c,
+
+                    if self.args.dbtype == "sqlite":
+                        database.insert_variation(self.c, self.var_buffer)
+                        database.insert_variation_impacts(self.c,
+                                                      self.var_impacts_buffer)
+                    elif self.args.dbtype == "postgresql":
+                        database_postgresql.insert_variation(self.c, self.var_buffer)
+                        database_postgresql.insert_variation_impacts(self.c,
                                                       self.var_impacts_buffer)
                     # binary.genotypes.append(var_buffer)
                     # reset for the next batch
@@ -129,8 +145,14 @@ class GeminiLoader(object):
             os.remove(extra_file)
         # final load to the database
         self.v_id -= 1
-        database.insert_variation(self.c, self.var_buffer)
-        database.insert_variation_impacts(self.c, self.var_impacts_buffer)
+        if self.args.dbtype == "sqlite":
+            database.insert_variation(self.c, self.var_buffer)
+            database.insert_variation_impacts(self.c,
+                                          self.var_impacts_buffer)
+        elif self.args.dbtype == "postgresql":
+            database_postgresql.insert_variation(self.c, self.var_buffer)
+            database_postgresql.insert_variation_impacts(self.c,
+                                          self.var_impacts_buffer)
         sys.stderr.write("pid " + str(os.getpid()) + ": " +
                          str(self.counter) + " variants processed.\n")
         if self.args.passonly:
@@ -163,10 +185,16 @@ class GeminiLoader(object):
         Create the db table indices and close up
         db connection
         """
+
         # index our tables for speed
-        database.create_indices(self.c)
-        # commit data and close up
-        database.close_and_commit(self.c, self.conn)
+        if self.args.dbtype == "sqlite":
+            database.create_indices(self.c)
+            # commit data and close up
+            database.close_and_commit(self.c, self.conn)
+        elif self.args.dbtype == "postgresql":
+            database_postgresql.create_indices(self.c)
+            # commit data and close up
+            database_postgresql.close_and_commit(self.c, self.conn)
 
     def _get_vcf_reader(self):
         # the VCF is a proper file
@@ -239,16 +267,24 @@ class GeminiLoader(object):
         and create the gemini schema.
         """
         # open up a new database
-        if os.path.exists(self.args.db):
-            os.remove(self.args.db)
-        self.conn = sqlite3.connect(self.args.db)
-        self.conn.isolation_level = None
-        self.c = self.conn.cursor()
-        self.c.execute('PRAGMA synchronous = OFF')
-        self.c.execute('PRAGMA journal_mode=MEMORY')
-        # create the gemini database tables for the new DB
-        database.create_tables(self.c)
-        database.create_sample_table(self.c, self.args)
+        if self.args.dbtype == "sqlite":
+            if os.path.exists(self.args.db):
+                os.remove(self.args.db)
+            self.conn = sqlite3.connect(self.args.db)
+            self.conn.isolation_level = None
+            self.c = self.conn.cursor()
+            self.c.execute('PRAGMA synchronous = OFF')
+            self.c.execute('PRAGMA journal_mode=MEMORY')
+            database.create_tables(self.c)
+            database.create_sample_table(self.c, self.args)
+        elif self.args.dbtype == "postgresql":
+            self.conn =  psycopg2.connect(dbname='postgres', host='localhost')
+            self.conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            self.c = self.conn.cursor()
+            #self.c.execute('DROP DATABASE ' + 'gemini_test')
+            #self.c.execute('CREATE DATABASE ' + 'gemini_test')
+            database_postgresql.create_tables(self.c)
+            database_postgresql.create_sample_table(self.c, self.args)
 
     def _prepare_variation(self, var):
         """private method to collect metrics for a single variant (var) in a VCF file.
@@ -394,17 +430,27 @@ class GeminiLoader(object):
         # these arrays will be pickled-to-binary, compressed,
         # and loaded as SqlLite BLOB values (see compression.pack_blob)
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
-            gt_bases = np.array(var.gt_bases, np.str)  # 'A/G', './.'
-            gt_types = np.array(var.gt_types, np.int8)  # -1, 0, 1, 2
-            gt_phases = np.array(var.gt_phases, np.bool)  # T F F
-            gt_depths = np.array(var.gt_depths, np.int32)  # 10 37 0
-            gt_ref_depths = np.array(var.gt_ref_depths, np.int32)  # 2 21 0 -1
-            gt_alt_depths = np.array(var.gt_alt_depths, np.int32)  # 8 16 0 -1
-            gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
-            gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
+            if self.args.dbtype == "sqlite":
+                gt_bases = pack_blob(np.array(var.gt_bases, np.str))  # 'A/G', './.'
+                gt_types = pack_blob(np.array(var.gt_types, np.int8))  # -1, 0, 1, 2
+                gt_phases = pack_blob(np.array(var.gt_phases, np.bool))  # T F F
+                gt_depths = pack_blob(np.array(var.gt_depths, np.int32))  # 10 37 0
+                gt_ref_depths = pack_blob(np.array(var.gt_ref_depths, np.int32))  # 2 21 0 -1
+                gt_alt_depths = pack_blob(np.array(var.gt_alt_depths, np.int32))  # 8 16 0 -1
+                gt_quals = pack_blob(np.array(var.gt_quals, np.float32))  # 10.78 22 99 -1
+                gt_copy_numbers = pack_blob(np.array(var.gt_copy_numbers, np.float32))  # 1.0 2.0 2.1 -1
+            elif self.args.dbtype == "postgresql":
+                gt_bases = var.gt_bases 
+                gt_types = var.gt_types 
+                gt_phases = []  # hack for now. FIX
+                gt_depths = var.gt_depths 
+                gt_ref_depths = var.gt_ref_depths  
+                gt_alt_depths = var.gt_alt_depths  
+                gt_quals = var.gt_quals 
+                gt_copy_numbers = var.gt_copy_numbers  
 
             # tally the genotypes
-            self._update_sample_gt_counts(gt_types)
+            self._update_sample_gt_counts(np.array(var.gt_types, np.int8))
         else:
             gt_bases = None
             gt_types = None
@@ -449,10 +495,10 @@ class GeminiLoader(object):
         variant = [chrom, var.start, var.end,
                    vcf_id, self.v_id, anno_id, var.REF, ','.join(var.ALT),
                    var.QUAL, filter, var.var_type,
-                   var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
-                   pack_blob(gt_phases), pack_blob(gt_depths),
-                   pack_blob(gt_ref_depths), pack_blob(gt_alt_depths),
-                   pack_blob(gt_quals), pack_blob(gt_copy_numbers),
+                   var.var_subtype, gt_bases, gt_types,
+                   gt_phases, gt_depths,
+                   gt_ref_depths, gt_alt_depths,
+                   gt_quals, gt_copy_numbers,
                    call_rate, in_dbsnp,
                    rs_ids,
                    ci_left[0],
@@ -522,7 +568,6 @@ class GeminiLoader(object):
                    cadd_raw,
                    cadd_scaled,
                    fitcons]
-
         return variant, variant_impacts, extra_fields
 
     def _prepare_samples(self):
@@ -553,7 +598,11 @@ class GeminiLoader(object):
                 # sample_id and set the other required fields to None
                 sample_list = [i, None, sample]
                 sample_list += list(repeat(None, len(default_ped_fields) - 2))
-            database.insert_sample(self.c, sample_list)
+            
+            if self.args.dbtype == "sqlite":
+                database.insert_sample(self.c, sample_list)
+            elif self.args.dbtype == "postgresql":
+                database_postgresql.insert_sample(self.c, sample_list)
             
     def _get_gene_detailed(self):
         """
@@ -579,7 +628,11 @@ class GeminiLoader(object):
                                  table.transcript_start,table.transcript_end,
                                  table.strand,table.synonym,table.rvis,table.mam_phenotype]
                 table_contents.append(detailed_list)
-        database.insert_gene_detailed(self.c, table_contents)
+        
+        if self.args.dbtype == "sqlite":
+            database.insert_gene_detailed(self.c, table_contents)
+        elif self.args.dbtype == "postgresql":
+            database_postgresql.insert_gene_detailed(self.c, table_contents)
         
     def _get_gene_summary(self):
         """
@@ -587,7 +640,7 @@ class GeminiLoader(object):
         """
         #unique identifier for each entry
         i = 0
-        contents = summary_list = []
+        table_contents = summary_list = []
         
         config = read_gemini_config( args = self.args )
         path_dirname = config["annotation_dir"]
@@ -606,8 +659,12 @@ class GeminiLoader(object):
                                 table.transcript_max_end,table.strand,
                                 table.synonym,table.rvis,table.mam_phenotype,
                                 cosmic_census]
-                contents.append(summary_list)
-        database.insert_gene_summary(self.c, contents)
+                table_contents.append(summary_list)
+        
+        if self.args.dbtype == "sqlite":
+            database.insert_gene_summary(self.c, table_contents)
+        elif self.args.dbtype == "postgresql":
+            database_postgresql.insert_gene_summary(self.c, table_contents)
 
     def update_gene_table(self):
         """
@@ -640,16 +697,28 @@ class GeminiLoader(object):
         """
         Update the count of each gt type for each sample
         """
-        self.c.execute("BEGIN TRANSACTION")
-        for idx, gt_counts in enumerate(self.sample_gt_counts):
-            self.c.execute("""insert into sample_genotype_counts values \
-                            (?,?,?,?,?)""",
-                           [idx,
-                            int(gt_counts[HOM_REF]),  # hom_ref
-                            int(gt_counts[HET]),  # het
-                            int(gt_counts[HOM_ALT]),  # hom_alt
-                            int(gt_counts[UNKNOWN])])  # missing
-        self.c.execute("END")
+        if self.args.dbtype == "sqlite":
+            self.c.execute("BEGIN TRANSACTION")
+            for idx, gt_counts in enumerate(self.sample_gt_counts):
+                self.c.execute("""insert into sample_genotype_counts values \
+                                (?,?,?,?,?)""",
+                               [idx,
+                                int(gt_counts[HOM_REF]),  # hom_ref
+                                int(gt_counts[HET]),  # het
+                                int(gt_counts[HOM_ALT]),  # hom_alt
+                                int(gt_counts[UNKNOWN])])  # missing
+            self.c.execute("END")
+        elif self.args.dbtype == "postgresql":
+            self.c.execute("BEGIN TRANSACTION")
+            for idx, gt_counts in enumerate(self.sample_gt_counts):
+                self.c.execute("""insert into sample_genotype_counts values \
+                                (%s,%s,%s,%s,%s)""",
+                               [idx,
+                                int(gt_counts[HOM_REF]),  # hom_ref
+                                int(gt_counts[HET]),  # het
+                                int(gt_counts[HOM_ALT]),  # hom_alt
+                                int(gt_counts[UNKNOWN])])  # missing
+            self.c.execute("END")
 
 
 def load(parser, args):
