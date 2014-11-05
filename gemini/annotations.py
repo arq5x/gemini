@@ -46,7 +46,8 @@ def get_anno_files( args ):
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bw"),
-     'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.vcf.gz')
+     'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.vcf.gz'),
+     'exac': os.path.join(anno_dirname, 'ExAC.r0.2.sites.vep.vcf.gz')
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
@@ -158,6 +159,18 @@ ThousandGInfo = collections.namedtuple("ThousandGInfo",
                                         aaf_EUR")
 
 GmsTechs = collections.namedtuple("GmsTechs", "illumina solid iontorrent")
+
+ExacInfo = collections.namedtuple("ExacInfo",
+                                  "found \
+                                   aaf_ALL \
+                                   adj_aaf_ALL \
+                                   aaf_AFR \
+                                   aaf_AMR \
+                                   aaf_EAS \
+                                   aaf_FIN \
+                                   aaf_NFE \
+                                   aaf_OTH \
+                                   aaf_SAS")
 
 def load_annos( args ):
     """
@@ -634,6 +647,99 @@ def get_1000G_info(var):
     return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'),
                          info_map.get('EAS_AF'), info_map.get('SAS_AF'), 
                          info_map.get('AFR_AF'), info_map.get('EUR_AF'))
+
+def get_exac_info(var):
+    """
+    Returns the allele frequencies from the Exac data (Broad)
+    """
+
+    info_map = {}
+    found = False
+    adj_aaf_ALL = aaf_AFR = aaf_AMR = aaf_EAS = None
+    aaf_FIN = aaf_NFE = aaf_OTH = aaf_SAS = None
+
+    for hit in annotations_in_region(var,"exac", "vcf", "grch37"):
+        if var.start == hit.pos and \
+                var.REF == hit.ref and \
+                   var.ALT[0] == hit.alt:
+
+            found = True
+            for info in hit.info.split(";"):
+                if info.find("=") > 0:
+                    (key, value) = info.split("=", 1)
+                    info_map[key] = value
+
+            # Population independent raw (not-adjusted) allele frequencies given by AF
+            # Computing population independent allele frequencies (adjusted)
+            if info_map.get('AC_Adj') is not None and \
+                        info_map.get('AN_Adj') is not None:
+                # In case of multiple alt alleles, consider the first
+                ac_all = info_map['AC_Adj'].split(",")
+                try:
+                    adj_aaf_ALL = float(ac_all[0]) / float(info_map.get('AN_Adj'))
+                except ZeroDivisionError:
+                    # Cases where adj_AC and adj_AN were zero
+                    adj_aaf_ALL = 0
+
+            # Computing population specific allele frequencies
+            if info_map.get('AC_AFR') is not None and \
+                        info_map.get('AN_AFR') is not None:
+                ac_afr = info_map['AC_AFR'].split(",")
+                try:
+                    aaf_AFR = float(ac_afr[0]) / float(info_map.get('AN_AFR'))
+                except ZeroDivisionError:
+                    aaf_AFR = 0
+
+            if info_map.get('AC_AMR') is not None and \
+                        info_map.get('AN_AMR') is not None:
+                ac_amr = info_map['AC_AMR'].split(",")
+                try:
+                    aaf_AMR = float(ac_amr[0]) / float(info_map.get('AN_AMR'))
+                except ZeroDivisionError:
+                    aaf_AMR = 0
+
+            if info_map.get('AC_EAS') is not None and \
+                        info_map.get('AN_EAS') is not None:
+                ac_eas = info_map['AC_EAS'].split(",")
+                try:
+                    aaf_EAS = float(ac_eas[0]) / float(info_map.get('AN_EAS'))
+                except ZeroDivisionError:
+                    aaf_EAS = 0
+
+            if info_map.get('AC_FIN') is not None and \
+                        info_map.get('AN_FIN') is not None:
+                ac_fin = info_map['AC_FIN'].split(",")
+                try:
+                    aaf_FIN = float(ac_fin[0]) / float(info_map.get('AN_FIN'))
+                except ZeroDivisionError:
+                    aaf_FIN = 0
+
+            if info_map.get('AC_NFE') is not None and \
+                        info_map.get('AN_NFE') is not None:
+                ac_nfe = info_map['AC_NFE'].split(",")
+                try:
+                    aaf_NFE = float(ac_nfe[0]) / float(info_map.get('AN_NFE'))
+                except ZeroDivisionError:
+                    aaf_NFE = 0
+
+            if info_map.get('AC_OTH') is not None and \
+                        info_map.get('AN_OTH') is not None:
+                ac_oth = info_map['AC_OTH'].split(",")
+                try:
+                    aaf_OTH = float(ac_oth[0]) / float(info_map.get('AN_OTH'))
+                except ZeroDivisionError:
+                    aaf_OTH = 0
+
+            if info_map.get('AC_SAS') is not None and \
+                        info_map.get('AN_SAS') is not None:
+                ac_sas = info_map['AC_SAS'].split(",")
+                try:
+                    aaf_SAS = float(ac_sas[0]) / float(info_map.get('AN_SAS'))
+                except ZeroDivisionError:
+                    aaf_SAS = 0
+
+    return ExacInfo(found, info_map.get('AF'), adj_aaf_ALL, aaf_AFR, aaf_AMR, aaf_EAS,
+                     aaf_FIN, aaf_NFE, aaf_OTH, aaf_SAS)
 
 
 def get_rmsk_info(var):

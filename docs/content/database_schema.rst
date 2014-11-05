@@ -144,7 +144,17 @@ aaf_1kg_eas               FLOAT         Allele frequency of the variant in EAS p
 aaf_1kg_sas               FLOAT         Allele frequency of the variant in SAS population based on AC/AN (1000g project, phase 3)
 aaf_1kg_afr               FLOAT         Allele frequency of the variant in AFR population based on AC/AN (1000g project, phase 3)
 aaf_1kg_eur               FLOAT         Allele frequency of the variant in EUR population based on AC/AN (1000g project, phase 3)
-aaf_1kg_all               FLOAT         Global allele frequency (based on AC/AN) (1000g project - phase 3) 
+aaf_1kg_all               FLOAT         Global allele frequency (based on AC/AN) (1000g project - phase 3)
+in_exac                   BOOL          Presence/absence of the variant in ExAC (Exome Aggregation Consortium) data (Broad)
+aaf_exac_all              FLOAT         Raw allele frequency (population independent) of the variant based on ExAC exomes (AF)
+aaf_adj_exac_all          FLOAT         Adjusted allele frequency (population independent) of the variant based on ExAC (Adj_AC/Adj_AN)
+aaf_adj_exac_afr          FLOAT         Adjusted allele frequency of the variant for AFR population in ExAC (AC_AFR/AN_AFR)
+aaf_adj_exac_amr          FLOAT         Adjusted allele frequency of the variant for AMR population in ExAC (AC_AMR/AN_AMR)
+aaf_adj_exac_eas          FLOAT         Adjusted allele frequency of the variant for EAS population in ExAC (AC_EAS/AN_EAS)
+aaf_adj_exac_fin          FLOAT         Adjusted allele frequency of the variant for FIN population in ExAC (AC_FIN/AN_FIN)
+aaf_adj_exac_nfe          FLOAT         Adjusted allele frequency of the variant for NFE population in ExAC (AC_NFE/AN_NFE)
+aaf_adj_exac_oth          FLOAT         Adjusted allele frequency of the variant for OTH population in ExAC (AC_OTH/AN_OTH)
+aaf_adj_exac_sas          FLOAT         Adjusted allele frequency of the variant for SAS population in ExAC (AC_SAS/AN_SAS)
 ========================  =========     =================================================================================================
 
 

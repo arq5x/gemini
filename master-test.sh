@@ -47,6 +47,9 @@ bash test-genotypes.sh
 # Test ClinVar attributes
 bash test-clinvar.sh
 
+# Test Exac
+bash test-exac.sh
+
 # Test population_gen metrics
 bash test-pop.sh
 
