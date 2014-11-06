@@ -1312,6 +1312,8 @@ class GeminiQueryPostgres(GeminiQuery):
             self.query = self._add_gt_cols_to_query()
             self.query = self._add_gt_filter_to_query()
                         
+            print self.query
+
             self._execute_query()
 
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
@@ -1468,15 +1470,33 @@ class GeminiQueryPostgres(GeminiQuery):
                 wildcard_rule = _swap_genotype_for_number(wildcard_rule)
 
                 # build the rule based on the wildcard the user has supplied.
-                if wildcard_op in ["all", "any"]:
-                    rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])"
+                if wildcard_op == "all":
+                    rule = "("
+                    for idx, sample in enumerate(self.sample_info[token_idx]):
+                        rule += column + '[' + str(sample[0]) + ']' + wildcard_rule
+                        if idx < len(self.sample_info[token_idx]) - 1:
+                            rule += ' and '
+                    rule += ")"
+                elif wildcard_op == "any":
+                    rule = "("
+                    for idx, sample in enumerate(self.sample_info[token_idx]):
+                        rule += column + '[' + str(sample[0]) + ']' + wildcard_rule
+                        if idx < len(self.sample_info[token_idx]) - 1:
+                            rule += ' or '
+                    rule += ")"
                 elif wildcard_op == "none":
-                    rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])"
+                    rule = "( not "
+                    for idx, sample in enumerate(self.sample_info[token_idx]):
+                        rule += column + '[' + str(sample[0]) + ']' + wildcard_rule
+                        if idx < len(self.sample_info[token_idx]) - 1:
+                            rule += ' and not '
+                    rule += ")"
                 elif "count" in wildcard_op:
+                    sys.exit("Not yet implemented. Exiting." % wildcard_op)
                     # break "count>=2" into ['', '>=2']
-                    tokens = wildcard_op.split('count')
-                    count_comp = tokens[len(tokens) - 1]
-                    rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])" + count_comp
+                    # tokens = wildcard_op.split('count')
+                    # count_comp = tokens[len(tokens) - 1]
+                    # rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])" + count_comp
                 else:
                     sys.exit("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
 
