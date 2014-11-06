@@ -72,3 +72,6 @@ CADD scores (http://cadd.gs.washington.edu/) are Copyright 2013 University of Wa
 Hudson-Alpha Institute for Biotechnology (all rights reserved) but are freely available for 
 all academic, non-commercial applications. For commercial licensing information contact 
 Jennifer McCullar (mccullaj@uw.edu).
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/arq5x/gemini/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
