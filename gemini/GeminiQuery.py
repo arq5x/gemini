@@ -3,12 +3,15 @@
 import os
 import sys
 import sqlite3
+import  psycopg2
+import psycopg2.extras
 import re
 import itertools
 import collections
 import json
 import abc
 import re
+import string
 import numpy as np
 
 # gemini imports
@@ -377,6 +380,7 @@ class GeminiQuery(object):
 
     def __init__(self, db, include_gt_cols=False,
                  out_format=DefaultRowFormat(None)):
+
         assert os.path.exists(db), "%s does not exist." % db
 
         self.db = db
@@ -1057,6 +1061,628 @@ class GeminiQuery(object):
                self.include_gt_cols or \
                self.show_variant_samples or \
                self.needs_genotypes
+
+
+
+
+class GeminiQueryPostgres(GeminiQuery):
+
+    """
+    TO DO
+    """
+
+    def __init__(self, db, include_gt_cols=False,
+                 out_format=DefaultRowFormat(None)):
+
+
+        self.db = db
+        self.query_executed = False
+        self.for_browser = False
+        self.include_gt_cols = include_gt_cols
+
+        # try to connect to the provided database
+        self._connect_to_database()
+
+        # extract the column names from the sample table.
+        # needed for gt-filter wildcard support.
+        self._collect_sample_table_columns()
+
+        # list of samples ids for each clause in the --gt-filter
+        self.sample_info = collections.defaultdict(list)
+
+        # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323
+        self.sample_to_idx = util.map_samples_to_indices(self.c)
+        # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
+        self.idx_to_sample = util.map_indices_to_samples(self.c)
+        self.idx_to_sample_object = util.map_indices_to_sample_objects(self.c)
+        self.formatter = out_format
+        self.predicates = [self.formatter.predicate]
+
+
+    def run(self, query, gt_filter=None, show_variant_samples=False,
+            variant_samples_delim=',', predicates=None,
+            needs_genotypes=False, needs_genes=False,
+            show_families=False):
+        """
+        Execute a query against a Gemini database. The user may
+        specify:
+
+            1. (reqd.) an SQL `query`.
+            2. (opt.) a genotype filter.
+        """
+        self.query = self.formatter.format_query(query)
+        self.gt_filter = gt_filter
+
+        self.show_variant_samples = show_variant_samples
+        self.variant_samples_delim = variant_samples_delim
+        self.needs_genotypes = needs_genotypes
+        self.needs_genes = needs_genes
+        self.show_families = show_families
+        if predicates:
+            self.predicates += predicates
+
+        # make sure the SELECT columns are separated by a
+        # comma and a space. then tokenize by spaces.
+        self.query = self.query.replace(',', ', ')
+        self.query_pieces = self.query.split()
+        if not any(s.startswith("gt") for s in self.query_pieces) and \
+           not any(s.startswith("(gt") for s in self.query_pieces) and \
+           not any(".gt" in s for s in self.query_pieces):
+            if self.gt_filter is None:
+                self.query_type = "no-genotypes"
+            else:
+                self.gt_filter = self._correct_genotype_filter()
+                self.query_type = "filter-genotypes"
+        else:
+            if self.gt_filter is None:
+                self.query_type = "select-genotypes"
+            else:
+                self.gt_filter = self._correct_genotype_filter()
+                self.query_type = "filter-genotypes"
+
+        self._apply_query()
+        self.query_executed = True
+
+
+    def __iter__(self):
+        return self
+
+
+    def next(self):
+        """
+        Return the GeminiRow object for the next query result.
+        """
+        # we use a while loop since we may skip records based upon
+        # genotype filters.  if we need to skip a record, we just
+        # throw a continue and keep trying. the alternative is to just
+        # recursively call self.next() if we need to skip, but this
+        # can quickly exceed the stack.
+
+        while (1):
+            row = self.c.fetchone()
+            if row == None: 
+                raise StopIteration
+                self.conn.close()
+                
+            gts = None
+            gt_types = None
+            gt_phases = None
+            gt_depths = None
+            gt_ref_depths = None
+            gt_alt_depths = None
+            gt_quals = None
+            gt_copy_numbers = None
+            variant_names = []
+            het_names = []
+            hom_alt_names = []
+            hom_ref_names = []
+            unknown_names = []
+            info = None
+
+            if 'info' in self.report_cols:
+                info = compression.unpack_ordereddict_blob(row['info'])
+
+            if self._query_needs_genotype_info():
+                gts = row['gts']
+                gt_types = row['gt_types']
+                gt_phases = row['gt_phases']
+                gt_depths = row['gt_depths']
+                gt_ref_depths = row['gt_ref_depths']
+                gt_alt_depths = row['gt_alt_depths']
+                gt_quals = row['gt_quals']
+                gt_copy_numbers = row['gt_copy_numbers']
+
+                variant_samples = [x for x, y in enumerate(row['gt_types']) if y == HET or
+                                   y == HOM_ALT]
+                variant_names = [self.idx_to_sample[x] for x in variant_samples]
+                het_samples = [x for x, y in enumerate(gt_types) if y == HET]
+                het_names = [self.idx_to_sample[x] for x in het_samples]
+                hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
+                hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
+                hom_ref_samples = [x for x, y in enumerate(gt_types) if y == HOM_REF]
+                hom_ref_names = [self.idx_to_sample[x] for x in hom_ref_samples]
+                unknown_samples = [x for x, y in enumerate(gt_types) if y == UNKNOWN]
+                unknown_names = [self.idx_to_sample[x] for x in unknown_samples]
+                families = map(str, list(set([self.idx_to_sample_object[x].family_id
+                            for x in variant_samples])))
+
+            fields = OrderedDict()
+
+            for idx, col in enumerate(self.report_cols):
+                if col == "*":
+                    continue
+                if not col.startswith("gt") and not col.startswith("GT") and not col == "info":
+                    fields[col] = row[col]
+                elif col == "info":
+                    fields[col] = self._info_dict_to_string(info)
+                else:
+                    # reuse the original column name user requested
+                    # e.g. replace gts[1085] with gts.NA20814
+                    if '[' in col:
+                        orig_col = self.gt_idx_to_name_map_pgsql[col]
+                        python_col = self.pgsql_to_python[col]
+                        val = eval(python_col.strip())
+                        if type(val) in [np.int8, np.int32, np.bool_]:
+                            fields[orig_col] = int(val)
+                        elif type(val) in [np.float32]:
+                            fields[orig_col] = float(val)
+                        else:
+                            fields[orig_col] = val
+                    else:
+                        # asked for "gts" or "gt_types", e.g.
+                        if col == "gts":
+                            fields[col] = ','.join(gts)
+                        elif col == "gt_types":
+                            fields[col] = \
+                                ','.join(str(t) for t in gt_types)
+                        elif col == "gt_phases":
+                            fields[col] = \
+                                ','.join(str(p) for p in gt_phases)
+                        elif col == "gt_depths":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_depths)
+                        elif col == "gt_quals":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_quals)
+                        elif col == "gt_ref_depths":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_ref_depths)
+                        elif col == "gt_alt_depths":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_alt_depths)
+                        elif col == "gt_copy_numbers":
+                            fields[col] = \
+                                ','.join(str(d) for d in gt_copy_numbers)
+
+            if self.show_variant_samples:
+                fields["variant_samples"] = \
+                    self.variant_samples_delim.join(variant_names)
+                fields["HET_samples"] = \
+                    self.variant_samples_delim.join(het_names)
+                fields["HOM_ALT_samples"] = \
+                    self.variant_samples_delim.join(hom_alt_names)
+            if self.show_families:
+                fields["families"] = self.variant_samples_delim.join(families)
+
+            gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
+                                   gt_depths, gt_ref_depths, gt_alt_depths,
+                                   gt_quals, gt_copy_numbers, variant_names, het_names, hom_alt_names,
+                                   hom_ref_names, unknown_names, info,
+                                   formatter=self.formatter)
+
+            if not all([predicate(gemini_row) for predicate in self.predicates]):
+                continue
+
+            if not self.for_browser:
+                return gemini_row
+            else:
+                return fields
+
+    def _connect_to_database(self):
+        """
+        Establish a connection to the requested Gemini database.
+        """
+        # open up a new database
+        self.conn =  psycopg2.connect(dbname='postgres', host='localhost')
+        self.c = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    def _execute_query(self):
+        try:
+            self.c.execute(self.query)
+        except psycopg2.OperationalError as e:
+            print "Postgres error: {0}".format(e)
+            sys.exit("The query issued (%s) has a syntax error." % self.query)
+
+    def _apply_query(self):
+        """
+        Execute a query. Intercept gt* columns and
+        replace sample names with indices where necessary.
+        """
+        if self.needs_genes:
+            self.query = self._add_gene_col_to_query()
+
+        if self._query_needs_genotype_info():
+            # break up the select statement into individual
+            # pieces and replace genotype columns using sample
+            # names with sample indices
+            self._split_select()
+
+            # we only need genotype information if the user is
+            # querying the variants table
+            self.query = self._add_gt_cols_to_query()
+            self.query = self._add_gt_filter_to_query()
+                        
+            self._execute_query()
+
+            self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
+                                   if not tuple[0].startswith("gt") \
+                                      and ".gt" not in tuple[0]]
+
+            if "*" in self.select_columns:
+                self.select_columns.remove("*")
+                self.all_columns_orig.remove("*")
+                self.all_columns_new.remove("*")
+                self.select_columns += self.all_query_cols
+
+            self.report_cols = self.all_query_cols + \
+                list(OrderedSet(self.all_columns_new) - OrderedSet(self.select_columns))
+        # the query does not involve the variants table
+        # and as such, we don't need to do anything fancy.
+        else:
+            self._execute_query()
+            self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
+                                   if not tuple[0].startswith("gt")]
+            self.report_cols = self.all_query_cols
+
+    def _correct_genotype_col(self, raw_col):
+        """
+        Convert a _named_ genotype index to a _numerical_
+        genotype index so that the appropriate value can be
+        extracted for the sample from the genotype numpy arrays.
+
+        These lookups will be eval()'ed on the resuting rows to
+        extract the appropriate information.
+
+        For example, convert gt_types.1478PC0011 to gt_types[11]
+        """
+        if raw_col == "*":
+            return raw_col.lower(), raw_col.lower()
+        # e.g., "gts.NA12878"
+        elif '.' in raw_col:
+            (column, sample) = raw_col.split('.', 1)
+            corrected_python = column.lower() + "[" + str(self.sample_to_idx[sample]).lower() + "]"
+            corrected_pgsql = column.lower() + "[" + str(self.sample_to_idx[sample] + 1).lower() + "]"
+            return corrected_python, corrected_pgsql
+        else:
+            # e.g. "gts" - do nothing
+            return raw_col, raw_col
+
+    def _get_matching_sample_ids(self, wildcard):
+        """
+        Helper function to convert a sample wildcard
+        to a list of tuples reflecting the sample indices
+        and sample names so that the wildcard
+        query can be applied to the gt_* columns.
+        """
+        query = 'SELECT sample_id, name FROM samples '
+        if wildcard.strip() != "*":
+           query += ' WHERE ' + wildcard
+
+        sample_info = [] # list of sample_id/name tuples
+        self.c.execute(query)
+        for row in self.c:
+            sample_info.append((int(row['sample_id']), str(row['name'])))
+        return sample_info
+
+    def _correct_genotype_filter(self):
+        """
+        This converts a raw genotype filter that contains
+        'wildcard' statements into a filter that can be eval()'ed.
+        Specifically, we must convert a _named_ genotype index
+        to a _numerical_ genotype index so that the appropriate
+        value can be extracted for the sample from the genotype
+        numpy arrays.
+
+        For example, without WILDCARDS, this converts:
+        --gt-filter "(gt_types.1478PC0011 == 1)"
+
+        to:
+        (gt_types[11] == 1)
+
+        With WILDCARDS, this converts things like:
+            "(gt_types).(phenotype==1).(==HET)"
+
+        to:
+            "gt_types[2] == HET and gt_types[5] == HET"
+        """
+
+        def _swap_genotype_for_number(token):
+            """
+            This is a bit of a hack to get around the fact that eval()
+            doesn't handle the imported constants well when also having to
+            find local variables.  This requires some eval/globals()/locals() fu
+            that has evaded me thus far. Just replacing HET, etc. with 1, etc. works.
+            """
+            if any(g in token for g in ['HET', 'HOM_ALT', 'HOM_REF', 'UNKNOWN']):
+                token = token.replace('HET', str(HET))
+                token = token.replace('HOM_ALT', str(HOM_ALT))
+                token = token.replace('HOM_REF', str(HOM_REF))
+                token = token.replace('UNKNOWN', str(UNKNOWN))
+            return token
+
+        corrected_gt_filter = []
+
+        # first try to identify wildcard rules.
+        # (\s*gt\w+\) handles both
+        #    (gt_types).(*).(!=HOM_REF).(all)
+        # and
+        #    (   gt_types).(*).(!=HOM_REF).(all)
+        wildcard_tokens = re.split(r'(\(\s*gt\w+\s*\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
+        for token_idx, token in enumerate(wildcard_tokens):
+            # NOT a WILDCARD
+            # We must then split on whitespace and
+            # correct the gt_* columns:
+            # e.g., "gts.NA12878" or "and gt_types.M10500 == HET"
+            if (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and not '.(' in token and not ')self.' in token:
+                tokens = re.split(r'[\s+]+', str(token))
+                for t in tokens:
+                    if len(t) == 0:
+                        continue
+                    if (t.find("gt") >= 0 or t.find("GT") >= 0):
+                        # _correct_genotype_col(t)[1] grabs the PGSQL 1-based index.
+                        # e.g. gt_types[1] instead of gt_type[0]
+                        corrected = self._correct_genotype_col(t)[1]
+                        corrected_gt_filter.append(corrected)
+                    else:
+                        t = _swap_genotype_for_number(t)
+                        corrected_gt_filter.append(t)
+
+            # IS a WILDCARD
+            # e.g., "gt_types.(affected==1).(==HET)"
+            elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and '.(' in token and ').' in token:
+                # break the wildcard into its pieces. That is:
+                # (COLUMN).(WILDCARD).(WILDCARD_RULE).(WILDCARD_OP)
+                # e.g, (gts).(phenotype==2).(==HET).(any)
+                if token.count('.') != 3 or \
+                   token.count('(') != 4 or \
+                   token.count(')') != 4:
+                    sys.exit("Wildcard filter should consist of 4 elements. Exiting.")
+
+                (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
+
+                # remove the syntactic parentheses
+                column = column.strip('(').strip(')').strip()
+                wildcard = wildcard.strip('(').strip(')').strip()
+                wildcard_rule = wildcard_rule.strip('(').strip(')').strip()
+                wildcard_op = wildcard_op.strip('(').strip(')').strip()
+
+                # collect and save all of the samples that meet the wildcard criteria
+                # for each clause.
+                # these will be used in the list comprehension for the eval expression
+                # constructed below.
+                self.sample_info[token_idx] = self._get_matching_sample_ids(wildcard)
+
+                # Replace HET, etc. with 1, et.c to avoid eval() issues.
+                wildcard_rule = _swap_genotype_for_number(wildcard_rule)
+
+                # build the rule based on the wildcard the user has supplied.
+                if wildcard_op in ["all", "any"]:
+                    rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])"
+                elif wildcard_op == "none":
+                    rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])"
+                elif "count" in wildcard_op:
+                    # break "count>=2" into ['', '>=2']
+                    tokens = wildcard_op.split('count')
+                    count_comp = tokens[len(tokens) - 1]
+                    rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in self.sample_info[" + str(token_idx) + "])" + count_comp
+                else:
+                    sys.exit("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
+
+                corrected_gt_filter.append(rule)
+            else:
+                if len(token) > 0:
+                    corrected_gt_filter.append(token.lower())
+
+        return " ".join(corrected_gt_filter)
+
+
+    def _add_gt_cols_to_query(self):
+        """
+        We have to modify the raw query to select the genotype
+        columns in order to support the genotype filters.  That is,
+        if the user wants to limit the rows returned based upon, for example,
+        "gts.joe == 1", then we need to select the full gts BLOB column in
+        order to enforce that limit.  The user wouldn't have selected gts as a
+        columns, so therefore, we have to modify the select statement to add
+        it.
+
+        In essence, when a gneotype filter has been requested, we always add
+        the gts, gt_types and gt_phases columns.
+        """
+
+        if "from" not in self.query.lower():
+            sys.exit("Malformed query: expected a FROM keyword.")
+
+        (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
+
+        # remove any GT columns
+        select_clause_list = []
+        for token in select_tokens:
+            if not token.startswith("gt") and \
+               not token.startswith("GT") and \
+               not ".gt" in token and \
+               not ".GT" in token and \
+               not token.startswith("(gt") and \
+               not token.startswith("(GT"):
+                select_clause_list.append(token)
+
+
+        # reconstruct the query with the GT* columns added
+        if len(select_clause_list) > 0:
+            select_clause = ",".join(select_clause_list) + \
+                    ", gts, gt_types, gt_phases, gt_depths, \
+                       gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers "
+
+        else:
+            select_clause = ",".join(select_clause_list) + \
+                    " gts, gt_types, gt_phases, gt_depths, \
+                      gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers "
+
+        self.query = "select " + select_clause + rest_of_query
+
+        # extract the original select columns
+        return self.query
+
+    def _add_gt_filter_to_query(self):
+        """
+        We have to modify the raw query to add the genotype
+        filters.
+        """
+
+        # TO DO
+        if "where" in self.query.lower():
+            self.query += " and " + self.gt_filter.replace("==", "=")
+        else:
+            self.query += " " + self.gt_filter.replace("==", "=")
+        return self.query
+
+
+    def _add_gene_col_to_query(self):
+        """
+        Add the gene column to the list of SELECT'ed columns
+        in a query.
+        """
+        if "from" not in self.query.lower():
+            sys.exit("Malformed query: expected a FROM keyword.")
+
+        (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
+
+        if not any("gene" in s for s in select_tokens):
+
+            select_clause = ",".join(select_tokens) + \
+                        ", gene "
+
+            self.query = "select " + select_clause + rest_of_query
+
+        return self.query
+
+    def _split_select(self):
+        """
+        Build a list of _all_ columns in the SELECT statement
+        and segregated the non-genotype specific SELECT columns.
+
+        This is used to control how to report the results, as the
+        genotype-specific columns need to be eval()'ed whereas others
+        do not.
+
+        For example: "SELECT chrom, start, end, gt_types.1478PC0011"
+        will populate the lists as follows:
+
+        select_columns = ['chrom', 'start', 'end']
+        all_columns = ['chrom', 'start', 'end', 'gt_types[11]']
+        """
+        self.select_columns = []
+        self.all_columns_new = []
+        self.all_columns_orig = []
+        self.gt_name_to_idx_map = {}
+        self.gt_idx_to_name_map_pgsql = {}
+        self.pgsql_to_python = {}
+
+        # iterate through all of the select columns andclear
+        # distinguish the genotype-specific columns from the base columns
+        if "from" not in self.query.lower():
+            sys.exit("Malformed query: expected a FROM keyword.")
+
+        (self.select_tokens, self.rest_of_query) = get_select_cols_and_rest(self.query)
+
+        for token in self.select_tokens:
+            # it is a WILDCARD
+            if (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and '.(' in token and ').' in token:
+                # break the wildcard into its pieces. That is:
+                # (COLUMN).(WILDCARD)
+                (column, wildcard) = token.split('.')
+
+                # remove the syntactic parentheses
+                wildcard = wildcard.strip('(').strip(')')
+                column = column.strip('(').strip(')')
+
+                # convert "gt_types.(affected==1)"
+                # to: gt_types[3] == HET and gt_types[9] == HET
+                sample_info = self._get_matching_sample_ids(wildcard)
+
+                # maintain a list of the sample indices that should
+                # be displayed as a result of the SELECT'ed wildcard
+                wildcard_indices = []
+                for (idx, sample) in enumerate(sample_info):
+                    wildcard_display_col = column + '.' + str(sample[1])
+                    wildcard_mask_col_python = column + '[' + str(sample[0] - 1) + ']'
+                    wildcard_mask_col_pgsql = column + '[' + str(sample[0]) + ']'
+                    wildcard_indices.append(sample[0])
+
+                    new_col = wildcard_mask_col_pgsql
+                    self.all_columns_new.append(new_col)
+                    self.all_columns_orig.append(wildcard_display_col)
+                    self.gt_name_to_idx_map[wildcard_display_col] = wildcard_mask_col_pgsql
+                    self.gt_idx_to_name_map_pgsql[wildcard_mask_col_pgsql] = wildcard_display_col
+                    # pgsql uses 1-based indices
+                    self.pgsql_to_python[new_col] = wildcard_mask_col_python
+
+            # it is a basic genotype column
+            elif (token.find("gt") >= 0 or token.find("GT") >= 0) \
+                and '.(' not in token and not ').' in token \
+                and "length" not in token:     # e.g., no aa_lenGTh, etc. false positives
+                new_col_python, new_col_pgsql = self._correct_genotype_col(token)
+                self.all_columns_new.append(new_col_pgsql)
+                self.all_columns_orig.append(token)
+                self.gt_name_to_idx_map[token] = new_col_pgsql
+                self.gt_idx_to_name_map_pgsql[new_col_pgsql] = token
+                # pgsql uses 1-based indices
+                self.pgsql_to_python[new_col_pgsql] = new_col_python
+
+            # it is neither
+            else:
+                self.select_columns.append(token)
+                self.all_columns_new.append(token)
+                self.all_columns_orig.append(token)
+
+        self.query = 'select ' + ', '.join(self.all_columns_new) + ' ' + self.rest_of_query
+
+
+    def _info_dict_to_string(self, info):
+        """
+        Flatten the VCF info-field OrderedDict into a string,
+        including all arrays for allelic-level info.
+        """
+        if info is not None:
+            return ';'.join(['%s=%s' % (key, value) if not isinstance(value, list) \
+                             else '%s=%s' % (key, ','.join([str(v) for v in value])) \
+                             for (key, value) in info.items()])
+        else:
+            return None
+
+    def _tokenize_query(self):
+        tokens = list(flatten([x.split(",") for x in self.query.split(" ")]))
+        return tokens
+
+    def _query_needs_genotype_info(self):
+        tokens = self._tokenize_query()
+        requested_genotype = "variants" in tokens and \
+                            (any([x.startswith("gt") for x in tokens]) or \
+                             any([x.startswith("(gt") for x in tokens]) or \
+                             any(".gt" in x for x in tokens))
+        return requested_genotype or \
+               self.include_gt_cols or \
+               self.show_variant_samples or \
+               self.needs_genotypes
+
+
+
+
+
+
 
 def select_formatter(args):
     SUPPORTED_FORMATS = {x.name.lower(): x for x in

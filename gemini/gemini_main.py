@@ -260,6 +260,9 @@ def main():
     parser_query.add_argument('db',
             metavar='db',
             help='The name of the database to be queried.')
+    parser_query.add_argument('--dbtype', dest='dbtype',
+                                  default="sqlite",
+                                  help="The type of database to use. Def=sqlite.")
     parser_query.add_argument('-q',
             dest='query',
             metavar='QUERY_STR',
@@ -1098,7 +1101,9 @@ def main():
     # make sure database is found if provided
     if len(sys.argv) > 2 and sys.argv[1] not in \
        ["load", "merge_chunks", "load_chunk"]:
-        if hasattr(args, "db") and args.db is not None and not os.path.exists(args.db):
+        if hasattr(args, "db") and args.db is not None \
+        and args.dbtype =="sqlite" \
+        and not os.path.exists(args.db):
             sys.stderr.write("Requested GEMINI database (%s) not found. "
                              "Please confirm the provided filename.\n"
                              % args.db)

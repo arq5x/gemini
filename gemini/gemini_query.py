@@ -117,7 +117,12 @@ def run_query(args):
     formatter = select_formatter(args)
     genotypes_needed = needs_genotypes(args)
     gene_needed = needs_gene(args)
-    gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
+
+    if args.dbtype == "sqlite":
+        gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
+    elif args.dbtype == "postgresql":
+        gq = GeminiQuery.GeminiQueryPostgres(args.db, out_format=formatter)
+
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, genotypes_needed,
            gene_needed, args.show_families)
@@ -139,7 +144,10 @@ def run_query(args):
         dgidb_info = query_dgidb(genes)
 
         # rerun the query (the cursor is now consumed)
-        gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
+        if args.dbtype == "sqlite":
+            gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
+        elif args.dbtype == "postgresql":
+            gq = GeminiQuery.GeminiQueryPostgres(args.db, out_format=formatter)
         gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, genotypes_needed,
            gene_needed, args.show_families)
@@ -154,7 +162,8 @@ def query(parser, args):
     if (args.db is None):
         parser.print_help()
 
-    if os.path.exists(args.db):
+    if (args.dbtype == "sqlite" and os.path.exists(args.db)) \
+    or args.dbtype == "postgresql":
         run_query(args)
 
 if __name__ == "__main__":
