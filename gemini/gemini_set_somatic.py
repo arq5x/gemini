@@ -11,11 +11,14 @@ def tag_somatic_mutations(args):
 
     gq = GeminiQuery.GeminiQuery(args.db)
 
-    depth_string, qual_string, chrom_string = ("", "", "")
+    depth_string, qual_string, ssc_string, chrom_string = ("", "", "", "")
     if args.min_depth:
         depth_string = " AND depth >= %s" % args.min_depth
     if args.min_qual:
         qual_string = " AND qual >= %s" % args.min_qual
+    if args.min_somatic_score:
+        ssc_string = " AND (type='sv' \
+                         OR somatic_score >= %s)" % args.min_somatic_score
     if args.chrom:
         chrom_string = " AND chrom = '%s'" % args.chrom
 
@@ -27,7 +30,8 @@ def tag_somatic_mutations(args):
                  WHERE 1 \
                  %s \
                  %s \
-                 %s" % (depth_string, qual_string, chrom_string)
+                 %s \
+                 %s" % (depth_string, qual_string, ssc_string, chrom_string)
 
     gq.run(query)
     smp2idx = gq.sample_to_idx

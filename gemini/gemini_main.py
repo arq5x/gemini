@@ -905,6 +905,12 @@ def main():
             default=None,
             help='The min variant quality (VCF QUAL) (def: %(default)s).')
 
+    parser_set_somatic.add_argument('--min-somatic-score',
+            dest='min_somatic_score',
+            type=float,
+            default=None,
+            help='The min somatic score (SSC) (def: %(default)s).')
+
     parser_set_somatic.add_argument('--max-norm-alt-freq',
             dest='max_norm_alt_freq',
             type=float,
