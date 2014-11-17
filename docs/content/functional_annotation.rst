@@ -144,7 +144,7 @@ impact variations:
     --total_length --canonical --ccds \
     --fields Consequence,Codons,Amino_acids,Gene,SYMBOL,Feature,EXON,PolyPhen,SIFT,Protein_position,BIOTYPE,CANONICAL,CCDS,RadialSVM_score,RadialSVM_pred,LR_score,LR_pred,CADD_raw,CADD_phred,Reliability_index,LoF,LoF_filter,LoF_flags \
     --plugin dbNSFP,/path/to/dbNSFP_v2.5.gz,RadialSVM_score,RadialSVM_pred,LR_score,LR_pred,CADD_raw,CADD_phred,Reliability_index \
-    --plugin LoF,human_ancestor_fa=/path/to/human_ancestor.fa
+    --plugin LoF,human_ancestor_fa:/path/to/human_ancestor.fa
 
 Feeding this into GEMINI produces a variants table with columns for each of the
 additional VEP metrics. The annotation loader names each column by prefixing
