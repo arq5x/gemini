@@ -55,8 +55,7 @@ anno_files = \
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}
 
-custom_downloads = {"hg19_fitcons_fc-i6-0_V1-01.bw":
-                    "http://compgen.bscb.cornell.edu/fitCons/0downloads/tracks/V1.01/i6/scores/fc-i6-0.bw"}
+custom_downloads = {}
 
 toadd_anno_files = []
 
