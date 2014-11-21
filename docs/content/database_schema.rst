@@ -165,6 +165,7 @@ Disease phenotype info (from ClinVar).
 ========================  ========      ==============================================================================================
 in_omim                   BOOL          | 0 : Absence of the variant in OMIM database
                                         | 1 : Presence of the variant in OMIM database
+clinvar_causal_allele     STRING          The allele(s) that are associated or causal for the disease.
 clinvar_sig               STRING        | The clinical significance scores for each
                                         | of the variant according to ClinVar:
                                         | *unknown*, *untested*, *non-pathogenic*
@@ -187,6 +188,26 @@ clinvar_disease_acc       STRING        Variant Accession and Versions
 clinvar_in_locus_spec_db  BOOL          Submitted from a locus-specific database?
 clinvar_on_diag_assay     BOOL          Variation is interrogated in a clinical diagnostic assay?
 ========================  ========      ==============================================================================================
+
+
+
+Structural variation columns
+.......................................
+========================  ========      ==============================================================================================
+========================  ========      ==============================================================================================
+sv_cipos_start_left       INTEGER       The leftmost position of the leftmost SV breakpoint confidence interval.
+sv_cipos_end_left         INTEGER       The rightmost position of the leftmost SV breakpoint confidence interval.
+sv_cipos_start_right      INTEGER       The leftmost position of the rightmost SV breakpoint confidence interval.
+sv_cipos_end_right        INTEGER       The rightmost position of the rightmost SV breakpoint confidence interval.
+sv_length                 INTEGER       The length of the structural variant in base pairs.
+sv_is_precise             BOOL          Is the structural variant precise (i.e., to 1-bp resolution)?
+sv_tool                   STRING        The name of the SV discovery tool used to find the SV.
+sv_evidence_type          STRING        What type of alignment evidence supports the SV?
+sv_event_id               STRING        A unique identifier for the SV.
+sv_mate_id                STRING        The ID for the "other end" of the SV.
+sv_strand                 STRING        The orientations of the SV breakpoint(s).
+========================  ========      ==============================================================================================
+
 
 
 
