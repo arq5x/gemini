@@ -2,10 +2,27 @@
 Release History
 #############################
 
-0.11.0 (in progress)
+0.11.0
 =======================================
-1. Release of a new tool for reporting and annotation Mendelian violations.
-2. Improved support for structural variants.
+1. Integration of ExAC annotations (v0.2): http://exac.broadinstitute.org/
+2. New tools for cancer genome analysis. Many thanks to fantastic work from Colby Chiang.
+  - `gemini set_somatic`
+  - `gemini actionable_mutations`
+  - `gemini fusions`
+3. Improved support for structural variants. New columns include:
+  - `sv_cipos_start_left`
+  - `sv_cipos_end_left`
+  - `sv_cipos_start_right`
+  - `sv_cipos_end_right`
+  - `sv_length`
+  - `sv_is_precise`
+  - `sv_tool`
+  - `sv_evidence_type`
+  - `sv_event_id`
+  - `sv_mate_id`
+  - `sv_strand`
+4. Updated the 1000 Genomes annotations to the Phase variant set.
+5. Added `clinvar_causal_allele` column.
 
 0.10.1
 =======================================
