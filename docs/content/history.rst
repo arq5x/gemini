@@ -23,6 +23,7 @@ Release History
   - `sv_strand`
 4. Updated the 1000 Genomes annotations to the Phase variant set.
 5. Added `clinvar_causal_allele` column.
+6. Fixed a bug in grabix that caused occasional duplicate and missed variants.
 
 0.10.1
 =======================================
