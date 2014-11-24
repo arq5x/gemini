@@ -106,6 +106,12 @@ bash test-wildcards.sh
 # Test ROH
 bash test-roh.sh
 
+# Test somatic variants
+bash test-somatic.sh
+
+# Test fusions
+bash test-fusions.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot
