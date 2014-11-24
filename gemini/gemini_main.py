@@ -1061,10 +1061,6 @@ def main():
     parser_fusions.add_argument('db',
                               metavar='db',
                               help='The name of the database to be queried.')
-    parser_fusions.add_argument('--sample',
-                              metavar='sample',
-                              default=None,
-                              help='New sample information file to load')
     parser_fusions.add_argument('--in_cosmic_census',
                                 action='store_true',
                                 help='One or both genes in fusion is in COSMIC cancer census')
