@@ -36,3 +36,5 @@ gemini load --skip-gene-tables --test-mode -v test.vcf_id.snpeff.vcf  --skip-ger
 gemini load --skip-gene-tables --test-mode -p test.de_novo.ped -v test.family.vcf  --skip-gerp-bp --skip-cadd -t snpEff test.family.db
 gemini load --skip-gene-tables --test-mode -p test_extended_ped.ped -v test4.vep.snpeff.vcf  --skip-gerp-bp --skip-cadd -t snpEff extended_ped.db
 cp extended_ped.db test.amend.db
+gemini load -p test.somatic.ped -v test.somatic.vcf  --skip-gerp-bp --skip-cadd -t VEP test.somatic.db
+gemini load -p test.fusions.ped -v test.fusions.vcf  --skip-gerp-bp --skip-cadd -t VEP test.fusions.db

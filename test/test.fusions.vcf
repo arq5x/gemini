@@ -1,0 +1,57 @@
+##fileformat=VCFv4.1
+##fileDate=20141003
+##reference=/shared/genomes/b37/full/human_g1k_v37.fasta
+##INFO=<ID=TOOL,Number=1,Type=String,Description="Tool used to generate variant call">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
+##INFO=<ID=STR,Number=.,Type=String,Description="Strand orientation of the adjacency in BEDPE format">
+##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">
+##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="Confidence interval around POS for imprecise variants">
+##INFO=<ID=CIEND,Number=2,Type=Integer,Description="Confidence interval around END for imprecise variants">
+##INFO=<ID=BKPTID,Number=.,Type=String,Description="ID of the assembled alternate allele in the assembly file">
+##INFO=<ID=PARID,Number=1,Type=String,Description="ID of partner breakend">
+##INFO=<ID=MATEID,Number=.,Type=String,Description="ID of mate breakends">
+##INFO=<ID=EVENT,Number=1,Type=String,Description="ID of event associated to breakend">
+##INFO=<ID=HOMLEN,Number=.,Type=Integer,Description="Length of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=HOMSEQ,Number=.,Type=String,Description="Sequence of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes, for each ALT allele, in the same order as listed">
+##INFO=<ID=AF,Number=A,Type=Float,Description="Allele frequency, for each ALT allele, in the same order as listed">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Allele count in genotypes, for each ALT allele, in the same order as listed">
+##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of samples with data">
+##INFO=<ID=SUP,Number=.,Type=Integer,Description="Number of pieces of evidence supporting the variant across all samples">
+##INFO=<ID=PESUP,Number=.,Type=Integer,Description="Number of paired-end reads supporting the variant across all samples">
+##INFO=<ID=SRSUP,Number=.,Type=Integer,Description="Number of split reads supporting the variant across all samples">
+##INFO=<ID=EVTYPE,Number=.,Type=String,Description="Type of LUMPY evidence contributing to the variant call">
+##INFO=<ID=PRIN,Number=0,Type=Flag,Description="Indicates variant as the principal variant in a BEDPE pair">
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=INV,Description="Inversion">
+##ALT=<ID=DUP:TANDEM,Description="Tandem duplication">
+##ALT=<ID=INS,Description="Insertion of novel sequence">
+##ALT=<ID=CNV,Description="Copy number variable region">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=SUP,Number=1,Type=Integer,Description="Number of pieces of evidence supporting the variant">
+##FORMAT=<ID=PE,Number=1,Type=Integer,Description="Number of paired-end reads supporting the variant">
+##FORMAT=<ID=SR,Number=1,Type=Integer,Description="Number of split reads supporting the variant">
+##FORMAT=<ID=GQ,Number=1,Type=Float,Description="Genotype quality">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype for imprecise events">
+##FORMAT=<ID=CNQ,Number=1,Type=Float,Description="Copy number genotype quality for imprecise events">
+##FORMAT=<ID=CNL,Number=.,Type=Float,Description="Copy number genotype likelihood form imprecise events">
+##FORMAT=<ID=NQ,Number=1,Type=Integer,Description="Phred style probability score that the variant is novel">
+##FORMAT=<ID=HAP,Number=1,Type=Integer,Description="Unique haplotype identifier">
+##FORMAT=<ID=AHAP,Number=1,Type=Integer,Description="Unique identifier of ancestral haplotype">
+##FORMAT=<ID=RO,Number=1,Type=Integer,Description="Reference allele observation count, with partial observations recorded fractionally">
+##FORMAT=<ID=AO,Number=A,Type=Integer,Description="Alternate allele observations, with partial observations recorded fractionally">
+##FORMAT=<ID=SQ,Number=1,Type=Float,Description="Phred-scaled probability that this site is variant (non-reference in this sample">
+##FORMAT=<ID=GL,Number=G,Type=Float,Description="Genotype Likelihood, log10-scaled likelihoods of the data given the called genotype for each possible genotype generated from the reference and alternate alleles given the sample ploidy">
+##VEP=v76 cache=/shared/external_bin/ensembl-tools-release-76/cache/homo_sapiens/76_GRCh37 db=.
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence type as predicted by VEP. Format: Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	H_LS-E2-A14P-01A-31D-A19H-09	H_LS-E2-A14P-10A-01D-A19H-09
+1	1866375	4	T	<DEL>	920.58	.	TOOL=LUMPY;SVTYPE=DEL;SVLEN=-619;END=1866994;STR=+-:49;IMPRECISE;CIPOS=-1,20;CIEND=0,0;EVENT=4;SUP=49;PESUP=49;SRSUP=0;EVTYPE=PE;PRIN;CSQ=intron_variant&feature_truncation|||ENSG00000142609|C1orf222|ENST00000493964||||-/867|protein_coding	GT:SUP:PE:SR:GQ:DP:RO:AO:SQ:GL	1/1:26:26:0:0.00:28:2:26:221.74:-24,-8,-1	1/1:23:23:0:0.00:37:5:32:256.33:-27,-8,-1
+3	178906030	1233_2	T	[3:176909982[T	9.58	.	TOOL=LUMPY;SVTYPE=BND;STR=--:26;IMPRECISE;CIPOS=-39,0;CIEND=-28,0;MATEID=1233_1;EVENT=1233;SUP=15;PESUP=15;SRSUP=0;EVTYPE=PE;CSQ=intron_variant|||ENSG00000121879|PIK3CA|ENST00000468036||||-/118|protein_coding,intron_variant|||ENSG00000121879|PIK3CA|ENST00000477735||||-/21|protein_coding,intron_variant|||ENSG00000121879|PIK3CA|ENST00000263967||||-/1068|protein_coding	GT:SUP:PE:SR:GQ:DP:RO:AO:SQ:GL	0/1:15:15:0:0.51:124:94:29:9.58:-5,-4,-40	0/0:0:0:0:-0.00:90:90:0:.:-4,-20,-62
+3	176909982	1233_1	G	[3:178906030[G	9.58	.	TOOL=LUMPY;SVTYPE=BND;STR=--:26;IMPRECISE;CIPOS=-28,0;CIEND=-39,0;MATEID=1233_2;EVENT=1233;SUP=15;PESUP=15;SRSUP=0;EVTYPE=PE;PRIN;CSQ=intron_variant|||ENSG00000177565|TBL1XR1|ENST00000443315||||-/81|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000457928||||-/514|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000431674||||-/96|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000413084||||-/33|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000427349||||-/62|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000422066||||-/87|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000430069||||-/514|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000431421||||-/55|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000352800||||-/142|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000422442||||-/68|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000424913||||-/73|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000450267||||-/120|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000428970||||-/76|protein_coding,intron_variant|||ENSG00000177565|TBL1XR1|ENST00000437738||||-/142|protein_coding	GT:SUP:PE:SR:GQ:DP:RO:AO:SQ:GL	0/1:15:15:0:0.51:124:94:29:9.58:-5,-4,-40	0/0:0:0:0:-0.00:90:90:0:.:-4,-20,-62
+18	64284796	9629_1	A	A]X:6146702]	8.25	.	TOOL=LUMPY;SVTYPE=BND;STR=++:11;IMPRECISE;CIPOS=-1,1;CIEND=0,0;MATEID=9629_2;EVENT=9629;SUP=9;PESUP=8;SRSUP=1;EVTYPE=PE,SR;PRIN;CSQ=intergenic_variant||||||||||	GT:SUP:PE:SR:GQ:DP:RO:AO:SQ:GL	0/1:9:8:1:0.70:64:47:16:8.25:-3,-2,-20	0/0:0:0:0:-0.00:112:112:0:.:-5,-25,-78
+X	6146702	9629_2	C	C]18:64284796]	8.25	.	TOOL=LUMPY;SVTYPE=BND;STR=++:11;IMPRECISE;CIPOS=0,0;CIEND=-1,1;MATEID=9629_1;EVENT=9629;SUP=9;PESUP=8;SRSUP=1;EVTYPE=PE,SR;CSQ=upstream_gene_variant|||ENSG00000146938|NLGN4X|ENST00000381092||||-/816|protein_coding,5_prime_UTR_variant|||ENSG00000146938|NLGN4X|ENST00000381095|1/6|||-/816|protein_coding,upstream_gene_variant|||ENSG00000146938|NLGN4X|ENST00000469740|||||processed_transcript,upstream_gene_variant|||ENSG00000146938|NLGN4X|ENST00000381093||||-/836|protein_coding,upstream_gene_variant|||ENSG00000146938|NLGN4X|ENST00000538097||||-/816|protein_coding,upstream_gene_variant|||ENSG00000146938|NLGN4X|ENST00000275857||||-/816|protein_coding	GT:SUP:PE:SR:GQ:DP:RO:AO:SQ:GL	0/1:9:8:1:0.70:64:47:16:8.25:-3,-2,-20	0/0:0:0:0:-0.00:112:112:0:.:-5,-25,-78
