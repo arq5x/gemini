@@ -177,7 +177,7 @@ your VCF into GEMINI, one can leverage a built-in tool for identifying de novo
 ---------------------
 
 By default, the ``de novo`` tool will report, for each
-family in the database, a all columns in the variants table for mutations that
+family in the database, all columns in the variants table for mutations that
 are not found in the parents yet are observed as heterozygotes in the offspring.
 For example:
 
@@ -1324,6 +1324,185 @@ for sample S138 (with default values for allowed number of HETS, UNKS and total 
 	chr2 233336080 234631638 S138 2583 1.9953 1295558
 	chr2	238341281	239522281	S138	2899	2.4555	1181000
 
+
+===========================================================================
+``set_somatic``: Flag somatic variants
+===========================================================================
+Somatic mutations in a tumor-normal pair are variants that are present in
+the tumor but not in the normal sample.
+
+.. note::
+
+    1. This tool requires that you specify the sample layout via a PED file
+    when loading your VCF into GEMINI via:
+
+    ``gemini load -v my.vcf -p my.ped my.db``
+
+
+`Example PED file format for GEMINI`
+
+.. code-block:: bash
+
+	#Family_ID	Individual_ID	Paternal_ID	Maternal_ID	Sex	Phenotype	Ethnicity
+	1       Normal  -9      -9      0       1       -9
+	1       Tumor   -9      -9      0       2       -9
+
+
+---------------------
+``default behavior``
+---------------------
+By default, ``set_somatic`` simply marks variants that are genotyped as
+homozygous reference in the normal sample and non-reference in the tumor. 
+More stringent somatic filtering criteria are available through tunable
+command line parameters.
+
+.. code-block:: bash
+
+	$ gemini set_somatic \
+            --min-depth 30 \
+            --min-qual 20 \
+            --min-somatic-score 18 \
+            --min-tumor-depth 10 \
+            --min-norm-depth 10 \
+            tumor_normal.db
+        tum_name	tum_gt	tum_alt_freq	tum_alt_depth	tum_depth	nrm_name	nrm_gt	nrm_alt_freq	nrm_alt_depth	nrm_depth	chrom	start	end	ref	alt	gene
+        tumor	GAAAAAAAAAAAAAGGTGAAAATT/GAAAAAAAAAAAAGGTGAAAATT	0.217391304348	5	23	normal	GAAAAAAAAAAAAAGGTGAAAATT/GAAAAAAAAAAAAAGGTGAAAATT	0.0	0	25	chrX	132838304	132838328	GAAAAAAAAAAAAAGGTGAAAATT	GAAAAAAAAAAAAGGTGAAAATT	GPC3
+        tumor	CTGCTATTTTG/CG	0.22	11	50	normal	CTGCTATTTTG/CTGCTATTTTG	0.0	0	70	chr17	59861630	59861641	CTGCTATTTTG	CG	BRIP1
+        tumor	C/A	0.555555555556	10	18	normal	C/C	0.0	0	17	chr17	7578460	7578461	C	A	TP53
+        tumor	C/T	0.1875	12	64	normal	C/C	0.0	0	30	chr2	128046288	128046289	C	T	ERCC3
+        Identified and set 4 somatic mutations
+
+
+---------------------
+``--min-depth [None]``
+---------------------
+The minimum required combined depth for tumor and normal samples.
+
+---------------------
+``--min-qual [None]``
+---------------------
+The minimum required variant quality score.
+
+---------------------
+``--min-somatic-score [None]``
+---------------------
+The minimum required somatic score (SSC). This score is produced by various
+somatic variant detection algorithms including SpeedSeq, SomaticSniper,
+and VarScan 2.
+
+---------------------
+``--max-norm-alt-freq [None]``
+---------------------
+The maximum frequency of the alternate allele allowed in the normal sample.
+
+---------------------
+``--max-norm-alt-count [None]``
+---------------------
+The maximum count of the alternate allele allowed in the normal sample.
+
+---------------------
+``--min-norm-depth [None]``
+---------------------
+The minimum depth required in the normal sample.
+
+---------------------
+``--min-tumor-alt-freq [None]``
+---------------------
+The minimum frequency of the alternate allele required in the tumor sample.
+
+---------------------
+``--min-tumor-alt-count [None]``
+---------------------
+The minimum count of the alternate allele required in the tumor sample.
+
+---------------------
+``--min-tumor-depth [None]``
+---------------------
+The minimum depth required in the tumor sample.
+
+---------------------
+``--chrom [None]``
+---------------------
+A specific chromosome on which to flag somatic mutations.
+
+---------------------
+``--dry-run``
+---------------------
+Don't set the is_somatic flag, just report what _would_ be set. For testing
+purposes.
+
+
+===========================================================================
+``actionable_mutations``: Report actionable somatic mutations and drug-gene interactions
+===========================================================================
+Actionable mutations are somatic variants in COSMIC cancer census genes with
+medium or high impact severity predictions. This tool reports actionable
+mutations as well as their known drug interactions (if any) from DGIdb.
+Current functionality is only for SNVs and indels.
+
+.. note::
+
+    1. This tool requires somatic variants to have been flagged using
+           ``set_somatic``
+
+
+.. code-block:: bash
+
+	$ gemini actionable_mutations tumor_normal.db
+	tum_name	chrom	start	end	ref	alt	gene	impact	is_somatic	in_cosmic_census	dgidb_info
+	tumor	chr2	128046288	128046289	C	T	ERCC3	non_syn_coding	1	1	None
+	tumor	chr17	7578460	7578461	C	A	TP53	non_syn_coding	1	1	{'searchTerm': 'TP53', 'geneCategories': ['CLINICALLY ACTIONABLE', 'DRUGGABLE GENOME', 'TUMOR SUPPRESSOR', 'TRANSCRIPTION FACTOR COMPLEX', 'DRUG RESISTANCE', 'HISTONE MODIFICATION', 'DNA REPAIR', 'TRANSCRIPTION FACTOR BINDING'], 'geneName': 'TP53', 'geneLongName': 'tumor protein p53', 'interactions': [{'source': 'DrugBank', 'interactionId': '711cbe42-4930-4b46-963e-79ab35bbbd0f', 'interactionType': 'n/a', 'drugName': '1-(9-ETHYL-9H-CARBAZOL-3-YL)-N-METHYLMETHANAMINE'}, {'source': 'PharmGKB', 'interactionId': '8234d9b9-085d-49b1-aac2-cf5375d91477', 'interactionType': 'n/a', 'drugName': 'FLUOROURACIL'}, {'source': 'PharmGKB', 'interactionId': '605d7bca-7ed9-428e-aa7c-f76aafd66b54', 'interactionType': 'n/a', 'drugName': 'PACLITAXEL'}, {'source': 'TTD', 'interactionId': '1fe9db63-3581-435b-b22a-12d45c8c9864', 'interactionType': 'activator', 'drugName': 'CURAXIN CBLC102'}, {'source': 'TALC', 'interactionId': '8f8f6822-cb9e-40aa-8360-5532e059f1e7', 'interactionType': 'vaccine', 'drugName': 'EP-2101'}, {'source': 'TALC', 'interactionId': 'd59e14bc-b9a5-4c9f-a5aa-7ba322f0fa0e', 'interactionType': 'vaccine', 'drugName': 'MUTANT P53 PEPTIDE PULSED DENDRITIC CELL'}, {'source': 'TALC', 'interactionId': '79256b6e-9a16-4fbe-a237-28dbca28bc2a', 'interactionType': 'vaccine', 'drugName': 'AD.P53-DC'}]}
+	tumor	chr17	59861630	59861641	CTGCTATTTTG	CG	BRIP1	inframe_codon_loss	1	1	None
+	tumor	chrX	132838304	132838328	GAAAAAAAAAAAAAGGTGAAAATT	GAAAAAAAAAAAAGGTGAAAATT	GPC3	splice_region	1	1	None
+
+
+===========================================================================
+``fusions``: Report putative gene fusions
+===========================================================================
+Report putative somatic gene fusions from structural variants in a tumor-normal
+pair. Putative fusions join two genes and preserve transcript strand
+orientation.
+
+.. note::
+
+    1. This tool requires somatic variants to have been flagged using
+           ``set_somatic``
+
+
+---------------------
+``default behavior``
+---------------------
+By default, ``fusions`` reports structural variants that are flagged as
+somatic, join two different genes, and preserve transcript strand orientation.
+These may be further filtered using tunable command line parameters.
+
+
+.. code-block:: bash
+
+	$ gemini fusions \
+	    --min_qual 5 \
+	    --in_cosmic_census \
+	    tumor_normal.db
+	chromA   breakpointA_start  breakpointA_end	chromB	breakpointB_start   breakpointB_end var_id  qual    strandA strandB sv_type geneA   geneB   tool    evidence_type   is_precise  sample
+    chr3	176909953	176909982	chr3	178906001	178906030	1233	9.58	-	+	complex	TBL1XR1	PIK3CA	LUMPY	PE	0	tumor
+
+
+---------------------
+``--min_qual [None]``
+---------------------
+The minimum required variant quality score.
+
+---------------------
+``--evidence_type STRING``
+---------------------
+The required supporting evidence types for the variant from
+LUMPY ("PE", "SR", or "PE,SR").
+
+---------------------
+``--in_cosmic_census``
+---------------------
+Require at least one of the affected genes to be in the
+COSMIC cancer gene census.
 
 
 ===========================================================================
