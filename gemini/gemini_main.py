@@ -116,7 +116,6 @@ def main():
                              help="Number of cores to use to load in parallel.")
     parser_load.add_argument('--scheduler', dest='scheduler', default=None,
                              choices=["lsf", "sge", "slurm", "torque"],
-                             action=IPythonAction,
                              help='Cluster scheduler to use.')
     parser_load.add_argument('--queue', dest='queue',
                              default=None, help='Cluster queue to use.')
@@ -1096,20 +1095,16 @@ def main():
             sys.stderr.write("Requested GEMINI database (%s) not found. "
                              "Please confirm the provided filename.\n"
                              % args.db)
-
+    elif len(sys.argv) > 2 and sys.argv[1] == "load":
+        if xor(args.scheduler, args.queue):
+            parser.error("If you are using the IPython parallel loading, you "
+                         "must specify both a scheduler with --scheduler and a "
+                         "queue to use with --queue.")
     try:
         args.func(parser, args)
     except IOError, e:
         if e.errno != 32:  # ignore SIGPIPE
             raise
-
-class IPythonAction(argparse.Action):
-    def __call__(self, parser, args, values, option = None):
-        args.scheduler = values
-        if xor(args.scheduler, args.queue):
-            parser.error("If you are using the IPython parallel loading, you "
-                         "must specify both a scheduler with --scheduler and a "
-                         "queue to use with --queue.")
 
 def xor(arg1, arg2):
     return bool(arg1) ^ bool(arg2)
