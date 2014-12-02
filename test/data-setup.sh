@@ -38,3 +38,4 @@ gemini load --skip-gene-tables --test-mode -p test_extended_ped.ped -v test4.vep
 cp extended_ped.db test.amend.db
 gemini load -p test.somatic.ped -v test.somatic.vcf  --skip-gerp-bp --skip-cadd -t VEP test.somatic.db
 gemini load -p test.fusions.ped -v test.fusions.vcf  --skip-gerp-bp --skip-cadd -t VEP test.fusions.db
+gemini load --skip-gene-tables --test-mode -v test.exac.vcf --skip-gerp-bp --skip-cadd test.exac.db
