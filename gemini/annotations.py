@@ -679,7 +679,7 @@ def get_exac_info(var):
                     # Computing population independent allele frequencies (adjusted)
                     if info_map.get('AC_Adj') is not None and \
                         info_map.get('AN_Adj') is not None:
-                        # In case of multiple alt alleles, consider the first
+                        # In case of multiple alt alleles, consider the index
                         ac_all = info_map['AC_Adj'].split(",")
                         try:
                             adj_aaf_ALL = float(ac_all[allele_num]) / float(info_map.get('AN_Adj'))
