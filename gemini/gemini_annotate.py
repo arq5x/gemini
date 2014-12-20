@@ -306,6 +306,7 @@ def annotate(parser, args):
     # index on the newly created columns
     for col_name in col_names:
         with database_transaction(args.db) as c:
+            c.execute('''drop index if exists %s''' % (col_name + "idx"))
             c.execute('''create index %s on variants(%s)''' % (col_name + "idx", col_name))
 
 # ## Automate addition of extra fields to database
