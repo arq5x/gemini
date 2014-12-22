@@ -1,6 +1,6 @@
 default_ped_fields = ["family_id", "name", "paternal_id", "maternal_id",
                       "sex", "phenotype"]
-missing_member = set(["None", None, "0"])
+missing_member = set(["None", None, "0", "-9"])
 
 def get_ped_fields(ped_file):
     if not ped_file:
