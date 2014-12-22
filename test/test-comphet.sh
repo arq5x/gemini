@@ -3,8 +3,8 @@
 ###############################################################################
 echo "    comp_het.t1...\c"
 echo "family	sample	comp_het_id	chrom	start	end	ref	alt	gene	impact
-None	child_4	1	chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor
-None	child_4	1	chr1	17729	17730	C	A	WASH7P	splice_acceptor" > exp
+0	child_4	1	chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor
+0	child_4	1	chr1	17729	17730	C	A	WASH7P	splice_acceptor" > exp
 gemini comp_hets \
     --column "chrom,start,end,ref,alt,gene,impact" \
     test.comp_het_default.db > obs

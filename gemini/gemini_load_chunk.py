@@ -560,8 +560,7 @@ class GeminiLoader(object):
             else:
                 # if there is no ped file given, just fill in the name and
                 # sample_id and set the other required fields to None
-                sample_list = [i, None, sample]
-                sample_list += list(repeat(None, len(default_ped_fields) - 2))
+                sample_list = [i, 0, sample, 0, 0, -9, -9]
             database.insert_sample(self.c, sample_list)
             
     def _get_gene_detailed(self):

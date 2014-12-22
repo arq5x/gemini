@@ -8,8 +8,6 @@ from collections import defaultdict
 from gemini_constants import *
 import GeminiQuery
 
-
-
 class Subject(object):
 
     """
@@ -99,17 +97,11 @@ class Family(object):
 
         # build only if the family has not already been built.
         if self.is_constructed is False:
-
             self.father_name = None
             self.mother_name = None
             for subject in self.subjects:
                 # if mom and dad are found, we know this is the child
-                if subject.maternal_id is not None and \
-                   str(subject.maternal_id) != "-9" and \
-                   str(subject.maternal_id) != "0" and \
-                   str(subject.paternal_id) is not None and \
-                   str(subject.paternal_id) != "-9" and \
-                   subject.paternal_id != "0":
+                if subject.maternal_id != "0" and subject.paternal_id != "0":
                     self.father_name = str(subject.paternal_id)
                     self.mother_name = str(subject.maternal_id)
                     self.children.append(subject)
@@ -633,6 +625,7 @@ class Family(object):
                 labels.append(self.mother.name + "(mother; unknown)")
 
             # handle the childrem
+
             for child in self.children:
                 if child.affected is True:
                     labels.append(child.name + "(child; affected)")

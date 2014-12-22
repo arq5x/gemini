@@ -2,16 +2,16 @@
 # 1. Test the samples table
 ####################################################################
 echo "    query.t01...\c"
-echo "1	None	1094PC0005	None	None	None	None
-2	None	1094PC0009	None	None	None	None
-3	None	1094PC0012	None	None	None	None
-4	None	1094PC0013	None	None	None	None
-5	None	1094PC0016	None	None	None	None
-6	None	1094PC0017	None	None	None	None
-7	None	1094PC0018	None	None	None	None
-8	None	1094PC0019	None	None	None	None
-9	None	1094PC0020	None	None	None	None
-10	None	1094PC0021	None	None	None	None" > exp
+echo "1	0	1094PC0005	0	0	-9	-9
+2	0	1094PC0009	0	0	-9	-9
+3	0	1094PC0012	0	0	-9	-9
+4	0	1094PC0013	0	0	-9	-9
+5	0	1094PC0016	0	0	-9	-9
+6	0	1094PC0017	0	0	-9	-9
+7	0	1094PC0018	0	0	-9	-9
+8	0	1094PC0019	0	0	-9	-9
+9	0	1094PC0020	0	0	-9	-9
+10	0	1094PC0021	0	0	-9	-9" > exp
 gemini query -q "select * from samples limit 10" test.query.db \
        > obs
 check obs exp
