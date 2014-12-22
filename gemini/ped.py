@@ -19,7 +19,6 @@ def get_ped_fields(ped_file):
 
 def load_ped_file(ped_file):
     ped_dict = {}
-    header = get_ped_fields(ped_file)
     for line in open(ped_file, 'r'):
         if line.startswith("#") or len(line) == 0:
             continue
