@@ -10,34 +10,18 @@ def map_samples_to_indices(c):
     """Return a dict mapping samples names (key)
        to sample indices in the numpy genotype arrays (value).
     """
-    sample_to_idx = {}
     c.execute("select sample_id, name from samples")
-    for row in c:
-        name = str(row['name'])
-        idx = row['sample_id'] - 1
-        sample_to_idx[name] = idx
-    return sample_to_idx
-
+    return {row['name']: row['sample_id'] - 1 for row in c}
 
 def map_indices_to_samples(c):
     """Return a dict mapping samples indices in the
        numpy arrays (key) to sample names.
     """
     return {k: v.name for (k, v) in map_indices_to_sample_objects(c).items()}
-    # c.execute("select sample_id, name from samples")
-    # for row in c:
-    #     name = str(row['name'])
-    #     idx = row['sample_id'] - 1
-    #     idx_to_sample[idx] = name
-    # return idx_to_sample
 
 def map_indices_to_sample_objects(c):
-    idx_to_sample_object = {}
     c.execute("select * from samples")
-    for row in c:
-        idx = row['sample_id'] - 1
-        idx_to_sample_object[idx] = Subject(row)
-    return idx_to_sample_object
+    return {row['sample_id'] - 1: Subject(row) for row in c}
 
 def map_samples_to_sample_objects(c):
     c.execute("select * from samples")
