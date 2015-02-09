@@ -14,7 +14,8 @@ import numpy as np
 # gemini imports
 import gemini_utils as util
 from gemini_constants import *
-from gemini_utils import OrderedSet, OrderedDict, itersubclasses, partition
+from gemini_utils import (OrderedSet, OrderedDict, itersubclasses, partition,
+                          partition_by_fn)
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
@@ -399,6 +400,7 @@ class GeminiQuery(object):
         # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
         self.idx_to_sample = util.map_indices_to_samples(self.c)
         self.idx_to_sample_object = util.map_indices_to_sample_objects(self.c)
+        self.sample_to_sample_object = util.map_samples_to_sample_objects(self.c)
         self.formatter = out_format
         self.predicates = [self.formatter.predicate]
 
@@ -552,19 +554,8 @@ class GeminiQuery(object):
                     compression.unpack_genotype_blob(row['gt_quals'])
                 gt_copy_numbers = \
                     compression.unpack_genotype_blob(row['gt_copy_numbers'])
-                variant_samples = [x for x, y in enumerate(gt_types) if y == HET or
-                                   y == HOM_ALT]
-                variant_names = [self.idx_to_sample[x] for x in variant_samples]
-                het_samples = [x for x, y in enumerate(gt_types) if y == HET]
-                het_names = [self.idx_to_sample[x] for x in het_samples]
-                hom_alt_samples = [x for x, y in enumerate(gt_types) if y == HOM_ALT]
-                hom_alt_names = [self.idx_to_sample[x] for x in hom_alt_samples]
-                hom_ref_samples = [x for x, y in enumerate(gt_types) if y == HOM_REF]
-                hom_ref_names = [self.idx_to_sample[x] for x in hom_ref_samples]
-                unknown_samples = [x for x, y in enumerate(gt_types) if y == UNKNOWN]
-                unknown_names = [self.idx_to_sample[x] for x in unknown_samples]
-                families = map(str, list(set([self.idx_to_sample_object[x].family_id
-                            for x in variant_samples])))
+                genotype_dict = self._group_samples_by_genotype(gt_types)
+                variant_names = genotype_dict[HET] + genotype_dict[HOM_ALT]
 
                 # skip the record if it does not meet the user's genotype filter
                 if self.gt_filter and not eval(self.gt_filter, locals()):
@@ -621,10 +612,12 @@ class GeminiQuery(object):
                 fields["variant_samples"] = \
                     self.variant_samples_delim.join(variant_names)
                 fields["HET_samples"] = \
-                    self.variant_samples_delim.join(het_names)
+                    self.variant_samples_delim.join(genotype_dict[HET])
                 fields["HOM_ALT_samples"] = \
-                    self.variant_samples_delim.join(hom_alt_names)
+                    self.variant_samples_delim.join(genotype_dict[HOM_ALT])
             if self.show_families:
+                families = map(str, list(set([self.sample_to_sample_object[x].family_id
+                                              for x in variant_names])))
                 fields["families"] = self.variant_samples_delim.join(families)
 
             gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
@@ -640,6 +633,14 @@ class GeminiQuery(object):
                 return gemini_row
             else:
                 return fields
+
+    def _group_samples_by_genotype(self, gt_types):
+        """
+        make dictionary keyed by genotype of list of samples with that genotype
+        """
+        key_fn = lambda x: x[1]
+        val_fn = lambda x: self.idx_to_sample[x[0]]
+        return partition_by_fn(enumerate(gt_types), key_fn=key_fn, val_fn=val_fn)
 
     def _connect_to_database(self):
         """

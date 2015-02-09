@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sqlite3
 import collections
+from collections import defaultdict
 from itertools import tee, ifilterfalse
 from gemini_subjects import Subject
 
@@ -38,6 +39,9 @@ def map_indices_to_sample_objects(c):
         idx_to_sample_object[idx] = Subject(row)
     return idx_to_sample_object
 
+def map_samples_to_sample_objects(c):
+    c.execute("select * from samples")
+    return {row['name']: Subject(row) for row in c}
 
 def get_col_names_and_indices(sqlite_description, ignore_gt_cols=False):
     """Return a list of column namanes and a list of the row indices.
@@ -429,3 +433,13 @@ def quote_string(item):
     if isinstance(item, basestring):
         item = "\"" + item + "\""
     return item
+
+def partition_by_fn(seq, key_fn=lambda x: x, val_fn=lambda x: x):
+    """
+    partition a sequence into a dictionary with keys key_fn(x) and
+    list of values val_fn(x)
+    """
+    d = defaultdict(list)
+    for x in seq:
+        d[key_fn(x)].append(val_fn(x))
+    return d
