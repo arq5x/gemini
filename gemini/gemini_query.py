@@ -46,8 +46,12 @@ def select_subjects_predicate(subjects, args, subset=None):
         predicates.append(variant_only_in_subjects(subjects, subset))
     if "any" in args.in_subject:
         predicates.append(variant_in_any_subject(subjects))
-    def predicate(row):
-        return all([p(row) for p in predicates])
+    if "not" in args.in_subject:
+        def predicate(row):
+            return not all([p(row) for p in predicates])
+    else:
+        def predicate(row):
+            return all([p(row) for p in predicates])
     return predicate
 
 def variant_in_any_subject(subjects):
@@ -94,11 +98,11 @@ def get_row_predicates(args):
 
 
 def needs_genotypes(args):
-    return (args.show_variant_samples or 
-            args.family_wise or 
-            args.sample_filter or 
+    return (args.show_variant_samples or
+            args.family_wise or
+            args.sample_filter or
             args.carrier_summary or
-            args.show_families or 
+            args.show_families or
             args.gt_filter)
 
 
@@ -145,7 +149,7 @@ def run_query(args):
            gene_needed, args.show_families)
 
         # report the query results with DGIdb info added at the end.
-        for row in gq:  
+        for row in gq:
             print str(row) + "\t" + str(dgidb_info[row['gene']])
 
 

@@ -303,7 +303,7 @@ def main():
                               nargs='*',
                               help=('A variant must be in either all, none or any '
                                     'samples passing the --sample-query filter.'),
-                              choices=['all', 'none', 'any', 'only'],
+                              choices=['all', 'none', 'any', 'only', 'not'],
                               default=['any'])
     parser_query.add_argument('--format',
                               dest='format',
@@ -1050,7 +1050,7 @@ def main():
         from tool_homozygosity_runs import run
         run(parser, args)
     parser_hom_run.set_defaults(func=homozygosity_runs_fn)
-    
+
 
     #########################################
     # $ gemini fusions
