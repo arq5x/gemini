@@ -555,8 +555,11 @@ class GeminiQuery(object):
                 gt_copy_numbers = \
                     compression.unpack_genotype_blob(row['gt_copy_numbers'])
                 genotype_dict = self._group_samples_by_genotype(gt_types)
-                variant_names = genotype_dict[HET] + genotype_dict[HOM_ALT]
-
+                het_names = genotype_dict[HET]
+                hom_alt_names = genotype_dict[HOM_ALT]
+                hom_ref_names = genotype_dict[HOM_REF]
+                unknown_names = genotype_dict[UNKNOWN]
+                variant_names = het_names + hom_alt_names
                 # skip the record if it does not meet the user's genotype filter
                 if self.gt_filter and not eval(self.gt_filter, locals()):
                     continue
