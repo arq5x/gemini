@@ -307,7 +307,7 @@ class VCFRowFormat(RowFormat):
                     vcf_rec.append('0' + phase_char + '1')
             elif gt_type == HOM_ALT:
                 vcf_rec.append('1' + phase_char + '1')
-            elif gt_type == HOM_ALT:
+            elif gt_type == UNKNOWN:
                 vcf_rec.append('.' + phase_char + '.')
 
         return '\t'.join([str(c) if c is not None else "." for c in vcf_rec])
@@ -321,9 +321,11 @@ class VCFRowFormat(RowFormat):
     def header(self, fields):
         """Return the original VCF's header
         """
-        self.gq.run('select vcf_header from vcf_header')
-        for row in self.gq:
-            return str(row).strip()
+        try:
+            self.gq.run('select vcf_header from vcf_header')
+            return str(self.gq.next()).strip()
+        except:
+            sys.exit("Your database does not contain the vcf_header table. Therefore, you cannot use --header.\n")
 
 class GeminiRow(object):
 
