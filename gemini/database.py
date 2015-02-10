@@ -313,6 +313,8 @@ def create_tables(cursor):
                     in_cosmic_census bool,                          \
                     PRIMARY KEY(uid ASC))''')
 
+    cursor.execute('''create table if not exists vcf_header (vcf_header text)''')
+
 def create_sample_table(cursor, args):
     NUM_BUILT_IN = 6
     fields = get_ped_fields(args.ped_file)
@@ -424,6 +426,13 @@ def insert_resources(cursor, resources):
     """
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('''insert into resources values (?,?)''', resources)
+    cursor.execute("END")
+
+def insert_vcf_header(cursor, vcf_header):
+    """Populate a table storing the original VCF header.
+    """
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.execute('''insert into vcf_header values (?)''', (vcf_header,))
     cursor.execute("END")
 
 def insert_version(cursor, version):

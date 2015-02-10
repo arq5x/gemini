@@ -62,6 +62,12 @@ class GeminiLoader(object):
         else:
             self._effect_fields = []
 
+    def store_vcf_header(self):
+        """Store the raw VCF header.
+        """
+        print self.vcf_reader.raw_header 
+        database.insert_vcf_header(self.c, self.vcf_reader.raw_header)
+
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
         """

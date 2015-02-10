@@ -57,6 +57,7 @@ def load_singlecore(args):
     gemini_loader = GeminiLoader(args)
     gemini_loader.store_resources()
     gemini_loader.store_version()
+    gemini_loader.store_vcf_header()
     gemini_loader.populate_from_vcf()
 
 
