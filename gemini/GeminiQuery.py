@@ -264,6 +264,66 @@ class JSONRowFormat(RowFormat):
     def header(self, fields):
         return None
 
+class VCFRowFormat(RowFormat):
+
+    name = "vcf"
+
+    def __init__(self, args):
+        self.gq = GeminiQuery(args.db)
+
+    def format(self, row):
+        """Emit a VCF representation of a given row
+
+           TODO: handle multiple alleles
+        """
+        # core VCF fields 
+        vcf_rec = [row.row['chrom'], row.row['start'] + 1]
+        if row.row['vcf_id'] is None:
+            vcf_rec.append('.')
+        else:
+            vcf_rec.append(row.row['vcf_id'])
+        vcf_rec += [row.row['ref'], row.row['alt'], row.row['qual']]
+        if row.row['filter'] is None:
+            vcf_rec.append('PASS')
+        else:
+            vcf_rec.append(row.row['filter'])
+        vcf_rec += [row.row['info'], 'GT']
+
+        # construct genotypes       
+        gts = list(row['gts'])
+        gt_types = list(row['gt_types'])
+        gt_phases = list(row['gt_phases'])
+        for idx, gt_type in enumerate(gt_types):
+            phase_char = '/' if not gt_phases[idx] else '|'
+            gt = gts[idx]
+            alleles = gt.split(phase_char)
+            if gt_type == HOM_REF:
+                vcf_rec.append('0' + phase_char + '0')
+            elif gt_type == HET:
+                # if the genotype is phased, need to check for 1|0 vs. 0|1
+                if gt_phases[idx] and alleles[0] != row.row['ref']:
+                    vcf_rec.append('1' + phase_char + '0')
+                else:
+                    vcf_rec.append('0' + phase_char + '1')
+            elif gt_type == HOM_ALT:
+                vcf_rec.append('1' + phase_char + '1')
+            elif gt_type == HOM_ALT:
+                vcf_rec.append('.' + phase_char + '.')
+
+        return '\t'.join([str(c) if c is not None else "." for c in vcf_rec])
+
+    def format_query(self, query):
+        return query
+
+    def predicate(self, row):
+        return True
+
+    def header(self, fields):
+        """Return the original VCF's header
+        """
+        self.gq.run('select vcf_header from vcf_header')
+        for row in self.gq:
+            return str(row).strip()
 
 class GeminiRow(object):
 
@@ -426,7 +486,12 @@ class GeminiQuery(object):
 
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
+
         self.needs_genotypes = needs_genotypes
+        self.needs_vcf_columns = False
+        if self.formatter.name == 'vcf':
+            self.needs_vcf_columns = True
+
         self.needs_genes = needs_genes
         self.show_families = show_families
         if predicates:
@@ -711,6 +776,9 @@ class GeminiQuery(object):
         if self.needs_genes:
             self.query = self._add_gene_col_to_query()
 
+        if self.needs_vcf_columns:
+            self.query = self._add_vcf_cols_to_query()
+
         if self._query_needs_genotype_info():
             # break up the select statement into individual
             # pieces and replace genotype columns using sample
@@ -957,6 +1025,28 @@ class GeminiQuery(object):
 
             self.query = "select " + select_clause + rest_of_query
 
+        return self.query
+
+    def _add_vcf_cols_to_query(self):
+        """
+        Add the VCF columns to the list of SELECT'ed columns
+        in a query.
+
+        NOTE: Should only be called if using VCFRowFormat()
+        """
+        if "from" not in self.query.lower():
+            sys.exit("Malformed query: expected a FROM keyword.")
+
+        (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
+
+        cols_to_add = []
+        for col in ['chrom', 'start', 'vcf_id', 'ref', 'alt', 'qual', 'filter', 'info', \
+            'gts', 'gt_types', 'gt_phases']:
+            if not any(col in s for s in select_tokens):
+                cols_to_add.append(col)
+
+        select_clause = ",".join(select_tokens + cols_to_add)
+        self.query = "select " + select_clause + rest_of_query
         return self.query
 
     def _split_select(self):
