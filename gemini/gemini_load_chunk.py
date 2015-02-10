@@ -65,7 +65,6 @@ class GeminiLoader(object):
     def store_vcf_header(self):
         """Store the raw VCF header.
         """
-        print self.vcf_reader.raw_header 
         database.insert_vcf_header(self.c, self.vcf_reader.raw_header)
 
     def store_resources(self):
