@@ -160,7 +160,7 @@ class TPEDRowFormat(RowFormat):
 
     def __init__(self, args):
         gq = GeminiQuery(args.db)
-        subjects = get_subjects(args)
+        subjects = get_subjects(args, skip_filter=True)
         # get samples in order of genotypes
         self.samples = [gq.idx_to_sample_object[x] for x in range(len(subjects))]
 
