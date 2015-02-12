@@ -176,7 +176,7 @@ class TPEDRowFormat(RowFormat):
         geno = [self._fix_genotype(chrom, start, genotype, self.samples[i].sex)
                 for i, genotype in enumerate(geno)]
         genotypes = " ".join(list(flatten(geno)))
-        name = chrom + ":" +  start + "-" + end + ":" + ref + "|" + alt + ":" + str(row['variant_id'])
+        name = str(row['variant_id'])
         return " ".join([chrom, name, "0", start, genotypes])
 
     def format_query(self, query):
@@ -276,7 +276,7 @@ class VCFRowFormat(RowFormat):
 
            TODO: handle multiple alleles
         """
-        # core VCF fields 
+        # core VCF fields
         vcf_rec = [row.row['chrom'], row.row['start'] + 1]
         if row.row['vcf_id'] is None:
             vcf_rec.append('.')
@@ -289,7 +289,7 @@ class VCFRowFormat(RowFormat):
             vcf_rec.append(row.row['filter'])
         vcf_rec += [row.row['info'], 'GT']
 
-        # construct genotypes       
+        # construct genotypes
         gts = list(row['gts'])
         gt_types = list(row['gt_types'])
         gt_phases = list(row['gt_phases'])
