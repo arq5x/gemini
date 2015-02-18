@@ -835,6 +835,12 @@ def main():
             help='The min. number of kindreds that must have a \
                   de novo mutation in a gene. This option restricts \
                   the reported variants to those affectting genes.')
+    parser_de_novo.add_argument('--only-affected',
+            dest='only_affected',
+            action='store_true',
+            help='Report solely those de novos that impact a sample \
+                  labeled as affected.',
+            default=False)
     parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
             type=int,

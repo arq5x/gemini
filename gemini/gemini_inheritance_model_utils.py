@@ -73,7 +73,7 @@ class GeminiInheritanceModelFactory(object):
             elif self.model == "auto_dom":
                 family_filter = family.get_auto_dominant_filter()
             elif self.model == "de_novo":
-                family_filter = family.get_de_novo_filter()
+                family_filter = family.get_de_novo_filter(self.args.only_affected)
             elif self.model == "mendel_violations":
                 family_filter = family.get_mendelian_violation_filter()
 

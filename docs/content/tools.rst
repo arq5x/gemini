@@ -294,6 +294,17 @@ For example, the following command would further restrict candidate genes to tho
           my.db
 
 
+--------------------
+``--only-affected``
+--------------------
+By default, candidate de novo mutations are reported for all
+individuals in the database.  One can restrict the analysis to variants in
+only individuals with an affected phenotype using the ``--only-affected`` option.
+
+.. code-block:: bash
+
+    $ gemini de_novo --only-affected my.db
+
 
 ============================================================================
 ``autosomal_recessive``: Find variants meeting an autosomal recessive model.

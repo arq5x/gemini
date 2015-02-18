@@ -346,7 +346,7 @@ class Family(object):
 
 
 
-    def get_de_novo_filter(self):
+    def get_de_novo_filter(self, only_affected=False):
         """
         Generate aa de novo mutation eval() filter to apply for this family.
         For example:
@@ -394,14 +394,18 @@ class Family(object):
         mask += " and ("
 
         if len(self.children) == 1:
-            mask += 'gt_types[' + str(self.children[0].sample_id - 1) + "] == " + \
-                str(HET)
+            if only_affected == False or \
+            (only_affected == True and self.children[0].affected == True):
+                mask += 'gt_types[' + str(self.children[0].sample_id - 1) + "] == " + \
+                    str(HET)
         else:
             for i, child in enumerate(self.children):
-                mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                        str(HET)
-                if i < (len(self.children) - 1):
-                    mask += " or "
+                if only_affected == False or \
+                (only_affected == True and child.affected == True):
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
+                            str(HET)
+                    if i < (len(self.children) - 1):
+                        mask += " or "
         mask += " )"
         return mask
 

@@ -31,6 +31,7 @@ gemini load --skip-gene-tables --test-mode -v test.auto_rec.no_parents.3.vcf --s
 gemini load --skip-gene-tables --test-mode -v test.auto_rec.no_parents.4.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.auto_rec.no_parents.4.ped test.auto_rec.no_parents.4.db
 gemini load --skip-gene-tables --test-mode -v test.auto_rec.no_parents.5.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.auto_rec.no_parents.5.ped test.auto_rec.no_parents.5.db
 gemini load --skip-gene-tables --test-mode -v test.de_novo.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.de_novo.ped test.de_novo.db
+gemini load --skip-gene-tables --test-mode -v test.de_novo.affected.and.unaffected.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.de_novo.affected.and.unaffected.ped test.de_novo.affected.and.unaffected.db
 gemini load --skip-gene-tables --test-mode -p test4.snpeff.ped -v test4.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test4.snpeff.ped.db
 gemini load --skip-gene-tables --test-mode -v test.vcf_id.snpeff.vcf  --skip-gerp-bp --skip-cadd -t snpEff test.vcf_id.snpeff.vcf.db
 gemini load --skip-gene-tables --test-mode -p test.de_novo.ped -v test.family.vcf  --skip-gerp-bp --skip-cadd -t snpEff test.family.db
