@@ -31,7 +31,12 @@ class StructuralVariant(object):
         # for some reason, this is defined as a list
         length = self.var.INFO.get('SVLEN')
         if length is not None:
-            return self.var.INFO.get('SVLEN')[0]
+            # sometimes SVLEN is defined as a list in the VCF header,
+            # yet othertime it is defined as an integer. handle both.
+            if isinstance(length, list):
+                return length[0]
+            elif isinstance(length, int):
+                return length
 
     def get_evidence_type(self):
         return self.var.INFO.get('EVTYPE')
