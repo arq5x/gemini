@@ -653,7 +653,7 @@ class Family(object):
         return subjects
 
 
-def get_families(db):
+def get_families(db, selected_families=None):
     """
     Query the samples table to return a list of Family
     objects that each contain all of the Subjects in a Family.
@@ -668,6 +668,8 @@ def get_families(db):
              ORDER BY family_id"
     c.execute(query)
 
+    # create a mapping of family_id to the list of
+    # individuals that are members of the family.
     families_dict = {}
     for row in c:
         subject = Subject(row)
@@ -678,10 +680,22 @@ def get_families(db):
             families_dict[family_id] = []
             families_dict[family_id].append(subject)
 
+    # if the user has specified a set of selected families
+    # to which the analysis should be restricted, then
+    # first sanity check that the family ids they specified are valid.
+    if selected_families is not None:
+        for family in selected_families.split(','):
+            if family not in families_dict:
+                sys.exit("ERROR: family \"%s\" is not a valid family_id\n" % family)
+
     families = []
     for fam in families_dict:
-        family = Family(families_dict[fam])
-        families.append(family)
+        if selected_families is None:
+            family = Family(families_dict[fam])
+            families.append(family)
+        elif fam in selected_families:
+            family = Family(families_dict[fam])
+            families.append(family)
     return families
 
 def get_family_dict(args):

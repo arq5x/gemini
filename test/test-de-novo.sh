@@ -164,3 +164,37 @@ gemini de_novo  \
     test.de_novo.affected.and.unaffected.db > obs
 check obs exp
 rm obs exp
+
+###################################################################
+# 10. Test de_novo with --only-affected and --families
+###################################################################
+echo "    de_novo.t10...\c"
+echo "family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity
+1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid1(child; unaffected),1_kid2(child; affected)	T/T,T/T,T/C,T/C	39,29,24,24	WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	chr10	135336655	135336656	G	A	intron	LOW
+1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid1(child; unaffected),1_kid2(child; affected)	T/T,T/T,T/T,T/C	39,29,24,24	SYCE1	chr10	135369531	135369532	T	C	non_syn_coding	MED
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	chr10	135369531	135369532	T	C	non_syn_coding	MED" > exp
+gemini de_novo  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+    --only-affected \
+    --families 1,2 \
+    test.de_novo.affected.and.unaffected.db > obs
+check obs exp
+rm obs exp
+
+###################################################################
+# 11. Test de_novo with --only-affected and --families
+###################################################################
+echo "    de_novo.t11...\c"
+echo "family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	chr10	135336655	135336656	G	A	intron	LOW
+2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	chr10	135369531	135369532	T	C	non_syn_coding	MED" > exp
+gemini de_novo  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+    --only-affected \
+    --families 2 \
+    test.de_novo.affected.and.unaffected.db > obs
+check obs exp
+rm obs exp

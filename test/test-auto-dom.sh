@@ -1,3 +1,12 @@
+check()
+{
+    if diff $1 $2; then
+        echo ok
+    else
+        echo fail
+    fi
+}
+export -f check
 ###################################################################
 # 1. Test basic auto_dominant functionality
 ###################################################################
@@ -287,6 +296,54 @@ family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	star
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
+    test.auto_dom.no_parents.5.db &> obs
+check obs exp
+rm obs exp
+
+###################################################################
+# 17. Test with --families
+###################################################################
+echo "    auto_dom.t17...\c"
+echo "family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	C/T,C/C,C/T	39,29,24	ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	C/T,C/C,C/T	39,29,24	ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED
+2	2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)	C/C,C/T,C/T	39,29,24	ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED
+2	2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)	C/C,C/T,C/T	39,29,24	ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	G/A,G/G,G/A	39,29,24	SPRN	chr10	135336655	135336656	G	A	intron	LOW
+2	2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)	T/T,T/C,T/C	39,29,24	WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	T/C,T/T,T/C	39,29,24	WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH" > exp
+gemini autosomal_dominant  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+    --families 2,3 \
+    test.auto_dom.db &> obs
+check obs exp
+rm obs exp
+
+###################################################################
+# 18. Test with --families
+###################################################################
+echo "    auto_dom.t18...\c"
+echo "family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	C/T,C/C,C/T	39,29,24	ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	C/T,C/C,C/T	39,29,24	ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	G/A,G/G,G/A	39,29,24	SPRN	chr10	135336655	135336656	G	A	intron	LOW
+3	3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)	T/C,T/T,T/C	39,29,24	WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH" > exp
+gemini autosomal_dominant  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+    --families 3 \
+    test.auto_dom.db &> obs
+check obs exp
+rm obs exp
+
+###################################################################
+# 19. Test with --families but not valid
+###################################################################
+echo "    auto_dom.t19...\c"
+echo "WARNING: Unable to identify at least one affected individual for family (3). Consequently, GEMINI will not screen for variants in this family.
+family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity" > exp
+gemini autosomal_dominant  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+    --families 3 \
     test.auto_dom.no_parents.5.db &> obs
 check obs exp
 rm obs exp

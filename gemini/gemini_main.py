@@ -585,9 +585,13 @@ def main():
     parser_comp_hets.add_argument('--only-affected',
             dest='only_affected',
             action='store_true',
-            help='Report solely those compund heterozygotes impacted a sample \
+            help='Report solely those compound heterozygotes impacted a sample \
                   labeled as affected.',
             default=False)
+    parser_comp_hets.add_argument('--families',
+            dest='families',
+            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
+            default=None)
     parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
@@ -764,6 +768,10 @@ def main():
             type=int,
             default=1,
             help='The min. number of kindreds that must have a candidate variant in a gene.')
+    parser_auto_rec.add_argument('--families',
+            dest='families',
+            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
+            default=None)
     parser_auto_rec.add_argument('-d',
             dest='min_sample_depth',
             type=int,
@@ -799,6 +807,10 @@ def main():
             type=int,
             default=1,
             help='The min. number of kindreds that must have a candidate variant in a gene.')
+    parser_auto_dom.add_argument('--families',
+            dest='families',
+            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
+            default=None)
     parser_auto_dom.add_argument('-d',
             dest='min_sample_depth',
             type=int,
@@ -841,6 +853,10 @@ def main():
             help='Report solely those de novos that impact a sample \
                   labeled as affected.',
             default=False)
+    parser_de_novo.add_argument('--families',
+            dest='families',
+            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
+            default=None)
     parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
             type=int,

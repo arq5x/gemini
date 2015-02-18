@@ -88,6 +88,12 @@ def get_compound_hets(args):
         for idx, gt_type in enumerate(gt_types):
             if gt_type == HET:
                 sample = idx_to_sample[idx]
+
+                # make sure the sample is in the right family if the 
+                # user has asked for specific families to be analyzed.
+                if args.families is not None:
+                    if subjects_dict[sample].family_id not in args.families:
+                        continue
                 
                 if args.only_affected and not subjects_dict[sample].affected:
                     continue

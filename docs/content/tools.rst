@@ -93,6 +93,19 @@ only individuals with an affected phenotype using the ``--only-affected`` option
 
 	$ gemini comp_hets --only-affected my.db
 
+--------------------
+``--families``
+--------------------
+By default, candidate compound heterozygous variants are reported for families
+in the database.  One can restrict the analysis to variants in
+specific familes with the ``--families`` option.  Families should be provided
+as a comma-separated list
+
+.. code-block:: bash
+
+    $ gemini comp_hets --families 1 my.db
+    $ gemini comp_hets --families 1,7 my.db
+
 
 ---------------------
 ``--ignore-phasing``
@@ -306,6 +319,20 @@ only individuals with an affected phenotype using the ``--only-affected`` option
     $ gemini de_novo --only-affected my.db
 
 
+--------------------
+``--families``
+--------------------
+By default, candidate de novo variants are reported for families
+in the database.  One can restrict the analysis to variants in
+specific familes with the ``--families`` option.  Families should be provided
+as a comma-separated list
+
+.. code-block:: bash
+
+    $ gemini de_novo --families 1 my.db
+    $ gemini de_novo --families 1,7 my.db
+
+
 ============================================================================
 ``autosomal_recessive``: Find variants meeting an autosomal recessive model.
 ============================================================================
@@ -410,6 +437,20 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
     1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  C/T,C/T,T/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
     1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  T/C,T/C,C/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
     2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  T/C,T/C,C/C 59,49,64    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
+
+--------------------
+``--families``
+--------------------
+By default, candidate autosomal recessive variants are reported for families
+in the database.  One can restrict the analysis to variants in
+specific familes with the ``--families`` option.  Families should be provided
+as a comma-separated list
+
+.. code-block:: bash
+
+    $ gemini autosomal_recessive --families 1 my.db
+    $ gemini autosomal_recessive --families 1,7 my.db
+
 
 ---------------------
 ``--filter``
@@ -576,6 +617,21 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
     2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
     2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    T/T,T/C,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
     3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
+
+
+--------------------
+``--families``
+--------------------
+By default, candidate autosomal dominant variants are reported for families
+in the database.  One can restrict the analysis to variants in
+specific familes with the ``--families`` option.  Families should be provided
+as a comma-separated list
+
+.. code-block:: bash
+
+    $ gemini autosomal_dominant --families 1 my.db
+    $ gemini autosomal_dominant --families 1,7 my.db
+
 
 ---------------------
 ``--filter``

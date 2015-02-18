@@ -53,12 +53,19 @@ class GeminiInheritanceModelFactory(object):
                         "\t",
                     print row
 
+    def _cull_families(self):
+        """
+        If the user has asked to restric the analysis to a specific set
+        of families, then we need to prune the list of possible families
+        to that specific subset.
+        """
+
     def _get_family_info(self):
         """
         Extract the relevant genotype filters, as well all labels
         for each family in the database.
         """
-        families = subjects.get_families(self.args.db)
+        families = subjects.get_families(self.args.db, self.args.families)
         self.family_ids = []
         self.family_masks = []
         self.family_gt_labels = []

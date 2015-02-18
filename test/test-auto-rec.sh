@@ -1,3 +1,12 @@
+check()
+{
+    if diff $1 $2; then
+        echo ok
+    else
+        echo fail
+    fi
+}
+export -f check
 ###################################################################
 # 1. Test basic auto_recessive functionality
 ###################################################################
@@ -267,5 +276,16 @@ gemini autosomal_recessive  \
 check obs exp
 rm obs exp
 
+###################################################################
+# 17. Test with --families
+###################################################################
+echo "    auto_rec.t17...\c"
+echo "family_id	family_members	family_genotypes	family_genotype_depths	gene	chrom	start	end	ref	alt	impact	impact_severity
+3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; unknown)	T/C,T/C,C/C	39,29,24	SYCE1	chr10	135369531	135369532	T	C	non_syn_coding	MED" > exp
+gemini autosomal_recessive  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+    --families 3 test.auto_rec.no_parents.5.db &> obs
+check obs exp
+rm obs exp
 
 
