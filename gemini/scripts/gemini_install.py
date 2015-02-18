@@ -10,7 +10,7 @@ Handles installation of:
 - Gemini application
 - Associated data files
 
-Requires: Python 2.7, git, and compilers (gcc, g++)
+Requires: Python 2.7 (or 2.6 and argparse), git, and compilers (gcc, g++)
 
 Run gemini_install.py -h for usage.
 """
@@ -33,7 +33,7 @@ remotes = {"requirements_pip":
            "gemini":
            "https://github.com/arq5x/gemini.git",
            "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-3.5.5-%s-x86_64.sh"}
+           "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86_64.sh"}
 
 def main(args):
     check_dependencies()
@@ -116,8 +116,8 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
         cmd = ["ln", "-s", ve_script, final_script]
         subprocess.check_call(sudo_cmd + cmd)
-    library_loc = subprocess.check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
-                                          shell=True)
+    library_loc = check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
+                               shell=True)
     return {"fab": os.path.join(anaconda["dir"], "bin", "fab"),
             "data_script": os.path.join(os.path.dirname(library_loc.strip()), "install-data.py"),
             "python": python_bin,
@@ -161,9 +161,9 @@ def _add_missing_inits(python_bin):
     """pip/setuptools strips __init__.py files with namespace declarations.
     I have no idea why, but this adds them back.
     """
-    library_loc = subprocess.check_output("%s -c 'import pygraph.classes.graph; "
-                                          "print pygraph.classes.graph.__file__'" % python_bin,
-                                          shell=True)
+    library_loc = check_output("%s -c 'import pygraph.classes.graph; "
+                               "print pygraph.classes.graph.__file__'" % python_bin,
+                               shell=True)
     pygraph_init = os.path.normpath(os.path.join(os.path.dirname(library_loc.strip()), os.pardir,
                                                  "__init__.py"))
     if not os.path.exists(pygraph_init):
@@ -276,7 +276,7 @@ def make_dirs(args):
     for dname in [args.datadir, args.tooldir]:
         if not os.path.exists(dname):
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", dname])
-            username = subprocess.check_output("echo $USER", shell=True).strip()
+            username = check_output("echo $USER", shell=True).strip()
             subprocess.check_call(sudo_cmd + ["chown", username, dname])
 
 def get_cloudbiolinux(repo):
@@ -301,6 +301,23 @@ def check_dependencies():
             raise OSError("gemini requires %s (%s)" % (cmd, url))
         else:
             print " %s found" % cmd
+
+def check_output(*popenargs, **kwargs):
+    """python2.6 compatible version of check_output.
+    Thanks to:
+    https://github.com/stackforge/bindep/blob/master/bindep/support_py26.py
+    """
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        raise subprocess.CalledProcessError(retcode, cmd, output=output)
+    return output
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated installer for gemini framework.")

@@ -396,7 +396,7 @@ class Family(object):
         if len(self.children) == 1:
             mask += 'gt_types[' + str(self.children[0].sample_id - 1) + "] == " + \
                 str(HET)
-        else:      
+        else:
             for i, child in enumerate(self.children):
                 mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
                         str(HET)
@@ -658,7 +658,7 @@ def get_families(db):
     conn.isolation_level = None
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    
+
     query = "SELECT * FROM samples \
              WHERE family_id is not NULL \
              ORDER BY family_id"
@@ -688,15 +688,16 @@ def get_family_dict(args):
 
     return families
 
-def get_subjects(args):
+def get_subjects(args, skip_filter=False):
     """
     return a dictionary of subjects, optionally using the
     subjects_query argument to filter them.
     """
     gq = GeminiQuery.GeminiQuery(args.db)
     query = "SELECT * FROM samples"
-    if hasattr(args, 'sample_filter') and args.sample_filter:
-        query += " WHERE " + args.sample_filter
+    if not skip_filter:
+        if hasattr(args, 'sample_filter') and args.sample_filter:
+            query += " WHERE " + args.sample_filter
     gq.c.execute(query)
     samples_dict = {}
     for row in gq.c:
