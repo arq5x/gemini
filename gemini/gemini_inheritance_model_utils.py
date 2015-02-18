@@ -21,7 +21,8 @@ class GeminiInheritanceModelFactory(object):
         """
         Report candidate variants that meet the requested inheritance model.
         """
-        if self.model in ["auto_dom", "auto_rec"]:
+        if self.model in ["auto_dom", "auto_rec"] \
+        or (self.model == "de_novo" and self.args.min_kindreds is not None):
             self._get_gene_only_candidates()
         else:
             self._get_all_candidates()
@@ -104,7 +105,8 @@ class GeminiInheritanceModelFactory(object):
         
         # auto_rec and auto_dom candidates should be limited to
         # variants affecting genes.
-        if self.model == "auto_rec" or self.model == "auto_dom":
+        if self.model == "auto_rec" or self.model == "auto_dom"\
+        or (self.model == "de_novo" and self.args.min_kindreds is not None):
 
             # we require the "gene" column for the auto_* tools
             self.query = sql_utils.ensure_columns(self.query, ['gene'])

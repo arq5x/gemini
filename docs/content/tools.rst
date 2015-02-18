@@ -275,6 +275,24 @@ following:
     3	243(father; unknown),244(mother; unknown),242(child; affected)	A/A,A/A,A/ATGGTGTTG	211,208,208	chr1	12855995	12855996	A	ATGGTGTTG
     ...
 
+-------------------------
+``--min-kindreds [None]``
+-------------------------
+By default, the ``de_novo`` tool will report every candidate mutation variant
+that impacts at least one of the families in the database.  However, one
+can restrict the reported genes to those where de novo variants
+were observed in more than one family (thus further substantiating the potential role of the gene in the etiology of the phenotype).
+
+For example, the following command would further restrict candidate genes to those genes with a de novo variant in at least two families:
+
+.. code-block:: bash
+
+    $ gemini de_novo -d 50 \
+          --columns "chrom, start, end, ref, alt" \
+          --filter "impact_severity = 'HIGH'" \
+          --min-kindreds 2 \
+          my.db
+
 
 
 ============================================================================

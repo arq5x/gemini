@@ -828,6 +828,13 @@ def main():
             dest='filter',
             metavar='STRING',
             help='Restrictions to apply to variants (SQL syntax)')
+    parser_de_novo.add_argument('--min-kindreds',
+            dest='min_kindreds',
+            type=int,
+            default=None,
+            help='The min. number of kindreds that must have a \
+                  de novo mutation in a gene. This option restricts \
+                  the reported variants to those affectting genes.')
     parser_de_novo.add_argument('-d',
             dest='min_sample_depth',
             type=int,
