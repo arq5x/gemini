@@ -128,8 +128,8 @@ def install_conda_pkgs(anaconda, remotes, args):
         pkgs = ["--file", remotes['requirements_conda']]
     else:
         pkgs = ["bx-python", "conda", "cython", "ipython", "ipython-cluster-helper",
-                "jinja2", "nose", "numpy", "pip", "pycrypto", "pyparsing", "pysam", "pyyaml",
-                "pyzmq", "pandas", "scipy"]
+                "jinja2", "nose", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
+                "pysam", "pyyaml", "pyzmq", "pandas", "scipy"]
     channels = ["-c", "https://conda.binstar.org/bcbio"]
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
 
