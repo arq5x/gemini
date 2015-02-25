@@ -681,7 +681,7 @@ def load(parser, args):
     gemini_loader = GeminiLoader(args)
     gemini_loader.store_resources()
     gemini_loader.store_version()
-
+    gemini_loader.store_vcf_header()
     gemini_loader.populate_from_vcf()
     gemini_loader.update_gene_table()
     # gemini_loader.build_indices_and_disconnect()

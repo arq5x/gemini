@@ -90,6 +90,20 @@ def append_version_info(main_curr, chunk_db):
     cmd = "detach toMerge"
     main_curr.execute(cmd)
 
+def append_vcf_header(main_curr, chunk_db):
+    """
+    Append the vcf_header from a chunk_db
+    to the main database.
+    """
+    cmd = "attach ? as toMerge"
+    main_curr.execute(cmd, (chunk_db, ))
+
+    cmd = "INSERT INTO vcf_header SELECT * FROM toMerge.vcf_header"
+    main_curr.execute(cmd)
+
+    cmd = "detach toMerge"
+    main_curr.execute(cmd)
+
 def append_gene_summary(main_curr, chunk_db):
     """
     Append the gene_summary from a chunk_db
@@ -177,6 +191,7 @@ def merge_db_chunks(args):
             append_sample_info(main_curr, db)
             append_resource_info(main_curr, db)
             append_version_info(main_curr, db)
+            append_vcf_header(main_curr, db)
             append_gene_summary(main_curr, db)
             append_gene_detailed(main_curr, db)
         else:
