@@ -424,8 +424,8 @@ def get_cadd_scores(var):
     for hit in annotations_in_region(var, "cadd_score", "tuple", "grch37"):
         # we want exact position mapping here and not a range (end-start) as
         # returned in hit (e.g. indels) & we do not want to consider del & ins
-        if str(hit[1]) == str(var.POS) and len(var.REF) == 1 and \
-           len(var.ALT[0]) == 1:
+        if str(hit[1]) == str(var.POS) and var.REF and var.ALT[0] and \
+           len(var.REF) == 1 and len(var.ALT[0]) == 1:
            
             if str(hit[2]) == var.REF and str(var.ALT[0]) in labels[hit[2]]:
                (cadd_raw, cadd_scaled) = _get_cadd_scores(var, labels, hit)
