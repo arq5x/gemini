@@ -31,8 +31,6 @@ class Site(object):
         return sum(ord(c) for c in self.row['chrom']) + int(self.row['start'])
 
 
-
-
 def _add_necessary_columns(args, custom_columns):
     """
     Convenience function to tack on columns that are necessary for
