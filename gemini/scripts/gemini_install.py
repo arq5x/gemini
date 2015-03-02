@@ -33,7 +33,7 @@ remotes = {"requirements_pip":
            "gemini":
            "https://github.com/arq5x/gemini.git",
            "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86_64.sh"}
+           "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86%s.sh"}
 
 def main(args):
     check_dependencies()
@@ -127,9 +127,12 @@ def install_conda_pkgs(anaconda, remotes, args):
     if args.gemini_version != 'latest':
         pkgs = ["--file", remotes['requirements_conda']]
     else:
-        pkgs = ["bx-python", "conda", "cython", "ipython", "ipython-cluster-helper",
+        pkgs = ["conda", "cython", "ipython",
                 "jinja2", "nose", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
-                "pysam", "pyyaml", "pyzmq", "pandas", "scipy"]
+                "pyyaml", "pyzmq", "pandas", "scipy"]
+        if platform.architecture()[0] != "32bit":
+            pkgs += ["bx-python", "pysam", "ipython-cluster-helper"]
+
     channels = ["-c", "https://conda.binstar.org/bcbio"]
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
 
@@ -144,10 +147,14 @@ def install_anaconda_python(args, remotes):
         distribution = "macosx"
     else:
         distribution = "linux"
+    if platform.architecture()[0] == "32bit":
+        arch = ""
+    else:
+        arch = "_64"
     if not os.path.exists(anaconda_dir) or not os.path.exists(conda):
         if os.path.exists(anaconda_dir):
             shutil.rmtree(anaconda_dir)
-        url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux")
+        url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux", arch)
         if not os.path.exists(os.path.basename(url)):
             subprocess.check_call(["wget", url])
         subprocess.check_call("bash %s -b -p %s" %
