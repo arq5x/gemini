@@ -585,9 +585,15 @@ def main():
     parser_comp_hets.add_argument('--only-affected',
             dest='only_affected',
             action='store_true',
-            help='Report solely those compound heterozygotes impacted a sample \
+            help='Report those compound heterozygotes that solely impact samples \
                   labeled as affected.',
             default=False)
+    parser_comp_hets.add_argument('--min-kindreds',
+                              dest='min_kindreds',
+                              default=1,
+                              type=int,
+                              help=('Minimum number of families for a variant passing '
+                                    'a family-wise filter to be in.'))
     parser_comp_hets.add_argument('--families',
             dest='families',
             help='Restrict analysis to a specific set of 1 or more (comma) separated) families',

@@ -27,8 +27,8 @@ echo "    comp_het.t2...\c"
 echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact
 4	child_4	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
 4	child_4	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor
-4	dad_4	2	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
-4	dad_4	2	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
+4	dad_4	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+4	dad_4	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
 gemini comp_hets --ignore-phasing \
     --column "chrom,start,end,gene,ref,alt,impact" \
     --filter "impact_severity = 'HIGH'" \
@@ -40,9 +40,7 @@ rm obs exp
 # 3. Test comp-het for --only-affected
 ###############################################################################
 echo "    comp_het.t3...\c"
-echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact
-4	child_4	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
-4	child_4	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact" > exp
 gemini comp_hets --ignore-phasing \
     --only-affected \
     --column "chrom,start,end,gene,ref,alt,impact" \
@@ -56,10 +54,10 @@ rm obs exp
 ###############################################################################
 echo "    comp_het.t4...\c"
 echo "family	sample	comp_het_id	chrom	start	end	gene	alt
+3	child_3	1	chr1	17362	17366	WASH7P	T
+3	child_3	1	chr1	17729	17730	WASH7P	A
 3	dad_3	1	chr1	17362	17366	WASH7P	T
-3	dad_3	1	chr1	17729	17730	WASH7P	A
-3	child_3	2	chr1	17362	17366	WASH7P	T
-3	child_3	2	chr1	17729	17730	WASH7P	A" > exp
+3	dad_3	1	chr1	17729	17730	WASH7P	A" > exp
 gemini comp_hets \
     --ignore-phasing \
     --columns "chrom, start, end" \
@@ -72,9 +70,7 @@ rm obs exp
 # 5. Test basic comp-het functionality with --families and --only-affected
 ###############################################################################
 echo "    comp_het.t5...\c"
-echo "family	sample	comp_het_id	chrom	start	end	gene	alt
-3	child_3	1	chr1	17362	17366	WASH7P	T
-3	child_3	1	chr1	17729	17730	WASH7P	A" > exp
+echo "family	sample	comp_het_id	chrom	start	end	gene	alt" > exp
 gemini comp_hets \
     --ignore-phasing \
     --columns "chrom, start, end" \
@@ -84,7 +80,93 @@ gemini comp_hets \
 check obs exp
 rm obs exp
 
+###############################################################################
+# 6. Test --min-kindreds
+###############################################################################
+echo "    comp_het.t6...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact
+1	child_1	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+1	child_1	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --min-kindreds 1 \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.4.db > obs
+check obs exp
+rm obs exp
 
+###############################################################################
+# 7. Test without --min-kindreds, but default should be 1
+###############################################################################
+echo "    comp_het.t7...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact
+1	child_1	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+1	child_1	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.4.db > obs
+check obs exp
+rm obs exp
 
+###############################################################################
+# 8. Negative Test with --min-kindreds 2
+###############################################################################
+echo "    comp_het.t8...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --min-kindreds 2 \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.4.db > obs
+check obs exp
+rm obs exp
 
+###############################################################################
+# 9. Positive Test with --min-kindreds 2
+###############################################################################
+echo "    comp_het.t9...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact
+1	child_1	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+1	child_1	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor
+2	child_2	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+2	child_2	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --min-kindreds 2 \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.5.db > obs
+check obs exp
+rm obs exp
 
+###############################################################################
+# 9. Positive Test with --min-kindreds 2 and --only-affected
+###############################################################################
+echo "    comp_het.t10...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact
+1	child_1	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+1	child_1	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor
+2	child_2	1	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+2	child_2	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --min-kindreds 2 \
+    --only-affected \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.5.db > obs
+check obs exp
+rm obs exp
+
+###############################################################################
+# 11. Negative Test with --min-kindreds 2 and --only-affected
+###############################################################################
+echo "    comp_het.t11...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --min-kindreds 2 \
+    --only-affected \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.6.db > obs
+check obs exp
+rm obs exp
