@@ -93,6 +93,35 @@ only individuals with an affected phenotype using the ``--only-affected`` option
 
 	$ gemini comp_hets --only-affected my.db
 
+-------------------------
+``--min-kindreds 1``
+-------------------------
+By default, the ``comp_hets`` tool will report every candidate heterozygote pair
+that impacts at least one of the families in the database.  However, one
+can restrict the reported genes to those where the compound heterozygote
+was observed in more than one family.
+
+For example, the following command would further restrict candidate genes to those genes with a compound heterozygote in at least two families:
+
+.. code-block:: bash
+
+    $ gemini comp_hets -d 50 \
+          --columns "chrom, start, end, ref, alt" \
+          --filter "impact_severity = 'HIGH'" \
+          --min-kindreds 2 \
+          my.db
+
+Now, this does not require that the family members are necessarily restricted to solely
+those that are affected.  To impose this restriction, combine ``--min-kindreds`` with
+``--only-affected``.
+
+    $ gemini comp_hets -d 50 \
+          --columns "chrom, start, end, ref, alt" \
+          --filter "impact_severity = 'HIGH'" \
+          --min-kindreds 2 \
+          --only-affected \
+          my.db
+
 --------------------
 ``--families``
 --------------------
