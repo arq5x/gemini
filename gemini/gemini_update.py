@@ -43,6 +43,12 @@ def release(parser, args):
             for req in ["python-graph-core", "python-graph-dot"]:
                 pip_compat += ["--allow-external", req, "--allow-unverified", req]
         # update libraries
+        # Set PIP SSL certificate to installed conda certificate to avoid SSL errors
+        if os.path.exists(conda_bin):
+            anaconda_dir = os.path.dirname(os.path.dirname(conda_bin))
+            cert_file = os.path.join(anaconda_dir, "ssl", "cert.pem")
+            if os.path.exists(cert_file):
+                os.environ["PIP_CERT"] = cert_file
         subprocess.check_call([pip_bin, "install"] + pip_compat + ["-r", url])
         if args.devel:
             print("Installing latest GEMINI development version")
