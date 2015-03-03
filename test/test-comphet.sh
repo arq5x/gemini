@@ -170,3 +170,37 @@ gemini comp_hets \
     test.comp_het_default.6.db > obs
 check obs exp
 rm obs exp
+
+###############################################################################
+# 12. Positive Test with --min-kindreds 2 and --only-affected. 
+#     Two different comp_hets in same gene
+###############################################################################
+echo "    comp_het.t12...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact
+2	child_2	1	chr1	17729	17730	WASH7P	C	A	splice_acceptor
+2	child_2	1	chr1	27729	27730	WASH7P	C	A	splice_acceptor
+1	child_1	2	chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor
+1	child_1	2	chr1	17729	17730	WASH7P	C	A	splice_acceptor" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --min-kindreds 2 \
+    --only-affected \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.7.db > obs
+check obs exp
+rm obs exp
+
+###############################################################################
+# 13. Negative Test with --min-kindreds 3 and --only-affected. 
+#     Two different comp_hets in same gene
+###############################################################################
+echo "    comp_het.t13...\c"
+echo "family	sample	comp_het_id	chrom	start	end	gene	ref	alt	impact" > exp
+gemini comp_hets \
+    --ignore-phasing \
+    --min-kindreds 3 \
+    --only-affected \
+    --columns "chrom,start,end,gene,ref,alt,impact" \
+    test.comp_het_default.7.db > obs
+check obs exp
+rm obs exp

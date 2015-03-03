@@ -75,7 +75,7 @@ def create_query(args):
     return query
 
 
-def find_valid_het_pairs(args, sample_hets, subjects_dict):
+def find_valid_het_pairs(args, sample_hets):
     """
     Identify candidate heterozygote pairs.
     """  
@@ -119,71 +119,55 @@ def find_valid_het_pairs(args, sample_hets, subjects_dict):
                         alt_hap_1 = alleles_site1.index(site1.row['alt'])
                         alt_hap_2 = alleles_site2.index(site2.row['alt'])
 
-                    # keep as a candidate if 
+                    # Keep as a candidate if 
                     #   1. phasing is considered AND the alt alleles are on
                     #      different haplotypes
                     #   2. the user doesn't care about phasing.
-                    #
                     # TODO: Phase based on parental genotypes.
                     if (not args.ignore_phasing and alt_hap_1 != alt_hap_2) \
                         or args.ignore_phasing:
                         samples_w_hetpair[(site1,site2)].append(sample)
     
-    # send the remaining candidates off for final filtering
-    filter_candidates(args, samples_w_hetpair, subjects_dict)
+    return samples_w_hetpair
 
 
-def filter_candidates(args, samples_w_hetpair, subjects_dict):
+def filter_candidates(args, samples_w_hetpair, subjects_dict, comp_het_counter):
     """
     Refine candidate heterozygote pairs based on user's filters.
-    """  
-    comp_het_id = 1
-    for comp_het in samples_w_hetpair:
+    """
+    # eliminate comp_hets with unaffected individuals if 
+    # only affected individuals are required.
+    candidates = {}
+    if args.only_affected:
+        for comp_het in samples_w_hetpair:
+            num_affected = sum(subjects_dict[s].affected \
+                                for s in samples_w_hetpair[comp_het])
+            if num_affected == len(samples_w_hetpair[comp_het]):
+                candidates[comp_het] = samples_w_hetpair[comp_het]
+    else:
+        candidates = samples_w_hetpair
 
-        # count how many families had this comp_het in *solely the affecteds*
-        family_affected = collections.Counter()
-        family_unaffected = collections.Counter()
+    # catalog the set of families that have a comp_het in this gene
+    families = collections.Counter()
+    for comp_het in candidates:
         for s in samples_w_hetpair[comp_het]:
-            family =  subjects_dict[s].family_id
-            if subjects_dict[s].affected:
-                family_affected[family] += 1
-            else:
-                family_unaffected[family] += 1
+            family_id =  subjects_dict[s].family_id 
+            families[family_id] += 1
 
-        # how many affected and unaffected individuals had the comp_het in total?
-        num_affected = sum(family_affected[f] for f in family_affected)
-        num_unaffected = sum(family_unaffected[f] for f in family_unaffected)
+    # were there enough families with a compound het in this gene?
+    if len(families) >= args.min_kindreds:
+        for idx, comp_het in enumerate(candidates):
+            comp_het_counter += 1
+            for s in samples_w_hetpair[comp_het]:
+                family = subjects_dict[s].family_id
+                if args.families is not None and family not in args.families.split(','):
+                     continue
+                else:
+                     print "\t".join([str(family), s, str(comp_het_counter),
+                                str(comp_het[0].row)])
+                     print "\t".join([str(family), s, str(comp_het_counter),
+                                str(comp_het[1].row)])
 
-        # how many distinct families had the compound het at all? 
-        num_fam_w_comp_het = sum(family_affected[f] > 0 for f in family_affected) + \
-                             sum(family_unaffected[f] > 0 for f in family_unaffected)
-        # how many distinct families had the compound het in its affected 
-        # family members and NOT in its unaffected?
-        num_fam_w_comp_het_strict = 0
-        for f in family_affected:
-            if family_affected[f] > 0 and \
-            (family_unaffected[f] == 0 or family_unaffected[f] is None):
-                num_fam_w_comp_het_strict += 1
-
-        if args.only_affected:
-            if num_unaffected > 0:
-                continue
-            if num_fam_w_comp_het_strict < args.min_kindreds:
-                continue
-        else:
-            if num_fam_w_comp_het < args.min_kindreds:
-                continue
-
-        for s in samples_w_hetpair[comp_het]:
-            family =  subjects_dict[s].family_id
-            if args.families is not None and family not in args.families.split(','):
-                continue
-            else:
-                print "\t".join([str(family), s, str(comp_het_id),
-                             str(comp_het[0].row)])
-                print "\t".join([str(family), s, str(comp_het_id),
-                              str(comp_het[1].row)])
-        comp_het_id += 1
 
 
 def get_compound_hets(args):
@@ -200,6 +184,7 @@ def get_compound_hets(args):
     sample_hets = collections.defaultdict(lambda: collections.defaultdict(list))
     curr_gene = None
     prev_gene = None
+    comp_het_counter = 0
     # output header
     print "family\tsample\tcomp_het_id\t" + str(gq.header)
     # Collect all of the genic heterozygotes for each sample / gene
@@ -210,13 +195,16 @@ def get_compound_hets(args):
         gt_phases = row['gt_phases']
         curr_gene = row['gene']
         
-        # gene has changed. reset.
+        # gene has changed. process the comp_hets for this gene and reset.
         if curr_gene != prev_gene and prev_gene is not None:
-            find_valid_het_pairs(args, sample_hets, subjects_dict)
+            # process comp_hets
+            samples_w_hetpair = find_valid_het_pairs(args, sample_hets)
+            comp_het_counter = filter_candidates(args, samples_w_hetpair, 
+                subjects_dict, comp_het_counter) 
+            # reset for next gene
             sample_hets = collections.defaultdict(lambda: collections.defaultdict(list))
         else:        
             site = Site(row)
-
             # track each sample that is heteroyzgous at this site.
             for idx, gt_type in enumerate(gt_types):
                 if gt_type == HET:
@@ -230,11 +218,12 @@ def get_compound_hets(args):
                     sample_site.gt = gt_bases[idx]
                     # add the site to the list of candidates for this sample/gene
                     sample_hets[sample][site.row['gene']].append(sample_site)
-
         prev_gene = curr_gene
 
     # process the last gene seen
-    find_valid_het_pairs(args, sample_hets, subjects_dict)    
+    samples_w_hetpair = find_valid_het_pairs(args, sample_hets)
+    comp_het_counter = filter_candidates(args, samples_w_hetpair, 
+                subjects_dict, comp_het_counter) 
 
 
 def run(parser, args):
