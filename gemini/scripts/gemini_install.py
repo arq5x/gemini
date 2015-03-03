@@ -101,6 +101,10 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     if pip_version >= "1.5":
         for req in ["python-graph-core", "python-graph-dot"]:
             pip_compat += ["--allow-external", req, "--allow-unverified", req]
+    # Set PIP SSL certificate to installed conda certificate to avoid SSL errors
+    cert_file = os.path.join(anaconda["dir"], "ssl", "cert.pem")
+    if os.path.exists(cert_file):
+        os.environ["PIP_CERT"] = cert_file
     subprocess.check_call([anaconda["pip"], "install"] + pip_compat + ["-r", remotes["requirements_pip"]])
     python_bin = os.path.join(anaconda["dir"], "bin", "python")
     _cleanup_problem_files(anaconda["dir"])
