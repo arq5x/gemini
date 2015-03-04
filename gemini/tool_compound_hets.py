@@ -167,7 +167,7 @@ def filter_candidates(args, samples_w_hetpair, subjects_dict, comp_het_counter):
                                 str(comp_het[0].row)])
                      print "\t".join([str(family), s, str(comp_het_counter),
                                 str(comp_het[1].row)])
-
+    return comp_het_counter
 
 
 def get_compound_hets(args):
@@ -203,21 +203,21 @@ def get_compound_hets(args):
                 subjects_dict, comp_het_counter) 
             # reset for next gene
             sample_hets = collections.defaultdict(lambda: collections.defaultdict(list))
-        else:        
-            site = Site(row)
-            # track each sample that is heteroyzgous at this site.
-            for idx, gt_type in enumerate(gt_types):
-                if gt_type == HET:
-                    sample = idx_to_sample[idx]
-                    sample_site = copy(site)
-                    sample_site.phased = gt_phases[idx]
+       
+        site = Site(row)
+        # track each sample that is heteroyzgous at this site.
+        for idx, gt_type in enumerate(gt_types):
+            if gt_type == HET:
+                sample = idx_to_sample[idx]
+                sample_site = copy(site)
+                sample_site.phased = gt_phases[idx]
 
-                    if not sample_site.phased and not args.ignore_phasing:
-                        continue
+                if not sample_site.phased and not args.ignore_phasing:
+                    continue
 
-                    sample_site.gt = gt_bases[idx]
-                    # add the site to the list of candidates for this sample/gene
-                    sample_hets[sample][site.row['gene']].append(sample_site)
+                sample_site.gt = gt_bases[idx]
+                # add the site to the list of candidates for this sample/gene
+                sample_hets[sample][site.row['gene']].append(sample_site)
         prev_gene = curr_gene
 
     # process the last gene seen
