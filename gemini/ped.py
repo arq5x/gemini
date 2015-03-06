@@ -17,12 +17,12 @@ def get_ped_fields(ped_file):
 
     if possible_header.startswith("#"):
         if possible_header.count("\t") > 1:
-            header = possible_header.replace("#", "").split("\t")
+            header = possible_header.replace("#", "").rstrip().split("\t")
         else:
             header = possible_header.replace("#", "").split()
         # rename the standard fields to a common name
         header = default_ped_fields + header[len(default_ped_fields):]
-        return possible_header.replace("#", "").split()
+        return header
     else:
         return default_ped_fields
 
@@ -31,7 +31,7 @@ def load_ped_file(ped_file):
     for line in open(ped_file, 'r'):
         if line.startswith("#") or len(line) == 0:
             continue
-        parts = line.split("\t") if line.count("\t") > 1 else line.split()
+        parts = line.rstrip().split("\t") if line.count("\t") > 1 else line.split()
         fields = _fix_ped_family_fields(parts)
         ped_dict[fields[1]] = fields
     return ped_dict
