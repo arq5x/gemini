@@ -466,6 +466,7 @@ class GeminiQuery(object):
         self.formatter = out_format
         self.predicates = [self.formatter.predicate]
 
+        self.sample_show_fields = ["variant_samples", "HET_samples", "HOM_ALT_samples"]
 
     def _set_gemini_browser(self, for_browser):
         self.for_browser = for_browser
@@ -473,7 +474,7 @@ class GeminiQuery(object):
     def run(self, query, gt_filter=None, show_variant_samples=False,
             variant_samples_delim=',', predicates=None,
             needs_genotypes=False, needs_genes=False,
-            show_families=False):
+            show_families=False, subjects=None):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -496,6 +497,7 @@ class GeminiQuery(object):
 
         self.needs_genes = needs_genes
         self.show_families = show_families
+        self.subjects = subjects
         if predicates:
             self.predicates += predicates
 
@@ -538,7 +540,7 @@ class GeminiQuery(object):
                 [col for col in OrderedSet(self.all_columns_orig)
                  - OrderedSet(self.select_columns)]
         if self.show_variant_samples:
-            h += ["variant_samples", "HET_samples", "HOM_ALT_samples"]
+            h += self.sample_show_fields
         if self.show_families:
             h += ["families"]
         return self.formatter.header(h)
@@ -680,11 +682,11 @@ class GeminiQuery(object):
 
             if self.show_variant_samples:
                 fields["variant_samples"] = \
-                    self.variant_samples_delim.join(variant_names)
+                    self.variant_samples_delim.join(self._filter_samples(variant_names))
                 fields["HET_samples"] = \
-                    self.variant_samples_delim.join(genotype_dict[HET])
+                    self.variant_samples_delim.join(self._filter_samples(genotype_dict[HET]))
                 fields["HOM_ALT_samples"] = \
-                    self.variant_samples_delim.join(genotype_dict[HOM_ALT])
+                    self.variant_samples_delim.join(self._filter_samples(genotype_dict[HOM_ALT]))
             if self.show_families:
                 families = map(str, list(set([self.sample_to_sample_object[x].family_id
                                               for x in variant_names])))
@@ -703,6 +705,14 @@ class GeminiQuery(object):
                 return gemini_row
             else:
                 return fields
+
+    def _filter_samples(self, samples):
+        """Respect --sample-filter when outputting lists of sample information.
+        """
+        if self.subjects is not None:
+            return [x for x in samples if x in self.subjects]
+        else:
+            return samples
 
     def _group_samples_by_genotype(self, gt_types):
         """
