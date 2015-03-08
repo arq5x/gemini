@@ -545,6 +545,28 @@ variant_samples is a list of all of the samples with a variant, HET_samples is t
 of those heterozygous for the variant and HOM_ALT_samples is the subset homozygous for
 the variant.
 
+============================================================================
+``--show-samples --format sampledetail`` Provide a flattened view of samples
+============================================================================
+If you'd like to be able to export variants plus associated sample metadata into
+a downstream tool like R or pandas for additional exploration, adding the
+``--format sampledetail`` command flattens all found samples and attached
+metadata information:
+
+.. code-block:: bash
+
+    $ gemini query --header --format sampledetail --show-samples \
+       -q "select chrom, start, ref from variants where is_lof=1 limit 1" test.query.db
+
+    chrom	start	ref	family_id	name	paternal_id	maternal_id	sex	phenotype
+    chr1	30547	T	0	1478PC0016	0	0	-9	-9
+    chr1	30547	T	0	1719PC0007	0	0	-9	-9
+    chr1	30547	T	0	1719PC0009	0	0	-9	-9" > exp
+
+The denormalized results contain a row for each sample associated with a
+variant, along with information from the sample table. This provides a way to
+join sample information with a variant query.
+
 =============================================================
 ``--show-families`` Finding out which families have a variant
 =============================================================

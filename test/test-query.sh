@@ -744,7 +744,18 @@ gemini query --header -q "select v.chrom, v.end, v.gene, g.mam_phenotype_id from
 check obs exp
 rm obs exp
 
-
+#########################################################################
+# 41. Show an expanded version of sample information with --format sampledetail
+#########################################################################
+echo "    query.t41...\c"
+echo "chrom	start	ref	family_id	name	paternal_id	maternal_id	sex	phenotype
+chr1	30547	T	0	1478PC0016	0	0	-9	-9
+chr1	30547	T	0	1719PC0007	0	0	-9	-9
+chr1	30547	T	0	1719PC0009	0	0	-9	-9" > exp
+gemini query --header --format sampledetail --show-samples -q "select chrom, start, ref \
+                                                                from variants limit 1" test.query.db > obs
+check obs exp
+rm obs exp
 
 
 

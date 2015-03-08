@@ -327,6 +327,46 @@ class VCFRowFormat(RowFormat):
         except:
             sys.exit("Your database does not contain the vcf_header table. Therefore, you cannot use --header.\n")
 
+class SampleDetailRowFormat(RowFormat):
+    """Retrieve queries with flattened sample information for samples present.
+
+    This melts/tidys a single line result to have a separate line for every sample
+    with that call and adds in sample metadata from the samples table.
+    """
+    name = "sampledetail"
+
+    def __init__(self, args):
+        self.gq = GeminiQuery(args.db)
+        self.gq.run("SELECT * from samples")
+        self.cols = self.gq.header.split()[1:]
+        self.args = args
+
+        self.samples = {}
+        for row in self.gq:
+            vals = [row[x] for x in self.cols]
+            self.samples[row["name"]] = vals
+
+    def format(self, row):
+        samples = [s for s in row.row["variant_samples"].split(self.args.sample_delim) if s]
+        for x in self.gq.sample_show_fields:
+            del row.row[x]
+        out = []
+        for sample in samples:
+            out.append('\t'.join([str(row.row[c]) for c in row.row] + self.samples[sample]))
+        return "\n".join(out)
+
+    def format_query(self, query):
+        return query
+
+    def predicate(self, row):
+        return True
+
+    def header(self, fields):
+        for x in self.gq.sample_show_fields:
+            if x in fields:
+                fields.remove(x)
+        return "\t".join(fields + self.cols)
+
 class GeminiRow(object):
 
     def __init__(self, row, gts=None, gt_types=None,
