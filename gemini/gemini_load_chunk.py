@@ -454,7 +454,7 @@ class GeminiLoader(object):
             extra_fields.update({"chrom": var.CHROM, "start": var.start, "end": var.end})
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
-                   vcf_id, self.v_id, anno_id, var.REF, ','.join(var.ALT),
+                   vcf_id, self.v_id, anno_id, var.REF, ','.join([x or "" for x in var.ALT]),
                    var.QUAL, filter, var.var_type,
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), pack_blob(gt_depths),
