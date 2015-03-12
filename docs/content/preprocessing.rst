@@ -22,8 +22,10 @@ left-align, and trim their variants**. The tools we recommend for this are eithe
 
     vt decompose -s $VCF | vt normalize -r $REFERENCE - > $NEW_VCF
 
+gemini uses the allele depths from the AD tag. In order for `vt` to decompose correctly, users will have
+to change the #INFO field for AD in the header from Number=. to Number=R. 
 
-or using our `standalone python script <https://github.com/quinlan-lab/vcftidy>`_ which handles more cases:
+It is also possible to use our `standalone python script <https://github.com/quinlan-lab/vcftidy>`_ which handles more cases:
 
 .. code-block:: bash
 
