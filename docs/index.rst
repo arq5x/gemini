@@ -56,7 +56,7 @@ Table of contents
    content/installation
    content/quick_start
    content/functional_annotation
-   content/loading
+   content/preprocessing
    content/querying
    content/tools
    content/browser
