@@ -10,6 +10,13 @@ The basic workflow for working with `gemini` is outlined below.
 Importing VCF files into gemini.
 -------------------------------------------------
 
+.. note::
+
+   we now recommend splitting variants with multiple alternates and left-aligning,
+   and trimming all variants before loading into gemini.
+
+   See :ref:`preprocess` for a detailed explanation.
+
 Before we can use GEMINI to explore genetic variation, we must first ``load`` our
 VCF file into the GEMINI database framework.  We expect you to have first
 annotated the functional consequence of each variant in your VCF using either

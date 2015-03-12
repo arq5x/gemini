@@ -1,7 +1,35 @@
-##############################
-Loading a VCF file into GEMINI
-##############################
+################################################
+Preprocessing and Loading a VCF file into GEMINI
+################################################
 
+.. _preprocess:
+
+====================================
+split, left-align, and trim variants
+====================================
+
+Variants with multiple alternate alleles will not be handled correctly by gemini (or by the tools
+used to annotate the variants). As projects get more samples it is likely that a non-negligible 
+percentage of site will have multiple alternate alleles.
+
+In addition, variants that are not left-aligned and trimmedy can be incorrectly (or not)
+annotated.
+
+To reduce the number of false negatives, **we strongly recommend that gemini users split,
+left-align, and trim their variants**. The tools we recommend for this are either `vt <https://github.com/atks/vt>`_:
+
+.. code-block:: bash
+
+    vt decompose -s $VCF | vt normalize -r $REFERENCE - > $NEW_VCF
+
+
+or using our `standalone python script <https://github.com/quinlan-lab/vcftidy>`_ which handles more cases:
+
+.. code-block:: bash
+
+    python vcftidy.py $VCF $REFERENCE > $NEW_VCF
+
+Then the `$NEW_VCF` can be annotated with snpEff or VEP.
 
 ==============================
 Annotate with snpEff or VEP
@@ -192,3 +220,4 @@ Loading VCFs without genotypes.
 To do.
 
 .. _PED: http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped
+.. _vt-paper: http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped 
