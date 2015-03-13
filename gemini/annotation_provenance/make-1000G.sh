@@ -12,6 +12,6 @@
 
 # gemini version 0.12
 wget -O - ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.vcf.gz \
-	| vt decompose -s - | vt normalize -r /data/human/b37/human_g1k_v37_decoy.fasta - \
+	| vt decompose -s - | vt normalize -r /data/human/b37/human_g1k_v37_decoy.fasta -w 5000000 - \
 	| bgzip -c > ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz
 tabix ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz
