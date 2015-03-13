@@ -18,8 +18,8 @@ The recommended Gemini install location is /usr/local/share/gemini.
 """
 
 anno_files = \
-['dbsnp.b141.20140813.hg19.vcf.gz',
-'clinvar_20140807.vcf.gz',
+['dbsnp.b141.20140813.hg19.tidy.vcf.gz',
+'clinvar_20150305.tidy.vcf.gz',
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
 'hg19.pfam.ucscgenes.bed.gz',
@@ -29,8 +29,8 @@ anno_files = \
 'hg19.gwas.bed.gz',
 'hg19.rmsk.bed.gz',
 'hg19.segdup.bed.gz',
-'ESP6500SI.all.snps_indels.vcf.gz',
-'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz',
+'ESP6500SI.all.snps_indels.tidy.vcf.gz',
+'ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz',
 'genetic_map_HapMapII_GRCh37.gz',
 'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz',
 'encode.6celltypes.consensus.bedg.gz',
@@ -46,12 +46,12 @@ anno_files = \
 'hprd_interaction_graph',
 'cse-hiseq-8_4-2013-02-20.bed.gz',
 'hg19.vista.enhancers.20131108.bed.gz',
-'cosmic-v68-GRCh37.vcf.gz',
+'cosmic-v68-GRCh37.tidy.vcf.gz',
 'detailed_gene_table_v75',
 'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv',
 'hg19_fitcons_fc-i6-0_V1-01.bw',
-'ExAC.r0.2.sites.vep.vcf.gz'
+'ExAC.r0.3.sites.vep.tidy.vcf.gz'
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}
 
@@ -60,14 +60,14 @@ custom_downloads = {}
 toadd_anno_files = []
 
 anno_versions = {
-    "ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz": 2,
+    "ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz": 3,
     "GRCh37-gms-mappability.vcf.gz": 2,
-    "dbsnp.hg19.b141.vcf.gz": 3,
-    "clinvar_20140807.vcf.gz": 4,
+    "dbsnp.b141.20140813.hg19.tidy.vcf.gz": 4,
+    "clinvar_20150305.tidy.vcf.gz": 5,
     "hg19.rmsk.bed.gz": 2,
     "detailed_gene_table_v75": 2,
     "summary_gene_table_v75": 2,
-    "cosmic-v68-GRCh37.vcf.gz": 2}
+    "cosmic-v68-GRCh37.tidy.vcf.gz": 3}
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
     """Download required annotation files.

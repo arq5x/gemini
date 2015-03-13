@@ -19,8 +19,8 @@ def get_anno_files( args ):
     annos = {
      'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
      'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-     'dbsnp': os.path.join(anno_dirname, 'dbsnp.b141.20140813.hg19.vcf.gz'),
-     'clinvar': os.path.join(anno_dirname, 'clinvar_20140807.vcf.gz'),
+     'dbsnp': os.path.join(anno_dirname, 'dbsnp.b141.20140813.hg19.tidy.vcf.gz'),
+     'clinvar': os.path.join(anno_dirname, 'clinvar_20150305.tidy.vcf.gz'),
      'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
      'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
      'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
@@ -28,9 +28,9 @@ def get_anno_files( args ):
      'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
      'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
      'esp': os.path.join(anno_dirname,
-                         'ESP6500SI.all.snps_indels.vcf.gz'),
+                         'ESP6500SI.all.snps_indels.tidy.vcf.gz'),
      '1000g': os.path.join(anno_dirname,
-                           'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz'),
+                           'ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz'),
      'recomb': os.path.join(anno_dirname,
                             'genetic_map_HapMapII_GRCh37.gz'),
      'gms': os.path.join(anno_dirname,
@@ -46,8 +46,8 @@ def get_anno_files( args ):
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bw"),
-     'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.vcf.gz'),
-     'exac': os.path.join(anno_dirname, 'ExAC.r0.2.sites.vep.vcf.gz')
+     'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
+     'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz')
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
