@@ -11,3 +11,9 @@ tar -zxvf ESP6500SI.snps_indels.vcf.tar.gz
 # compress and tabix
 bgzip ESP6500SI.all.snps_indels.vcf
 tabix -p vcf ESP6500SI.all.snps_indels.vcf.gz
+
+# gemini version 0.12
+
+vt decompose -s ESP6500SI.all.snps_indels.vcf.gz \
+	| vt normalize -r /data/human/b37/human_g1k_v37_decoy.fasta | bgzip -c > ESP6500SI.all.snps_indels.tidy.vcf.gz
+bgzip -f ESP6500SI.all.snps_indels.tidy.vcf.gz
