@@ -5,8 +5,8 @@ cyvcf>=0.1.12
 PyYAML>=3.10
 pybedtools>=0.6.2
 jinja2>=2.7.1
-python-graph-core>=1.8.2
-python-graph-dot>=1.8.2
+https://github.com/chapmanb/python-graph/releases/download/1.8.2/python-graph-core-1.8.2.tar.gz
+https://github.com/chapmanb/python-graph/releases/download/1.8.2/python-graph-dot-1.8.2.tar.gz
 bottle>=0.11.6
 ipython-cluster-helper>=0.2.23
 bx-python>=0.7.1
