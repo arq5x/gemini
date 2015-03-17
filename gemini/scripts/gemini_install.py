@@ -133,6 +133,7 @@ def install_conda_pkgs(anaconda, remotes, args):
     else:
         pkgs = ["conda", "cython", "ipython",
                 "jinja2", "nose", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
+                "python-graph-core", "python-graph-dot",
                 "pyyaml", "pyzmq", "pandas", "scipy"]
         if platform.architecture()[0] != "32bit":
             pkgs += ["bx-python", "pysam", "ipython-cluster-helper"]

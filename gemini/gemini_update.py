@@ -24,6 +24,7 @@ def release(parser, args):
         if os.path.exists(conda_bin):
             pkgs = ["bx-python", "conda", "cython", "ipython", "ipython-cluster-helper",
                     "jinja2", "nose", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
+                    "python-graph-core", "python-graph-dot",
                     "pysam", "pyyaml", "pyzmq", "pandas", "scipy"]
             channels = ["-c", "https://conda.binstar.org/bcbio"]
             subprocess.check_call([conda_bin, "install", "--yes", "numpy"])
