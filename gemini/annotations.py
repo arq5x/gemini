@@ -83,12 +83,13 @@ class ClinVarInfo(object):
                                 '256': 'not-tested',
                                 '512': 'tested-inconclusive',
                                 '1073741824': 'other'}
+        # 0 - Uncertain significance, 1 - not provided, 2 - Benign, 3 - Likely benign, 4 - Likely pathogenic, 5 - Pathogenic, 6 - drug response, 7 - histocompatibility, 255 - other
 
-        self.sig_code_map = {'0': 'unknown',
-                             '1': 'untested',
-                             '2': 'non-pathogenic',
-                             '3': 'probable-non-pathogenic',
-                             '4': 'probable-pathogenic',
+        self.sig_code_map = {'0': 'uncertain',
+                             '1': 'not-provided',
+                             '2': 'benign',
+                             '3': 'likely-benign',
+                             '4': 'likely-pathogenic',
                              '5': 'pathogenic',
                              '6': 'drug-response',
                              '7': 'histocompatibility',
@@ -115,22 +116,8 @@ class ClinVarInfo(object):
             return None
 
     def lookup_clinvar_significance(self, sig_code):
-        if "|" not in sig_code:
-            try:
-                return self.sig_code_map[sig_code]
-            except KeyError:
-                return None
-        else:
-            sigs = set(sig_code.split('|'))
-            # e.g., 255|255|255
-            if len(sigs) == 1:
-                try:
-                    return self.sig_code_map[sigs.pop()]
-                except KeyError:
-                    return None
-            # e.g., 1|5|255
-            else:
-                return "mixed"
+        sigs = set(sig_code.split('|'))
+        return ",".join(self.sig_code_map[s] for s in sigs)
 
 
 ESPInfo = collections.namedtuple("ESPInfo",
