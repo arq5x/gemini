@@ -19,8 +19,8 @@ def get_anno_files( args ):
     annos = {
      'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
      'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-     'dbsnp': os.path.join(anno_dirname, 'dbsnp.b141.20140813.hg19.vcf.gz'),
-     'clinvar': os.path.join(anno_dirname, 'clinvar_20140807.vcf.gz'),
+     'dbsnp': os.path.join(anno_dirname, 'dbsnp.b141.20140813.hg19.tidy.vcf.gz'),
+     'clinvar': os.path.join(anno_dirname, 'clinvar_20150305.tidy.vcf.gz'),
      'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
      'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
      'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
@@ -28,9 +28,9 @@ def get_anno_files( args ):
      'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
      'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
      'esp': os.path.join(anno_dirname,
-                         'ESP6500SI.all.snps_indels.vcf.gz'),
+                         'ESP6500SI.all.snps_indels.tidy.vcf.gz'),
      '1000g': os.path.join(anno_dirname,
-                           'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz'),
+                           'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.tidy.vcf.gz'),
      'recomb': os.path.join(anno_dirname,
                             'genetic_map_HapMapII_GRCh37.gz'),
      'gms': os.path.join(anno_dirname,
@@ -46,8 +46,8 @@ def get_anno_files( args ):
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bw"),
-     'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.vcf.gz'),
-     'exac': os.path.join(anno_dirname, 'ExAC.r0.2.sites.vep.vcf.gz')
+     'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
+     'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz')
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
@@ -83,12 +83,13 @@ class ClinVarInfo(object):
                                 '256': 'not-tested',
                                 '512': 'tested-inconclusive',
                                 '1073741824': 'other'}
+        # 0 - Uncertain significance, 1 - not provided, 2 - Benign, 3 - Likely benign, 4 - Likely pathogenic, 5 - Pathogenic, 6 - drug response, 7 - histocompatibility, 255 - other
 
-        self.sig_code_map = {'0': 'unknown',
-                             '1': 'untested',
-                             '2': 'non-pathogenic',
-                             '3': 'probable-non-pathogenic',
-                             '4': 'probable-pathogenic',
+        self.sig_code_map = {'0': 'uncertain',
+                             '1': 'not-provided',
+                             '2': 'benign',
+                             '3': 'likely-benign',
+                             '4': 'likely-pathogenic',
                              '5': 'pathogenic',
                              '6': 'drug-response',
                              '7': 'histocompatibility',
@@ -115,22 +116,11 @@ class ClinVarInfo(object):
             return None
 
     def lookup_clinvar_significance(self, sig_code):
-        if "|" not in sig_code:
-            try:
-                return self.sig_code_map[sig_code]
-            except KeyError:
-                return None
-        else:
-            sigs = set(sig_code.split('|'))
-            # e.g., 255|255|255
-            if len(sigs) == 1:
-                try:
-                    return self.sig_code_map[sigs.pop()]
-                except KeyError:
-                    return None
-            # e.g., 1|5|255
-            else:
-                return "mixed"
+        sigs = []
+        for s in sig_code.split('|'):
+            sigs.extend(s.split(","))
+
+        return ",".join(self.sig_code_map[s] for s in set(sigs) if s != ".")
 
 
 ESPInfo = collections.namedtuple("ESPInfo",
@@ -526,7 +516,8 @@ def get_clinvar_info(var):
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
         clinvar.clinvar_on_diag_assay = 1 if 'CDA' in info_map else 0
 
-        causal_allele_numbers = info_map['CLNALLE'].split(',') # CLNALLE=0,1 or CLNALLE=0 or CLNALLE=1
+        causal_allele_numbers = [x for x in info_map['CLNALLE'].split(',') if x
+                != '.'] # CLNALLE=0,1 or CLNALLE=0 or CLNALLE=1
         if len(causal_allele_numbers) == 1:
             causal_allele_number = int(causal_allele_numbers[0])          
             if causal_allele_number == -1 or causal_allele_number is None:
@@ -534,7 +525,9 @@ def get_clinvar_info(var):
             elif causal_allele_number == 0:
               clinvar.clinvar_causal_allele = hit.ref
             elif causal_allele_number > 0:
-              clinvar.clinvar_causal_allele = hit.alt[causal_allele_number - 1]
+                # alt should alwasy be length 1 if they decomposed, but just in
+                # case ...
+                clinvar.clinvar_causal_allele = hit.alt.split(',')[causal_allele_number - 1]
         else:
             clinvar_causal_allele = ""
             for idx, allele_num in enumerate(causal_allele_numbers):

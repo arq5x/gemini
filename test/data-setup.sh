@@ -1,3 +1,4 @@
+gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.multiple-alts.decomp.snpeff.vcf -t snpEff test.mad.db
 gemini load --skip-gene-tables --test-mode -v test.cosmic.vcf --skip-gerp-bp --skip-cadd test.cosmic.db
 gemini load --skip-gene-tables --test-mode -v test.roh.vcf --skip-gerp-bp --skip-cadd -t snpEff test.roh.vcf.db
 gemini load --skip-gene-tables --test-mode -v test.cadd.vcf --skip-gerp-bp --skip-cadd test.no.cadd.db

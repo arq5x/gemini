@@ -112,6 +112,8 @@ bash test-somatic.sh
 # Test fusions
 bash test-fusions.sh
 
+bash test-multiple-alts.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot
