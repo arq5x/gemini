@@ -120,7 +120,7 @@ class ClinVarInfo(object):
         for s in sig_code.split('|'):
             sigs.extend(s.split(","))
 
-        return ",".join(self.sig_code_map[s] for s in set(sigs))
+        return ",".join(self.sig_code_map[s] for s in set(sigs) if s != ".")
 
 
 ESPInfo = collections.namedtuple("ESPInfo",
@@ -516,7 +516,8 @@ def get_clinvar_info(var):
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
         clinvar.clinvar_on_diag_assay = 1 if 'CDA' in info_map else 0
 
-        causal_allele_numbers = info_map['CLNALLE'].split(',') # CLNALLE=0,1 or CLNALLE=0 or CLNALLE=1
+        causal_allele_numbers = [x for x in info_map['CLNALLE'].split(',') if x
+                != '.'] # CLNALLE=0,1 or CLNALLE=0 or CLNALLE=1
         if len(causal_allele_numbers) == 1:
             causal_allele_number = int(causal_allele_numbers[0])          
             if causal_allele_number == -1 or causal_allele_number is None:
@@ -524,7 +525,9 @@ def get_clinvar_info(var):
             elif causal_allele_number == 0:
               clinvar.clinvar_causal_allele = hit.ref
             elif causal_allele_number > 0:
-              clinvar.clinvar_causal_allele = hit.alt[causal_allele_number - 1]
+                # alt should alwasy be length 1 if they decomposed, but just in
+                # case ...
+                clinvar.clinvar_causal_allele = hit.alt.split(',')[causal_allele_number - 1]
         else:
             clinvar_causal_allele = ""
             for idx, allele_num in enumerate(causal_allele_numbers):

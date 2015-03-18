@@ -65,6 +65,10 @@ for line in sys.stdin:
             assert len(val) == len(allele_idxs), (info, k, info[k])
             info[k] = val[pull_idx]
 
+        vv = info['CLNALLE'].split(',')
+        # adjust the number because now we have only 1 alt.
+        info['CLNALLE'] = ",".join(v if v == '0' else '1' for v in vv)
+
     # add back in the stuff for the reference allele if present.
     for k in info0:
         if info[k] == ".": info[k] = info0[k]
