@@ -116,8 +116,11 @@ class ClinVarInfo(object):
             return None
 
     def lookup_clinvar_significance(self, sig_code):
-        sigs = set(sig_code.split('|'))
-        return ",".join(self.sig_code_map[s] for s in sigs)
+        sigs = []
+        for s in sig_code.split('|'):
+            sigs.extend(s.split(","))
+
+        return ",".join(self.sig_code_map[s] for s in set(sigs))
 
 
 ESPInfo = collections.namedtuple("ESPInfo",
