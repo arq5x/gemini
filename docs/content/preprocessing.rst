@@ -4,9 +4,9 @@ Preprocessing and Loading a VCF file into GEMINI
 
 .. _preprocess:
 
-====================================
-split, left-align, and trim variants
-====================================
+=============================================
+Step 1. split, left-align, and trim variants
+=============================================
 
 Variants with multiple alternate alleles will not be handled correctly by gemini (or by the tools
 used to annotate the variants). As projects get more samples it is likely that a non-negligible 
@@ -33,9 +33,9 @@ It is also possible to use our `standalone python script <https://github.com/qui
 
 Then the `$NEW_VCF` can be annotated with snpEff or VEP.
 
-==============================
-Annotate with snpEff or VEP
-==============================
+===================================
+Step 2. Annotate with snpEff or VEP
+===================================
 .. note::
 
 	Annotate your VCF with SnpEff/VEP, prior to loading it into GEMINI, otherwise the
