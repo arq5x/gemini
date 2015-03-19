@@ -4,8 +4,7 @@ import os
 import sys
 import sqlite3
 import numpy as np
-import cPickle
-import zlib
+import compression as Z
 from collections import defaultdict
 from gemini.config import read_gemini_config
 import gemini_utils as util
@@ -72,8 +71,8 @@ def _report_variant_pathways(c, args, idx_to_sample):
     (agn_paths, hgnc_paths, ensembl_paths) = get_pathways(args)
 
     for r in c:
-        gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
-        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))
+        gt_types = Z.unpack_genotype_blob(r['gt_types'])
+        gts      = Z.unpack_genotype_blob(r['gts'])
         gene     = str(r['gene'])
         trans    = str(r['transcript'])
 
@@ -149,7 +148,3 @@ def pathways(parser, args):
             get_ind_pathways(c, args)
         else:
             get_ind_lof_pathways(c, args)
-
-
-
-

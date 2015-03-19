@@ -10,7 +10,7 @@ import os
 import sys
 import sqlite3
 import numpy as np
-import zlib
+import compression as Z
 import cPickle
 from gemini.config import read_gemini_config
 from pygraph.classes.graph import graph
@@ -27,8 +27,8 @@ from collections import defaultdict
 def get_variant_genes(c, args, idx_to_sample):
     samples = defaultdict(list)
     for r in c:
-        gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
-        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))
+        gt_types = Z.unpack_genotype_blob(r['gt_types'])
+        gts      = Z.unpack_genotype_blob(r['gts'])
         var_id = str(r['variant_id'])
         chrom = str(r['chrom'])
         start = str(r['start'])
@@ -56,8 +56,8 @@ def get_variant_genes(c, args, idx_to_sample):
 def get_lof_genes(c, args, idx_to_sample):
     lof = defaultdict(list)
     for r in c:
-        gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
-        gts      = np.array(cPickle.loads(zlib.decompress(r['gts'])))
+        gt_types = Z.unpack_genotype_blob(r['gt_types'])
+        gts      = Z.unpack_genotype_blob(r['gts'])
         gene     = str(r['gene'])
 
         for idx, gt_type in enumerate(gt_types):

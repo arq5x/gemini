@@ -2,10 +2,9 @@
 import sqlite3
 import os
 import numpy as np
-import cPickle
-import zlib
 import collections
 from collections import Counter
+import compression as Z
 
 import gemini_utils as util
 from gemini_constants import *
@@ -158,7 +157,7 @@ def get_mds(c, args):
     genotypes = collections.defaultdict(list)
     for row in c:
 
-        gt_types = np.array(cPickle.loads(zlib.decompress(row['gt_types'])))
+        gt_types = Z.unpack_genotype_blob(row['gt_types'])
 
         # at this point, gt_types is a numpy array
         # idx:  0 1 2 3 4 5 6 .. #samples
