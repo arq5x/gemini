@@ -216,7 +216,10 @@ def get_hit_list(hits, col_idxs, args, col_names):
                 for idx, col_name in enumerate(col_names):
                     hit_list[idx].append(info[col_name])
             except KeyError:
-                sys.exit("EXITING: INFO field does not contain all of " + str(col_names) + "\n")
+                # TODO: should we just append None since in a VCFthey are likely
+                # to be missing ?
+                sys.exit("EXITING: %s is missing from INFO field in %s for at "
+                         "least one record.\n" % (col_name, args.anno_file))
 
         else:
             try:
@@ -226,6 +229,7 @@ def get_hit_list(hits, col_idxs, args, col_names):
                 sys.exit("EXITING: Column " + args.col_extracts + " exceeds "
                           "the number of columns in your "
                           "annotation file.\n")
+    return hit_list
 
 def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs):
     """
@@ -239,8 +243,8 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
         vals = []
         for idx, op in enumerate(col_ops):
             # more than one overlap, must summarize
-            val = funcs[op](hit_list[idx], col_types[idx])
-            vals.append(fix_val(val, col_type))
+            val = op_funcs[op](hit_list[idx], col_types[idx])
+            vals.append(fix_val(val, col_types[idx]))
 
         return vals
 
@@ -261,10 +265,15 @@ def annotate(parser, args):
         return col_names
 
     def _validate_extract_args(args):
+        if args.anno_file.endswith(('.vcf', '.vcf.gz')):
+            if not args.col_names:
+                args.col_names = args.col_extracts
+            elif not args.col_extracts:
+                args.col_extracts = args.col_names
+        if not args.col_types:
+            sys.exit('EXITING: need to give column types ("-t")\n')
         col_ops = args.col_operations.split(',')
         col_idxs = args.col_extracts.split(',')
-        if args.anno_file.endswith(('.vcf', '.vcf.gz')) and not args.col_names:
-            args.col_names = args.col_extracts
 
         col_names = args.col_names.split(',')
         col_types = args.col_types.split(',')
@@ -275,8 +284,8 @@ def annotate(parser, args):
                 sys.exit('EXITING: Column type [%s] not supported.\n' %
                          (col_type))
 
-        supported_ops = ['mean', 'median', 'mode', 'min', 'max', 'first',
-                         'last', 'list', 'uniq_list']
+        supported_ops = op_funcs.keys()
+
         for col_op in col_ops:
             if col_op not in supported_ops:
                 sys.exit('EXITING: Column operation [%s] not supported.\n' %
@@ -311,7 +320,7 @@ def annotate(parser, args):
         col_names = _validate_args(args)
         annotate_variants_count(args, conn, col_names)
     elif args.anno_type == "extract":
-        if args.col_extracts is None:
+        if args.col_extracts is None and not args.anno_file.endswith('.vcf.gz'):
             sys.exit("You must specify which column to "
                      "extract from your annotation file.")
         else:
