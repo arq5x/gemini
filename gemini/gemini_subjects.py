@@ -431,7 +431,6 @@ class Family(object):
                         if unaffected < num_unaffected:
                             mask += " and "
         mask += ")"
-        print mask
         return mask
 
 
