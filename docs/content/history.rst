@@ -9,9 +9,9 @@ Release History
 3. Updated the logic for the clinvar significance column to retain all documented singificances.
 4. Support for VCF annotation files in the `annotate` tool.
 5. Improved the speed of loading by 10-15%. Thanks to Brent Pedersen.
-6. Added ``--only-affected` and `--min-kindreds` options to the compound heterozygotes tool.
+6. Added `--only-affected` and `--min-kindreds` options to the compound heterozygotes tool.
 7. Added a `--format vcf` option to the `query` tool to output query results in VCF format.
-8. Added the `--families` option to the `auto_*`, `de_novo`, and `comp_hets` tools.
+8. Added the `--families` option to the `auto_*`, `de_novo`, and `comp_hets` tools. Thanks to Mark Cowley and Tony Roscioli.
 9. Added the `--only-affected` option to the `de_novo` tool.
 10. Allow the `--sample-filter` to work with `--format TPED`. Thanks to Rory Kirchner.
 11. Add `--format sampledetail` option that provides a melted/tidy/flattened version of samples along with `--showsample` and includes information from samples table. Thanks to Brad Chapman.
