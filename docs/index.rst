@@ -33,7 +33,7 @@ A workflow for the above steps is given below.
   # decompose, normalize and annotate VCF with snpEff.
   # NOTE: can also swap snpEff with VEP
   zless $VCF \
-     | sed -i 's/ID=AD,Number=./ID=AD,Number=R/' $VCF
+     | sed 's/ID=AD,Number=./ID=AD,Number=R/'
      | vt decompose -s - \
      | vt normalize -r $REF - \
      | java -Xmx4G -jar $SNPEFFJAR -formatEff GRCh37.75  \
