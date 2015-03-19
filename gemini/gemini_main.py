@@ -515,7 +515,7 @@ def main():
             help='Operation(s) to apply to the extract column values '
                   'in the event that a variant overlaps multiple annotations '
                   'in your annotation file (-f).'
-                  'Any of {mean, median, min, max, mode, list, uniq_list, first, last}')
+                  'Any of {sum, mean, median, min, max, mode, list, uniq_list, first, last}')
     def annotate_fn(parser, args):
         import gemini_annotate
         gemini_annotate.annotate(parser, args)

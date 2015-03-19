@@ -37,6 +37,9 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
             sys.stderr.write("WARNING: Column \"("
                              + col_name
                              + ")\" already exists in variants table. Overwriting values.\n")
+            # reset values so that records don't retain old annotations.
+            update_cursor.execute("UPDATE variants SET " + col_name + " = NULL WHERE 1")
+
     elif args.anno_type == "extract":
 
         for col_name, col_type in zip(col_names, col_types):
@@ -151,17 +154,21 @@ def annotate_variants_count(args, conn, col_names):
 
 
 def _map_list_types(hit_list, col_type):
+    # TODO: handle missing because of VCF.
     try:
         if col_type == "int":
-            return [int(h) for h in hit_list]
+            return [int(h) for h in hit_list if not h in (None, 'nan')]
         elif col_type == "float":
-            return [float(h) for h in hit_list]
+            return [float(h) for h in hit_list if not h in (None, 'nan')]
     except ValueError:
         sys.exit('Non-numeric value found in annotation file: %s\n' % (','.join(hit_list)))
 
 
 def gemops_mean(li, col_type):
     return np.average(_map_list_types(li, col_type))
+
+def gemops_sum(li, col_type):
+    return np.sum(_map_list_types(li, col_type))
 
 def gemops_list(li, col_type):
     return ",".join(li)
@@ -192,15 +199,18 @@ op_funcs = dict((k[7:], v) for k, v in locals().items() if k.startswith('gemops_
 
 def fix_val(val, type):
     if not type in ("int", "float"): return val
+    if isinstance(val, (int, float)): return val
+
     if type == "int": fn = int
     else: fn = float
-    if not val: return None
+    if not val:
+        return None
     try:
         return fn(val)
     except ValueError:
         sys.exit('Non %s value found in annotation file: %s\n' % (type, val))
     
-def get_hit_list(hits, col_idxs, args, col_names):
+def get_hit_list(hits, col_idxs, args):
     hits = list(hits)
     if len(hits) == 0:
         return []
@@ -212,14 +222,15 @@ def get_hit_list(hits, col_idxs, args, col_names):
         if args.anno_file.endswith(('.vcf', '.vcf.gz')):
             # only makes sens to extract when there is an equal sign
             info = dict((x[0], x[1]) for x in (p.split('=') for p in hit[7].split(';') if '=' in p))
-            try:
-                for idx, col_name in enumerate(col_names):
-                    hit_list[idx].append(info[col_name])
-            except KeyError:
-                # TODO: should we just append None since in a VCFthey are likely
-                # to be missing ?
-                sys.exit("EXITING: %s is missing from INFO field in %s for at "
-                         "least one record.\n" % (col_name, args.anno_file))
+            for idx, col_idx in enumerate(col_idxs):
+                if not col_idx in info:
+                    hit_list[idx].append('nan')
+                    sys.stderr.write("WARNING: %s is missing from INFO field in %s for at "
+                        "least one record.\n" % (col_idx, args.anno_file))
+                else:
+                    hit_list[idx].append(info[col_idx])
+                # just append None since in a VCFthey are likely # to be missing ?
+
 
         else:
             try:
@@ -238,14 +249,16 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
     in the annotation file.
     """
     def summarize_hits(hits):
-        hit_list = get_hit_list(hits, col_idxs, args, col_names)
+        hit_list = get_hit_list(hits, col_idxs, args)
         if hit_list == []: return []
         vals = []
         for idx, op in enumerate(col_ops):
             # more than one overlap, must summarize
-            val = op_funcs[op](hit_list[idx], col_types[idx])
+            try:
+                val = op_funcs[op](hit_list[idx], col_types[idx])
+            except ValueError:
+                val = None
             vals.append(fix_val(val, col_types[idx]))
-
         return vals
 
     return _annotate_variants(args, conn, summarize_hits,
