@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import sqlite3
 import numpy as np
-import zlib
+import compression as Z
 import re
 import os
-import cPickle
 
 import gemini_utils as util
 from GeminiQuery import GeminiQuery
@@ -56,7 +55,7 @@ def get_genotypes(c, args):
     if args.use_header:
         print args.separator.join(col for col in col_names)
     for row in c:
-        gts = np.array(cPickle.loads(zlib.decompress(row['gts'])))
+        gts = Z.unpack_genotype_blob(row['gts'])
         for idx, gt in enumerate(gts):
             # xrange(len(row)-1) to avoid printing v.gts
             print args.separator.join(str(row[i]) for i in xrange(len(row)-1)),
