@@ -27,8 +27,8 @@ A workflow for the above steps is given below.
   # setup
   VCF=/path/to/my.vcf
   NORMVCF=/path/to/my.norm.vcf
-  $REF=/path/to/human.b37.fasta
-  $SNPEFFJAR=/path/to/snpEff.jar
+  REF=/path/to/human.b37.fasta
+  SNPEFFJAR=/path/to/snpEff.jar
 
   # decompose, normalize and annotate VCF with snpEff.
   # NOTE: can also swap snpEff with VEP
