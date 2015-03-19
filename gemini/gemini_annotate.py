@@ -37,6 +37,9 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
             sys.stderr.write("WARNING: Column \"("
                              + col_name
                              + ")\" already exists in variants table. Overwriting values.\n")
+            # reset values so that records don't retain old annotations.
+            update_cursor.execute("UPDATE variants SET " + col_name + " = NULL WHERE 1")
+
     elif args.anno_type == "extract":
 
         for col_name, col_type in zip(col_names, col_types):
@@ -59,7 +62,7 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
 
 def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, col_ops=None):
     """Generalized annotation of variants with a new column.
-
+    
     get_val_fn takes a list of annotations in a region and returns
     the value for that region to update the database with.
 
@@ -150,32 +153,86 @@ def annotate_variants_count(args, conn, col_names):
     return _annotate_variants(args, conn, get_hit_count, col_names)
 
 
-def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs):
-    """
-    Populate a new, user-defined column in the variants
-    table based on the value(s) from a specific column.
-    in the annotation file.
-    """
+def _map_list_types(hit_list, col_type):
+    # TODO: handle missing because of VCF.
+    try:
+        if col_type == "int":
+            return [int(h) for h in hit_list if not h in (None, 'nan')]
+        elif col_type == "float":
+            return [float(h) for h in hit_list if not h in (None, 'nan')]
+    except ValueError:
+        sys.exit('Non-numeric value found in annotation file: %s\n' % (','.join(hit_list)))
 
-    def _map_list_types(hit_list, col_type):
-        try:
-            if col_type == "int":
-                return [int(h) for h in hit_list]
-            elif col_type == "float":
-                return [float(h) for h in hit_list]
-        except ValueError:
-            sys.exit('Non-numeric value found in annotation file: %s\n' % (','.join(hit_list)))
 
-    def summarize_hits(hits):
+def gemops_mean(li, col_type):
+    return np.average(_map_list_types(li, col_type))
 
-        hits = list(hits)
-        if len(hits) == 0:
-            return []
+def gemops_sum(li, col_type):
+    return np.sum(_map_list_types(li, col_type))
 
-        hit_list = defaultdict(list)
-        for hit in hits:
-            if isinstance(hit, basestring):
-                hit = hit.split("\t")
+def gemops_list(li, col_type):
+    return ",".join(li)
+
+def gemops_uniq_list(li, col_type):
+    return ",".join(set(li))
+
+def gemops_median(li, col_type):
+    return np.median(_map_list_types(li, col_type))
+
+def gemops_min(li, col_type):
+    return np.min(_map_list_types(li, col_type))
+
+def gemops_max(li, col_type):
+    return np.max(_map_list_types(li, col_type))
+
+def gemops_mode(li, col_type):
+    return mode(_map_list_types(li, col_type))[0][0]
+
+def gemops_first(li, col_type):
+    return li[0]
+
+def gemops_last(li, col_type):
+    return li[-1]
+
+# lookup from the name to the func above.
+op_funcs = dict((k[7:], v) for k, v in locals().items() if k.startswith('gemops_'))
+
+def fix_val(val, type):
+    if not type in ("int", "float"): return val
+    if isinstance(val, (int, float)): return val
+
+    if type == "int": fn = int
+    else: fn = float
+    if not val:
+        return None
+    try:
+        return fn(val)
+    except ValueError:
+        sys.exit('Non %s value found in annotation file: %s\n' % (type, val))
+    
+def get_hit_list(hits, col_idxs, args):
+    hits = list(hits)
+    if len(hits) == 0:
+        return []
+
+    hit_list = defaultdict(list)
+    for hit in hits:
+        if isinstance(hit, basestring):
+            hit = hit.split("\t")
+        if args.anno_file.endswith(('.vcf', '.vcf.gz')):
+            # only makes sens to extract when there is an equal sign
+            info = dict((x[0], x[1]) for x in (p.split('=') for p in hit[7].split(';') if '=' in p))
+            for idx, col_idx in enumerate(col_idxs):
+                if not col_idx in info:
+                    hit_list[idx].append('nan')
+                    sys.stderr.write("WARNING: %s is missing from INFO field in %s for at "
+                        "least one record.\n" % (col_idx, args.anno_file))
+                else:
+                    hit_list[idx].append(info[col_idx])
+                # just append None since in a VCFthey are likely # to be missing ?
+
+
+        else:
             try:
                 for idx, col_idx in enumerate(col_idxs):
                     hit_list[idx].append(hit[int(col_idx) - 1])
@@ -183,51 +240,27 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
                 sys.exit("EXITING: Column " + args.col_extracts + " exceeds "
                           "the number of columns in your "
                           "annotation file.\n")
+    return hit_list
 
+def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs):
+    """
+    Populate a new, user-defined column in the variants
+    table based on the value(s) from a specific column.
+    in the annotation file.
+    """
+    def summarize_hits(hits):
+        hit_list = get_hit_list(hits, col_idxs, args)
+        if hit_list == []: return []
         vals = []
         for idx, op in enumerate(col_ops):
             # more than one overlap, must summarize
-            if op == "mean":
-                val = np.average(_map_list_types(hit_list[idx], col_types[idx]))
-            elif op == 'list':
-                val = ",".join(hit_list[idx])
-            elif op == 'uniq_list':
-                val = ",".join(set(hit_list[idx]))
-            elif op == 'median':
-                val = np.median(_map_list_types(hit_list[idx], col_types[idx]))
-            elif op == 'min':
-                val = np.min(_map_list_types(hit_list[idx], col_types[idx]))
-            elif op == 'max':
-                val = np.max(_map_list_types(hit_list[idx], col_types[idx]))
-            elif op == 'mode':
-                val = mode(_map_list_types(hit_list[idx], col_types[idx]))[0][0]
-            elif op == 'first':
-                val = hit_list[idx][0]
-            elif op == 'last':
-                val = hit_list[idx][-1]
-            else:
-                sys.exit("EXITING: Operation (-o) \"" + op + "\" not recognized.\n")
-
-            if col_types[idx] == "int":
-                try:
-                    vals.append(int(val))
-                except ValueError:
-                    if not val:
-                        vals.append(None)
-                    else:
-                        sys.exit('Non-integer value found in annotation file: %s\n' % (val))
-            elif col_types[idx] == "float":
-                try:
-                    vals.append(float(val))
-                except ValueError:
-                    if not val:
-                        vals.append(None)
-                    else:
-                        sys.exit('Non-float value found in annotation file: %s\n' % (val))
-            else:
-                vals.append(val)
-
+            try:
+                val = op_funcs[op](hit_list[idx], col_types[idx])
+            except ValueError:
+                val = None
+            vals.append(fix_val(val, col_types[idx]))
         return vals
+
     return _annotate_variants(args, conn, summarize_hits,
                               col_names, col_types, col_ops)
 
@@ -245,10 +278,18 @@ def annotate(parser, args):
         return col_names
 
     def _validate_extract_args(args):
+        if args.anno_file.endswith(('.vcf', '.vcf.gz')):
+            if not args.col_names:
+                args.col_names = args.col_extracts
+            elif not args.col_extracts:
+                args.col_extracts = args.col_names
+        if not args.col_types:
+            sys.exit('EXITING: need to give column types ("-t")\n')
         col_ops = args.col_operations.split(',')
+        col_idxs = args.col_extracts.split(',')
+
         col_names = args.col_names.split(',')
         col_types = args.col_types.split(',')
-        col_idxs = args.col_extracts.split(',')
 
         supported_types = ['text', 'float', 'integer']
         for col_type in col_types:
@@ -256,8 +297,8 @@ def annotate(parser, args):
                 sys.exit('EXITING: Column type [%s] not supported.\n' %
                          (col_type))
 
-        supported_ops = ['mean', 'median', 'mode', 'min', 'max', 'first',
-                         'last', 'list', 'uniq_list']
+        supported_ops = op_funcs.keys()
+
         for col_op in col_ops:
             if col_op not in supported_ops:
                 sys.exit('EXITING: Column operation [%s] not supported.\n' %
@@ -292,7 +333,7 @@ def annotate(parser, args):
         col_names = _validate_args(args)
         annotate_variants_count(args, conn, col_names)
     elif args.anno_type == "extract":
-        if args.col_extracts is None:
+        if args.col_extracts is None and not args.anno_file.endswith('.vcf.gz'):
             sys.exit("You must specify which column to "
                      "extract from your annotation file.")
         else:

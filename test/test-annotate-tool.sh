@@ -1,7 +1,7 @@
 ###########################################################################################
 #1. Test annotating variants using the "boolean" function
 ###########################################################################################
-echo "    annotate-tool.t1...\c"
+source ./check.sh
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548
@@ -25,7 +25,7 @@ chr1	69871	0" > exp
 
 gemini query -q "select chrom, end, anno from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t1
 rm obs exp
 rm *.gz*
 
@@ -33,7 +33,6 @@ rm *.gz*
 ###########################################################################################
 #2. Test annotating variants using the "count" function
 ###########################################################################################
-echo "    annotate-tool.t2...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548
@@ -58,7 +57,7 @@ chr1	69871	0" > exp
 
 gemini query -q "select chrom, end, anno2 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t2
 rm obs exp
 rm *.gz*
 
@@ -67,7 +66,6 @@ rm *.gz*
 #3. Test annotating variants using the "extract" function
 #   while extacting just one column
 ###########################################################################################
-echo "    annotate-tool.t3...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a
@@ -92,7 +90,7 @@ chr1	69871	None" > exp
 
 gemini query -q "select chrom, end, anno3 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t3
 rm obs exp
 rm *.gz*
 
@@ -100,7 +98,6 @@ rm *.gz*
 ###########################################################################################
 #4. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t4...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -125,7 +122,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno4, anno5 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t4
 rm obs exp
 rm *.gz*
 
@@ -133,7 +130,6 @@ rm *.gz*
 ###########################################################################################
 #5. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t5...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -159,7 +155,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno6, anno7 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t5
 rm obs exp
 rm *.gz*
 
@@ -167,7 +163,6 @@ rm *.gz*
 ###########################################################################################
 #6. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t6...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -193,7 +188,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno8, anno9 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t6
 rm obs exp
 rm *.gz*
 
@@ -201,7 +196,6 @@ rm *.gz*
 ###########################################################################################
 #7. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t7...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -227,7 +221,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno10, anno11 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t7
 rm obs exp
 rm *.gz*
 
@@ -260,14 +254,13 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno12, anno13 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t8
 rm obs exp
 rm *.gz*
 
 ###########################################################################################
 #9. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t9...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -293,7 +286,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno14, anno15 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t9
 rm obs exp
 rm *.gz*
 
@@ -301,7 +294,6 @@ rm *.gz*
 ###########################################################################################
 #10. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t10...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -327,7 +319,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno16, anno17 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annoate-tool.t10
 rm obs exp
 rm *.gz*
 
@@ -335,7 +327,6 @@ rm *.gz*
 ###########################################################################################
 #11. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t11...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -361,7 +352,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno18, anno19 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t11
 rm obs exp
 rm *.gz*
 
@@ -369,7 +360,6 @@ rm *.gz*
 ###########################################################################################
 #12. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t12...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -395,7 +385,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno20, anno21 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t12
 rm obs exp
 rm *.gz*
 
@@ -429,7 +419,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno22, anno23 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t13
 rm obs exp
 rm *.gz*
 
@@ -437,7 +427,6 @@ rm *.gz*
 ###########################################################################################
 #14. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t14...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -464,7 +453,7 @@ chr1	69871	None	None" > exp
 
 gemini query -q "select chrom, end, anno24, anno25 from variants" \
 	test.snpeff.vcf.db > obs
-check obs exp
+check obs exp annotate-tool.t14
 rm obs exp
 rm *.gz*
 
@@ -473,7 +462,6 @@ rm *.gz*
 ###########################################################################################
 #15. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t15...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -489,7 +477,7 @@ echo $'EXITING: The number of column names, numbers, types, and operations must 
 
 gemini annotate -f anno.bed.gz -a extract -c anno23 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db 2> obs
 
-check obs exp
+check obs exp annotate-tool.t15
 rm obs exp
 rm *.gz*
 
@@ -497,7 +485,6 @@ rm *.gz*
 ##########################################################################################
 #16. Test annotating variants using the "extract" function
 ##########################################################################################
-echo "    annotate-tool.t16...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -517,7 +504,7 @@ gemini annotate: error: argument -a: invalid choice: 'distract' (choose from 'bo
 
 gemini annotate -f anno.bed.gz -a distract -c anno23,anno24 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db 2> obs
 
-check obs exp
+check obs exp annotate-tool.t16
 rm obs exp
 rm *.gz*
 
@@ -525,7 +512,6 @@ rm *.gz*
 ###########################################################################################
 #17. Test annotating variants using the "extract" function
 ###########################################################################################
-echo "    annotate-tool.t17...\c"
 
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548	a	0.23
@@ -541,6 +527,6 @@ echo $'EXITING: Column operation [model] not supported.\n' > exp
 
 gemini annotate -f anno.bed.gz -a extract -c anno27,anno28 -e 4,5 -t text,float -o last,model  test.snpeff.vcf.db 2> obs
 
-check obs exp
+check obs exp annotate-tool.t17
 #rm obs exp
 rm *.gz*

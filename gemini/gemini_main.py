@@ -494,7 +494,8 @@ def main():
             help='The TABIX\'ed BED file containing the annotations')
     parser_get.add_argument('-c',
             dest='col_names',
-            help='The name(s) of the column(s) to be added to the variant table.')
+            help='The name(s) of the BED column(s) to be added to the variant table.'
+            'If the input file is a VCF, then this is the name of the info field to pull.')
     parser_get.add_argument('-a',
             dest='anno_type',
             help='How should the annotation file be used? (def. extract)',
@@ -502,7 +503,8 @@ def main():
             choices=['boolean', 'count', 'extract'])
     parser_get.add_argument('-e',
             dest='col_extracts',
-            help='Column(s) to extract information from for list annotations.')
+            help='Column(s) to extract information from for list annotations.'
+            'If the input is VCF, then this defaults to the fields specified in `-c`.')
     parser_get.add_argument('-t',
             dest='col_types',
             help='What data type(s) should be used to represent the new values '
@@ -513,7 +515,7 @@ def main():
             help='Operation(s) to apply to the extract column values '
                   'in the event that a variant overlaps multiple annotations '
                   'in your annotation file (-f).'
-                  'Any of {mean, median, min, max, mode, list, uniq_list, first, last}')
+                  'Any of {sum, mean, median, min, max, mode, list, uniq_list, first, last}')
     def annotate_fn(parser, args):
         import gemini_annotate
         gemini_annotate.annotate(parser, args)
