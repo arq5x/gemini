@@ -60,9 +60,15 @@ class Family(object):
         self.mother = None
         self.family_id = self.subjects[0].family_id
         self.children = []
+        self.affected = []
+        self.unaffected = []
+        self.affected_children = []        
+        self.unaffected_children = []
+
         self.is_constructed = False
 
-        self.find_parents()
+        self.build_family()
+
 
     def has_an_affected(self):
         """
@@ -80,14 +86,14 @@ class Family(object):
         Otherwise return False.
         """
         if not self.is_constructed:
-            self.find_parents()
+            self.build_family()
 
         for child in self.children:
             if child.affected:
                 return True
         return False
 
-    def find_parents(self):
+    def build_family(self):
         """
         Screen for children with parental ids so that
         we can identify the parents in this family.
@@ -133,7 +139,7 @@ class Family(object):
           gt_types[11] == HOM_ALT)'  # affected child
         """
 
-        parents_found = self.find_parents()
+        parents_found = self.build_family()
         affected_found = self.has_an_affected()
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
@@ -220,7 +226,7 @@ class Family(object):
         only one of the parents is heterozygous
         """
 
-        parents_found = self.find_parents()
+        parents_found = self.build_family()
         affected_found = self.has_an_affected()
 
         # identify which samples are the parents in the family.
@@ -345,7 +351,6 @@ class Family(object):
                 return mask
 
 
-
     def get_de_novo_filter(self, only_affected=False):
         """
         Generate aa de novo mutation eval() filter to apply for this family.
@@ -362,7 +367,7 @@ class Family(object):
 
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
-        if not self.find_parents():
+        if not self.build_family():
             sys.stderr.write("WARNING: Unable to find parents for family (%s). "
                  "GEMINI is currently only able to identify candidates "
                  "from two generational families.\n"
@@ -396,18 +401,39 @@ class Family(object):
         if len(self.children) == 1:
             if only_affected == False or \
             (only_affected == True and self.children[0].affected == True):
-                mask += 'gt_types[' + str(self.children[0].sample_id - 1) + "] == " + \
-                    str(HET)
+                mask += 'gt_types[' + str(self.children[0].sample_id - 1) + "] == " + str(HET)
         else:
-            for i, child in enumerate(self.children):
-                if only_affected == False or \
-                (only_affected == True and child.affected == True):
-                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
-                            str(HET)
+            if only_affected == False:
+                for i, child in enumerate(self.children):
+                    mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
                     if i < (len(self.children) - 1):
                         mask += " or "
-        mask += " )"
+            else:
+                # one or more of the affecteds must be HET
+                num_affected = sum(child.affected for child in self.children)
+                affected = 0
+                for child in self.children:
+                    if child.affected == True:
+                        affected += 1
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
+                        if affected < num_affected:
+                            mask += " or "
+
+                mask += ") and ("
+                
+                # AND, none of the unaffecteds can be HET
+                num_unaffected = sum(not child.affected for child in self.children)
+                unaffected = 0
+                for i, child in enumerate(self.children):
+                    if child.affected == False:
+                        unaffected += 1
+                        mask += 'gt_types[' + str(child.sample_id - 1) + "] != " + str(HET)
+                        if unaffected < num_unaffected:
+                            mask += " and "
+        mask += ")"
+        print mask
         return mask
+
 
     def get_mendelian_violation_filter(self):
         """
@@ -568,7 +594,7 @@ class Family(object):
         """
         columns = []
 
-        if not self.find_parents():
+        if not self.build_family():
             for subject in self.subjects:
                 columns.append('gts[' + str(subject.sample_id - 1) + ']')
         else:
@@ -585,7 +611,7 @@ class Family(object):
         and the children.
         """
         columns = []
-        if not self.find_parents():
+        if not self.build_family():
             for subject in self.subjects:
                 columns.append('gt_depths[' + str(subject.sample_id - 1) + ']')
         else:
@@ -604,7 +630,7 @@ class Family(object):
 
         # these are just anonymous affected and unaffected i
         # individuals in the same family
-        if not self.find_parents():
+        if not self.build_family():
             for subject in self.subjects:
                 if subject.affected is True:
                     labels.append(subject.name + "(affected)")
