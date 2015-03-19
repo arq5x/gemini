@@ -342,7 +342,7 @@ def grabix_index(fname):
     if not which("grabix"):
         print_cmd_not_found_and_exit("grabix")
     index_file = fname + ".gbi"
-    if file_exists(index_file):
+    if file_exists(index_file) and os.path.getmtime(index_file) > os.path.getmtime(fname):
         return index_file
     print "Indexing {0} with grabix.".format(fname)
     subprocess.check_call("grabix index {fname}".format(fname=fname), shell=True)

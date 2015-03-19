@@ -6,8 +6,7 @@ import sqlite3
 import gemini_utils as util
 from gemini_constants import *
 import numpy as np
-import cPickle
-import zlib
+import compression as Z
 
 
 def get_ind_lof(c, args):
@@ -32,8 +31,8 @@ def get_ind_lof(c, args):
                      'sample', 'genotype', 'gene', 'transcript', 'trans_type'])
 
     for r in c:
-        gt_types = np.array(cPickle.loads(zlib.decompress(r['gt_types'])))
-        gts = np.array(cPickle.loads(zlib.decompress(r['gts'])))
+        gt_types = Z.unpack_genotype_blob(r['gt_types'])
+        gts = Z.unpack_genotype_blob(r['gts'])
         gene = str(r['gene'])
         trans = str(r['transcript'])
 

@@ -410,15 +410,15 @@ rm obs exp
 # 22. Test transposed ped (TPED) query format
 ########################################################################
 echo "    query.t22...\c"
-echo "10 10:1142207-1142208:T|C:1 0 1142207 C C C C C C C C
-10 10:48003991-48003992:C|T:2 0 48003991 T T C T C T C C
-10 10:52004314-52004315:T|C:3 0 52004314 0 0 0 0 C C C C
-10 10:52497528-52497529:G|C:4 0 52497528 0 0 C C C C 0 0
-10 10:126678091-126678092:G|A:5 0 126678091 G G G G G G G A
-10 10:135210790-135210791:T|C:6 0 135210790 T T C C C C T T
-10 10:135336655-135336656:G|A:7 0 135336655 0 0 A A 0 0 A A
-10 10:135369531-135369532:T|C:8 0 135369531 T T T C T C T T
-16 16:72057434-72057435:C|T:9 0 72057434 C T C C C C C C" > exp
+echo "10 1 0 1142207 C C C C C C C C
+10 2 0 48003991 T T C T C T C C
+10 3 0 52004314 0 0 0 0 C C C C
+10 4 0 52497528 0 0 C C C C 0 0
+10 5 0 126678091 G G G G G G G A
+10 6 0 135210790 T T C C C C T T
+10 7 0 135336655 0 0 A A 0 0 A A
+10 8 0 135369531 T T T C T C T T
+16 9 0 72057434 C T C C C C C C" > exp
 gemini query --format tped -q "select * from variants" test4.snpeff.ped.db > obs
 check obs exp
 rm obs exp
@@ -744,7 +744,18 @@ gemini query --header -q "select v.chrom, v.end, v.gene, g.mam_phenotype_id from
 check obs exp
 rm obs exp
 
-
+#########################################################################
+# 41. Show an expanded version of sample information with --format sampledetail
+#########################################################################
+echo "    query.t41...\c"
+echo "chrom	start	ref	family_id	name	paternal_id	maternal_id	sex	phenotype
+chr1	30547	T	0	1478PC0016	0	0	-9	-9
+chr1	30547	T	0	1719PC0007	0	0	-9	-9
+chr1	30547	T	0	1719PC0009	0	0	-9	-9" > exp
+gemini query --header --format sampledetail --show-samples -q "select chrom, start, ref \
+                                                                from variants limit 1" test.query.db > obs
+check obs exp
+rm obs exp
 
 
 

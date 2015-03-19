@@ -1,7 +1,7 @@
+source ./check.sh
 ######################################################################
 # 1. Test interaction tool for snpEff (v3.1) annotations
 ######################################################################
-echo "    interact.t01...\c"
 echo "sample	gene	order_of_interaction	interacting_gene
 M10475	CTBP2	0_order:	none
 M10475	CTBP2	1_order:	RAI2
@@ -29,13 +29,12 @@ M10500	CTBP2	4_order:	WDR37
 M10500	CTBP2	5_order:	MTG1" > exp
 gemini interactions -g CTBP2 -r 5 test5.snpeff.db \
        > obs
-check obs exp
+check obs exp "interact.t01..."
 rm obs exp
 
 ######################################################################
 # 2. Test interaction tool for snpEff (v3.1) annotations (--var mode)
 ######################################################################
-echo "    interact.t02...\c"
 echo "sample	gene	order_of_interaction	interacting_gene	var_id	chrom	start	end	impact	biotype
 M10475	CTBP2	1	RAI2	9	chrX	17819376	17819377	non_syn_coding	protein_coding
 M10475	CTBP2	2	UBQLN4	2	chr1	156011443	156011444	non_syn_coding	protein_coding
@@ -61,13 +60,12 @@ M10500	CTBP2	4	WDR37	3	chr10	1142207	1142208	stop_loss	protein_coding
 M10500	CTBP2	5	MTG1	5	chr10	135210790	135210791	intron	protein_coding" > exp
 gemini interactions -g CTBP2 -r 5 --var test5.snpeff.db | cut -f1-10 \
        > obs
-check obs exp
+check obs exp "interact.t02... "
 rm obs exp
 
 ######################################################################
 # 3. Test lof interaction tool for snpEff (v3.1) annotations
 ######################################################################
-echo "    interact.t03...\c"
 echo "sample	lof_gene	order_of_interaction	interacting_gene
 M10475	WDR37	1_order:	none
 M10475	WDR37	2_order:	none
@@ -89,13 +87,12 @@ M10500	WDR37	2_order:	none
 M10500	WDR37	3_order:	RB1,UBQLN4" > exp
 gemini lof_interactions -r 3 test5.snpeff.db \
        > obs
-check obs exp
+check obs exp "interact.t03... "
 rm obs exp
 
 ######################################################################
 # 4. Test lof_interactions (--var mode) for snpEff (v3.1) annotations
 ######################################################################
-echo "    interact.t04...\c"
 echo "sample	lof_gene	order_of_interaction	interacting_gene	var_id	chrom	start	end	impact	biotype
 M10475	WDR37	3	UBQLN4	2	chr1	156011443	156011444	non_syn_coding	protein_coding
 M128215	WDR37	3	RB1	6	chr13	48873834	48873835	upstream	protein_coding
@@ -111,13 +108,12 @@ M10500	WDR37	3	UBQLN4	2	chr1	156011443	156011444	non_syn_coding	protein_coding
 M10500	WDR37	3	RB1	6	chr13	48873834	48873835	upstream	protein_coding" > exp
 gemini lof_interactions -r 3 --var test5.snpeff.db | cut -f1-10 \
 > obs
-check obs exp
+check obs exp "interact.t04... "
 rm obs exp
  
 ######################################################################
 # 5. Test interaction tool for VEP (75) annotations
 ######################################################################
-echo "    interact.t05...\c"
 echo "sample	gene	order_of_interaction	interacting_gene
 M10475	SGTB	0_order:	SGTB
 M10475	SGTB	1_order:	RAI2
@@ -141,13 +137,12 @@ M10500	SGTB	3_order:	NOTCH2NL
 M10500	SGTB	4_order:	WDR37" > exp
 gemini interactions -g SGTB -r 4 test5.vep.db \
        > obs
-check obs exp
+check obs exp "interact.t05... "
 rm obs exp 
 
 ####################################################################
 # 6. Test interaction tool (--var mode) for VEP (75) annotations
 ######################################################################
-echo "    interact.t06...\c"
 echo "sample	gene	order_of_interaction	interacting_gene	var_id	chrom	start	end	impact	biotype
 M10475	SGTB	0	SGTB	8	chr5	64982320	64982321	intron	protein_coding
 M10475	SGTB	1	RAI2	9	chrX	17819376	17819377	non_syn_coding	protein_coding
@@ -171,13 +166,12 @@ M10500	SGTB	3	NOTCH2NL	1	chr1	145273344	145273345	non_syn_coding	protein_coding
 M10500	SGTB	4	WDR37	3	chr10	1142207	1142208	stop_loss	protein_coding" > exp
 gemini interactions -g SGTB -r 4 --var test5.vep.db | cut -f1-10 \
        > obs
-check obs exp
+check obs exp "interact.t06... "
 rm obs exp
 
 ######################################################################
 # 7. Test lof_interactions for VEP (75) annotations
 ######################################################################
-echo "    interact.t07...\c"
 echo "sample	lof_gene	order_of_interaction	interacting_gene
 M10475	WDR37	1_order:	none
 M10475	WDR37	2_order:	none
@@ -199,13 +193,12 @@ M10500	WDR37	2_order:	none
 M10500	WDR37	3_order:	RB1,UBQLN4" > exp
 gemini lof_interactions -r 3 test5.vep.db \
        > obs
-check obs exp
+check obs exp "interact.t07..."
 rm obs exp
 
 ######################################################################
 # 8. Test lof_interactions (--var mode) for VEP (75) annotations
 ######################################################################
-echo "    interact.t08...\c"
 echo "sample	lof_gene	order_of_interaction	interacting_gene	var_id	chrom	start	end	impact	biotype
 M10475	WDR37	3	UBQLN4	2	chr1	156011443	156011444	non_syn_coding	protein_coding
 M128215	WDR37	3	RB1	6	chr13	48873834	48873835	upstream	protein_coding
@@ -221,11 +214,7 @@ M10500	WDR37	3	UBQLN4	2	chr1	156011443	156011444	non_syn_coding	protein_coding
 M10500	WDR37	3	RB1	6	chr13	48873834	48873835	upstream	protein_coding" > exp
 gemini lof_interactions -r 3 --var test5.vep.db | cut -f1-10 \
        > obs
-check obs exp
+check obs exp "interact.t08... "
 rm obs exp
 
 ######################################################################
-
-
-
-

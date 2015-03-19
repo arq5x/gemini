@@ -2,6 +2,13 @@
 Release History
 #############################
 
+0.11.1 (in progress)
+=======================================
+
+- Add `--format sampledetail` option that provides a melted/tidy/flattened
+  version of samples along with `--showsample` and includes information from
+  samples table.
+
 0.11.0
 =======================================
 1. Integration of ExAC annotations (v0.2): http://exac.broadinstitute.org/

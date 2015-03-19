@@ -133,6 +133,7 @@ def install_conda_pkgs(anaconda, remotes, args):
     else:
         pkgs = ["conda", "cython", "ipython",
                 "jinja2", "nose", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
+                "python-graph-core", "python-graph-dot",
                 "pyyaml", "pyzmq", "pandas", "scipy"]
         if platform.architecture()[0] != "32bit":
             pkgs += ["bx-python", "pysam", "ipython-cluster-helper"]
@@ -170,7 +171,7 @@ def install_anaconda_python(args, remotes):
 
 def _add_missing_inits(python_bin):
     """pip/setuptools strips __init__.py files with namespace declarations.
-    I have no idea why, but this adds them back.
+    I have no idea why, but this adds them back, skipping if compiled into an egg.
     """
     library_loc = check_output("%s -c 'import pygraph.classes.graph; "
                                "print pygraph.classes.graph.__file__'" % python_bin,
@@ -178,8 +179,9 @@ def _add_missing_inits(python_bin):
     pygraph_init = os.path.normpath(os.path.join(os.path.dirname(library_loc.strip()), os.pardir,
                                                  "__init__.py"))
     if not os.path.exists(pygraph_init):
-        with open(pygraph_init, "w") as out_handle:
-            out_handle.write("__import__('pkg_resources').declare_namespace(__name__)\n")
+        if os.path.isdir(os.path.dirname(pygraph_init)):
+            with open(pygraph_init, "w") as out_handle:
+                out_handle.write("__import__('pkg_resources').declare_namespace(__name__)\n")
 
 def _cleanup_problem_files(venv_dir):
     """Remove problem bottle items in PATH which conflict with site-packages

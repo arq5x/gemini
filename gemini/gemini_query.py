@@ -121,10 +121,11 @@ def run_query(args):
     formatter = select_formatter(args)
     genotypes_needed = needs_genotypes(args)
     gene_needed = needs_gene(args)
+    subjects = get_subjects(args)
     gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, genotypes_needed,
-           gene_needed, args.show_families)
+           gene_needed, args.show_families, subjects=subjects)
 
     if args.use_header and gq.header:
         print gq.header
@@ -145,8 +146,8 @@ def run_query(args):
         # rerun the query (the cursor is now consumed)
         gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
         gq.run(args.query, args.gt_filter, args.show_variant_samples,
-           args.sample_delim, predicates, genotypes_needed,
-           gene_needed, args.show_families)
+               args.sample_delim, predicates, genotypes_needed,
+               gene_needed, args.show_families, subjects=subjects)
 
         # report the query results with DGIdb info added at the end.
         for row in gq:

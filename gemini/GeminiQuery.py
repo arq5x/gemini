@@ -327,6 +327,46 @@ class VCFRowFormat(RowFormat):
         except:
             sys.exit("Your database does not contain the vcf_header table. Therefore, you cannot use --header.\n")
 
+class SampleDetailRowFormat(RowFormat):
+    """Retrieve queries with flattened sample information for samples present.
+
+    This melts/tidys a single line result to have a separate line for every sample
+    with that call and adds in sample metadata from the samples table.
+    """
+    name = "sampledetail"
+
+    def __init__(self, args):
+        self.gq = GeminiQuery(args.db)
+        self.gq.run("SELECT * from samples")
+        self.cols = self.gq.header.split()[1:]
+        self.args = args
+
+        self.samples = {}
+        for row in self.gq:
+            vals = [row[x] for x in self.cols]
+            self.samples[row["name"]] = vals
+
+    def format(self, row):
+        samples = [s for s in row.row["variant_samples"].split(self.args.sample_delim) if s]
+        for x in self.gq.sample_show_fields:
+            del row.row[x]
+        out = []
+        for sample in samples:
+            out.append('\t'.join([str(row.row[c]) for c in row.row] + self.samples[sample]))
+        return "\n".join(out)
+
+    def format_query(self, query):
+        return query
+
+    def predicate(self, row):
+        return True
+
+    def header(self, fields):
+        for x in self.gq.sample_show_fields:
+            if x in fields:
+                fields.remove(x)
+        return "\t".join(fields + self.cols)
+
 class GeminiRow(object):
 
     def __init__(self, row, gts=None, gt_types=None,
@@ -466,6 +506,7 @@ class GeminiQuery(object):
         self.formatter = out_format
         self.predicates = [self.formatter.predicate]
 
+        self.sample_show_fields = ["variant_samples", "HET_samples", "HOM_ALT_samples"]
 
     def _set_gemini_browser(self, for_browser):
         self.for_browser = for_browser
@@ -473,7 +514,7 @@ class GeminiQuery(object):
     def run(self, query, gt_filter=None, show_variant_samples=False,
             variant_samples_delim=',', predicates=None,
             needs_genotypes=False, needs_genes=False,
-            show_families=False):
+            show_families=False, subjects=None):
         """
         Execute a query against a Gemini database. The user may
         specify:
@@ -496,6 +537,7 @@ class GeminiQuery(object):
 
         self.needs_genes = needs_genes
         self.show_families = show_families
+        self.subjects = subjects
         if predicates:
             self.predicates += predicates
 
@@ -538,7 +580,7 @@ class GeminiQuery(object):
                 [col for col in OrderedSet(self.all_columns_orig)
                  - OrderedSet(self.select_columns)]
         if self.show_variant_samples:
-            h += ["variant_samples", "HET_samples", "HOM_ALT_samples"]
+            h += self.sample_show_fields
         if self.show_families:
             h += ["families"]
         return self.formatter.header(h)
@@ -680,11 +722,11 @@ class GeminiQuery(object):
 
             if self.show_variant_samples:
                 fields["variant_samples"] = \
-                    self.variant_samples_delim.join(variant_names)
+                    self.variant_samples_delim.join(self._filter_samples(variant_names))
                 fields["HET_samples"] = \
-                    self.variant_samples_delim.join(genotype_dict[HET])
+                    self.variant_samples_delim.join(self._filter_samples(genotype_dict[HET]))
                 fields["HOM_ALT_samples"] = \
-                    self.variant_samples_delim.join(genotype_dict[HOM_ALT])
+                    self.variant_samples_delim.join(self._filter_samples(genotype_dict[HOM_ALT]))
             if self.show_families:
                 families = map(str, list(set([self.sample_to_sample_object[x].family_id
                                               for x in variant_names])))
@@ -703,6 +745,14 @@ class GeminiQuery(object):
                 return gemini_row
             else:
                 return fields
+
+    def _filter_samples(self, samples):
+        """Respect --sample-filter when outputting lists of sample information.
+        """
+        if self.subjects is not None:
+            return [x for x in samples if x in self.subjects]
+        else:
+            return samples
 
     def _group_samples_by_genotype(self, gt_types):
         """

@@ -34,6 +34,7 @@ class GeminiLoader(object):
     """
     def __init__(self, args, buffer_size=10000):
         self.args = args
+        self.seen_multi = False
 
         # create the gemini database
         self._create_db()
@@ -84,6 +85,14 @@ class GeminiLoader(object):
             v_id = 1
         return v_id
 
+    def _multiple_alts_message(self):
+        self.seen_multi = 1
+        sys.stderr.write("\n")
+        sys.stderr.write("warning: variant with multiple alternate alleles found.\n")
+        sys.stderr.write("         in order to reduce the number of false negatives\n")
+        sys.stderr.write("         we recommend to split multiple alts. see: \
+                http://gemini.readthedocs.org/en/latest/content/preprocessing.html#preprocess\n")
+
     def populate_from_vcf(self):
         """
         """
@@ -99,6 +108,9 @@ class GeminiLoader(object):
         with open(extra_file, "w") as extra_handle:
             # process and load each variant in the VCF file
             for var in self.vcf_reader:
+                if len(var.ALT) > 1 and not self.seen_multi:
+                    self._multiple_alts_message()
+
                 if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
                     self.skipped += 1
                     continue
@@ -454,7 +466,7 @@ class GeminiLoader(object):
             extra_fields.update({"chrom": var.CHROM, "start": var.start, "end": var.end})
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
-                   vcf_id, self.v_id, anno_id, var.REF, ','.join(var.ALT),
+                   vcf_id, self.v_id, anno_id, var.REF, ','.join([x or "" for x in var.ALT]),
                    var.QUAL, filter, var.var_type,
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), pack_blob(gt_depths),
