@@ -2,12 +2,25 @@
 Release History
 #############################
 
-0.11.1 (in progress)
+0.12.0 
 =======================================
+1. Support for input VCF files containing variants with multiple alternate alleles. Thanks to Brent Pedersen.
+2. Updated, decomposed, and normalized the ExAC, Clinvar, Cosmic, dbSNP, and ESP annotation files to properly support variants with multiple alternate alleles.
+3. Updated the logic for the clinvar significance column to retain all documented singificances.
+4. Support for VCF annotation files in the `annotate` tool.
+5. Improved the speed of loading by 10-15%. Thanks to Brent Pedersen.
+6. Added ``--only-affected` and `--min-kindreds` options to the compound heterozygotes tool.
+7. Added a `--format vcf` option to the `query` tool to output query results in VCF format.
+8. Added the `--families` option to the `auto_*`, `de_novo`, and `comp_hets` tools.
+9. Added the `--only-affected` option to the `de_novo` tool.
+10. Allow the `--sample-filter` to work with `--format TPED`. Thanks to Rory Kirchner.
+11. Add `--format sampledetail` option that provides a melted/tidy/flattened version of samples along with `--showsample` and includes information from samples table. Thanks to Brad Chapman.
+12. Add 'not' option to --in filtering. Thanks to Rory Kirchner.
+13. Fixed a bug in the `de_novo` tool that prevented proper function when families have affected and unaffected children. Thanks to Andrew Oler.
+14. Fixed a bug in cyvcf that falsely treated '.|.' genotypes as homozygous alternate.  Thanks to Xiao Xu.
+15. GEMINI now checks for and warns of old grabix index files. Thanks to Andrew Oler and Brent Pedersen.
+16. Fixed a bug that added newlines at the end of tab delimited PED files.  Thanks to Brad Chapman.
 
-- Add `--format sampledetail` option that provides a melted/tidy/flattened
-  version of samples along with `--showsample` and includes information from
-  samples table.
 
 0.11.0
 =======================================
