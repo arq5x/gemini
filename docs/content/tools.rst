@@ -845,7 +845,7 @@ affect protein_coding transcripts from processed RNA, etc.
 It is inevitable that researchers will want to enhance the gemini framework with
 their own, custom annotations. ``gemini`` provides a sub-command called
 ``annotate`` for exactly this purpose. As long as you provide a ``tabix``'ed
-annotation file in BED format, the ``annotate`` tool will, for each
+annotation file in BED or VCF format, the ``annotate`` tool will, for each
 variant in the variants table, screen for overlaps in your annotation file and
 update a one or more new column in the variants table that you may specify on the command
 line. This is best illustrated by example.
@@ -929,7 +929,8 @@ variant actually overlapped two important regions.
 ``-a extract`` Extract specific values from a BED file
 -------------------------------------------------------
 Lastly, we may also extract values from specific fields in a BED
-file and populate one or more new columns in the database based on
+file (or from the INFO field in a VCF) and populate one or more new columns
+in the database based on
 overlaps with the annotation file and the values of the fields therein.
 To do this, we use the ``-a extract`` option.
 
@@ -938,67 +939,40 @@ that we have a VCF file from a different experiment and we want to annotate
 the variants in our GEMINI database with the allele frequency and depth
 tags from the INFO fields for the same variants in this other VCF file.
 
-First, since the ``annotate`` tool only supports BED files, we must use the
-excellent `vcftools <http://vcftools.sourceforge.net/>`_ package to extract the allele frequency (AF) and
-depth (DP) tags from the VCF file.
 
-.. code-block:: bash
+    # bgzip and tabix the vcf for use with the annotate tool.
+    $ bgzip other.vcf
+    $ tabix other.vcf.gz
 
-    # this will create a new file called other.INFO
-    $ vcftools --vcf other.vcf --get-INFO AF --get-INFO DP --out other
-
-    # peek at the output
-    $ head -6 other.INFO
-    CHROM   POS REF ALT AF  DP
-    chr10   1142208 T   C   1.00    122
-    chr10   48003992    C   T   0.50    165
-    chr10   48004992    C   T   0.50    165
-    chr10   135336656   G   A   1.00    2
-    chr10   135369532   T   C   0.25    239
-
-    # create a BED file from the output of VCFTOOLs.
-    $ awk -v OFS="\t" '{if (NR>1) {print $1,$2-1,$2,$5,$6}}' other.INFO > other.bed
-
-    # peek at the output
-    $ head -5 other.bed
-    chr10   1142207 1142208 1.00    122
-    chr10   48003991    48003992    0.50    165
-    chr10   48004991    48004992    0.50    165
-    chr10   135336655   135336656   1.00    2
-    chr10   135369531   135369532   0.25    239
-
-    # bgzip and tabix for use with the annotate tool.
-    $ bgzip other.bed
-    $ tabix -p bed other.bed.gz
-
-Now that we have a proper TABIX'ed BED file, we can use the ``-a extract`` option to populate new
+Now that we have a proper TABIX'ed VCF file, we can use the ``-a extract`` option to populate new
 columns in the GEMINI database.  In order to do so, we must specify:
 
-    1. the name of the column we want to add (``-c``)
 
-    2. its type (e.g., text, int, float,)  (``-t``)
+    1. its type (e.g., text, int, float,)  (``-t``)
 
-    3. the column in the BED file that we should use to extract data with which to populate the new column (``-e``)
+    2. the field in the INFO column of the VCF file that we should use to extract data with which to populate the new column (``-e``)
 
-    4. what operation should be used to summarize the data in the event of multiple overlaps in the annotation file  (``-o``)
+    3. what operation should be used to summarize the data in the event of multiple overlaps in the annotation file  (``-o``)
+
+    4. (optionally) the name of the column we want to add (``-c``), if this is not specified, it will use the value from ``-e``.
 
 For example, let's imagine we want to create a new column called "other_allele_freq" using the
-AF column (that is, the 4th column) in our BED file to populate it.
+AF field in our VCF file to populate it.
 
 .. code-block:: bash
 
-    $ gemini annotate -f other.bed.gz \
+    $ gemini annotate -f other.vcf.gz \
                       -a extract \
                       -c other_allele_freq \
                       -t float \
-                      -e 4 \
+                      -e AF \
                       -o mean \
                       my.db
 
 This create a new column in ``my.db`` called ``other_allele_freq`` and this
-new column will be a FLOAT.  In the event of multiple records in the BED
+new column will be a FLOAT.  In the event of multiple records in the VCF
 file overlapping a variant in the database, the average (mean) of the allele
-frequencies values from the BED file will be used.
+frequencies values from the VCF file will be used.
 
 At this point, one can query the database based on the values of the
 new ``other_allele_freq`` column:
@@ -1038,10 +1012,42 @@ file, the ``annotate`` tool can summarize the values observed with multiple opti
     7. ``-o last``. Use the value from the **last** record in the annotation file.
     8. ``-o list``. Create a comma-separated list of the observed values.  **-t must be text**
     9. ``-o uniq_list``. Create a comma-separated list of the **distinct** (i.e., non-redundant) observed values.  **-t must be text**
+    10. ``-o sum``. Compute the sum of the values. **They must be numeric**.
 
 .. note::
 
     The ``-o`` option is only valid when using the ``-a extract`` option.
+
+
+-------------------
+Annotating with VCF
+-------------------
+
+Most of the examples to this point have pulled a column from a `tabix` indexed bed file.
+It is likewise possible to pull from the INFO field  of a `tabix` index VCF. The syntax
+is identical but the ``-e`` operation will specify the names of fields in the INFO column
+to pull. By default, those names will be used, but that can still be specified with the
+`-c` column.
+Here are some example uses
+
+.. code-block:: bash
+
+    # put a DP column in the db:
+    gemini annotate -f anno.vcf.gz -o list -e DP -t int my.db
+
+    # ... and name it 'depth'
+    gemini annotate -f anno.vcf.gz -o list -e DP -c depth -t int my.db
+
+    # use multiple columns
+    gemini annotate -f anno.vcf.gz -o list,mean -e DP,Qmeter -c depth,qmeter -t int my.db
+
+Missing values are allowed since we expect that in some cases an annotation VCF will not
+have all INFO fields specified for all variants.
+
+.. note::
+
+    We recommend decomposing and normalizing variants before annotating.
+    See :ref:`preprocess` for a detailed explanation of how to do this.
 
 
 -------------------------------------------------------------------
