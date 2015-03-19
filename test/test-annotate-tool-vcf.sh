@@ -219,3 +219,21 @@ chr1	69761	1.333
 chr1	69871	-1.292" > exp
 
 check obs exp test-annotate-vcf.t09
+
+## test multiple columns
+gemini annotate -f test.anno.vcf.gz -t float,float -e AN,BaseQRankSum -o mean,list test.snpeff.vcf.db 
+gemini query --header -q "select chrom, end, AN,BaseQRankSum from variants" test.snpeff.vcf.db > obs
+
+echo "chrom	end	AN	BaseQRankSum
+chr1	30548	14.0	0.0
+chr1	30860	52.0	2.815
+chr1	30869	56.0	0.9
+chr1	30895	58.0	-0.23
+chr1	30923	30.0	None
+chr1	69270	56.0	1.675
+chr1	69428	106.0	-0.638
+chr1	69511	90.0	-1.592
+chr1	69761	88.0	1.333
+chr1	69871	80.0	-0.646" > exp
+
+check obs exp test-annotate-vcf.t10
