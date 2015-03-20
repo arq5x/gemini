@@ -2,7 +2,7 @@
 Release History
 #############################
 
-0.12.0 
+0.12.1 
 =======================================
 1. Support for input VCF files containing variants with multiple alternate alleles. Thanks to Brent Pedersen.
 2. Updated, decomposed, and normalized the ExAC, Clinvar, Cosmic, dbSNP, and ESP annotation files to properly support variants with multiple alternate alleles.
