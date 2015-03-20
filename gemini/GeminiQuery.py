@@ -10,6 +10,7 @@ import json
 import abc
 import re
 import numpy as np
+from operator import itemgetter
 
 # gemini imports
 import gemini_utils as util
@@ -66,7 +67,8 @@ class DefaultRowFormat(RowFormat):
         pass
 
     def format(self, row):
-        return '\t'.join([str(row.row[c]) for c in row.row])
+        r = row.row
+        return '\t'.join([str(r[c]) for c in r])
 
     def format_query(self, query):
         return query
@@ -647,38 +649,39 @@ class GeminiQuery(object):
             if 'info' in self.report_cols:
                 info = compression.unpack_ordereddict_blob(row['info'])
 
+            unpacked = {}
+            unpack = compression.unpack_genotype_blob
             if self._query_needs_genotype_info():
-                gts = compression.unpack_genotype_blob(row['gts'])
-                gt_types = \
-                    compression.unpack_genotype_blob(row['gt_types'])
-                gt_phases = \
-                    compression.unpack_genotype_blob(row['gt_phases'])
-                gt_depths = \
-                    compression.unpack_genotype_blob(row['gt_depths'])
-                gt_ref_depths = \
-                    compression.unpack_genotype_blob(row['gt_ref_depths'])
-                gt_alt_depths = \
-                    compression.unpack_genotype_blob(row['gt_alt_depths'])
-                gt_quals = \
-                    compression.unpack_genotype_blob(row['gt_quals'])
-                gt_copy_numbers = \
-                    compression.unpack_genotype_blob(row['gt_copy_numbers'])
-                genotype_dict = self._group_samples_by_genotype(gt_types)
+                # TODO: see if HET, etc. are needed. if not, we can skip
+                # _group_samples_by_genotype
+                unpacked['gt_types'] = unpack(row['gt_types'])
+                genotype_dict = self._group_samples_by_genotype(unpacked['gt_types'])
+                if self.gt_filter:
+                    unpacked['gts'] = unpack(row['gts'])
+                    for k in ('gt_phases', 'gt_depths', 'gt_ref_depths',
+                            'gt_alt_depths', 'gt_quals', 'gt_copy_numbers'):
+                        # only unpack what is needed.
+                        if k in self.gt_filter:
+                            unpacked[k] = unpack(row[k])
+
+                    # skip the record if it does not meet the user's genotype filter
+                    env = locals()
+                    env.update(unpacked)
+                    if not eval(self.gt_filter, env):
+                        continue
+
                 het_names = genotype_dict[HET]
                 hom_alt_names = genotype_dict[HOM_ALT]
                 hom_ref_names = genotype_dict[HOM_REF]
                 unknown_names = genotype_dict[UNKNOWN]
                 variant_names = het_names + hom_alt_names
-                # skip the record if it does not meet the user's genotype filter
-                if self.gt_filter and not eval(self.gt_filter, locals()):
-                    continue
 
             fields = OrderedDict()
 
             for idx, col in enumerate(self.report_cols):
                 if col == "*":
                     continue
-                if not col.startswith("gt") and not col.startswith("GT") and not col == "info":
+                if not col.startswith(("gt", "GT")) and not col == "info":
                     fields[col] = row[col]
                 elif col == "info":
                     fields[col] = self._info_dict_to_string(info)
@@ -687,38 +690,27 @@ class GeminiQuery(object):
                     # e.g. replace gts[1085] with gts.NA20814
                     if '[' in col:
                         orig_col = self.gt_idx_to_name_map[col]
-                        val = eval(col.strip())
-                        if type(val) in [np.int8, np.int32, np.bool_]:
+
+                        source, extra = col.split('[', 1)
+                        if not source in unpacked:
+                            unpacked[source] = unpack(row[source])
+                        assert extra[-1] == ']'
+                        idx = int(extra[:-1])
+                        val = unpacked[source][idx]
+
+                        #val = unpacked[col.split('[', 1)[0]]
+                        if type(val) in (np.int8, np.int32, np.bool_):
                             fields[orig_col] = int(val)
-                        elif type(val) in [np.float32]:
+                        elif type(val) in (np.float32,):
                             fields[orig_col] = float(val)
                         else:
                             fields[orig_col] = val
                     else:
                         # asked for "gts" or "gt_types", e.g.
-                        if col == "gts":
-                            fields[col] = ','.join(gts)
-                        elif col == "gt_types":
-                            fields[col] = \
-                                ','.join(str(t) for t in gt_types)
-                        elif col == "gt_phases":
-                            fields[col] = \
-                                ','.join(str(p) for p in gt_phases)
-                        elif col == "gt_depths":
-                            fields[col] = \
-                                ','.join(str(d) for d in gt_depths)
-                        elif col == "gt_quals":
-                            fields[col] = \
-                                ','.join(str(d) for d in gt_quals)
-                        elif col == "gt_ref_depths":
-                            fields[col] = \
-                                ','.join(str(d) for d in gt_ref_depths)
-                        elif col == "gt_alt_depths":
-                            fields[col] = \
-                                ','.join(str(d) for d in gt_alt_depths)
-                        elif col == "gt_copy_numbers":
-                            fields[col] = \
-                                ','.join(str(d) for d in gt_copy_numbers)
+                        if not col in unpacked:
+                            unpacked[col] = unpack(row[col])
+
+                        fields[col] = ",".join(str(v) for v in unpacked[col])
 
             if self.show_variant_samples:
                 fields["variant_samples"] = \
@@ -732,11 +724,22 @@ class GeminiQuery(object):
                                               for x in variant_names])))
                 fields["families"] = self.variant_samples_delim.join(families)
 
-            gemini_row = GeminiRow(fields, gts, gt_types, gt_phases,
-                                   gt_depths, gt_ref_depths, gt_alt_depths,
-                                   gt_quals, gt_copy_numbers, variant_names, het_names, hom_alt_names,
-                                   hom_ref_names, unknown_names, info,
-                                   formatter=self.formatter)
+            gemini_row = GeminiRow(fields, 
+                    unpacked.get('gts'),
+                    unpacked.get('gt_types'), 
+                    unpacked.get('gt_phases'),
+                    unpacked.get('gt_depths'),
+                    unpacked.get('gt_ref_depths'),
+                    unpacked.get('gt_alt_depths'),
+                    unpacked.get('gt_quals'),
+                    unpacked.get('gt_copy_numbers'),
+                    variant_names,
+                    het_names,
+                    hom_alt_names,
+                    hom_ref_names,
+                    unknown_names,
+                    info,
+                    formatter=self.formatter)
 
             if not all([predicate(gemini_row) for predicate in self.predicates]):
                 continue
@@ -757,10 +760,17 @@ class GeminiQuery(object):
     def _group_samples_by_genotype(self, gt_types):
         """
         make dictionary keyed by genotype of list of samples with that genotype
+        _seen is used to cache the results since gt_types won't change and this
+        is a fairly expensive function.
         """
-        key_fn = lambda x: x[1]
-        val_fn = lambda x: self.idx_to_sample[x[0]]
-        return partition_by_fn(enumerate(gt_types), key_fn=key_fn, val_fn=val_fn)
+        #key_fn = itemgetter(1)
+        #val_fn = lambda x: self.idx_to_sample[x[0]]
+        #return partition_by_fn(enumerate(gt_types), key_fn=key_fn, val_fn=val_fn)
+        d = collections.defaultdict(list)
+        lookup = self.idx_to_sample
+        for i, x in enumerate(gt_types):
+            d[x].append(lookup[i])
+        return d 
 
     def _connect_to_database(self):
         """
@@ -1027,7 +1037,6 @@ class GeminiQuery(object):
         In essence, when a gneotype filter has been requested, we always add
         the gts, gt_types and gt_phases columns.
         """
-
         if "from" not in self.query.lower():
             sys.exit("Malformed query: expected a FROM keyword.")
 
@@ -1190,8 +1199,7 @@ class GeminiQuery(object):
             return None
 
     def _tokenize_query(self):
-        tokens = list(flatten([x.split(",") for x in self.query.split(" ")]))
-        return tokens
+        return list(flatten(x.split(",") for x in self.query.split(" ")))
 
     def _query_needs_genotype_info(self):
         tokens = self._tokenize_query()
@@ -1233,6 +1241,13 @@ def flatten(l):
                 yield sub
         else:
             yield el
+
+try:
+    from itertools import chain
+    flatten = chain.from_iterable
+except ImporError:
+    1/0
+
 
 if __name__ == "__main__":
 
