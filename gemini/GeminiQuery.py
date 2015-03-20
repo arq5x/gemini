@@ -4,19 +4,15 @@ import os
 import sys
 import sqlite3
 import re
-import itertools
 import collections
 import json
 import abc
-import re
 import numpy as np
-from operator import itemgetter
 
 # gemini imports
 import gemini_utils as util
 from gemini_constants import *
-from gemini_utils import (OrderedSet, OrderedDict, itersubclasses, partition,
-                          partition_by_fn)
+from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
@@ -654,6 +650,8 @@ class GeminiQuery(object):
                         if k in self.gt_filter:
                             unpacked[k] = unpack(row[k])
 
+                    # skip the record if it does not meet the user's genotype filter
+                    # short circuit some expensive ops
                     if not eval(self.gt_filter, unpacked):
                         continue
 
@@ -711,9 +709,9 @@ class GeminiQuery(object):
                                               for x in variant_names])))
                 fields["families"] = self.variant_samples_delim.join(families)
 
-            gemini_row = GeminiRow(fields, 
+            gemini_row = GeminiRow(fields,
                     unpacked.get('gts'),
-                    unpacked.get('gt_types'), 
+                    unpacked.get('gt_types'),
                     unpacked.get('gt_phases'),
                     unpacked.get('gt_depths'),
                     unpacked.get('gt_ref_depths'),
@@ -752,7 +750,7 @@ class GeminiQuery(object):
         lookup = self.idx_to_sample
         for i, x in enumerate(gt_types):
             d[x].append(lookup[i])
-        return d 
+        return d
 
     def _connect_to_database(self):
         """
@@ -1027,7 +1025,8 @@ class GeminiQuery(object):
         # remove any GT columns
         select_clause_list = []
         for token in select_tokens:
-            if not token[:2] in ("GT", "gt", "(gt", "(GT") and \
+            if not token[:2] in ("GT", "gt") and \
+               not token[:3] in ("(gt", "(GT") and \
                not ".gt" in token and \
                not ".GT" in token:
                 select_clause_list.append(token)
@@ -1181,14 +1180,14 @@ class GeminiQuery(object):
         return list(flatten(x.split(",") for x in self.query.split(" ")))
 
     def _query_needs_genotype_info(self):
+        if self.include_gt_cols or self.show_variant_samples or self.needs_genotypes:
+            return True
+
         tokens = self._tokenize_query()
         requested_genotype = "variants" in tokens and \
                             (any(x.startswith(("gt", "(gt")) for x in tokens) or \
                              any(".gt" in x for x in tokens))
-        return requested_genotype or \
-               self.include_gt_cols or \
-               self.show_variant_samples or \
-               self.needs_genotypes
+        return requested_genotype
 
 def select_formatter(args):
     SUPPORTED_FORMATS = {x.name.lower(): x for x in
