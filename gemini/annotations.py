@@ -527,7 +527,7 @@ def get_clinvar_info(var):
             elif causal_allele_number > 0:
                 # alt should alwasy be length 1 if they decomposed, but just in
                 # case ...
-                clinvar.clinvar_causal_allele = hit.alt.split(',')[causal_allele_number - 1]
+                clinvar.clinvar_causal_allele = hit.alt
         else:
             clinvar_causal_allele = ""
             for idx, allele_num in enumerate(causal_allele_numbers):
@@ -537,7 +537,7 @@ def get_clinvar_info(var):
                 if causal_allele_number == 0:
                     clinvar_causal_allele += hit.ref
                 elif causal_allele_number > 0:
-                    clinvar_causal_allele += hit.alt.split(',')[causal_allele_number - 1]
+                    clinvar_causal_allele += hit.alt
 
             clinvar.clinvar_causal_allele = clinvar_causal_allele
     return clinvar
