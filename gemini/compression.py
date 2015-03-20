@@ -13,7 +13,7 @@ def pack_blob(obj):
     return sqlite3.Binary(zdumps(obj))
 
 def unpack_genotype_blob(blob):
-    return numpy.asarray(cPickle.loads(zlib.decompress(blob)))
+    return cPickle.loads(zlib.decompress(blob))
     
 def unpack_ordereddict_blob(blob):
 	blob_val = cPickle.loads(zlib.decompress(blob))
