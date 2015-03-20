@@ -12,7 +12,7 @@ IMPORTANT CHANGE TO GEMINI
 At long last, version 0.1.12 of GEMINI supports multi-allelic variants thanks to great work from Brent Pedersen. In order to provide this support, GEMINI now requires that your input VCF file undergo additional preprocessing such that multi-allelic variants are decomposed and normalized using the `vt <http://genome.sph.umich.edu/wiki/Vt>`_ toolset from
 the `Abecasis lab <http://genome.sph.umich.edu/wiki/Main_Page>`_. Note that we have also decomposed and normalized all of the VCF-based annotation files (e.g., ExAC, dbSNP, ClinVar, etc.) so that variants and alleles are properly annotated and we minimize false negative and false positive annotations. For a great discussion of why this is necessary, please read `this blog post <http://www.cureffi.org/2014/04/24/converting-genetic-variants-to-their-minimal-representation/>`_ from Eric Minikel in Daniel MacArthur's lab.  
 
-Essentially, VCF preprocessing for GEMINI now boils down to three steps.
+Essentially, VCF preprocessing for GEMINI now boils down to the following steps.
 
 0. If working with GATK VCFs, you need to correct the AD INFO tag definition to play nicely with `vt`.
 1. `Decompose <http://genome.sph.umich.edu/wiki/Vt#Decompose>`_ the original VCF such that variants with multiple alleles are expanded into distinct variant records; one record for each REF/ALT combination.
