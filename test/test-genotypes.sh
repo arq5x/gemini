@@ -217,3 +217,18 @@ gemini query -q "select chrom, end, ref, alt, \
        > obs
 check obs exp
 rm obs exp
+
+echo -n "    genotypes.t09..."
+gemini query --header -q "select chrom, start, end, (gts).(*) from variants" extended_ped.db > obs
+echo "chrom	start	end	gts.M10475	gts.M10478	gts.M10500	gts.M128215
+chr10	1142207	1142208	C/C	C/C	C/C	C/C
+chr10	48003991	48003992	T/T	C/T	C/T	C/C
+chr10	52004314	52004315	./.	./.	C/C	C/C
+chr10	52497528	52497529	./.	C/C	C/C	./.
+chr10	126678091	126678092	G/G	G/G	G/G	G/A
+chr10	135210790	135210791	T/T	C/C	C/C	T/T
+chr10	135336655	135336656	./.	A/A	./.	A/A
+chr10	135369531	135369532	T/T	T/C	T/C	T/T
+chr16	72057434	72057435	C/T	C/C	C/C	C/C" > exp
+check obs exp
+
