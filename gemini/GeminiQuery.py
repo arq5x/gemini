@@ -654,6 +654,7 @@ class GeminiQuery(object):
                         if k in self.gt_filter:
                             unpacked[k] = unpack(row[k])
 
+                    # skip the record if it does not meet the user's genotype filter
                     if not eval(self.gt_filter, unpacked):
                         continue
 
@@ -1027,7 +1028,8 @@ class GeminiQuery(object):
         # remove any GT columns
         select_clause_list = []
         for token in select_tokens:
-            if not token[:2] in ("GT", "gt", "(gt", "(GT") and \
+            if not token[:2] in ("GT", "gt") and \
+               not token[:3] in ("(gt", "(GT") and \
                not ".gt" in token and \
                not ".GT" in token:
                 select_clause_list.append(token)
@@ -1181,14 +1183,14 @@ class GeminiQuery(object):
         return list(flatten(x.split(",") for x in self.query.split(" ")))
 
     def _query_needs_genotype_info(self):
+        if self.include_gt_cols or self.show_variant_samples or self.needs_genotypes:
+            return True
+
         tokens = self._tokenize_query()
         requested_genotype = "variants" in tokens and \
                             (any(x.startswith(("gt", "(gt")) for x in tokens) or \
                              any(".gt" in x for x in tokens))
-        return requested_genotype or \
-               self.include_gt_cols or \
-               self.show_variant_samples or \
-               self.needs_genotypes
+        return requested_genotype
 
 def select_formatter(args):
     SUPPORTED_FORMATS = {x.name.lower(): x for x in
