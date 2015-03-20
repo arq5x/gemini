@@ -4,6 +4,7 @@ import os
 import sys
 import numpy as np
 from collections import defaultdict
+import itertools as it
 
 from gemini_constants import *
 import GeminiQuery
@@ -27,7 +28,8 @@ class Subject(object):
         self.mother = True
 
     def _set_fields_from_row(self, row):
-        [setattr(self, k, v) for (k, v) in zip(row.keys(), list(row))]
+        for k, v in it.izip(row.keys(), row):
+            setattr(self, k, v)
         self.phenotype = int(self.phenotype) if self._has_phenotype() else None
         self._set_affected_status(row)
 

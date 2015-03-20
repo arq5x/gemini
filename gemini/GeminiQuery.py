@@ -547,8 +547,7 @@ class GeminiQuery(object):
         # comma and a space. then tokenize by spaces.
         self.query = self.query.replace(',', ', ')
         self.query_pieces = self.query.split()
-        if not any(s.startswith("gt") for s in self.query_pieces) and \
-           not any(s.startswith("(gt") for s in self.query_pieces) and \
+        if not any(s.startswith(("gt", "(gt")) for s in self.query_pieces) and \
            not any(".gt" in s for s in self.query_pieces):
             if self.gt_filter is None:
                 self.query_type = "no-genotypes"
@@ -631,14 +630,6 @@ class GeminiQuery(object):
             except Exception as e:
                 self.conn.close()
                 raise StopIteration
-            gts = None
-            gt_types = None
-            gt_phases = None
-            gt_depths = None
-            gt_ref_depths = None
-            gt_alt_depths = None
-            gt_quals = None
-            gt_copy_numbers = None
             variant_names = []
             het_names = []
             hom_alt_names = []
@@ -681,7 +672,7 @@ class GeminiQuery(object):
             for idx, col in enumerate(self.report_cols):
                 if col == "*":
                     continue
-                if not col.startswith(("gt", "GT")) and not col == "info":
+                if not col[:2] in ("gt", "GT") and not col == "info":
                     fields[col] = row[col]
                 elif col == "info":
                     fields[col] = self._info_dict_to_string(info)
@@ -849,7 +840,7 @@ class GeminiQuery(object):
             self._execute_query()
 
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
-                                   if not tuple[0].startswith("gt") \
+                    if not tuple[0][:2] == "gt" \
                                       and ".gt" not in tuple[0]]
 
             if "*" in self.select_columns:
@@ -865,7 +856,7 @@ class GeminiQuery(object):
         else:
             self._execute_query()
             self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
-                                   if not tuple[0].startswith("gt")]
+                    if not tuple[0][:2] == "gt"]
             self.report_cols = self.all_query_cols
 
     def _correct_genotype_col(self, raw_col):
@@ -1040,12 +1031,9 @@ class GeminiQuery(object):
         # remove any GT columns
         select_clause_list = []
         for token in select_tokens:
-            if not token.startswith("gt") and \
-               not token.startswith("GT") and \
+            if not token[:2] in ("GT", "gt", "(gt", "(GT") and \
                not ".gt" in token and \
-               not ".GT" in token and \
-               not token.startswith("(gt") and \
-               not token.startswith("(GT"):
+               not ".GT" in token:
                 select_clause_list.append(token)
 
         # reconstruct the query with the GT* columns added
@@ -1199,8 +1187,7 @@ class GeminiQuery(object):
     def _query_needs_genotype_info(self):
         tokens = self._tokenize_query()
         requested_genotype = "variants" in tokens and \
-                            (any([x.startswith("gt") for x in tokens]) or \
-                             any([x.startswith("(gt") for x in tokens]) or \
+                            (any(x.startswith(("gt", "(gt")) for x in tokens) or \
                              any(".gt" in x for x in tokens))
         return requested_genotype or \
                self.include_gt_cols or \
