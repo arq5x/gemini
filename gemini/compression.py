@@ -9,12 +9,11 @@ from gemini_utils import OrderedDict
 # http://stackoverflow.com/questions/695794/more-efficient-way-to-
 # pickle-a-string
 
-
 def pack_blob(obj):
     return sqlite3.Binary(zdumps(obj))
 
 def unpack_genotype_blob(blob):
-    return numpy.array(cPickle.loads(zlib.decompress(blob)))
+    return numpy.asarray(cPickle.loads(zlib.decompress(blob)))
     
 def unpack_ordereddict_blob(blob):
 	blob_val = cPickle.loads(zlib.decompress(blob))
