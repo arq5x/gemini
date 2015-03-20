@@ -760,12 +760,7 @@ class GeminiQuery(object):
     def _group_samples_by_genotype(self, gt_types):
         """
         make dictionary keyed by genotype of list of samples with that genotype
-        _seen is used to cache the results since gt_types won't change and this
-        is a fairly expensive function.
         """
-        #key_fn = itemgetter(1)
-        #val_fn = lambda x: self.idx_to_sample[x[0]]
-        #return partition_by_fn(enumerate(gt_types), key_fn=key_fn, val_fn=val_fn)
         d = collections.defaultdict(list)
         lookup = self.idx_to_sample
         for i, x in enumerate(gt_types):
@@ -1246,7 +1241,7 @@ try:
     from itertools import chain
     flatten = chain.from_iterable
 except ImporError:
-    1/0
+    pass
 
 
 if __name__ == "__main__":
