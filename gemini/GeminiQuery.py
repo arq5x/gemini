@@ -640,7 +640,7 @@ class GeminiQuery(object):
             if 'info' in self.report_cols:
                 info = compression.unpack_ordereddict_blob(row['info'])
 
-            unpacked = {}
+            unpacked = {'self': self}
             unpack = compression.unpack_genotype_blob
             if self._query_needs_genotype_info():
                 # TODO: see if HET, etc. are needed. if not, we can skip
@@ -648,17 +648,13 @@ class GeminiQuery(object):
                 unpacked['gt_types'] = unpack(row['gt_types'])
                 genotype_dict = self._group_samples_by_genotype(unpacked['gt_types'])
                 if self.gt_filter:
-                    unpacked['gts'] = unpack(row['gts'])
-                    for k in ('gt_phases', 'gt_depths', 'gt_ref_depths',
+                    for k in ('gts', 'gt_phases', 'gt_depths', 'gt_ref_depths',
                             'gt_alt_depths', 'gt_quals', 'gt_copy_numbers'):
                         # only unpack what is needed.
                         if k in self.gt_filter:
                             unpacked[k] = unpack(row[k])
 
-                    # skip the record if it does not meet the user's genotype filter
-                    env = locals()
-                    env.update(unpacked)
-                    if not eval(self.gt_filter, env):
+                    if not eval(self.gt_filter, unpacked):
                         continue
 
                 het_names = genotype_dict[HET]
@@ -732,7 +728,7 @@ class GeminiQuery(object):
                     info,
                     formatter=self.formatter)
 
-            if not all([predicate(gemini_row) for predicate in self.predicates]):
+            if not all(predicate(gemini_row) for predicate in self.predicates):
                 continue
 
             if not self.for_browser:
