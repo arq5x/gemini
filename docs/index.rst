@@ -40,7 +40,15 @@ A workflow for the above steps is given below.
      | bgzip -c > $NORMVCF
   tabix $NORMVCF
 
-  gemini load -t snpEff -v $NORMVCF $db --cores 3 
+  # load the pre-processed VCF into GEMINI
+  gemini load --cores 3 -t snpEff -v $NORMVCF $db
+
+  # query away
+  gemini query -q "select chrom, start, end, ref, alt, (gts).(*) from variants" \
+               --gt-filter "gt_types.mom == HET and \
+                            gt_types.dad == HET and \
+                            gt_types.kid == HOM_ALT" \
+               $db
 
 
 =================
