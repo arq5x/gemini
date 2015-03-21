@@ -28,23 +28,25 @@ class Subject(object):
         self.mother = True
 
     def _set_fields_from_row(self, row):
-        for k, v in it.izip(row.keys(), row):
-            setattr(self, k, v)
+        self.__dict__.update(dict(zip(row.keys(), row)))
+        #for k, v in zip(row.keys(), row):
+        #    self.__dict__[k] = v
         self.phenotype = int(self.phenotype) if self._has_phenotype() else None
-        self._set_affected_status(row)
+        self._set_affected_status()
 
     def _has_phenotype(self):
         if hasattr(self, 'phenotype') and self.phenotype is not None:
             return True
 
-    def _set_affected_status(self, row):
+    def _set_affected_status(self):
         # 1 = unaffected
         # 2 = affected
         # 0 or -9 is unknown.
         # http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped
-        if str(self.phenotype) == "2":
+        pheno = str(self.phenotype)
+        if pheno == "2":
             self.affected = True
-        elif str(self.phenotype) == "1":
+        elif pheno == "1":
             self.affected = False
         # distinguish unknown from known to be unaffected.
         else:
