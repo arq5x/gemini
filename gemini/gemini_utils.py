@@ -17,7 +17,9 @@ def map_indices_to_samples(c):
     """Return a dict mapping samples indices in the
        numpy arrays (key) to sample names.
     """
-    return {k: v.name for (k, v) in map_indices_to_sample_objects(c).items()}
+    d = {k: v.name for (k, v) in map_indices_to_sample_objects(c).items()}
+    assert sorted(d.keys()) == range(len(d))
+    return [d[i] for i in range(len(d))]
 
 def map_indices_to_sample_objects(c):
     c.execute("select * from samples")

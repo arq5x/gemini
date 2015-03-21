@@ -744,9 +744,10 @@ class GeminiQuery(object):
 
     def _group_samples_by_genotype(self, gt_types):
         """
-        make dictionary keyed by genotype of list of samples with that genotype
+        make list keyed by genotype of list of samples with that genotype
+        so index 0 is HOM, 1 is HET, 2 is UKNOWN, 3 is HOM_ALT.
         """
-        d = collections.defaultdict(list)
+        d = [[], [], [], []]
         lookup = self.idx_to_sample
         for i, x in enumerate(gt_types):
             d[x].append(lookup[i])
