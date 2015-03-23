@@ -643,16 +643,16 @@ class GeminiQuery(object):
                 # _group_samples_by_genotype
                 unpacked['gt_types'] = unpack(row['gt_types'])
                 genotype_dict = self._group_samples_by_genotype(unpacked['gt_types'])
-                if self.gt_filter:
+                if self.gt_filter or self.include_gt_cols:
                     for k in ('gts', 'gt_phases', 'gt_depths', 'gt_ref_depths',
                             'gt_alt_depths', 'gt_quals', 'gt_copy_numbers'):
                         # only unpack what is needed.
-                        if k in self.gt_filter:
+                        if (self.gt_filter is not None and k in self.gt_filter) or self.include_gt_cols:
                             unpacked[k] = unpack(row[k])
 
                     # skip the record if it does not meet the user's genotype filter
                     # short circuit some expensive ops
-                    if not eval(self.gt_filter, unpacked):
+                    if self.gt_filter and not eval(self.gt_filter, unpacked):
                         continue
 
                 het_names = genotype_dict[HET]
