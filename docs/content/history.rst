@@ -2,6 +2,11 @@
 Release History
 #############################
 
+0.12.2 
+=======================================
+Corrected a stale .c file in the cyvcf library. This is effectively a replacement for the 0.12.1 release.
+
+
 0.12.1 
 =======================================
 1. Support for input VCF files containing variants with multiple alternate alleles. Thanks to Brent Pedersen.
