@@ -557,6 +557,9 @@ class GeminiQuery(object):
                 self.gt_filter = self._correct_genotype_filter()
                 self.query_type = "filter-genotypes"
 
+        if self.gt_filter:
+            import compiler
+            self.gt_filter_compiled = compiler.compile(self.gt_filter, "<string>", 'eval')
         self._apply_query()
         self.query_executed = True
 
@@ -619,7 +622,6 @@ class GeminiQuery(object):
         # throw a continue and keep trying. the alternative is to just
         # recursively call self.next() if we need to skip, but this
         # can quickly exceed the stack.
-
         while (1):
             try:
                 row = self.c.next()
@@ -652,7 +654,7 @@ class GeminiQuery(object):
 
                     # skip the record if it does not meet the user's genotype filter
                     # short circuit some expensive ops
-                    if self.gt_filter and not eval(self.gt_filter, unpacked):
+                    if self.gt_filter and not eval(self.gt_filter_compiled, unpacked):
                         continue
 
                 het_names = genotype_dict[HET]
