@@ -217,3 +217,94 @@ gemini query -q "select chrom, end, ref, alt, \
        > obs
 check obs exp
 rm obs exp
+
+echo "    genotypes.t09...\c"
+gemini query --header -q "select chrom, start, end, ref, alt, (gts).(*) from variants" extended_ped.db --gt-filter "(gt_types).(phenotype == 1).(==HOM_REF).(all) and ((gt_types).(phenotype==2).(==HET).(any) or (gt_types).(phenotype==2).(==HOM_ALT).(any))" > obs
+
+echo "chrom	start	end	ref	alt	gts.M10475	gts.M10478	gts.M10500	gts.M128215
+chr10	135210790	135210791	T	C	T/T	C/C	C/C	T/T
+chr10	135369531	135369532	T	C	T/T	T/C	T/C	T/T" > exp
+check obs exp
+rm obs exp
+
+echo "    genotypes.t10...\c"
+gemini query --header -q "select chrom, start, end, ref, alt, (gts).(*) from variants" extended_ped.db --gt-filter "(gt_types).(phenotype == 1).(==HOM_ALT).(all) and ((gt_types).(phenotype==2).(==HET).(any) or (gt_types).(phenotype==2).(==HOM_ALT).(any))" > obs
+
+echo "chrom	start	end	ref	alt	gts.M10475	gts.M10478	gts.M10500	gts.M128215
+chr10	1142207	1142208	T	C	C/C	C/C	C/C	C/C" > exp
+check obs exp
+
+
+echo "    genotypes.t11...\c"
+gemini query --header -q "select chrom, start, end, ref, alt, (gts).(phenotype==2) from variants limit 1" extended_ped.db > obs
+echo "chrom	start	end	ref	alt	gts.M10478	gts.M10500
+chr10	1142207	1142208	T	C	C/C	C/C" > exp
+check obs exp
+
+
+echo "    genotypes.t12...\c"
+gemini query --header -q "select chrom, start, end, ref, alt, (gts).(phenotype==2), (gt_ref_depths).(phenotype==2) from variants"     --gt-filter "(gt_ref_depths).(phenotype==2).(>=20).(all)" extended_ped.db > obs
+
+echo "chrom	start	end	ref	alt	gts.M10478	gts.M10500	gt_ref_depths.M10478	gt_ref_depths.M10500
+chr10	48003991	48003992	C	T	C/T	C/T	20	24
+chr16	72057434	72057435	C	T	C/C	C/C	56	67" > exp
+check obs exp
+
+
+
+echo "    genotypes.t13...\c"
+gemini query --header -q "select chrom, start, end, ref, alt, (gts).(phenotype==2), (gt_ref_depths).(phenotype==2) from variants" --gt-filter "(gt_ref_depths).(phenotype==2).(>=20).(any)" extended_ped.db > obs
+
+
+echo "chrom	start	end	ref	alt	gts.M10478	gts.M10500	gt_ref_depths.M10478	gt_ref_depths.M10500
+chr10	48003991	48003992	C	T	C/T	C/T	20	24
+chr10	126678091	126678092	G	A	G/G	G/G	11	52
+chr10	135369531	135369532	T	C	T/C	T/C	27	15
+chr16	72057434	72057435	C	T	C/C	C/C	56	67" > exp
+check obs exp
+
+
+echo "    genotypes.t14...\c"
+gemini query --header -q "select chrom, start, end, ref, alt, (gt_types).(phenotype==2) from variants" extended_ped.db > obs
+echo "chrom	start	end	ref	alt	gt_types.M10478	gt_types.M10500
+chr10	1142207	1142208	T	C	3	3
+chr10	48003991	48003992	C	T	1	1
+chr10	52004314	52004315	T	C	2	3
+chr10	52497528	52497529	G	C	3	3
+chr10	126678091	126678092	G	A	0	0
+chr10	135210790	135210791	T	C	3	3
+chr10	135336655	135336656	G	A	3	2
+chr10	135369531	135369532	T	C	1	1
+chr16	72057434	72057435	C	T	0	0" >exp
+check obs exp
+
+
+echo "    genotypes.t15...\c"
+gemini query --header -q "select chrom, start, end, ref, alt, (gt_types).(phenotype==2) from variants" extended_ped.db --gt-filter "(gt_types).(phenotype==2).(==HOM_REF).(all)" > obs
+
+echo "chrom	start	end	ref	alt	gt_types.M10478	gt_types.M10500
+chr10	126678091	126678092	G	A	0	0
+chr16	72057434	72057435	C	T	0	0" > exp
+check obs exp
+
+
+n=15
+for a in gt_ref_depths gt_alt_depths gt_depths gt_types; do
+	for b in HOM_REF HET HOM_ALT UNKNOWN; do
+		  n=$(($n + 1))
+	      echo "    genotypes.t$n...\c"
+		  rm -f obs
+          gemini query --header -q "select chrom, start, end, ref, alt, ($a).(phenotype==2) from variants" extended_ped.db --gt-filter "(gt_types).(phenotype==2).(==$b).(all)" > obs
+		  v=$(cat obs | wc -l)
+		  if [ $v -gt 1 ]; then
+			  echo "ok"
+		  elif [ $b = UNKNOWN ]; then
+			  echo "ok"
+		  else
+			  echo "   FAIL", $a, $b
+          fi
+	done
+done
+
+
+
