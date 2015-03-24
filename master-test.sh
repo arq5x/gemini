@@ -86,6 +86,8 @@ bash test-stats.sh
 # Test windower
 bash test-windower.sh
 
+#
+bash test-fitcons.sh
 
 # Test pfam domains
 bash test-pfam.sh
