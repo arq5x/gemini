@@ -45,7 +45,7 @@ def get_anno_files( args ):
                                            'encode.6celltypes.consensus.bedg.gz'),
      'gerp_elements': os.path.join(anno_dirname, 'hg19.gerp.elements.bed.gz'),
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
-     'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bw"),
+     'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bed.gz"),
      'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
      'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz')
     }
@@ -173,7 +173,7 @@ def load_annos( args ):
     hits = dbsnp_handle.fetch(chrom, start, end)
     """
     anno_files = get_anno_files( args )
-    for anno in anno_files: 
+    for anno in anno_files:
         try:
             # .gz denotes Tabix files.
             if anno_files[anno].endswith(".gz"):
@@ -271,12 +271,12 @@ def _get_cadd_scores(var, labels, hit):
     """
     raw = hit[3].split(",")
     scaled = hit[4].split(",")
-    
+
     p = re.compile(str(var.ALT[0]))
     for m in p.finditer(str(labels[hit[2]])):
         pos = m.start()
         return raw[pos], scaled[pos]
-        
+
 
 def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
     """Iterator of annotations found in a genomic region.
@@ -314,7 +314,7 @@ def get_cpg_island_info(var):
 #     """
 #     Returns Polyphen, SIFT, etc. from dbNSFP annotation file.
 #     One prediction per transcript.
-    
+
 #     LIMITATION: only handles bi-allelic loci
 #     """
 
@@ -329,7 +329,7 @@ def get_cpg_island_info(var):
 #             if var.POS == int(hit[1]) and \
 #                var.REF == hit[2] and \
 #                var.ALT[0] == hit[3]:
-                
+
 #                 transcripts = hit[7].split(';')
 #                 aapos = hit[8].split(';')
 #                 pp_scores = hit[11].split(';')
@@ -388,16 +388,12 @@ def get_vista_enhancers(var):
     return ",".join(vista_enhancers) if len(vista_enhancers) > 0 else None
 
 def get_fitcons(var):
-    chrom, start, end = _get_var_coords(var, "ucsc")
-    anno = annos["fitcons"]
-    try:
-        summary = anno.summarize(str(chrom), start, end, end - start)
-        if summary.max_val[0] >= 0:
-            return summary.max_val[0]
-        else:
-            return None
-    except AttributeError:
-        return None
+    hmax = None
+    for hit in annotations_in_region(var, "fitcons", "tuple", "ucsc"):
+        v = float(hit[3])
+        if v > hmax:
+            hmax = v
+    return hmax
 
 def get_cadd_scores(var):
     """
@@ -410,25 +406,25 @@ def get_cadd_scores(var):
 
     cadd_raw = cadd_scaled = None
     labels = {"A":"CGT", "C":"AGT", "G":"ACT", "T":"ACG", "R":"ACGT", "M":"ACGT"}
-    
+
     for hit in annotations_in_region(var, "cadd_score", "tuple", "grch37"):
         # we want exact position mapping here and not a range (end-start) as
         # returned in hit (e.g. indels) & we do not want to consider del & ins
         if str(hit[1]) == str(var.POS) and var.REF and var.ALT[0] and \
            len(var.REF) == 1 and len(var.ALT[0]) == 1:
-           
+
             if str(hit[2]) == var.REF and str(var.ALT[0]) in labels[hit[2]]:
                (cadd_raw, cadd_scaled) = _get_cadd_scores(var, labels, hit)
-            
+
             # consider ref cases with ambiguity codes R (G,A) and M (A,C)
             elif ((str(hit[2]) == 'R'  and var.REF in('G','A')) or \
                 (str(hit[2]) == 'M'  and var.REF in('A','C'))) and \
                 str(var.ALT[0]) in labels[hit[2]]:
                 (cadd_raw, cadd_scaled) = _get_cadd_scores(var, labels, hit)
-    
+
     return (cadd_raw, cadd_scaled)
-     
-    
+
+
 def get_pfamA_domains(var):
     """
     Returns pfamA domains that a variant overlaps
@@ -519,7 +515,7 @@ def get_clinvar_info(var):
         causal_allele_numbers = [x for x in info_map['CLNALLE'].split(',') if x
                 != '.'] # CLNALLE=0,1 or CLNALLE=0 or CLNALLE=1
         if len(causal_allele_numbers) == 1:
-            causal_allele_number = int(causal_allele_numbers[0])          
+            causal_allele_number = int(causal_allele_numbers[0])
             if causal_allele_number == -1 or causal_allele_number is None:
               clinvar.clinvar_causal_allele = None
             elif causal_allele_number == 0:
@@ -633,7 +629,7 @@ def get_1000G_info(var):
             found = True
 
     return ThousandGInfo(found, info_map.get('AF'), info_map.get('AMR_AF'),
-                         info_map.get('EAS_AF'), info_map.get('SAS_AF'), 
+                         info_map.get('EAS_AF'), info_map.get('SAS_AF'),
                          info_map.get('AFR_AF'), info_map.get('EUR_AF'))
 
 def get_exac_info(var):
@@ -736,6 +732,7 @@ def get_exac_info(var):
                             aaf_SAS = float(ac_sas[allele_num]) / float(info_map.get('AN_SAS'))
                         except ZeroDivisionError:
                             aaf_SAS = 0
+                    if found: break
 
     return ExacInfo(found, aaf_ALL, adj_aaf_ALL, aaf_AFR, aaf_AMR, aaf_EAS,
                      aaf_FIN, aaf_NFE, aaf_OTH, aaf_SAS)
