@@ -194,18 +194,17 @@ def load_annos( args ):
 # ## Standard access to Tabix indexed files
 
 
-def _get_hits(coords, annotation, parser_type):
+PARSERS = {"bed": pysam.asBed(),
+           "vcf": pysam.asVCF(),
+           "tuple": pysam.asTuple(),
+           None: None}
+
+def _get_hits(coords, annotation, parser_type, _parsers=PARSERS):
     """Retrieve BED information, recovering if BED annotation file does have a chromosome.
     """
-    if parser_type == "bed":
-        parser = pysam.asBed()
-    elif parser_type == "vcf":
-        parser = pysam.asVCF()
-    elif parser_type == "tuple":
-        parser = pysam.asTuple()
-    elif parser_type is None:
-        parser = None
-    else:
+    try:
+        parser = _parsers[parser_type]
+    except KeyError:
         raise ValueError("Unexpected parser type: %s" % parser)
     chrom, start, end = coords
     try:
