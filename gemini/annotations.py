@@ -560,11 +560,11 @@ def get_esp_info(var):
     1       69496   rs150690004     G       A       .       PASS    DBSNP=dbSNP_134;EA_AC=2,6764;AA_AC=23,3785;TAC=25,10549;MAF=0.0296,0.604,0.2364;GTS=AA,AG,GG;EA_GTC=0,2,3381;AA_GTC=5,13,1886;GTC=5,15,5267;DP=91;GL=OR4F5;CP=0.5;CG=2.3;AA=G;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;GM=NM_001005484.1;FG=missense;AAC=SER/GLY;PP=136/306;CDP=406;GS=56;PH=benign
     1       69511   rs75062661      A       G       .       PASS    DBSNP=dbSNP_131;EA_AC=5337,677;AA_AC=1937,1623;TAC=7274,2300;MAF=11.2571,45.5899,24.0234;GTS=GG,GA,AA;EA_GTC=2430,477,100;AA_GTC=784,369,627;GTC=3214,846,727;DP=69;GL=OR4F5;CP=1.0;CG=1.1;AA=G;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;GM=NM_001005484.1;FG=missense;AAC=ALA/THR;PP=141/306;CDP=421;GS=58;PH=benign
     """
-    aaf_EA = aaf_AA = aaf_ALL = None
-    maf = fetched = con = []
+    fetched = []
     exome_chip = False
     found = False
     info_map = {}
+    acs = {}
     for hit in annotations_in_region(var, "esp", "vcf", "grch37"):
         if hit.contig not in ['Y']:
             fetched.append(hit)
@@ -581,19 +581,18 @@ def get_esp_info(var):
                         (key, value) = info.split("=", 1)
                         info_map[key] = value
 
+                # NOTE:, if we start ot use GTS, need to update preprocessing
+                # script to handle weirdness on X, Y
                 # get the allele counts so that we can compute alternate allele frequencies
                 # example: EA_AC=2,6764;AA_AC=23,3785;TAC=25,10549
-                if info_map.get('EA_AC') is not None:
-                    lines = info_map['EA_AC'].split(",")
-                    aaf_EA = float(lines[0]) / (float(lines[0]) + float(lines[1]))
-
-                if info_map.get('AA_AC') is not None:
-                    lines = info_map['AA_AC'].split(",")
-                    aaf_AA = float(lines[0]) / (float(lines[0]) + float(lines[1]))
-
-                if info_map.get('TAC') is not None:
-                    lines = info_map['TAC'].split(",")
-                    aaf_ALL = float(lines[0]) / (float(lines[0]) + float(lines[1]))
+                for key in ('EA_AC', 'AA_AC', 'TAC'):
+                    if info_map.get(key) is not None:
+                        lines = info_map[key].split(",")
+                        denom = float(lines[0]) + float(lines[1])
+                        if denom == 0:
+                            acs[key] = 0
+                        else:
+                            acs[key] = float(lines[0]) / denom
 
                 # Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
@@ -602,8 +601,8 @@ def get_esp_info(var):
                 elif info_map.get('EXOME_CHIP') is not None and \
                         info_map['EXOME_CHIP'] == "yes":
                     exome_chip = 1
-
-    return ESPInfo(found, aaf_EA, aaf_AA, aaf_ALL, exome_chip)
+                break
+    return ESPInfo(found, acs.get('EA_AC'), acs.get("AA_AC"), acs.get("TAC"), exome_chip)
 
 
 EMPTY_1000G = ThousandGInfo(False, None, None, None, None, None, None)
