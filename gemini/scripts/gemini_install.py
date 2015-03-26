@@ -21,6 +21,7 @@ import shutil
 import subprocess
 import sys
 import urllib2
+import urllib
 
 remotes = {"requirements_pip": "https://raw.github.com/arq5x/gemini/master/requirements.txt",
            "requirements_conda": "",
@@ -46,6 +47,11 @@ def main(args):
 
     if args.gemini_version == "unstable":
         remotes = remotes_dev
+        requirements_pip = remotes['requirements_pip']
+        requirements_conda = remotes['requirements_conda']
+        urllib.urlretrieve(requirements_pip, filename='_pip_dev.txt')
+        urllib.urlretrieve(requirements_conda, filename='_conda_dev.txt')
+        remotes.update({'requirements_pip': '_pip_dev.txt', 'requirements_conda': '_conda_dev.txt'})
 
     elif args.gemini_version != 'latest':
         requirements_pip = os.path.join(remotes['versioned_installations'],
