@@ -22,18 +22,19 @@ import subprocess
 import sys
 import urllib2
 
-remotes = {"requirements_pip":
-           "https://raw.github.com/arq5x/gemini/master/requirements.txt",
-            "requirements_conda":
-           "",
-            "versioned_installations":
-            "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
-           "cloudbiolinux":
-           "https://github.com/chapmanb/cloudbiolinux.git",
-           "gemini":
-           "https://github.com/arq5x/gemini.git",
-           "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86%s.sh"}
+remotes = {"requirements_pip": "https://raw.github.com/arq5x/gemini/master/requirements.txt",
+           "requirements_conda": "",
+           "versioned_installations": "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
+           "cloudbiolinux": "https://github.com/chapmanb/cloudbiolinux.git",
+           "gemini": "https://github.com/arq5x/gemini.git",
+           "anaconda": "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86%s.sh"}
+
+remotes_dev = remotes.copy()
+remotes_dev.update({
+    "requirements_pip": "https://raw.github.com/arq5x/gemini/dev/requirements.txt",
+    "gemini": "git+https://github.com/arq5x/gemini.git@dev"
+})
+
 
 def main(args):
     check_dependencies()
@@ -42,7 +43,10 @@ def main(args):
         os.makedirs(work_dir)
     os.chdir(work_dir)
 
-    if args.gemini_version != 'latest':
+    if args.gemini_version == "unstable":
+        remotes = remotes_dev
+
+    elif args.gemini_version != 'latest':
         requirements_pip = os.path.join(remotes['versioned_installations'],
                                         args.gemini_version, 'requirements_pip.txt')
         requirements_conda = os.path.join(remotes['versioned_installations'],
