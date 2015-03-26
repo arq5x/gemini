@@ -32,7 +32,8 @@ remotes = {"requirements_pip": "https://raw.github.com/arq5x/gemini/master/requi
 remotes_dev = remotes.copy()
 remotes_dev.update({
     "requirements_pip": "https://raw.github.com/arq5x/gemini/dev/requirements.txt",
-    "gemini": "git+https://github.com/arq5x/gemini.git@dev"
+    "gemini": "git+https://github.com/arq5x/gemini.git@dev",
+    "requirements_conda": "https://raw.githubusercontent.com/arq5x/gemini/dev/versioning/unstable/requirements_conda.txt",
 })
 
 
