@@ -67,7 +67,9 @@ anno_versions = {
     "hg19.rmsk.bed.gz": 2,
     "detailed_gene_table_v75": 2,
     "summary_gene_table_v75": 2,
-    "cosmic-v68-GRCh37.tidy.vcf.gz": 3}
+    "cosmic-v68-GRCh37.tidy.vcf.gz": 3,
+    "ESP6500SI.all.snps_indels.tidy.vcf.gz": 2
+    }
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
     """Download required annotation files.
