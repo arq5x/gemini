@@ -62,6 +62,14 @@ def main(args):
         requirements_conda = remotes['requirements_conda']
         urllib.urlretrieve(requirements_pip, filename='_pip_dev.txt')
         urllib.urlretrieve(requirements_conda, filename='_conda_dev.txt')
+
+        # quick hack to support testing installs:
+        if args.gemini_version == "bp":
+            for f in ('_pip_dev.txt', '_conda_dev.txt'):
+                contents = open(f).read().replace('arq5x', 'brentp')
+                with open(f, 'w') as fh:
+                    fh.write(contents)
+
         remotes.update({'requirements_pip': '_pip_dev.txt', 'requirements_conda': '_conda_dev.txt'})
 
     elif args.gemini_version != 'latest':
