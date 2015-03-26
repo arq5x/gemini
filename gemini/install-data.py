@@ -18,7 +18,8 @@ The recommended Gemini install location is /usr/local/share/gemini.
 """
 
 anno_files = \
-['dbsnp.b141.20140813.hg19.tidy.vcf.gz',
+['hg19_fitcons_fc-i6-0_V1-01.bed.gz',
+'dbsnp.b141.20140813.hg19.tidy.vcf.gz',
 'clinvar_20150305.tidy.vcf.gz',
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
@@ -50,7 +51,6 @@ anno_files = \
 'detailed_gene_table_v75',
 'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv',
-'hg19_fitcons_fc-i6-0_V1-01.bed.gz',
 'ExAC.r0.3.sites.vep.tidy.vcf.gz'
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}
