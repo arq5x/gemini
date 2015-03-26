@@ -248,7 +248,13 @@ def install_testbase(datadir, repo, gemini):
             shutil.rmtree(gemini_dir)
     if needs_git:
         os.chdir(os.path.split(gemini_dir)[0])
-        subprocess.check_call(["git", "clone", repo])
+        if repo.startswith("git+"):
+            repo = repo[4:]
+        if repo.endswith("@dev"):
+            url, branch = repo.rsplit("@", 1)
+            subprocess.check_call(["git", "clone", "-b", branch, url])
+        else:
+            subprocess.check_call(["git", "clone", repo])
     os.chdir(gemini_dir)
     _update_testdir_revision(gemini["cmd"])
     os.chdir(cur_dir)
