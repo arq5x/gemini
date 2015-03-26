@@ -592,7 +592,8 @@ def get_esp_info(var):
                         if denom == 0:
                             acs[key] = 0
                         else:
-                            acs[key] = float(lines[0]) / denom
+                            # alt allele is stored as 2nd.
+                            acs[key] = float(lines[1]) / denom
 
                 # Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
