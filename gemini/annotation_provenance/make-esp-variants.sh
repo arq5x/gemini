@@ -19,6 +19,6 @@ rm -f ESP6500SI.all.snps_indels.tidy.vcf.gz
 zless ESP6500SI.all.snps_indels.vcf.gz | python sanitize-esp.py | bgzip -c > /tmp/t.gz
 tabix /tmp/t.gz
 vt decompose -s /tmp/t.gz \
-	| vt normalize -r $REF - | bgzip -c > ESP6500SI.all.snps_indels.tidy.vcf.gz
-tabix ESP6500SI.all.snps_indels.tidy.vcf.gz
+	| vt normalize -r $REF - | bgzip -c > ESP6500SI.all.snps_indels.tidy.v2.vcf.gz
+tabix ESP6500SI.all.snps_indels.tidy.v2.vcf.gz
 rm /tmp/t.gz

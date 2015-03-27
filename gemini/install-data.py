@@ -30,7 +30,7 @@ anno_files = \
 'hg19.gwas.bed.gz',
 'hg19.rmsk.bed.gz',
 'hg19.segdup.bed.gz',
-'ESP6500SI.all.snps_indels.tidy.vcf.gz',
+'ESP6500SI.all.snps_indels.tidy.v2.vcf.gz',
 'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.tidy.vcf.gz',
 'genetic_map_HapMapII_GRCh37.gz',
 'wgEncodeRegTfbsClusteredV2.cell_count.20130213.bed.gz',
@@ -68,7 +68,7 @@ anno_versions = {
     "detailed_gene_table_v75": 2,
     "summary_gene_table_v75": 2,
     "cosmic-v68-GRCh37.tidy.vcf.gz": 3,
-    "ESP6500SI.all.snps_indels.tidy.vcf.gz": 2
+    "ESP6500SI.all.snps_indels.tidy.v2.vcf.gz": 2
     }
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
