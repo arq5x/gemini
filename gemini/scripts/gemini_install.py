@@ -37,6 +37,13 @@ remotes_dev.update({
     "requirements_conda": "https://raw.githubusercontent.com/arq5x/gemini/dev/versioning/unstable/requirements_conda.txt",
 })
 
+remotes_bp = remotes_dev
+remotes_bp.update({
+    "requirements_pip": "https://raw.github.com/brentp/gemini/dev/requirements.txt",
+    "gemini": "git+https://github.com/brentp/gemini.git@dev",
+    "requirements_conda": "https://raw.githubusercontent.com/brentp/gemini/dev/versioning/unstable/requirements_conda.txt",
+})
+
 
 def main(args):
     check_dependencies()
@@ -45,12 +52,24 @@ def main(args):
         os.makedirs(work_dir)
     os.chdir(work_dir)
 
-    if args.gemini_version == "unstable":
-        remotes = remotes_dev
+    if args.gemini_version in ("unstable", "bp"):
+        if args.gemini_version == "unstable":
+            remotes = remotes_dev
+        else:
+            remotes = remotes_bp
+
         requirements_pip = remotes['requirements_pip']
         requirements_conda = remotes['requirements_conda']
         urllib.urlretrieve(requirements_pip, filename='_pip_dev.txt')
         urllib.urlretrieve(requirements_conda, filename='_conda_dev.txt')
+
+        # quick hack to support testing installs:
+        if args.gemini_version == "bp":
+            for f in ('_pip_dev.txt', '_conda_dev.txt'):
+                contents = open(f).read().replace('arq5x', 'brentp')
+                with open(f, 'w') as fh:
+                    fh.write(contents)
+
         remotes.update({'requirements_pip': '_pip_dev.txt', 'requirements_conda': '_conda_dev.txt'})
 
     elif args.gemini_version != 'latest':
