@@ -45,7 +45,7 @@ remotes_bp.update({
 })
 
 
-def main(args):
+def main(args, remotes=remotes):
     check_dependencies()
     work_dir = os.path.join(os.getcwd(), "tmpgemini_install")
     if not os.path.exists(work_dir):
