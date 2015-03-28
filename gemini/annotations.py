@@ -28,7 +28,7 @@ def get_anno_files( args ):
      'cpg_island': os.path.join(anno_dirname, 'hg19.CpG.bed.gz'),
      'dgv': os.path.join(anno_dirname, 'hg19.dgv.bed.gz'),
      'esp': os.path.join(anno_dirname,
-                         'ESP6500SI.all.snps_indels.tidy.vcf.gz'),
+                         'ESP6500SI.all.snps_indels.tidy.v2.vcf.gz'),
      '1000g': os.path.join(anno_dirname,
                            'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.tidy.vcf.gz'),
      'recomb': os.path.join(anno_dirname,
