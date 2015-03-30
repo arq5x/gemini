@@ -9,7 +9,7 @@ long_description = """
 
 with open("requirements.txt", "r") as f:
     install_requires = [x.strip() for x in f.readlines() if not
-                        x.startswith(("gemini", "http"))]
+                        x.startswith(("gemini", "http", "git"))]
 
 setup(
         name="gemini",

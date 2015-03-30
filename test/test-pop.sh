@@ -1,7 +1,7 @@
+source ./check.sh
 ################################################################################
 #1. Test ESP annotations
 ################################################################################
-echo "    pop_metrics.t1...\c"
 echo "0	None	None	None	0
 1	0.0457067757009	0.003663003663	0.0306466729147	0
 1	0.88742933156	0.544101123596	0.759766033006	0
@@ -13,14 +13,13 @@ echo "0	None	None	None	0
 0	None	None	None	0" > exp
 gemini query -q "select in_esp, aaf_esp_ea, aaf_esp_aa, aaf_esp_all, exome_chip from variants" test2.snpeff.db \
  > obs
-check obs exp
+check obs exp "pop_metrics.t1"
 rm obs exp
 
 ################################################################################
 #2.Test 1000g annotations
 ################################################################################
 
-echo "    pop_metrics.t2...\c"
 echo "in_1kg	aaf_1kg_all	aaf_1kg_eas	aaf_1kg_sas	aaf_1kg_amr	aaf_1kg_afr	aaf_1kg_eur
 0	None	None	None	None	None	None
 1	0.0189696	0.003	0.0153	0.036	0.0015	0.0497
@@ -33,14 +32,13 @@ echo "in_1kg	aaf_1kg_all	aaf_1kg_eas	aaf_1kg_sas	aaf_1kg_amr	aaf_1kg_afr	aaf_1kg
 1	1	1	1	1	1	1" > exp
 gemini query --header -q "select in_1kg, aaf_1kg_all, aaf_1kg_eas, aaf_1kg_sas, aaf_1kg_amr, aaf_1kg_afr, aaf_1kg_eur from variants" test2.snpeff.db \
 > obs
-check obs exp
+check obs exp "pop_metrics.t2"
 rm obs exp
 
 ################################################################################
 #3. Test dbsnp and rsids
 ################################################################################
 
-echo "    pop_metrics.t3...\c"
 echo "1	rs201219564
 1	rs140739101
 1	rs75062661
@@ -51,5 +49,5 @@ echo "1	rs201219564
 0	None
 1	rs6672356" > exp
 gemini query -q "select in_dbsnp, rs_ids from variants" test2.snpeff.db > obs
-check obs exp
+check obs exp "pop_metrics.t3"
 rm obs exp
