@@ -265,6 +265,7 @@ def install_testbase(datadir, repo, gemini):
         except:
             os.chdir(cur_dir)
             shutil.rmtree(gemini_dir)
+    branch = None
     if needs_git:
         os.chdir(os.path.split(gemini_dir)[0])
         if repo.startswith("git+"):
@@ -275,7 +276,9 @@ def install_testbase(datadir, repo, gemini):
         else:
             subprocess.check_call(["git", "clone", repo])
     os.chdir(gemini_dir)
-    _update_testdir_revision(gemini["cmd"])
+    if branch is None: # otherwise, we use the test structure at current head.
+        _update_testdir_revision(gemini["cmd"])
+
     os.chdir(cur_dir)
     return os.path.join(gemini_dir, "master-test.sh")
 
