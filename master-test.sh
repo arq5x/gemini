@@ -116,6 +116,7 @@ bash test-fusions.sh
 
 bash test-multiple-alts.sh
 
+bash test-esp.sh
 # cleanup
 rm ./*.db
 rm ./file.dot
