@@ -263,6 +263,7 @@ def install_testbase(datadir, repo, gemini):
             subprocess.check_call(["git", "pull", "origin", "master", "--tags"])
             needs_git = False
         except:
+            print "Removing %s from %s" % (gemini_dir, cur_dir)
             os.chdir(cur_dir)
             shutil.rmtree(gemini_dir)
     branch = None
