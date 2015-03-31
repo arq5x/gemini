@@ -76,10 +76,12 @@ def release(parser, args):
             print "Run test suite with: cd %s && bash master-test.sh" % test_dir
 
 def clean_env_variables():
-    """Remove environmental variables which can cause conflicts with installed anaconda python.
+    """Adjust environmental variables which can cause conflicts with installed anaconda python.
     """
     for k in ["PYTHONPATH", "PYTHONHOME"]:
         os.environ.pop(k, None)
+    # https://docs.python.org/2/using/cmdline.html#envvar-PYTHONNOUSERSITE
+    os.environ["PYTHONNOUSERSITE"] = "1"
 
 def _get_install_script():
     try:

@@ -301,10 +301,12 @@ def get_cloudbiolinux(repo):
             "tool_fabfile": os.path.join(base_dir, "fabfile.py")}
 
 def clean_env_variables():
-    """Remove environmental variables which can cause conflicts with installed anaconda python.
+    """Adjust environmental variables which can cause conflicts with installed anaconda python.
     """
     for k in ["PYTHONPATH", "PYTHONHOME"]:
         os.environ.pop(k, None)
+    # https://docs.python.org/2/using/cmdline.html#envvar-PYTHONNOUSERSITE
+    os.environ["PYTHONNOUSERSITE"] = "1"
 
 def check_dependencies():
     """Ensure required tools for installation are present.
