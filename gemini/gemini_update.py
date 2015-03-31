@@ -93,7 +93,9 @@ def _update_testbase(repo_dir, repo, gemini_cmd):
             os.chdir(cur_dir)
             shutil.rmtree(repo_dir)
     if needs_git:
-        os.chdir(os.path.split(repo_dir)[0])
+        p = os.path.split(repo_dir)[0]
+        print "cloning %s to %s" % (repo, p)
+        os.chdir(p)
         subprocess.check_call(["git", "clone", repo])
     os.chdir(repo_dir)
     _update_testdir_revision(gemini_cmd)
