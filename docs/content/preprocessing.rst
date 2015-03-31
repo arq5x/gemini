@@ -25,12 +25,6 @@ left-align, and trim their variants**. The tools we recommend for this are eithe
 gemini uses the allele depths from the AD tag. In order for `vt` to decompose correctly, users will have
 to change the #INFO field for AD in the header from Number=. to Number=R. 
 
-It is also possible to use our `standalone python script <https://github.com/quinlan-lab/vcftidy>`_ which handles more cases:
-
-.. code-block:: bash
-
-    python vcftidy.py $VCF $REFERENCE > $NEW_VCF
-
 Then the `$NEW_VCF` can be annotated with snpEff or VEP.
 
 ===================================
