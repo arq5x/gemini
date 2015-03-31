@@ -26,6 +26,15 @@ from gemini_constants import *
 from compression import pack_blob
 from gemini.config import read_gemini_config
 
+def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=0):
+    out = []
+    for row in gt_phred_likelihoods:
+        # we only try to use the correct PL's if it already has size 3
+        if len(row) == 3:
+            out.append([int(v) if v is not None else empty_val for v in row])
+        else:
+            out.append([empty_val]*3)
+    return np.array(out, dtype=dtype)
 
 class GeminiLoader(object):
     """
@@ -421,7 +430,7 @@ class GeminiLoader(object):
             gt_alt_depths = np.array(var.gt_alt_depths, np.int32)  # 8 16 0 -1
             gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
             gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
-            gt_phred_likelihoods = np.array(var.gt_phred_likelihoods, np.int32)
+            gt_phred_likelihoods = get_phred_lik(var.gt_phred_likelihoods)
 
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
