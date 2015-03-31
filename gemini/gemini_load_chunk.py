@@ -53,7 +53,7 @@ class GeminiLoader(object):
 
         self.buffer_size = buffer_size
         self._get_anno_version()
-        
+
         if not args.skip_gene_tables:
             self._get_gene_detailed()
             self._get_gene_summary()
@@ -357,7 +357,7 @@ class GeminiLoader(object):
             gerp_el = None
             vista_enhancers = None
             cosmic_ids = None
-            fitcons = None                
+            fitcons = None
             cadd_raw = None
             cadd_scaled = None
             gerp_bp = None
@@ -421,6 +421,7 @@ class GeminiLoader(object):
             gt_alt_depths = np.array(var.gt_alt_depths, np.int32)  # 8 16 0 -1
             gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
             gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
+            gt_phred_likelihoods = np.array(var.gt_phred_likelihoods, np.int32)
 
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
@@ -433,6 +434,7 @@ class GeminiLoader(object):
             gt_alt_depths = None
             gt_quals = None
             gt_copy_numbers = None
+            gt_phred_likelihoods = None
 
         if self.args.skip_info_string is False:
             info = var.INFO
@@ -472,13 +474,14 @@ class GeminiLoader(object):
                    pack_blob(gt_phases), pack_blob(gt_depths),
                    pack_blob(gt_ref_depths), pack_blob(gt_alt_depths),
                    pack_blob(gt_quals), pack_blob(gt_copy_numbers),
+                   pack_blob(gt_phred_likelihoods),
                    call_rate, in_dbsnp,
                    rs_ids,
                    ci_left[0],
-                   ci_left[1], 
+                   ci_left[1],
                    ci_right[0],
                    ci_right[1],
-                   sv.get_length(), 
+                   sv.get_length(),
                    sv.is_precise(),
                    sv.get_sv_tool(),
                    sv.get_evidence_type(),
@@ -579,7 +582,7 @@ class GeminiLoader(object):
                 # sample_id and set the other required fields to None
                 sample_list = [i, 0, sample, 0, 0, -9, -9]
             database.insert_sample(self.c, sample_list)
-            
+
     def _get_gene_detailed(self):
         """
         define a gene detailed table
@@ -587,25 +590,25 @@ class GeminiLoader(object):
         #unique identifier for each entry
         i = 0
         table_contents = detailed_list = []
-        
+
         config = read_gemini_config( args = self.args )
         path_dirname = config["annotation_dir"]
         file_handle = os.path.join(path_dirname, 'detailed_gene_table_v75')
-        
+
         for line in open(file_handle, 'r'):
             field = line.strip().split("\t")
             if not field[0].startswith("Chromosome"):
                 i += 1
                 table = gene_table.gene_detailed(field)
                 detailed_list = [str(i),table.chrom,table.gene,table.is_hgnc,
-                                 table.ensembl_gene_id,table.ensembl_trans_id, 
-                                 table.biotype,table.trans_status,table.ccds_id, 
-                                 table.hgnc_id,table.entrez,table.cds_length,table.protein_length, 
+                                 table.ensembl_gene_id,table.ensembl_trans_id,
+                                 table.biotype,table.trans_status,table.ccds_id,
+                                 table.hgnc_id,table.entrez,table.cds_length,table.protein_length,
                                  table.transcript_start,table.transcript_end,
                                  table.strand,table.synonym,table.rvis,table.mam_phenotype]
                 table_contents.append(detailed_list)
         database.insert_gene_detailed(self.c, table_contents)
-        
+
     def _get_gene_summary(self):
         """
         define a gene summary table
@@ -613,11 +616,11 @@ class GeminiLoader(object):
         #unique identifier for each entry
         i = 0
         contents = summary_list = []
-        
+
         config = read_gemini_config( args = self.args )
         path_dirname = config["annotation_dir"]
         file = os.path.join(path_dirname, 'summary_gene_table_v75')
-        
+
         for line in open(file, 'r'):
             col = line.strip().split("\t")
             if not col[0].startswith("Chromosome"):
