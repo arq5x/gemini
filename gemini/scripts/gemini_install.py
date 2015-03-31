@@ -96,6 +96,7 @@ def main(args, remotes=remotes):
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     os.chdir(work_dir)
     install_data(gemini["python"], gemini["data_script"], args)
+    print os.listdir(args.datadir)
     os.chdir(work_dir)
     test_script = install_testbase(args.datadir, remotes["gemini"], gemini)
     print "Finished: gemini, tools and data installed"
@@ -263,9 +264,12 @@ def install_testbase(datadir, repo, gemini):
             subprocess.check_call(["git", "pull", "origin", "master", "--tags"])
             needs_git = False
         except:
-            print "Removing %s from %s" % (gemini_dir, cur_dir)
+            print "Removing %s" % (gemini_dir, )
+            print "no git..."
+            print os.listdir(datadir)
             os.chdir(cur_dir)
             shutil.rmtree(gemini_dir)
+            print os.listdir(datadir)
     branch = None
     if needs_git:
         os.chdir(os.path.split(gemini_dir)[0])
@@ -276,6 +280,7 @@ def install_testbase(datadir, repo, gemini):
             subprocess.check_call(["git", "clone", "-b", branch, url])
         else:
             subprocess.check_call(["git", "clone", repo])
+        print os.listdir(datadir)
     os.chdir(gemini_dir)
     if branch is None: # otherwise, we use the test structure at current head.
         _update_testdir_revision(gemini["cmd"])
