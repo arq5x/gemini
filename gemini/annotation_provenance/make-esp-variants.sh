@@ -1,3 +1,4 @@
+set -e
 wget http://evs.gs.washington.edu/evs_bulk_data/ESP6500SI.snps_indels.vcf.tar.gz
 
 # extract the VCF for each individual chromosome
@@ -12,8 +13,12 @@ tar -zxvf ESP6500SI.snps_indels.vcf.tar.gz
 bgzip ESP6500SI.all.snps_indels.vcf
 tabix -p vcf ESP6500SI.all.snps_indels.vcf.gz
 
+REF=/data/hs37d5.fa
+rm -f ESP6500SI.all.snps_indels.tidy.vcf.gz
 # gemini version 0.12
-
-vt decompose -s ESP6500SI.all.snps_indels.vcf.gz \
-	| vt normalize -r /data/human/b37/human_g1k_v37_decoy.fasta | bgzip -c > ESP6500SI.all.snps_indels.tidy.vcf.gz
-bgzip -f ESP6500SI.all.snps_indels.tidy.vcf.gz
+zless ESP6500SI.all.snps_indels.vcf.gz | python sanitize-esp.py | bgzip -c > /tmp/t.gz
+tabix /tmp/t.gz
+vt decompose -s /tmp/t.gz \
+	| vt normalize -r $REF - | bgzip -c > ESP6500SI.all.snps_indels.tidy.v2.vcf.gz
+tabix ESP6500SI.all.snps_indels.tidy.v2.vcf.gz
+rm /tmp/t.gz

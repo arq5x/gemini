@@ -86,6 +86,8 @@ bash test-stats.sh
 # Test windower
 bash test-windower.sh
 
+#
+bash test-fitcons.sh
 
 # Test pfam domains
 bash test-pfam.sh
@@ -114,6 +116,7 @@ bash test-fusions.sh
 
 bash test-multiple-alts.sh
 
+bash test-esp.sh
 # cleanup
 rm ./*.db
 rm ./file.dot

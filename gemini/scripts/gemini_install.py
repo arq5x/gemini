@@ -21,21 +21,31 @@ import shutil
 import subprocess
 import sys
 import urllib2
+import urllib
 
-remotes = {"requirements_pip":
-           "https://raw.github.com/arq5x/gemini/master/requirements.txt",
-            "requirements_conda":
-           "",
-            "versioned_installations":
-            "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
-           "cloudbiolinux":
-           "https://github.com/chapmanb/cloudbiolinux.git",
-           "gemini":
-           "https://github.com/arq5x/gemini.git",
-           "anaconda":
-           "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86%s.sh"}
+remotes = {"requirements_pip": "https://raw.github.com/arq5x/gemini/master/requirements.txt",
+           "requirements_conda": "",
+           "versioned_installations": "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
+           "cloudbiolinux": "https://github.com/chapmanb/cloudbiolinux.git",
+           "gemini": "https://github.com/arq5x/gemini.git",
+           "anaconda": "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86%s.sh"}
 
-def main(args):
+remotes_dev = remotes.copy()
+remotes_dev.update({
+    "requirements_pip": "https://raw.github.com/arq5x/gemini/dev/requirements.txt",
+    "gemini": "git+https://github.com/arq5x/gemini.git@dev",
+    "requirements_conda": "https://raw.githubusercontent.com/arq5x/gemini/dev/versioning/unstable/requirements_conda.txt",
+})
+
+remotes_bp = remotes_dev
+remotes_bp.update({
+    "requirements_pip": "https://raw.github.com/brentp/gemini/dev/requirements.txt",
+    "gemini": "git+https://github.com/brentp/gemini.git@dev",
+    "requirements_conda": "https://raw.githubusercontent.com/brentp/gemini/dev/versioning/unstable/requirements_conda.txt",
+})
+
+
+def main(args, remotes=remotes):
     check_dependencies()
     clean_env_variables()
     work_dir = os.path.join(os.getcwd(), "tmpgemini_install")
@@ -43,7 +53,27 @@ def main(args):
         os.makedirs(work_dir)
     os.chdir(work_dir)
 
-    if args.gemini_version != 'latest':
+    if args.gemini_version in ("unstable", "bp"):
+        if args.gemini_version == "unstable":
+            remotes = remotes_dev
+        else:
+            remotes = remotes_bp
+
+        requirements_pip = remotes['requirements_pip']
+        requirements_conda = remotes['requirements_conda']
+        urllib.urlretrieve(requirements_pip, filename='_pip_dev.txt')
+        urllib.urlretrieve(requirements_conda, filename='_conda_dev.txt')
+
+        # quick hack to support testing installs:
+        if args.gemini_version == "bp":
+            for f in ('_pip_dev.txt', '_conda_dev.txt'):
+                contents = open(f).read().replace('arq5x', 'brentp')
+                with open(f, 'w') as fh:
+                    fh.write(contents)
+
+        remotes.update({'requirements_pip': '_pip_dev.txt', 'requirements_conda': '_conda_dev.txt'})
+
+    elif args.gemini_version != 'latest':
         requirements_pip = os.path.join(remotes['versioned_installations'],
                                         args.gemini_version, 'requirements_pip.txt')
         requirements_conda = os.path.join(remotes['versioned_installations'],
@@ -67,6 +97,7 @@ def main(args):
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     os.chdir(work_dir)
     install_data(gemini["python"], gemini["data_script"], args)
+    print os.listdir(args.datadir)
     os.chdir(work_dir)
     test_script = install_testbase(args.datadir, remotes["gemini"], gemini)
     print "Finished: gemini, tools and data installed"
@@ -235,12 +266,27 @@ def install_testbase(datadir, repo, gemini):
             needs_git = False
         except:
             os.chdir(cur_dir)
-            shutil.rmtree(gemini_dir)
+            shutil.move(gemini_dir, "gtmp")
+
+    branch = None
     if needs_git:
         os.chdir(os.path.split(gemini_dir)[0])
-        subprocess.check_call(["git", "clone", repo])
+        if repo.startswith("git+"):
+            repo = repo[4:]
+        if repo.endswith("@dev"):
+            url, branch = repo.rsplit("@", 1)
+            subprocess.check_call(["git", "clone", "-b", branch, url])
+        else:
+            subprocess.check_call(["git", "clone", repo])
+        os.makedirs(os.path.join(gemini_dir, "data"))
+        for f in os.listdir(os.path.join(cur_dir, "gtmp", "data")):
+            shutil.move(os.path.join(cur_dir, "gtmp", "data", f), os.path.join(gemini_dir, "data"))
+        #shutil.move(os.path.join(cur_dir, "gtmp"), gemini_dir)
+        shutil.rmtree(os.path.join(cur_dir, "gtmp", "data"))
     os.chdir(gemini_dir)
-    _update_testdir_revision(gemini["cmd"])
+    if branch is None: # otherwise, we use the test structure at current head.
+        _update_testdir_revision(gemini["cmd"])
+
     os.chdir(cur_dir)
     return os.path.join(gemini_dir, "master-test.sh")
 
