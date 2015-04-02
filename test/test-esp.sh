@@ -6,6 +6,6 @@ gemini query -q "select in_esp, aaf_esp_ea, aaf_esp_aa, aaf_esp_all, exome_chip 
 echo "0	None	None	None	0
 0	None	None	None	0
 0	None	None	None	0
-1	0	0.0714285714286	0.0714285714286	0" > exp
+1	0	0.0121951219512	0.00415401821377	0" > exp
 
 check obs exp "esp.zero.t1"
