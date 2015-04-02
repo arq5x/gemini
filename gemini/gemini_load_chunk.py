@@ -26,14 +26,23 @@ from gemini_constants import *
 from compression import pack_blob
 from gemini.config import read_gemini_config
 
-def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=0):
+def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=-1):
+    """
+    Force each sample to have 3 GL's (0/0, 0/1, 1/1).
+    If no samples have GL's, then we just return None to save space.
+    """
     out = []
+    all_empty = True
+    empty_line = [empty_val] * 3
     for row in gt_phred_likelihoods:
         # we only try to use the correct PL's if it already has size 3
-        if len(row) == 3:
+        if row is not None and len(row) == 3:
             out.append([int(v) if v is not None else empty_val for v in row])
+            all_empty = False
         else:
-            out.append([empty_val]*3)
+            out.append(empty_line)
+    if all_empty:
+        return None
     return np.array(out, dtype=dtype)
 
 class GeminiLoader(object):

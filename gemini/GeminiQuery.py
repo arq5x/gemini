@@ -684,6 +684,11 @@ class GeminiQuery(object):
                         if not source in unpacked:
                             unpacked[source] = unpack(row[source])
                         assert extra[-1] == ']'
+                        if source == 'gt_phred_likelihoods' and unpacked[source] == None:
+                            fields[orig_col] = None
+                            continue
+
+
                         idx = int(extra[:-1])
                         val = unpacked[source][idx]
 
@@ -698,8 +703,10 @@ class GeminiQuery(object):
                         # asked for "gts" or "gt_types", e.g.
                         if not col in unpacked:
                             unpacked[col] = unpack(row[col])
-
-                        fields[col] = ",".join(str(v) for v in unpacked[col])
+                        if unpacked[col] is not None:
+                            fields[col] = ",".join(str(v) for v in unpacked[col])
+                        else:
+                            fields[col] = str(None)
 
             if self.show_variant_samples:
                 fields["variant_samples"] = \
