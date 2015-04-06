@@ -430,6 +430,8 @@ class GeminiLoader(object):
         # build up numpy arrays for the genotype information.
         # these arrays will be pickled-to-binary, compressed,
         # and loaded as SqlLite BLOB values (see compression.pack_blob)
+        gt_phred_ll_homref = gt_phred_ll_het = gt_phred_ll_homalt = None
+
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             gt_bases = np.array(var.gt_bases, np.str)  # 'A/G', './.'
             gt_types = np.array(var.gt_types, np.int8)  # -1, 0, 1, 2
@@ -440,6 +442,10 @@ class GeminiLoader(object):
             gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
             gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
             gt_phred_likelihoods = get_phred_lik(var.gt_phred_likelihoods)
+            if gt_phred_likelihoods is not None:
+                gt_phred_ll_homref = gt_phred_likelihoods[:, 0]
+                gt_phred_ll_het = gt_phred_likelihoods[:, 1]
+                gt_phred_ll_homalt = gt_phred_likelihoods[:, 2]
 
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
@@ -452,7 +458,6 @@ class GeminiLoader(object):
             gt_alt_depths = None
             gt_quals = None
             gt_copy_numbers = None
-            gt_phred_likelihoods = None
 
         if self.args.skip_info_string is False:
             info = var.INFO
@@ -492,7 +497,9 @@ class GeminiLoader(object):
                    pack_blob(gt_phases), pack_blob(gt_depths),
                    pack_blob(gt_ref_depths), pack_blob(gt_alt_depths),
                    pack_blob(gt_quals), pack_blob(gt_copy_numbers),
-                   pack_blob(gt_phred_likelihoods),
+                   pack_blob(gt_phred_ll_homref),
+                   pack_blob(gt_phred_ll_het),
+                   pack_blob(gt_phred_ll_homalt),
                    call_rate, in_dbsnp,
                    rs_ids,
                    ci_left[0],

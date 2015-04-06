@@ -1,25 +1,33 @@
 source ./check.sh
 
-gemini query -q "select gt_phred_likelihoods.A, gt_phred_likelihoods.B from variants" test.PLs.db > obs
-echo "[561   0 317]	[   0   99 1176]
-[142   0 251]	[ 34   0 311]
-[   0  247 2833]	[ 744    0 2519]
-[1119    0 3133]	[ 438    0 4373]
-[3658    0 2804]	[1456    0 4749]
-[45  3  0]	[-1 -1 -1]
-[45  3  0]	[-1 -1 -1]
-[41  3  0]	[-1 -1 -1]
-None	None" > exp
+gemini query -q "select gt_phred_ll_homref.A, gt_phred_ll_het.A, gt_phred_ll_homalt.A, gt_phred_ll_homref.B, gt_phred_ll_het.B, gt_phred_ll_homalt.B from variants" test.PLs.db > obs
+echo "561	0	317	0	99	1176
+142	0	251	34	0	311
+0	247	2833	744	0	2519
+1119	0	3133	438	0	4373
+3658	0	2804	1456	0	4749
+45	3	0	-1	-1	-1
+45	3	0	-1	-1	-1
+41	3	0	-1	-1	-1
+None	None	None	None	None	None" > exp
 
 check obs exp "GLs.t01"
 
 
-gemini query -q "select (gt_phred_likelihoods).(*) from variants limit 2" test.PLs.db > obs
+gemini query -q "select (gt_phred_ll_homref).(*) from variants limit 2" test.PLs.db > obs
 
-echo "[561   0 317]	[   0   99 1176]	[   0  280 3426]	[  0  78 892]	[282   0 254]	[360   0 494]	[  0  48 572]	[  0  42 491]	[  0  15 150]	[137   0 171]	[  0  66 748]	[401   0 154]
-[142   0 251]	[ 34   0 311]	[ 57   0 803]	[404   0 238]	[46  0 51]	[207   0  19]	[99  0 77]	[49  0 49]	[-1 -1 -1]	[-1 -1 -1]	[ 46   0 102]	[ 37   0 259]" > exp
+echo "561	0	0	0	282	360	0	0	0	137	0	401
+142	34	57	404	46	207	99	49	-1	-1	46	37" > exp
 
 check obs exp "GLs.t02"
+
+gemini query --header -q "select (gt_phred_ll_homref).(*) from variants" --gt-filter "(gt_phred_ll_homref).(*).(>=20).(all)" test.PLs.db > obs
+
+echo "gt_phred_ll_homref.A	gt_phred_ll_homref.B	gt_phred_ll_homref.C	gt_phred_ll_homref.D	gt_phred_ll_homref.E	gt_phred_ll_homref.F	gt_phred_ll_homref.G	gt_phred_ll_homref.H	gt_phred_ll_homref.I	gt_phred_ll_homref.J	gt_phred_ll_homref.K	gt_phred_ll_homref.L
+1119	438	87	583	383	125	755	88	1649	201	161	103" > exp
+
+
+check obs exp "GLs.t03"
 
 <<GENOTYPES
 0/1:44,29:70:99:561,0,317	0/0:56,0:56:99:0,99,1176	0/0:158,0:158:99:0,280,3426	0/0:91,2:91:78:0,78,892	0/1:28,12:38:99:282,0,254	0/1:41,17:56:99:360,0,494	0/0:35,0:35:48:0,48,572	0/0:47,0:47:42:0,42,491	0/0:21,0:21:15:0,15,150	0/1:18,6:23:99:137,0,171	0/0:47,1:47:66:0,66,748	0/1:30,16:44:99:401,0,154

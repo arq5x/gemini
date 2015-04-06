@@ -371,7 +371,9 @@ class GeminiRow(object):
                  gt_phases=None, gt_depths=None,
                  gt_ref_depths=None, gt_alt_depths=None,
                  gt_quals=None, gt_copy_numbers=None,
-                 gt_phred_likelihoods=None,
+                 gt_phred_ll_homref=None,
+                 gt_phred_ll_het=None,
+                 gt_phred_ll_homalt=None,
                  variant_samples=None,
                  HET_samples=None, HOM_ALT_samples=None,
                  HOM_REF_samples=None, UNKNOWN_samples=None,
@@ -386,10 +388,15 @@ class GeminiRow(object):
         self.gt_alt_depths = gt_alt_depths
         self.gt_quals = gt_quals
         self.gt_copy_numbers = gt_copy_numbers
-        self.gt_phred_likelihoods = gt_phred_likelihoods
+        self.gt_phred_ll_homref = gt_phred_ll_homref
+        self.gt_phred_ll_het = gt_phred_ll_het
+        self.gt_phred_ll_homalt = gt_phred_ll_homalt
         self.gt_cols = ['gts', 'gt_types', 'gt_phases',
                         'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
-                        'gt_quals', 'gt_copy_numbers', 'gt_phred_likelihoods', "variant_samples", "HET_samples", "HOM_ALT_samples", "HOM_REF_samples"]
+                        'gt_quals', 'gt_copy_numbers', 'gt_phred_ll_homref',
+                        'gt_phred_ll_het', "gt_pred_ll_homalt",
+                        "variant_samples", "HET_samples", "HOM_ALT_samples",
+                        "HOM_REF_samples"]
         self.formatter = formatter
         self.variant_samples = variant_samples
         self.HET_samples = HET_samples
@@ -649,14 +656,21 @@ class GeminiQuery(object):
                 genotype_dict = self._group_samples_by_genotype(unpacked['gt_types'])
                 if self.gt_filter or self.include_gt_cols:
                     for k in ('gts', 'gt_phases', 'gt_depths', 'gt_ref_depths',
-                            'gt_alt_depths', 'gt_quals', 'gt_copy_numbers', 'gt_phred_likelihoods'):
+                            'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',
+                              'gt_phred_ll_homref',
+                              'gt_phred_ll_het',
+                              'gt_phred_ll_homalt',
+                              ):
                         # only unpack what is needed.
                         if (self.gt_filter is not None and k in self.gt_filter) or self.include_gt_cols:
                             unpacked[k] = unpack(row[k])
 
                     # skip the record if it does not meet the user's genotype filter
                     # short circuit some expensive ops
-                    if self.gt_filter and not eval(self.gt_filter_compiled, unpacked):
+                    try:
+                        if self.gt_filter and not eval(self.gt_filter_compiled, unpacked):
+                            continue
+                    except TypeError: # tried to eval on a phred_ll column that was None
                         continue
 
                 het_names = genotype_dict[HET]
@@ -684,7 +698,7 @@ class GeminiQuery(object):
                         if not source in unpacked:
                             unpacked[source] = unpack(row[source])
                         assert extra[-1] == ']'
-                        if source == 'gt_phred_likelihoods' and unpacked[source] == None:
+                        if source.startswith('gt_phred_ll') and unpacked[source] == None:
                             fields[orig_col] = None
                             continue
 
@@ -729,7 +743,9 @@ class GeminiQuery(object):
                     unpacked.get('gt_alt_depths'),
                     unpacked.get('gt_quals'),
                     unpacked.get('gt_copy_numbers'),
-                    unpacked.get('gt_phred_likelihoods'),
+                    unpacked.get('gt_phred_ll_homref'),
+                    unpacked.get('gt_phred_ll_het'),
+                    unpacked.get('gt_phred_ll_homalt'),
                     variant_names,
                     het_names,
                     hom_alt_names,
@@ -808,9 +824,9 @@ class GeminiQuery(object):
         # make sure a "gt" col is in the string
         valid_cols = ["gts.", "gt_types.", "gt_phases.", "gt_quals.",
                       "gt_depths.", "gt_ref_depths.", "gt_alt_depths.", "gt_copy_numbers.",
-                      "gt_phred_likelihoods",
+                      "gt_phred_ll_homref", "gt_phred_ll_het", "gt_phred_ll_homalt",
                       "(gts).", "(gt_types).", "(gt_phases).", "(gt_quals).", "(gt_copy_numbers).",
-                      "(gt_phred_likelihoods).",
+                      "(gt_phred_ll_homref).", "(gt_phred_ll_het).", "(gt_phred_ll_homalt).",
                       "(gt_depths).", "(gt_ref_depths).", "(gt_alt_depths)."]
         if any(s in self.gt_filter for s in valid_cols):
             return True
@@ -1051,13 +1067,13 @@ class GeminiQuery(object):
             select_clause = ",".join(select_clause_list) + \
                     ", gts, gt_types, gt_phases, gt_depths, \
                        gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, \
-                       gt_phred_likelihoods "
+                       gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt "
 
         else:
             select_clause = ",".join(select_clause_list) + \
                     " gts, gt_types, gt_phases, gt_depths, \
                       gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, \
-                      gt_phred_likelihoods "
+                      gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt "
 
         self.query = "select " + select_clause + rest_of_query
 
