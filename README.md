@@ -45,7 +45,7 @@ https://groups.google.com/forum/?fromgroups#!forum/gemini-variation
 Acknowledgements
 ================
 GEMINI is being developed in the Quinlan lab (quinlanlab.org) at the University
-of Virginia and is led by Uma Paila and Aaron Quinlan.  Substantial contributions 
+of Utah and is led by Brent Pedersen, Uma Paila and Aaron Quinlan.  Substantial contributions 
 to the code base have also been made by Brad Chapman (@chapmanb) and
 Rory Kirchner (@roryk) at the Harvard School of Public Health.
 

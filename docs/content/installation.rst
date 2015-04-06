@@ -7,7 +7,7 @@ Automated installation
 
 GEMINI contains an automated installation script which installs
 GEMINI along with required Python dependencies, third party software
-and data files. 
+and data files.
 
 .. code-block:: bash
 
@@ -58,7 +58,14 @@ in any directories one wishes.**
 
   3. If you're installing behind a proxy you'll need to set proxy information in
      a `condarc file`_ and also set ``all_proxy``, ``http_proxy`` and ``https_proxy``
-     in your ``.bashrc`` file. See `this mailing list discussion`_ for more information.
+     in your ``.bashrc`` file. See `this mailing list discussion`_ for more
+     information.
+
+  4. The installer tries to ignore site-wide environmental variables pointing to
+     other Python installations, but if you have issues with pulling in
+     Python libraries from other locations, you clear these by unsetting/setting
+     these environmental variables before running:
+     ``unset PYTHONPATH && unset PYTHONHOME && export PYTHONNOUSERSITE=1``
 
 .. _condarc file: http://docs.continuum.io/conda/intro.html#configuration
 .. _this mailing list discussion: https://groups.google.com/d/msg/gemini-variation/WMQiMDeW6aE/6oa8nS1NorUJ

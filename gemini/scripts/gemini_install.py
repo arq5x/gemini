@@ -47,6 +47,7 @@ remotes_bp.update({
 
 def main(args, remotes=remotes):
     check_dependencies()
+    clean_env_variables()
     work_dir = os.path.join(os.getcwd(), "tmpgemini_install")
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
@@ -344,6 +345,14 @@ def get_cloudbiolinux(repo):
         subprocess.check_call(["git", "clone", repo])
     return {"fabricrc": os.path.join(base_dir, "config", "fabricrc.txt"),
             "tool_fabfile": os.path.join(base_dir, "fabfile.py")}
+
+def clean_env_variables():
+    """Adjust environmental variables which can cause conflicts with installed anaconda python.
+    """
+    for k in ["PYTHONPATH", "PYTHONHOME"]:
+        os.environ.pop(k, None)
+    # https://docs.python.org/2/using/cmdline.html#envvar-PYTHONNOUSERSITE
+    os.environ["PYTHONNOUSERSITE"] = "1"
 
 def check_dependencies():
     """Ensure required tools for installation are present.

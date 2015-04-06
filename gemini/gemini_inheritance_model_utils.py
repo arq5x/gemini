@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-import sqlite3
-import os
-import sys
 from collections import defaultdict
 import GeminiQuery
 import sql_utils
@@ -74,7 +71,7 @@ class GeminiInheritanceModelFactory(object):
         for family in families:
 
             family_filter = None
-            
+
             if self.model == "auto_rec":
                 family_filter = family.get_auto_recessive_filter()
             elif self.model == "auto_dom":
@@ -101,15 +98,16 @@ class GeminiInheritanceModelFactory(object):
                     " FROM variants "
         else:
             # report the kitchen sink
-            self.query = "SELECT *" + \
-                    ", gts, gt_types, gt_phases, gt_depths, \
-                    gt_ref_depths, gt_alt_depths, gt_quals" + \
-                    " FROM variants "
+            self.query = "SELECT * \
+                    , gts, gt_types, gt_phases, gt_depths, \
+                    gt_ref_depths, gt_alt_depths, gt_quals, \
+                    gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt \
+                    FROM variants "
 
         # add any non-genotype column limits to the where clause
         if self.args.filter:
             self.query += " WHERE " + self.args.filter
-        
+
         # auto_rec and auto_dom candidates should be limited to
         # variants affecting genes.
         if self.model == "auto_rec" or self.model == "auto_dom"\
@@ -143,7 +141,7 @@ class GeminiInheritanceModelFactory(object):
         for row in self.gq:
 
             curr_gene = row['gene']
-        
+
             # report any candidates for the previous gene
             if curr_gene != prev_gene and prev_gene is not None:
                 self._report_candidates()
@@ -157,7 +155,7 @@ class GeminiInheritanceModelFactory(object):
                 family_gt_cols = self.family_gt_columns[idx]
                 family_dp_cols = self.family_dp_columns[idx]
 
-                # interrogate the genotypes present in each family member to 
+                # interrogate the genotypes present in each family member to
                 # conforming to the genetic model being tested
                 gt_types = row['gt_types']
                 gts = row['gts']
@@ -182,15 +180,15 @@ class GeminiInheritanceModelFactory(object):
                 # if it meets a recessive model, add it to the list
                 # of candidates for this gene.
                 self.candidates[(curr_gene, fam_id)].append((row,
-                                                        family_gt_labels, 
+                                                        family_gt_labels,
                                                         family_gt_cols,
                                                         family_dp_cols))
 
             prev_gene = curr_gene
-    
+
         # report any candidates for the last gene
         self._report_candidates()
-        
+
     def _get_all_candidates(self):
         """
         Identify candidates that meet the user's criteria no matter where
@@ -219,7 +217,7 @@ class GeminiInheritanceModelFactory(object):
                 family_gt_cols = self.family_gt_columns[idx]
                 family_dp_cols = self.family_dp_columns[idx]
 
-                # interrogate the genotypes present in each family member to 
+                # interrogate the genotypes present in each family member to
                 # conforming to the genetic model being tested
                 gt_types = row['gt_types']
                 gts = row['gts']

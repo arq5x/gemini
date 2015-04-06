@@ -112,6 +112,9 @@ def create_tables(cursor):
                     gt_alt_depths blob,                         \
                     gt_quals blob,                              \
                     gt_copy_numbers blob,                       \
+                    gt_phred_ll_homref blob,                    \
+                    gt_phred_ll_het blob,                       \
+                    gt_phred_ll_homalt blob,                    \
                     call_rate float,                            \
                     in_dbsnp bool,                              \
                     rs_ids text default NULL,                   \
@@ -274,7 +277,7 @@ def create_tables(cursor):
                      resource text)''')
 
     cursor.execute('''create table if not exists version (version text)''')
-    
+
     cursor.execute('''create table if not exists gene_detailed (       \
                    uid integer,                                        \
                    chrom text,                                         \
@@ -296,7 +299,7 @@ def create_tables(cursor):
                    rvis_pct float,                                     \
                    mam_phenotype_id text,                              \
                    PRIMARY KEY(uid ASC))''')
-                   
+
     cursor.execute('''create table if not exists gene_summary (     \
                     uid integer,                                    \
                     chrom text,                                     \
@@ -344,7 +347,8 @@ def _insert_variation_one_per_transaction(cursor, buffer):
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
                                                              ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?)', variant)
+                                                             ?,?,?,?,?,?,?,?,?,?, \
+                                                             ?,?,?)', variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -374,7 +378,8 @@ def insert_variation(cursor, buffer):
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
                                                          ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?)', buffer)
+                                                         ?,?,?,?,?,?,?,?,?,?, \
+                                                         ?,?,?)', buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
@@ -412,15 +417,15 @@ def insert_gene_detailed(cursor, table_contents):
                                                           ?)',
                         table_contents)
     cursor.execute("END")
-    
+
 
 def insert_gene_summary(cursor, contents):
     cursor.execute("BEGIN TRANSACTION")
     cursor.executemany('insert into gene_summary values (?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?)', 
+                                                         ?,?,?,?,?)',
                         contents)
     cursor.execute("END")
-    
+
 def insert_resources(cursor, resources):
     """Populate table of annotation resources used in this database.
     """

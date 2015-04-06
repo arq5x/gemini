@@ -22,6 +22,7 @@ def release(parser, args):
     conda_bin = os.path.join(base, "conda")
     if not args.dataonly:
         if os.path.exists(conda_bin):
+            clean_env_variables()
             pkgs = ["bx-python", "conda", "cython", "ipython", "ipython-cluster-helper",
                     "jinja2", "nose", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
                     "python-graph-core", "python-graph-dot",
@@ -73,6 +74,14 @@ def release(parser, args):
         if not os.path.exists(test_dir) or os.path.isdir(test_dir):
             _update_testbase(test_dir, repo, gemini_cmd)
             print "Run test suite with: cd %s && bash master-test.sh" % test_dir
+
+def clean_env_variables():
+    """Adjust environmental variables which can cause conflicts with installed anaconda python.
+    """
+    for k in ["PYTHONPATH", "PYTHONHOME"]:
+        os.environ.pop(k, None)
+    # https://docs.python.org/2/using/cmdline.html#envvar-PYTHONNOUSERSITE
+    os.environ["PYTHONNOUSERSITE"] = "1"
 
 def _get_install_script():
     try:

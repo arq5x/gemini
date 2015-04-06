@@ -14,6 +14,8 @@ rm ./*.db
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
 
+bash test-genotype-likelihoods.sh
+
 # Test gemini region
 bash test-region.sh
 
@@ -118,6 +120,8 @@ bash test-multiple-alts.sh
 
 bash test-esp.sh
 # cleanup
+
+
 rm ./*.db
 rm ./file.dot
 
