@@ -66,7 +66,7 @@ class Family(object):
         self.children = []
         self.affected = []
         self.unaffected = []
-        self.affected_children = []        
+        self.affected_children = []
         self.unaffected_children = []
 
         self.is_constructed = False
@@ -424,7 +424,7 @@ class Family(object):
                             mask += " or "
 
                 mask += ") and ("
-                
+
                 # AND, none of the unaffecteds can be HET
                 num_unaffected = sum(not child.affected for child in self.children)
                 unaffected = 0
