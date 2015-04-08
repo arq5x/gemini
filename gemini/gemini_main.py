@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os.path
 import sys
+import tempfile
 import argparse
 import gemini.version
 
@@ -119,6 +120,8 @@ def main():
                              help='Cluster scheduler to use.')
     parser_load.add_argument('--queue', dest='queue',
                              default=None, help='Cluster queue to use.')
+    parser_load.add_argument('--tempdir', dest='tempdir',
+                             default=tempfile.gettempdir(), help='<TODO add help>')
     parser_load.add_argument('--passonly',
                              dest='passonly',
                              default=False,

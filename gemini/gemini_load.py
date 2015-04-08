@@ -302,7 +302,8 @@ def wait_until_finished(procs):
 
 def cleanup_temp_db_files(chunk_dbs):
     for chunk_db in chunk_dbs:
-        os.remove(chunk_db)
+        if os.path.exists(chunk_db):
+            os.remove(chunk_db)
 
 def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
