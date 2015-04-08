@@ -698,7 +698,7 @@ class GeminiQuery(object):
                         if not source in unpacked:
                             unpacked[source] = unpack(row[source])
                         assert extra[-1] == ']'
-                        if source.startswith('gt_phred_ll') and unpacked[source] == None:
+                        if source.startswith('gt_phred_ll') and unpacked[source] is None:
                             fields[orig_col] = None
                             continue
 
