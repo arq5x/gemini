@@ -223,6 +223,8 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
+    parser_loadchunk.add_argument('--tempdir', dest='tempdir',
+                        default=tempfile.gettempdir(), help='<TODO add help>')
     def loadchunk_fn(parser, args):
         import gemini_load_chunk
         gemini_load_chunk.load(parser, args)
@@ -240,6 +242,8 @@ def main():
             nargs='*',
             dest='chunkdbs',
             action='append')
+    parser_mergechunks.add_argument('--tempdir', dest='tempdir',
+            default=tempfile.gettempdir(), help='<TODO add help>')
 
     def mergechunk_fn(parser, args):
         import gemini_merge_chunks
