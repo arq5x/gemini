@@ -6,7 +6,7 @@ for line in sys.stdin:
     if line[0] == "#":
         if line.startswith(("##INFO=<ID=EA_AC,", "##INFO=<ID=AA_AC,", "##INFO=<ID=TAC,")):
 
-            line = line.replace(",Number=.", ",Number=R")
+            line = line.replace(",Number=.,Type=String,", ",Number=R,Type=Integer,")
             line = line.replace("AltAlleles,RefAllele", "RefAllele,AltAlleles")
             assert "Number=R" in line
         elif line.startswith("##INFO=<ID=GTS,"):
