@@ -21,7 +21,7 @@ data.
 Basic queries
 ==============================
 
-GEMINI has a specific tool for querying a gemini database that has been ``load``ed
+GEMINI has a specific tool for querying a gemini database that has been loaded
 using the ``gemini load`` command.  That's right, the tool is called
 ``gemini query``. Below are a few basic queries that give you a sense of how to
 interact with the gemini database using the ``query`` tool.
