@@ -2,7 +2,15 @@
 Release History
 #############################
 
-0.13.0
+0.14.0 (Future)
+=======================================
+1. Leverage genotype likelihoods in tools (e.g., de_novo and mendelelian_violations (future)) as a means to priortize confident variants.
+2. Standardize the output from the built-in tools into a common, BED+ format.
+3. Update parsing for newer snpEff version
+4. Improve and tighten up the database loading.
+5. include preprocess script to support varscan, platypus (https://gist.github.com/brentp/4db670df147cbd5a2b32)
+
+0.13.0 (2015-Apr-08)
 =======================================
 1. Major `query` speed improvements. For example, the following query goes from 43 seconds in version 0.12.2 to 11 seconds in 0.13.0. All queries involving `gt_*` fields should be substantially faster.
   ::
