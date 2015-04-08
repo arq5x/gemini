@@ -2,6 +2,34 @@
 Release History
 #############################
 
+0.13.0
+=======================================
+1. Major `query` speed improvements thanks to Brent Pedersen. For example, the following query goes from 43 seconds in version 0.12.2 to 11 seconds in 0.13.0. All queries involving `gt_*` fields should be substantially faster.
+  ::
+
+    $ gemini query \
+            -q "select chrom, start, (gts).(*) from variants" data/tmaster.db \
+            --gt-filter "(gt_depths).(*).(>=20).(all)" > /dev/null
+
+2. Speed improvements to `load` thanks to Brent Pedersen. The following went from 7 minutes 9 seconds to 6 minutes 21 seconds.
+  ::
+  
+    $ gemini load -t VEP -v data/v100K.vcf.gz data/tmaster.db --cores 4
+
+3. We added the `gt_phred_ll_homref`, `gt_phred_ll_het`, `gt_phred_ll_homalt` columns to database. These are the genotype likelihoods pulled from the GL or PL columns of the VCF if available. They can all be queried and filtered in the same way as existing gt_* columns. In future releases, we are planning tp use genotype likelihood to assign likelihoods to de novo mutations, mendelian violations, and variants meeting other inheritance patterns. This is being led by Brent Pedersen.
+
+4. Fixed bugs related to splitting multiple alts (thanks to @jdh237)
+
+5. We are working to improve development and release testing. This is ongoing, but we now support gemini_install.py --version unstable so that users can try out the latest changes and help with testing before releases. gemini_update is still limited to master as the most recent version.
+
+6. Update cyvcf so it doesn't error when AD tag is used for non-list data.
+
+7. Fix regression in cyvcf to handle Flags in info field. (Thanks to Jon for reporting)
+
+8. Improvements to install related to PYTHONHOME and other env variables(@chapmanb & @bw2)
+
+
+
 0.12.2 
 =======================================
 Corrected a stale .c file in the cyvcf library. This is effectively a replacement for the 0.12.1 release.

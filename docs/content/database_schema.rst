@@ -71,10 +71,13 @@ gt_quals                  BLOB          | A compressed binary vector of the geno
                                         | - Extracted from the VCF ``GQ`` genotype tag.
 gt_phred_ll_homref        BLOB          | A compressed binary vector of the phred-scaled genotype likelihood of the 0/0 genotype estimates for each sample
                                         | - Extracted from the VCF ``GL`` or ``PL`` tag.
+                                        | - New in version 0.13.0
 gt_phred_ll_het           BLOB          | A compressed binary vector of the phred-scaled genotype likelihood of the 0/1 genotype estimates for each sample
                                         | - Extracted from the VCF ``GL`` or ``PL`` tag.
+                                        | - New in version 0.13.0
 gt_phred_ll_homalt        BLOB          | A compressed binary vector of the phred-scaled genotype likelihood of the 1/1 genotype estimates for each sample
                                         | - Extracted from the VCF ``GL`` or ``PL`` tag.
+                                        | - New in version 0.13.0
 ========================  ========      ==============================================================================================
 
 
