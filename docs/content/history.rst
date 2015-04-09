@@ -8,7 +8,8 @@ Release History
 2. Standardize the output from the built-in tools into a common, BED+ format.
 3. Update parsing for newer snpEff version
 4. Improve and tighten up the database loading.
-5. Include preprocess script to support varscan, platypus (https://gist.github.com/brentp/4db670df147cbd5a2b32)
+5. Tools for X-linked inheritance.
+6. Include preprocess script to support varscan, platypus (https://gist.github.com/brentp/4db670df147cbd5a2b32)
 
 0.13.0 (2015-Apr-08)
 =======================================
