@@ -11,7 +11,7 @@ Release History
 5. Tools for X-linked inheritance.
 6. Include preprocess script to support varscan, platypus (https://gist.github.com/brentp/4db670df147cbd5a2b32)
 
-0.13.0 (2015-Apr-08)
+0.13.1 (2015-Apr-09)
 =======================================
 1. Major `query` speed improvements. For example, the following query goes from 43 seconds in version 0.12.2 to 11 seconds in 0.13.0. All queries involving `gt_*` fields should be substantially faster.
   ::
