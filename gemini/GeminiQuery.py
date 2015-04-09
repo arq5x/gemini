@@ -76,6 +76,19 @@ class DefaultRowFormat(RowFormat):
         """ return a header for the row """
         return "\t".join(fields)
 
+
+class ExcludeChromStartEndRowFormat(DefaultRowFormat):
+    """Don't output chrom, start, end."""
+
+    name = "exclude_bed_cols"
+
+    def format(self, row):
+        r = row.row
+        return '\t'.join([str(r[c]) for c in r if not c in ('chrom', 'start', 'end')])
+
+    def header(self, fields):
+        return "\t".join(f for f in fields if not f in ('chrom', 'start', 'end'))
+
 class CarrierSummary(RowFormat):
     """
     Generates a count of the carrier/noncarrier status of each feature in a given
@@ -377,7 +390,7 @@ class GeminiRow(object):
                  variant_samples=None,
                  HET_samples=None, HOM_ALT_samples=None,
                  HOM_REF_samples=None, UNKNOWN_samples=None,
-                 info=None,formatter=DefaultRowFormat(None)):
+                 info=None, formatter=DefaultRowFormat(None)):
         self.row = row
         self.gts = gts
         self.info = info
@@ -656,7 +669,7 @@ class GeminiQuery(object):
                 genotype_dict = self._group_samples_by_genotype(unpacked['gt_types'])
                 if self.gt_filter or self.include_gt_cols:
                     for k in ('gts', 'gt_phases', 'gt_depths', 'gt_ref_depths',
-                            'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',
+                              'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',
                               'gt_phred_ll_homref',
                               'gt_phred_ll_het',
                               'gt_phred_ll_homalt',
