@@ -4,22 +4,40 @@ import GeminiQuery
 import sql_utils
 from gemini_constants import *
 import gemini_subjects as subjects
+import re
 
 
 class GeminiInheritanceModelFactory(object):
 
+    splitter = re.compile("\s*,\s*")
+    gt_cols = ('gts', 'gt_types', 'gt_phases', 'gt_depths', 'gt_ref_depths',
+               'gt_alt_depths', 'gt_quals', 'gt_phred_ll_homref',
+               'gt_phred_ll_het', 'gt_phred_ll_homalt')
+
     def __init__(self, args, model):
+
+        # default to all genotype columns and all columns
+        cols = [x for x in self.splitter.split(args.columns or ", ".join(self.gt_cols))]
+
+        # we will add these bad in later.
+        cols = [x for x in cols if x not in ("chrom", "start", "end")]
+        if not args.columns:
+            cols.append("*")
+
+        # we always put chrom, start, end first.
+        args.columns = ", ".join(["chrom", "start", "end"] + cols)
+
         self.args = args
         self.model = model
-        self.gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True)
-
+        self.gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True,
+                out_format=GeminiQuery.ExcludeChromStartEndRowFormat(None))
 
     def get_candidates(self):
         """
         Report candidate variants that meet the requested inheritance model.
         """
         if self.model in ["auto_dom", "auto_rec"] \
-        or (self.model == "de_novo" and self.args.min_kindreds is not None):
+           or (self.model == "de_novo" and self.args.min_kindreds is not None):
             self._get_gene_only_candidates()
         else:
             self._get_all_candidates()
@@ -35,13 +53,14 @@ class GeminiInheritanceModelFactory(object):
 
             for (gene, family_id) in self.candidates:
                 for (row, family_gt_label, family_gt_cols, family_dp_cols) \
-                    in self.candidates[(gene, family_id)]:
+                     in self.candidates[(gene, family_id)]:
 
                     gt_types = row['gt_types']
                     gts = row['gts']
                     gt_depths = row['gt_depths']
 
-                    print str(family_id) + "\t" + \
+                    # TODO
+                    print ("%s\t%d\t%d\t%s\t" % (row['chrom'], row['start'], row['end'], family_id)) + \
                         ",".join([str(s) for s in family_gt_label]) + \
                         "\t", \
                         ",".join([str(eval(s)) for s in family_gt_cols]) + \
@@ -94,11 +113,10 @@ class GeminiInheritanceModelFactory(object):
         """
         if self.args.columns is not None:
             # the user only wants to report a subset of the columns
-            self.query = "SELECT " + str(self.args.columns) + \
-                    " FROM variants "
+            self.query = "SELECT " + str(self.args.columns) + " FROM variants "
         else:
             # report the kitchen sink
-            self.query = "SELECT * \
+            self.query = "SELECT chrom, start, end, * \
                     , gts, gt_types, gt_phases, gt_depths, \
                     gt_ref_depths, gt_alt_depths, gt_quals, \
                     gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt \
@@ -132,7 +150,7 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query)
 
         # print a header
-        print "family_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
+        print "chrom\tstart\tend\tfamily_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
         print self.gq.header
 
         # yield the resulting variants for this familiy
@@ -205,7 +223,7 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query)
 
         # print a header
-        print "family_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
+        print "chrom\tstart\tend\tfamily_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
         print self.gq.header
 
         for row in self.gq:
@@ -239,7 +257,8 @@ class GeminiInheritanceModelFactory(object):
                 if insufficient_depth is True:
                     continue
 
-                print str(fam_id) + "\t" + \
+                print ("%s\t%d\t%d\t" % (row['chrom'], row['start'], row['end'])) + \
+                    str(fam_id) + "\t" + \
                     ",".join([str(s) for s in family_gt_labels]) + \
                     "\t", \
                     ",".join([str(eval(s)) for s in family_gt_cols]) + \
