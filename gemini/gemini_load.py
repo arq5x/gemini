@@ -83,21 +83,21 @@ def load_ipython(args):
         merge_chunks_ipython(chunks, args, view)
     gemini_annotate.add_extras(args.db, chunks)
 
-def merge_chunks(chunks, db, args):
-    cmd = get_merge_chunks_cmd(chunks, db, args)
+def merge_chunks(chunks, db, kwargs):
+    cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"))
     print "Merging chunks."
     subprocess.check_call(cmd, shell=True)
     cleanup_temp_db_files(chunks)
     return db
 
-def get_merge_chunks_cmd(chunks, db, args):
+def get_merge_chunks_cmd(chunks, db, tempdir=None):
     chunk_names = ""
     for chunk in chunks:
         chunk_names += " --chunkdb  " + chunk
 
     tempdir_string = ""
-    if args.tempdir is not None:
-        tempdir_string = " --tempdir " + args.tempdir
+    if tempdir is not None:
+        tempdir_string = " --tempdir " + tempdir
 
     return "gemini merge_chunks {chunk_names} {tempdir_string} --db {db}".format(**locals())
 
@@ -108,7 +108,8 @@ def merge_chunks_ipython(chunks, args, view):
     else:
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
-        view.map(merge_chunks, sub_merges, tmp_dbs, [args]*len(sub_merges))
+        merge_args = {"tempdir": args.tempdir}
+        view.map(merge_chunks, sub_merges, tmp_dbs, [merge_args] * len(sub_merges))
         merge_chunks_ipython(tmp_dbs, args, view)
 
 def merge_chunks_multicore(chunks, args):
@@ -137,7 +138,7 @@ def merge_chunks_multicore(chunks, args):
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
         for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
-            cmd = get_merge_chunks_cmd(sub_merge, args)
+            cmd = get_merge_chunks_cmd(sub_merge, tmp_db, tempdir=args.tempdir)
             procs.append(subprocess.Popen(cmd, shell=True))
         wait_until_finished(procs)
         cleanup_temp_db_files(chunks)
