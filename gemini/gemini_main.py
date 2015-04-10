@@ -4,7 +4,7 @@ import sys
 import argparse
 import gemini.version
 
-def add_inheritance_args(parser, min_kindreds=1, depth=True):
+def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
     """Common arguments added to various sub-parsers"""
     parser.add_argument('db',
             metavar='db',
@@ -36,6 +36,14 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True):
               sequence depth (genotype DP) req'd for\
               each sample (def. = 0)",
             default=0)
+
+    if gt_ll:
+        parser.add_argument('-l',
+                            dest='gt_phred_ll',
+                            type=int,
+                            help="The maximum phred-scaled genotype likelihod"
+                                 " (PL) allowed for each sample.",
+                            default=None)
 
 def examples(parser, args):
 
@@ -772,7 +780,7 @@ def main():
     parser_auto_rec = subparsers.add_parser('autosomal_recessive',
             help='Identify variants meeting an autosomal \
                   recessive inheritance model')
-    add_inheritance_args(parser_auto_rec)
+    add_inheritance_args(parser_auto_rec, gt_ll=True)
 
 
     def autosomal_recessive_fn(parser, args):
@@ -786,7 +794,7 @@ def main():
     parser_auto_dom = subparsers.add_parser('autosomal_dominant',
             help='Identify variants meeting an autosomal \
                   dominant inheritance model')
-    add_inheritance_args(parser_auto_dom)
+    add_inheritance_args(parser_auto_dom, gt_ll=True)
 
     def autosomal_dominant_fn(parser, args):
         import tool_autosomal_dominant
@@ -799,7 +807,7 @@ def main():
     parser_de_novo = subparsers.add_parser('de_novo',
             help='Identify candidate de novo mutations')
 
-    add_inheritance_args(parser_de_novo, min_kindreds=None)
+    add_inheritance_args(parser_de_novo, min_kindreds=None, gt_ll=True)
 
     parser_de_novo.add_argument('--only-affected',
             dest='only_affected',

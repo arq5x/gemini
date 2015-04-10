@@ -24,6 +24,9 @@ class GeminiInheritanceModelFactory(object):
         if not args.columns:
             cols.append("*")
 
+        if args.gt_ll:
+
+
         # we always put chrom, start, end first.
         args.columns = ", ".join(["chrom", "start", "end"] + cols)
 
@@ -92,13 +95,14 @@ class GeminiInheritanceModelFactory(object):
             family_filter = None
 
             if self.model == "auto_rec":
-                family_filter = family.get_auto_recessive_filter()
+                family_filter = family.get_auto_recessive_filter(gt_ll=self.args.gt_ll)
             elif self.model == "auto_dom":
-                family_filter = family.get_auto_dominant_filter()
+                family_filter = family.get_auto_dominant_filter(gt_ll=self.args.gt_ll)
             elif self.model == "de_novo":
-                family_filter = family.get_de_novo_filter(self.args.only_affected)
+                family_filter = family.get_de_novo_filter(self.args.only_affected,
+                                                          gt_ll=self.args.gt_ll)
             elif self.model == "mendel_violations":
-                family_filter = family.get_mendelian_violation_filter()
+                family_filter = family.get_mendelian_violation_filter(gt_ll=self.args.gt_ll)
 
             if family_filter != "False" and family_filter is not None:
                 self.family_masks.append(family_filter)
