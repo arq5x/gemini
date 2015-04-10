@@ -24,9 +24,6 @@ class GeminiInheritanceModelFactory(object):
         if not args.columns:
             cols.append("*")
 
-        if args.gt_ll:
-
-
         # we always put chrom, start, end first.
         args.columns = ", ".join(["chrom", "start", "end"] + cols)
 
