@@ -495,10 +495,10 @@ class Family(object):
                 num_unaffected = sum(not child.affected for child in self.children)
                 unaffected = 0
                 for i, child in enumerate(self.children):
-                    if child.affected == False:
+                    if child.affected is False:
                         unaffected += 1
                         mask += '(gt_types[' + str(child.sample_id - 1) + "] != " + str(HET)
-                        mask += get_phred_query(child.sample, gt_ll, "het") + ")"
+                        mask += get_phred_query(child.sample, gt_ll, "het", invert=True) + ")"
                         if unaffected < num_unaffected:
                             mask += " and "
         mask += ")"
