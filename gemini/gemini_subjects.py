@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-#TODO: can speed up by checking == 'False' instead of eval'ing since most cases
-# will be 'False'
 import sqlite3
 import os
 import sys

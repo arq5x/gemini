@@ -681,8 +681,10 @@ class GeminiQuery(object):
                     # skip the record if it does not meet the user's genotype filter
                     # short circuit some expensive ops
                     try:
-                        if self.gt_filter and not eval(self.gt_filter_compiled, unpacked):
-                            continue
+                        if self.gt_filter:
+                            if 'False' == self.gt_filter: continue
+                            if not eval(self.gt_filter_compiled, unpacked):
+                                continue
                     except TypeError: # tried to eval on a phred_ll column that was None
                         continue
 
