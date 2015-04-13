@@ -193,11 +193,13 @@ class Family(object):
             mask = "("
             for i, subject in enumerate(self.subjects):
                 if subject.affected:
-                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + \
+                    mask += '(gt_types[' + str(subject.sample_id - 1) + "] == " + \
                         str(HOM_ALT)
+                    mask += get_phred_query(subject, gt_ll, "homalt") + ")"
                 else:
-                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] != " + \
+                    mask += '(gt_types[' + str(subject.sample_id - 1) + "] != " + \
                         str(HOM_ALT)
+                    mask += get_phred_query(subject, gt_ll, "homalt", invert=True) + ")"
 
                 if i < (len(self.subjects) - 1):
                     mask += " and "
@@ -259,7 +261,7 @@ class Family(object):
 
             return mask
 
-    def get_auto_dominant_filter(self):
+    def get_auto_dominant_filter(self, gt_ll=False):
         """
         Generate an autosomal dominant eval() filter to apply for this family.
         For example:
@@ -296,12 +298,10 @@ class Family(object):
             mask = "("
             for i, subject in enumerate(self.subjects):
                 if subject.affected:
-                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + \
-                        str(HET)
+                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + str(HET)
                     mask += get_phred_query(subject.sample_id, gt_ll, "het")
                 else:
-                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + \
-                        str(HOM_REF)
+                    mask += 'gt_types[' + str(subject.sample_id - 1) + "] == " + str(HOM_REF)
                     mask += get_phred_query(subject.sample_id, gt_ll, "homref")
 
                 if i < (len(self.subjects) - 1):
