@@ -10,6 +10,21 @@ from compiler import compile
 from gemini_constants import *
 import GeminiQuery
 
+from functools import wraps
+
+def compile_decorator(f):
+    """decorator to automatically compile the eval strings returned from
+    the filter methods"""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        query_string = f(*args, **kwargs)
+        if not isinstance(query_string, dict):
+            return compile(query_string, "<string>", "eval")
+        query_dict = query_string
+        for k, stmt in query_dict.iteritems():
+            query_dict[k] = compile(stmt, "<string>", "eval")
+        return query_dict
+    return wrapper
 
 def get_phred_query(sample_id, gt_ll, genotype, prefix=" and ", invert=False):
     """Default is to test < where a low value phred-scale is high
@@ -162,6 +177,7 @@ class Family(object):
         else:
             return False
 
+    @compile_decorator
     def get_auto_recessive_filter(self, gt_ll=False):
         """
         Generate an autosomal recessive eval() filter to apply for this family.
@@ -261,6 +277,7 @@ class Family(object):
 
             return mask
 
+    @compile_decorator
     def get_auto_dominant_filter(self, gt_ll=False):
         """
         Generate an autosomal dominant eval() filter to apply for this family.
@@ -408,7 +425,7 @@ class Family(object):
                 mask += ")"
                 return mask
 
-
+    @compile_decorator
     def get_de_novo_filter(self, only_affected=False, gt_ll=False):
         """
         Generate aa de novo mutation eval() filter to apply for this family.
@@ -509,6 +526,7 @@ class Family(object):
         return mask
 
 
+    @compile_decorator
     def get_mendelian_violation_filter(self, gt_ll=False):
         """
         Generate Mendelian violation eval() filter to apply for this family.
@@ -722,9 +740,6 @@ class Family(object):
             mask += ")"
             masks['loss of heterozygosity'] = mask
         # outer end paren
-        for k, v in masks.iteritems():
-            masks[k] = compile(v, "<string>", "eval")
-
         return masks
 
 
