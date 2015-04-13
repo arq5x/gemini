@@ -77,18 +77,6 @@ class DefaultRowFormat(RowFormat):
         return "\t".join(fields)
 
 
-class ExcludeChromStartEndRowFormat(DefaultRowFormat):
-    """Don't output chrom, start, end."""
-
-    name = "exclude_bed_cols"
-
-    def format(self, row):
-        r = row.row
-        return '\t'.join([str(r[c]) for c in r if not c in ('chrom', 'start', 'end')])
-
-    def header(self, fields):
-        return "\t".join(f for f in fields if not f in ('chrom', 'start', 'end'))
-
 class CarrierSummary(RowFormat):
     """
     Generates a count of the carrier/noncarrier status of each feature in a given
@@ -379,6 +367,11 @@ class SampleDetailRowFormat(RowFormat):
         return "\t".join(fields + self.cols)
 
 class GeminiRow(object):
+    gt_cols = ('gts', 'gt_types', 'gt_phases', 'gt_depths', 'gt_ref_depths',
+               'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',
+               'gt_phred_ll_homref', 'gt_phred_ll_het', "gt_phred_ll_homalt",
+               "variant_samples", "HET_samples", "HOM_ALT_samples",
+               "HOM_REF_samples")
 
     def __init__(self, row, gts=None, gt_types=None,
                  gt_phases=None, gt_depths=None,
@@ -404,12 +397,6 @@ class GeminiRow(object):
         self.gt_phred_ll_homref = gt_phred_ll_homref
         self.gt_phred_ll_het = gt_phred_ll_het
         self.gt_phred_ll_homalt = gt_phred_ll_homalt
-        self.gt_cols = ['gts', 'gt_types', 'gt_phases',
-                        'gt_depths', 'gt_ref_depths', 'gt_alt_depths',
-                        'gt_quals', 'gt_copy_numbers', 'gt_phred_ll_homref',
-                        'gt_phred_ll_het', "gt_pred_ll_homalt",
-                        "variant_samples", "HET_samples", "HOM_ALT_samples",
-                        "HOM_REF_samples"]
         self.formatter = formatter
         self.variant_samples = variant_samples
         self.HET_samples = HET_samples
@@ -677,7 +664,6 @@ class GeminiQuery(object):
                         # only unpack what is needed.
                         if (self.gt_filter is not None and k in self.gt_filter) or self.include_gt_cols:
                             unpacked[k] = unpack(row[k])
-
                     # skip the record if it does not meet the user's genotype filter
                     # short circuit some expensive ops
                     try:
@@ -1080,15 +1066,15 @@ class GeminiQuery(object):
         # reconstruct the query with the GT* columns added
         if len(select_clause_list) > 0:
             select_clause = ",".join(select_clause_list) + \
-                    ", gts, gt_types, gt_phases, gt_depths, \
-                       gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, \
-                       gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt "
+                    (", gts, gt_types, gt_phases, gt_depths,"
+                     " gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers,"
+                     " gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
 
         else:
             select_clause = ",".join(select_clause_list) + \
-                    " gts, gt_types, gt_phases, gt_depths, \
-                      gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, \
-                      gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt "
+                    (" gts, gt_types, gt_phases, gt_depths, "
+                    "  gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, "
+                    "  gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
 
         self.query = "select " + select_clause + rest_of_query
 
