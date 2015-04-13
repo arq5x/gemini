@@ -20,8 +20,7 @@ class GeminiInheritanceModelFactory(object):
 
         self.args = args
         self.model = model
-        self.gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True,
-                out_format=GeminiQuery.ExcludeChromStartEndRowFormat(None))
+        self.gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True)
 
     def get_candidates(self):
         """
@@ -47,19 +46,19 @@ class GeminiInheritanceModelFactory(object):
 
                     # (row, family_gt_label, family_gt_cols) \
                     if is_violation:
-                        (row, family_gt_label, family_gt_cols, violation) = tup
+                        (row, family_gt_label, family_gt_cols, violation) = tuple(tup)
                         violation += "\t"
                     else:
-                        (row, family_gt_label, family_gt_cols) = tup
+                        (row, family_gt_label, family_gt_cols) = tuple(tup)
                         violation = ""
 
-                    gt_types = row['gt_types']
-                    gts = row['gts']
-                    gt_depths = row['gt_depths']
+                    e = {}
+                    for k in ('gt_types', 'gts', 'gt_depths'):
+                        e[k] = row[k]
 
-                    print row + "\t%s%s\t%s\t%s" % (violation, family_id,
+                    print str(row) + "\t%s%s\t%s\t%s" % (violation, family_id,
                                                   ",".join(str(s) for s in family_gt_label),
-                                                  ",".join(str(eval(s)) for s in family_gt_cols))
+                                                  ",".join(str(eval(s, e)) for s in family_gt_cols))
 
     def _cull_families(self):
         """
@@ -84,14 +83,13 @@ class GeminiInheritanceModelFactory(object):
             family_filter = None
 
             if self.model == "auto_rec":
-                family_filter = family.get_auto_recessive_filter(gt_ll=self.args.gt_ll)
+                family_filter = family.get_auto_recessive_filter(gt_ll=self.args.gt_phred_ll)
             elif self.model == "auto_dom":
-                family_filter = family.get_auto_dominant_filter(gt_ll=self.args.gt_ll)
+                family_filter = family.get_auto_dominant_filter(gt_ll=self.args.gt_phred_ll)
             elif self.model == "de_novo":
-                family_filter = family.get_de_novo_filter(self.args.only_affected,
-                                                          gt_ll=self.args.gt_ll)
+                family_filter = family.get_de_novo_filter(self.args.only_affected, gt_ll=self.args.gt_phred_ll)
             elif self.model == "mendel_violations":
-                family_filter = family.get_mendelian_violation_filter(gt_ll=self.args.gt_ll)
+                family_filter = family.get_mendelian_violation_filter(gt_ll=self.args.gt_phred_ll)
 
             if family_filter != "False" and family_filter is not None:
                 self.family_masks.append(family_filter)
@@ -140,7 +138,7 @@ class GeminiInheritanceModelFactory(object):
 
         # run the query applying any genotype filters provided by the user.
         self._construct_query()
-        self.gq.run(self.query)
+        self.gq.run(self.query, needs_genotypes=True)
 
         # print a header
 
@@ -172,28 +170,29 @@ class GeminiInheritanceModelFactory(object):
 
                 # interrogate the genotypes present in each family member to
                 # conforming to the genetic model being tested
-                gt_types = row['gt_types']
-                gts = row['gts']
-                gt_depths = row['gt_depths']
+                e = {}
+                for c in ('gt_types', 'gts', 'gt_depths', 'gt_phred_ll_homalt',
+                          'gt_phred_ll_het', 'gt_phred_ll_homref'):
+                    e[c] = row[c]
 
                 # skip if the variant doesn't meet a recessive model
                 # for this family
                 violations = []
                 if is_violation_query:
                     for violation, mask in family_genotype_mask.items():
-                        if eval(mask):
+                        if eval(mask, e):
                             violations.append(violation)
                     if len(violations) == 0:
                         continue
                 else:
-                    if not eval(family_genotype_mask):
+                    if not eval(family_genotype_mask, e):
                         continue
 
                 # make sure each sample's genotype had sufficient coverage.
                 # otherwise, ignore
                 insufficient_depth = False
                 for col in family_dp_cols:
-                    depth = int(eval(col))
+                    depth = int(eval(col, e))
                     if depth < self.args.min_sample_depth:
                         insufficient_depth = True
                         break
@@ -204,9 +203,8 @@ class GeminiInheritanceModelFactory(object):
                 # of candidates for this gene.
                 self.candidates[(curr_gene, fam_id)].append([row,
                                                         family_gt_labels,
-                                                        family_gt_cols,
-                                                        family_dp_cols])
-                if isinstance(family_genotype_mask, dict):
+                                                        family_gt_cols])
+                if is_violation_query:
                     self.candidates[(curr_gene, fam_id)][-1].append(",".join(violations))
 
             prev_gene = curr_gene
@@ -227,7 +225,7 @@ class GeminiInheritanceModelFactory(object):
 
         # run the query applying any genotype filters provided by the user.
         self._construct_query()
-        self.gq.run(self.query)
+        self.gq.run(self.query, needs_genotypes=True)
 
         # print a header
         is_violation_query = isinstance(self.family_masks[0], dict)
@@ -239,6 +237,10 @@ class GeminiInheritanceModelFactory(object):
 
         for row in self.gq:
 
+            cols = {}
+            for col in self.gt_cols:
+                cols[col] = row[col]
+
             # test the variant for each family in the db
             for idx, fam_id in enumerate(self.family_ids):
                 family_genotype_mask = self.family_masks[idx]
@@ -248,28 +250,25 @@ class GeminiInheritanceModelFactory(object):
 
                 # interrogate the genotypes present in each family member to
                 # conforming to the genetic model being tested
-                gt_types = row['gt_types']
-                gts = row['gts']
-                gt_depths = row['gt_depths']
 
                 # skip if the variant doesn't meet a recessive model
                 # for this family
                 violations = []
                 if is_violation_query:
                     for violation, mask in family_genotype_mask.items():
-                        if eval(mask):
+                        if eval(mask, cols):
                             violations.append(violation)
                     if len(violations) == 0:
                         continue
                 else:
-                    if not eval(family_genotype_mask):
+                    if not eval(family_genotype_mask, cols):
                         continue
 
                 # make sure each sample's genotype had sufficient coverage.
                 # otherwise, ignore
                 insufficient_depth = False
                 for col in family_dp_cols:
-                    depth = int(eval(col))
+                    depth = int(eval(col, cols))
                     if depth < self.args.min_sample_depth:
                         insufficient_depth = True
                         break
@@ -278,11 +277,11 @@ class GeminiInheritanceModelFactory(object):
                 if is_violation_query:
                     for violation in violations:
                         print row,
-                        print "%s\t%s\t%s\t%s" % (violation, fam_id,
+                        print "\t%s\t%s\t%s\t%s" % (violation, fam_id,
                                       ",".join(str(s) for s in family_gt_labels),
-                                      ",".join(str(eval(s)) for s in family_gt_cols))
+                                      ",".join(str(eval(s, cols)) for s in family_gt_cols))
                 else:
                     print row,
-                    print "%s\t%s\t%s" % (fam_id,
+                    print "\t%s\t%s\t%s" % (fam_id,
                                           ",".join(str(s) for s in family_gt_labels),
-                                          ",".join(str(eval(s)) for s in family_gt_cols))
+                                          ",".join(str(eval(s, cols)) for s in family_gt_cols))
