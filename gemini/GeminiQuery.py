@@ -703,7 +703,6 @@ class GeminiQuery(object):
                             fields[orig_col] = None
                             continue
 
-
                         idx = int(extra[:-1])
                         val = unpacked[source][idx]
 
