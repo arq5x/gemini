@@ -38,7 +38,7 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
             default=0)
 
     if gt_ll:
-        parser.add_argument('-l',
+        parser.add_argument('--gt-pl-max',
                             dest='gt_phred_ll',
                             type=int,
                             help="The maximum phred-scaled genotype likelihod"
