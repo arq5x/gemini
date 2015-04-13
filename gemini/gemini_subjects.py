@@ -5,6 +5,7 @@ import sys
 import numpy as np
 from collections import defaultdict
 import itertools as it
+from compiler import compile
 
 from gemini_constants import *
 import GeminiQuery
@@ -25,6 +26,11 @@ def get_phred_query(sample_id, gt_ll, genotype, prefix=" and ", invert=False):
     """
     assert genotype in ("het", "homref", "homalt")
     if not gt_ll: return ""
+
+    # they passed in the subject:
+    if hasattr(sample_id, "sample_id"):
+        sample_id = sample_id.sample_id
+
     sign = ["<", ">"][int(invert)]
     s = "gt_phred_ll_{genotype}[{sample_id}] {sign} {gt_ll}"\
             .format(sample_id=sample_id-1, genotype=genotype,
@@ -210,7 +216,7 @@ class Family(object):
                 str(HET)
 
             mask += get_phred_query(self.father.sample_id, gt_ll, "het")
-           
+
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + \
                 str(HET)
@@ -332,7 +338,7 @@ class Family(object):
                 mask += get_phred_query(self.mother.sample_id, gt_ll, "het") + ")"
                 mask += ")) and "
 
-                
+
                 for i, child in enumerate(self.children):
                     if child.affected:
                         mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
@@ -384,19 +390,19 @@ class Family(object):
                 #   (*)
                 mask = "(("
                 mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HET)
-                mask += get_phred_query(self.mother.sample_id, gt_ll, "het") 
+                mask += get_phred_query(self.mother.sample_id, gt_ll, "het")
                 mask += " and "
                 mask += 'gt_types[' + str(self.father.sample_id - 1) + "] != " + str(HET)
-                mask += get_phred_query(self.father.sample_id, gt_ll, "het", invert=True) 
+                mask += get_phred_query(self.father.sample_id, gt_ll, "het", invert=True)
                 mask += ") and "
                 for i, child in enumerate(self.children):
                     if child.affected:
                         mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
-                        mask += get_phred_query(child.sample_id, gt_ll, "het") 
+                        mask += get_phred_query(child.sample_id, gt_ll, "het")
                     else:
                         mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + \
                               str(HOM_REF)
-                        mask += get_phred_query(child.sample_id, gt_ll, "homref") 
+                        mask += get_phred_query(child.sample_id, gt_ll, "homref")
                     if i < (len(self.children) - 1):
                         mask += " and "
                 mask += ")"
@@ -503,7 +509,7 @@ class Family(object):
         return mask
 
 
-    def get_mendelian_violation_filter(self):
+    def get_mendelian_violation_filter(self, gt_ll=False):
         """
         Generate Mendelian violation eval() filter to apply for this family.
         For example:
@@ -519,7 +525,7 @@ class Family(object):
 
         # identify which samples are the parents in the family.
         # Fail if both parents are not found
-        if not self.find_parents():
+        if not self.build_family():
             sys.stderr.write("WARNING: Unable to find parents for family (%s). "
                  "GEMINI is currently only able to identify candidates "
                  "from two generational families.\n"
@@ -527,7 +533,8 @@ class Family(object):
             return "False"
 
         # outer start paren
-        mask = "("
+        #masks is keys by the type of violation and values are the filters.
+        masks = {}
 
         for i, child in enumerate(self.children):
 
@@ -535,12 +542,18 @@ class Family(object):
             # Plausible de novos
             ##################################################
             # DAD = HOM_REF; MOM = HOM_REF; KID = HET (De novo)
-            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask = '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
 
+            mask += get_phred_query(self.father, gt_ll, "homref")
+            mask += get_phred_query(self.mother, gt_ll, "homref")
+            mask += get_phred_query(child, gt_ll, "het")
+
+
+            mask += ")"
             mask += " or "
 
             # DAD = HOM_ALT; MOM = HOM_ALT; KID = HET (De novo)
@@ -548,20 +561,31 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
+
+            mask += get_phred_query(self.father, gt_ll, "homalt")
+            mask += get_phred_query(self.mother, gt_ll, "homalt")
+            mask += get_phred_query(child, gt_ll, "het")
+
+            mask += ")"
+            masks['plausible de novo'] = mask
 
             ##################################################
             # Implausible de novos
             ##################################################
-            mask += " or "
 
             # DAD = HOM_REF; MOM = HOM_REF; KID = HOM_ALT (Implausible de novo)
-            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask = '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT)
 
+            mask += get_phred_query(self.father, gt_ll, "homref")
+            mask += get_phred_query(self.mother, gt_ll, "homref")
+            mask += get_phred_query(child, gt_ll, "homalt")
+
+            mask += ")"
             mask += " or "
 
             # DAD = HOM_ALT; MOM = HOM_ALT; KID = HOM_REF (Implausible de novo)
@@ -569,20 +593,32 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF)
+
+            mask += get_phred_query(self.father, gt_ll, "homalt")
+            mask += get_phred_query(self.mother, gt_ll, "homalt")
+            mask += get_phred_query(child, gt_ll, "homref")
+
+            mask += ")"
+
+            masks['implausible de novo'] = mask
 
             ##################################################
             # Uniparental disomies
             ##################################################
-            mask += " or "
 
             # DAD = HOM_REF; MOM = HOM_ALT; KID = HOM_REF (Uniparental disomy)
-            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask = '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF)
 
+            mask += get_phred_query(self.father, gt_ll, "homref")
+            mask += get_phred_query(self.mother, gt_ll, "homalt")
+            mask += get_phred_query(child, gt_ll, "homref")
+
+            mask += ")"
             mask += " or "
 
             # DAD = HOM_REF; MOM = HOM_ALT; KID = HOM_ALT (Uniparental disomy)
@@ -590,8 +626,13 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT)
 
+            mask += get_phred_query(self.father, gt_ll, "homref")
+            mask += get_phred_query(self.mother, gt_ll, "homalt")
+            mask += get_phred_query(child, gt_ll, "homalt")
+
+            mask += ")"
             mask += " or "
 
             # DAD = HOM_ALT; MOM = HOM_REF; KID = HOM_REF (Uniparental disomy)
@@ -599,8 +640,13 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF)
 
+            mask += get_phred_query(self.father, gt_ll, "homalt")
+            mask += get_phred_query(self.mother, gt_ll, "homref")
+            mask += get_phred_query(child, gt_ll, "homref")
+
+            mask += ")"
             mask += " or "
 
             # DAD = HOM_ALT; MOM = HOM_REF; KID = HOM_ALT (Uniparental disomy)
@@ -608,20 +654,30 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT)
 
+            mask += get_phred_query(self.father, gt_ll, "homalt")
+            mask += get_phred_query(self.mother, gt_ll, "homref")
+            mask += get_phred_query(child, gt_ll, "homalt")
+
+            mask += ")"
+            masks['uniparental disomy'] = mask
             ##################################################
             # Losses of heterozygosity
             ##################################################
-            mask += " or "
 
             # DAD = HOM_REF; MOM = HET; KID = HOM_ALT (Loss of heterozygosity)
-            mask += '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
+            mask = '(gt_types[' + str(self.father.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HET)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT)
 
+            mask += get_phred_query(self.father, gt_ll, "homref")
+            mask += get_phred_query(self.mother, gt_ll, "het")
+            mask += get_phred_query(child, gt_ll, "homalt")
+
+            mask += ")"
             mask += " or "
 
             # DAD = HOM_ALT; MOM = HET; KID = HOM_REF (Loss of heterozygosity)
@@ -629,8 +685,13 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HET)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF)
 
+            mask += get_phred_query(self.father, gt_ll, "homalt")
+            mask += get_phred_query(self.mother, gt_ll, "het")
+            mask += get_phred_query(child, gt_ll, "homref")
+
+            mask += ")"
             mask += " or "
 
             # DAD = HET; MOM = HOM_REF; KID = HOM_ALT (Loss of heterozygosity)
@@ -638,8 +699,13 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_REF)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_ALT)
 
+            mask += get_phred_query(self.father, gt_ll, "het")
+            mask += get_phred_query(self.mother, gt_ll, "homref")
+            mask += get_phred_query(child, gt_ll, "homalt")
+
+            mask += ")"
             mask += " or "
 
             # DAD = HET; MOM = HOM_ALT; KID = HOM_REF (Loss of heterozygosity)
@@ -647,12 +713,19 @@ class Family(object):
             mask += " and "
             mask += 'gt_types[' + str(self.mother.sample_id - 1) + "] == " + str(HOM_ALT)
             mask += " and "
-            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF) + ")"
+            mask += 'gt_types[' + str(child.sample_id - 1) + "] == " + str(HOM_REF)
 
+            mask += get_phred_query(self.father, gt_ll, "het")
+            mask += get_phred_query(self.mother, gt_ll, "homalt")
+            mask += get_phred_query(child, gt_ll, "homref")
+
+            mask += ")"
+            masks['loss of heterozygosity'] = mask
         # outer end paren
-        mask += ")"
+        for k, v in masks.iteritems():
+            masks[k] = compile(v, "<string>", "eval")
 
-        return mask
+        return masks
 
 
     def get_genotype_columns(self):
