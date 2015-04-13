@@ -4,12 +4,10 @@ import GeminiQuery
 import sql_utils
 from gemini_constants import *
 import gemini_subjects as subjects
-import re
 
 
 class GeminiInheritanceModelFactory(object):
 
-    splitter = re.compile("\s*,\s*")
     gt_cols = ('gts', 'gt_types', 'gt_phases', 'gt_depths', 'gt_ref_depths',
                'gt_alt_depths', 'gt_quals', 'gt_phred_ll_homref',
                'gt_phred_ll_het', 'gt_phred_ll_homalt')
@@ -17,15 +15,8 @@ class GeminiInheritanceModelFactory(object):
     def __init__(self, args, model):
 
         # default to all genotype columns and all columns
-        cols = [x for x in self.splitter.split(args.columns or ", ".join(self.gt_cols))]
-
-        # we will add these bad in later.
-        cols = [x for x in cols if x not in ("chrom", "start", "end")]
         if not args.columns:
-            cols.append("*")
-
-        # we always put chrom, start, end first.
-        args.columns = ", ".join(["chrom", "start", "end"] + cols)
+            args.columns = "*," + ", ".join(self.gt_cols)
 
         self.args = args
         self.model = model
@@ -43,7 +34,7 @@ class GeminiInheritanceModelFactory(object):
             self._get_all_candidates()
 
 
-    def _report_candidates(self):
+    def _report_candidates(self, is_violation=False):
         """
         Print variants that meet the user's requirements
         """
@@ -52,22 +43,23 @@ class GeminiInheritanceModelFactory(object):
         if len(num_families) >= self.args.min_kindreds:
 
             for (gene, family_id) in self.candidates:
-                for (row, family_gt_label, family_gt_cols, family_dp_cols) \
-                     in self.candidates[(gene, family_id)]:
+                for tup in self.candidates[(gene, family_id)]:
+
+                    # (row, family_gt_label, family_gt_cols) \
+                    if is_violation:
+                        (row, family_gt_label, family_gt_cols, violation) = tup
+                        violation += "\t"
+                    else:
+                        (row, family_gt_label, family_gt_cols) = tup
+                        violation = ""
 
                     gt_types = row['gt_types']
                     gts = row['gts']
                     gt_depths = row['gt_depths']
 
-                    # TODO
-                    print ("%s\t%d\t%d\t%s\t" % (row['chrom'], row['start'], row['end'], family_id)) + \
-                        ",".join([str(s) for s in family_gt_label]) + \
-                        "\t", \
-                        ",".join([str(eval(s)) for s in family_gt_cols]) + \
-                        "\t", \
-                        ",".join([str(eval(s)) for s in family_dp_cols]) + \
-                        "\t",
-                    print row
+                    print row + "\t%s%s\t%s\t%s" % (violation, family_id,
+                                                  ",".join(str(s) for s in family_gt_label),
+                                                  ",".join(str(eval(s)) for s in family_gt_cols))
 
     def _cull_families(self):
         """
@@ -151,8 +143,12 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query)
 
         # print a header
-        print "chrom\tstart\tend\tfamily_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
-        print self.gq.header
+
+        is_violation_query = isinstance(self.family_masks[0], dict)
+        if is_violation_query:
+            print self.gq.header + "\tviolation\tfamily_id\tfamily_members\tfamily_genotypes"
+        else:
+            print self.gq.header + "\tfamily_id\tfamily_members\tfamily_genotypes"
 
         # yield the resulting variants for this familiy
         self.candidates = defaultdict(list)
@@ -163,7 +159,7 @@ class GeminiInheritanceModelFactory(object):
 
             # report any candidates for the previous gene
             if curr_gene != prev_gene and prev_gene is not None:
-                self._report_candidates()
+                self._report_candidates(is_violation_query)
                 # reset for the next gene
                 self.candidates = defaultdict(list)
 
@@ -182,8 +178,16 @@ class GeminiInheritanceModelFactory(object):
 
                 # skip if the variant doesn't meet a recessive model
                 # for this family
-                if not eval(family_genotype_mask):
-                    continue
+                violations = []
+                if is_violation_query:
+                    for violation, mask in family_genotype_mask.items():
+                        if eval(mask):
+                            violations.append(violation)
+                    if len(violations) == 0:
+                        continue
+                else:
+                    if not eval(family_genotype_mask):
+                        continue
 
                 # make sure each sample's genotype had sufficient coverage.
                 # otherwise, ignore
@@ -198,15 +202,17 @@ class GeminiInheritanceModelFactory(object):
 
                 # if it meets a recessive model, add it to the list
                 # of candidates for this gene.
-                self.candidates[(curr_gene, fam_id)].append((row,
+                self.candidates[(curr_gene, fam_id)].append([row,
                                                         family_gt_labels,
                                                         family_gt_cols,
-                                                        family_dp_cols))
+                                                        family_dp_cols])
+                if isinstance(family_genotype_mask, dict):
+                    self.candidates[(curr_gene, fam_id)][-1].append(",".join(violations))
 
             prev_gene = curr_gene
 
         # report any candidates for the last gene
-        self._report_candidates()
+        self._report_candidates(is_violation_query)
 
     def _get_all_candidates(self):
         """
@@ -224,8 +230,12 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query)
 
         # print a header
-        print "chrom\tstart\tend\tfamily_id\tfamily_members\tfamily_genotypes\tfamily_genotype_depths\t",
-        print self.gq.header
+        is_violation_query = isinstance(self.family_masks[0], dict)
+        if is_violation_query:
+            print self.gq.header + "\tviolation\tfamily_id\tfamily_members\tfamily_genotypes"
+        else:
+            print self.gq.header + "\tfamily_id\tfamily_members\tfamily_genotypes"
+
 
         for row in self.gq:
 
@@ -244,8 +254,16 @@ class GeminiInheritanceModelFactory(object):
 
                 # skip if the variant doesn't meet a recessive model
                 # for this family
-                if not eval(family_genotype_mask):
-                    continue
+                violations = []
+                if is_violation_query:
+                    for violation, mask in family_genotype_mask.items():
+                        if eval(mask):
+                            violations.append(violation)
+                    if len(violations) == 0:
+                        continue
+                else:
+                    if not eval(family_genotype_mask):
+                        continue
 
                 # make sure each sample's genotype had sufficient coverage.
                 # otherwise, ignore
@@ -257,13 +275,14 @@ class GeminiInheritanceModelFactory(object):
                         break
                 if insufficient_depth is True:
                     continue
-
-                print ("%s\t%d\t%d\t" % (row['chrom'], row['start'], row['end'])) + \
-                    str(fam_id) + "\t" + \
-                    ",".join([str(s) for s in family_gt_labels]) + \
-                    "\t", \
-                    ",".join([str(eval(s)) for s in family_gt_cols]) + \
-                    "\t", \
-                    ",".join([str(eval(s)) for s in family_dp_cols]) + \
-                    "\t",
-                print row
+                if is_violation_query:
+                    for violation in violations:
+                        print row,
+                        print "%s\t%s\t%s\t%s" % (violation, fam_id,
+                                      ",".join(str(s) for s in family_gt_labels),
+                                      ",".join(str(eval(s)) for s in family_gt_cols))
+                else:
+                    print row,
+                    print "%s\t%s\t%s" % (fam_id,
+                                          ",".join(str(s) for s in family_gt_labels),
+                                          ",".join(str(eval(s)) for s in family_gt_cols))
