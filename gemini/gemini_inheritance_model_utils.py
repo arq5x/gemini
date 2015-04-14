@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from collections import defaultdict
+from collections import defaultdict, Counter
 import GeminiQuery
 import sql_utils
 from gemini_constants import *
@@ -49,6 +49,10 @@ class GeminiInheritanceModelFactory(object):
             return False
 
         candidate_keys = sorted(candidates.keys())
+        fam_counts_by_variant = defaultdict(int)
+        for (variant_id, gene), li in candidates.items():
+            fam_counts_by_variant[variant_id] += len(li)
+
         for (variant_id, gene) in candidate_keys:
             for tup in candidates[(variant_id, gene)]:
 
@@ -65,12 +69,12 @@ class GeminiInheritanceModelFactory(object):
                     e[k] = row[k]
 
                 affected_samples = [x.split("(")[0] for x in family_gt_label if ";affected" in x]
-                print str(row) + "\tvariant_id:%s\t%s%s\t%s\t%s\t%s\t%i" % (variant_id, violation, family_id,
+                print str(row) + "\t%s\t%s%s\t%s\t%s\t%s\t%i" % (variant_id, violation, family_id,
                                               ",".join(str(s) for s in family_gt_label),
                                               ",".join(str(eval(s, e)) for s
                                                   in family_gt_cols),
                                               ",".join(affected_samples),
-                                              family_count)
+                                              fam_counts_by_variant[variant_id])
 
     def _cull_families(self):
         """
@@ -301,6 +305,7 @@ class GeminiInheritanceModelFactory(object):
                 candidates[key].append([row, family_gt_labels, family_gt_cols, family_id])
                 if is_violation_query:
                     candidates[key].append(",".join(violations))
-
+                candidates = {}
             self.report_candidates(candidates, is_violation_query,
-                    self.args.min_kindreds)
+                                   self.args.min_kindreds)
+
