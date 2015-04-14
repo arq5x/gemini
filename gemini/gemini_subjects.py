@@ -797,28 +797,28 @@ class Family(object):
         else:
 
             if self.father.affected is True:
-                labels.append(self.father.name + "(father; affected)")
+                labels.append(self.father.name + "(dad;affected)")
             elif self.father.affected is False:
-                labels.append(self.father.name + "(father; unaffected)")
+                labels.append(self.father.name + "(dad;unaffected)")
             elif self.father.affected is None:
-                labels.append(self.father.name + "(father; unknown)")
+                labels.append(self.father.name + "(dad;unknown)")
 
             if self.mother.affected is True:
-                labels.append(self.mother.name + "(mother; affected)")
+                labels.append(self.mother.name + "(mom;affected)")
             elif self.mother.affected is False:
-                labels.append(self.mother.name + "(mother; unaffected)")
+                labels.append(self.mother.name + "(mom;unaffected)")
             elif self.mother.affected is None:
-                labels.append(self.mother.name + "(mother; unknown)")
+                labels.append(self.mother.name + "(mom;unknown)")
 
             # handle the childrem
 
             for child in self.children:
                 if child.affected is True:
-                    labels.append(child.name + "(child; affected)")
+                    labels.append(child.name + "(child;affected)")
                 elif child.affected is False:
-                    labels.append(child.name + "(child; unaffected)")
+                    labels.append(child.name + "(child;unaffected)")
                 elif child.affected is None:
-                    labels.append(child.name + "(child; unknown)")
+                    labels.append(child.name + "(child;unknown)")
 
         return labels
 

@@ -12,6 +12,10 @@ class GeminiInheritanceModelFactory(object):
                'gt_alt_depths', 'gt_quals', 'gt_phred_ll_homref',
                'gt_phred_ll_het', 'gt_phred_ll_homalt')
 
+    # https://github.com/arq5x/gemini/pull/436
+    required_columns = ("variant_id", "family_id", "family_members",
+                        "family_genotypes", "affected_samples", "family_count")
+
     def __init__(self, args, model):
 
         # default to all genotype columns and all columns
@@ -32,33 +36,41 @@ class GeminiInheritanceModelFactory(object):
         else:
             self._get_all_candidates()
 
-
-    def _report_candidates(self, is_violation=False):
+    @classmethod
+    def report_candidates(self, candidates, is_violation=False,
+                          min_kindreds=1):
         """
         Print variants that meet the user's requirements
+        If input is a tuple,
         """
-        num_families = self.candidates.keys()
+        family_count = len(candidates)
 
-        if len(num_families) >= self.args.min_kindreds:
+        if family_count < min_kindreds:
+            return False
 
-            for (gene, family_id) in self.candidates:
-                for tup in self.candidates[(gene, family_id)]:
+        candidate_keys = sorted(candidates.keys())
+        for (variant_id, gene) in candidate_keys:
+            for tup in candidates[(variant_id, gene)]:
 
-                    # (row, family_gt_label, family_gt_cols) \
-                    if is_violation:
-                        (row, family_gt_label, family_gt_cols, violation) = tuple(tup)
-                        violation += "\t"
-                    else:
-                        (row, family_gt_label, family_gt_cols) = tuple(tup)
-                        violation = ""
+                # (row, family_gt_label, family_gt_cols) \
+                if is_violation:
+                    (row, family_gt_label, family_gt_cols, family_id, violation) = tuple(tup)
+                    violation += "\t"
+                else:
+                    (row, family_gt_label, family_gt_cols, family_id) = tuple(tup)
+                    violation = ""
 
-                    e = {}
-                    for k in ('gt_types', 'gts', 'gt_depths'):
-                        e[k] = row[k]
+                e = {}
+                for k in ('gt_types', 'gts', 'gt_depths'):
+                    e[k] = row[k]
 
-                    print str(row) + "\t%s%s\t%s\t%s" % (violation, family_id,
-                                                  ",".join(str(s) for s in family_gt_label),
-                                                  ",".join(str(eval(s, e)) for s in family_gt_cols))
+                affected_samples = [x.split("(")[0] for x in family_gt_label if ";affected" in x]
+                print str(row) + "\tvariant_id:%s\t%s%s\t%s\t%s\t%s\t%i" % (variant_id, violation, family_id,
+                                              ",".join(str(s) for s in family_gt_label),
+                                              ",".join(str(eval(s, e)) for s
+                                                  in family_gt_cols),
+                                              ",".join(affected_samples),
+                                              family_count)
 
     def _cull_families(self):
         """
@@ -125,9 +137,22 @@ class GeminiInheritanceModelFactory(object):
             # we require the "gene" column for the auto_* tools
             self.query = sql_utils.ensure_columns(self.query, ['gene'])
             if self.args.filter:
-                self.query += " AND gene is not NULL ORDER BY gene"
+                self.query += " AND gene is not NULL ORDER BY chrom, gene"
             else:
-                self.query += " WHERE gene is not NULL ORDER BY gene"
+                self.query += " WHERE gene is not NULL ORDER BY chrom, gene"
+        self.query = sql_utils.ensure_columns(self.query, ['variant_id'])
+
+    def get_header(self, is_violation_query):
+        h = "\t".join(self.required_columns)
+        gqh = self.gq.header
+        # strip variant_id as they didn't request it, but we added it for the
+        # required columns
+        if gqh.endswith("\tvariant_id"):
+            gqh, _ = gqh.rsplit("\t", 1)
+        if is_violation_query:
+            return gqh + "\tviolation\t" + h
+        else:
+            return gqh + "\t" + h
 
     def _get_gene_only_candidates(self):
         """
@@ -140,13 +165,8 @@ class GeminiInheritanceModelFactory(object):
         self._construct_query()
         self.gq.run(self.query, needs_genotypes=True)
 
-        # print a header
-
         is_violation_query = isinstance(self.family_masks[0], dict)
-        if is_violation_query:
-            print self.gq.header + "\tviolation\tfamily_id\tfamily_members\tfamily_genotypes"
-        else:
-            print self.gq.header + "\tfamily_id\tfamily_members\tfamily_genotypes"
+        print self.get_header(is_violation_query)
 
         # yield the resulting variants for this familiy
         self.candidates = defaultdict(list)
@@ -154,10 +174,12 @@ class GeminiInheritanceModelFactory(object):
         for row in self.gq:
 
             curr_gene = row['gene']
+            variant_id = row.row.pop('variant_id')
 
             # report any candidates for the previous gene
             if curr_gene != prev_gene and prev_gene is not None:
-                self._report_candidates(is_violation_query)
+                self.report_candidates(self.candidates, is_violation_query,
+                        self.args.min_kindreds)
                 # reset for the next gene
                 self.candidates = defaultdict(list)
 
@@ -201,16 +223,18 @@ class GeminiInheritanceModelFactory(object):
 
                 # if it meets a recessive model, add it to the list
                 # of candidates for this gene.
-                self.candidates[(curr_gene, fam_id)].append([row,
+                self.candidates[(variant_id, curr_gene)].append([row,
                                                         family_gt_labels,
-                                                        family_gt_cols])
+                                                        family_gt_cols,
+                                                        fam_id])
                 if is_violation_query:
-                    self.candidates[(curr_gene, fam_id)][-1].append(",".join(violations))
+                    self.candidates[(variant_id, curr_gene)][-1].append(",".join(violations))
 
             prev_gene = curr_gene
 
         # report any candidates for the last gene
-        self._report_candidates(is_violation_query)
+        self.report_candidates(self.candidates, is_violation_query,
+                self.args.min_kindreds)
 
     def _get_all_candidates(self):
         """
@@ -227,22 +251,19 @@ class GeminiInheritanceModelFactory(object):
         self._construct_query()
         self.gq.run(self.query, needs_genotypes=True)
 
-        # print a header
         is_violation_query = isinstance(self.family_masks[0], dict)
-        if is_violation_query:
-            print self.gq.header + "\tviolation\tfamily_id\tfamily_members\tfamily_genotypes"
-        else:
-            print self.gq.header + "\tfamily_id\tfamily_members\tfamily_genotypes"
-
+        print self.get_header(is_violation_query)
+        gene = None
 
         for row in self.gq:
-
+            variant_id = row.row.pop('variant_id')
+            candidates = defaultdict(list)
             cols = {}
             for col in self.gt_cols:
                 cols[col] = row[col]
 
             # test the variant for each family in the db
-            for idx, fam_id in enumerate(self.family_ids):
+            for idx, family_id in enumerate(self.family_ids):
                 family_genotype_mask = self.family_masks[idx]
                 family_gt_labels = self.family_gt_labels[idx]
                 family_gt_cols = self.family_gt_columns[idx]
@@ -274,14 +295,12 @@ class GeminiInheritanceModelFactory(object):
                         break
                 if insufficient_depth is True:
                     continue
+
+                # shoe-horn the variant so we can use report_candidates.
+                key = (variant_id, gene)
+                candidates[key].append([row, family_gt_labels, family_gt_cols, family_id])
                 if is_violation_query:
-                    for violation in violations:
-                        print row,
-                        print "\t%s\t%s\t%s\t%s" % (violation, fam_id,
-                                      ",".join(str(s) for s in family_gt_labels),
-                                      ",".join(str(eval(s, cols)) for s in family_gt_cols))
-                else:
-                    print row,
-                    print "\t%s\t%s\t%s" % (fam_id,
-                                          ",".join(str(s) for s in family_gt_labels),
-                                          ",".join(str(eval(s, cols)) for s in family_gt_cols))
+                    candidates[key].append(",".join(violations))
+
+            self.report_candidates(candidates, is_violation_query,
+                    self.args.min_kindreds)
