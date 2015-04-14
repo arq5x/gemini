@@ -834,25 +834,8 @@ def main():
     #########################################
     parser_mendel = subparsers.add_parser('mendel_errors',
             help='Identify candidate violations of Mendelian inheritance')
-    parser_mendel.add_argument('db',
-            metavar='db',
-            help='The name of the database to be queried.')
-    parser_mendel.add_argument('--columns',
-            dest='columns',
-            metavar='STRING',
-            help='A list of columns that you would like returned. Def. = "*"',
-            )
-    parser_mendel.add_argument('--filter',
-            dest='filter',
-            metavar='STRING',
-            help='Restrictions to apply to variants (SQL syntax)')
-    parser_mendel.add_argument('-d',
-            dest='min_sample_depth',
-            type=int,
-            help="The minimum aligned\
-                  sequence depth (genotype DP) req'd for\
-                  each sample (def. = 0)",
-            default=0)
+    add_inheritance_args(parser_mendel, gt_ll=True)
+
     def mendel_fn(parser, args):
         import tool_mendel_errors
         tool_mendel_errors.run(parser, args)
