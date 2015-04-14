@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from collections import defaultdict, Counter
+from collections import defaultdict
 import GeminiQuery
 import sql_utils
 from gemini_constants import *
@@ -14,7 +14,7 @@ class GeminiInheritanceModelFactory(object):
 
     # https://github.com/arq5x/gemini/pull/436
     required_columns = ("variant_id", "family_id", "family_members",
-                        "family_genotypes", "affected_samples", "family_count")
+                        "family_genotypes", "samples", "family_count")
 
     def __init__(self, args, model):
 
@@ -54,7 +54,6 @@ class GeminiInheritanceModelFactory(object):
             fam_counts_by_variant[variant_id] += len(li)
 
         for (variant_id, gene) in candidate_keys:
-            ov = variant_id
             for tup in candidates[(variant_id, gene)]:
 
                 # (row, family_gt_label, family_gt_cols) \
@@ -62,11 +61,8 @@ class GeminiInheritanceModelFactory(object):
                 comp_het = ""
                 if is_violation:
                     (row, family_gt_label, family_gt_cols, family_id, violation) = tuple(tup)
-                    violation += "\t"
                 elif is_comp_het:
                     (row, family_gt_label, family_gt_cols, family_id, comp_het) = tuple(tup)
-                    variant_id = str(ov) + "_" + comp_het
-                    comp_het += "\t"
                 else:
                     (row, family_gt_label, family_gt_cols, family_id) = tuple(tup)
 
@@ -79,15 +75,16 @@ class GeminiInheritanceModelFactory(object):
                     row.row.pop('variant_id')
                     v_id = True
                 affected_samples = [x.split("(")[0] for x in family_gt_label if ";affected" in x]
-                print str(row) + "\t%s\t%s%s\t%s\t%s\t%s\t%i" % (variant_id,
-                                              violation + comp_het, family_id,
+                print str(row) + "\t%s\t%s\t%s\t%s\t%s\t%i%s" % (variant_id,
+                                              family_id,
                                               ",".join(str(s) for s in family_gt_label),
                                               ",".join(str(eval(s, e)) for s
                                                   in family_gt_cols),
                                               ",".join(affected_samples),
-                                              fam_counts_by_variant[ov])
+                                              fam_counts_by_variant[variant_id],
+                                              ("\t" + violation + comp_het).rstrip())
                 if v_id:
-                    row.row['variant_id'] = ov
+                    row.row['variant_id'] = variant_id
 
     def _cull_families(self):
         """
@@ -161,21 +158,20 @@ class GeminiInheritanceModelFactory(object):
 
     @classmethod
     def get_header(cls, gqh, is_violation_query, is_comp_het=False):
-        if is_comp_het:
-            cols = list(cls.required_columns)
-            cols.insert(1, "comp_het_id")
-            h = "\t".join(cols)
-        else:
-            h = "\t".join(cls.required_columns)
+        h = "\t".join(cls.required_columns)
 
         # strip variant_id as they didn't request it, but we added it for the
         # required columns
         if gqh.endswith("\tvariant_id"):
             gqh, _ = gqh.rsplit("\t", 1)
+
+        header = gqh + "\t" + h
         if is_violation_query:
-            return gqh + "\tviolation\t" + h
+            return header + "\tviolation"
+        elif is_comp_het:
+            return header + "\tcomp_het_id"
         else:
-            return gqh + "\t" + h
+            return header
 
     def _get_gene_only_candidates(self):
         """
