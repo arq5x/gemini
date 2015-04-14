@@ -548,7 +548,7 @@ class Family(object):
                  "GEMINI is currently only able to identify candidates "
                  "from two generational families.\n"
                  % self.family_id)
-            return "False"
+            return {"any": "False"}
 
         # outer start paren
         #masks is keys by the type of violation and values are the filters.
