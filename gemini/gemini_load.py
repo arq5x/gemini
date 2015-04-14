@@ -101,11 +101,32 @@ def get_merge_chunks_cmd(chunks, db, tempdir=None):
 
     return "gemini merge_chunks {chunk_names} {tempdir_string} --db {db}".format(**locals())
 
+def finalize_merged_db(tmp_db, db):
+    ts = time.time()
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    print st, "indexing final database."
+
+    main_conn = sqlite3.connect(tmp_db)
+    main_conn.isolation_level = None
+    main_curr = main_conn.cursor()
+    main_curr.execute('PRAGMA synchronous = OFF')
+    main_curr.execute('PRAGMA journal_mode=MEMORY')
+
+    gemini_db.create_indices(main_curr)
+
+    main_conn.commit()
+    main_curr.close()
+
+    shutil.move(tmp_db, db)
+
 def merge_chunks_ipython(chunks, args, view):
     if len(chunks) == 1:
-        shutil.move(chunks[0], args.db)
+        finalize_merged_db(chunks[0], args.db)
         return args.db
     else:
+        ts = time.time()
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        print st, "merging", len(chunks), "chunks."
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
         merge_args = {"tempdir": args.tempdir}
@@ -114,21 +135,7 @@ def merge_chunks_ipython(chunks, args, view):
 
 def merge_chunks_multicore(chunks, args):
     if len(chunks) <= 1:
-        ts = time.time()
-        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        print st, "indexing final database."
-
-        shutil.move(chunks[0], args.db)
-        main_conn = sqlite3.connect(args.db)
-        main_conn.isolation_level = None
-        main_curr = main_conn.cursor()
-        main_curr.execute('PRAGMA synchronous = OFF')
-        main_curr.execute('PRAGMA journal_mode=MEMORY')
-        
-        gemini_db.create_indices(main_curr)
-        
-        main_conn.commit()
-        main_curr.close()
+        finalize_merged_db(chunks[0], args.db)
         return args.db
     else:
         ts = time.time()
