@@ -38,7 +38,7 @@ class GeminiInheritanceModelFactory(object):
 
     @classmethod
     def report_candidates(self, candidates, is_violation=False,
-                          min_kindreds=1):
+                          min_kindreds=1, is_comp_het=False):
         """
         Print variants that meet the user's requirements
         If input is a tuple,
@@ -54,27 +54,40 @@ class GeminiInheritanceModelFactory(object):
             fam_counts_by_variant[variant_id] += len(li)
 
         for (variant_id, gene) in candidate_keys:
+            ov = variant_id
             for tup in candidates[(variant_id, gene)]:
 
                 # (row, family_gt_label, family_gt_cols) \
+                violation = ""
+                comp_het = ""
                 if is_violation:
                     (row, family_gt_label, family_gt_cols, family_id, violation) = tuple(tup)
                     violation += "\t"
+                elif is_comp_het:
+                    (row, family_gt_label, family_gt_cols, family_id, comp_het) = tuple(tup)
+                    variant_id = str(ov) + "_" + comp_het
+                    comp_het += "\t"
                 else:
                     (row, family_gt_label, family_gt_cols, family_id) = tuple(tup)
-                    violation = ""
 
                 e = {}
                 for k in ('gt_types', 'gts', 'gt_depths'):
                     e[k] = row[k]
 
+                v_id = False
+                if 'variant_id' in row.row:
+                    row.row.pop('variant_id')
+                    v_id = True
                 affected_samples = [x.split("(")[0] for x in family_gt_label if ";affected" in x]
-                print str(row) + "\t%s\t%s%s\t%s\t%s\t%s\t%i" % (variant_id, violation, family_id,
+                print str(row) + "\t%s\t%s%s\t%s\t%s\t%s\t%i" % (variant_id,
+                                              violation + comp_het, family_id,
                                               ",".join(str(s) for s in family_gt_label),
                                               ",".join(str(eval(s, e)) for s
                                                   in family_gt_cols),
                                               ",".join(affected_samples),
-                                              fam_counts_by_variant[variant_id])
+                                              fam_counts_by_variant[ov])
+                if v_id:
+                    row.row['variant_id'] = ov
 
     def _cull_families(self):
         """
@@ -146,9 +159,15 @@ class GeminiInheritanceModelFactory(object):
                 self.query += " WHERE gene is not NULL ORDER BY chrom, gene"
         self.query = sql_utils.ensure_columns(self.query, ['variant_id'])
 
-    def get_header(self, is_violation_query):
-        h = "\t".join(self.required_columns)
-        gqh = self.gq.header
+    @classmethod
+    def get_header(cls, gqh, is_violation_query, is_comp_het=False):
+        if is_comp_het:
+            cols = list(cls.required_columns)
+            cols.insert(1, "comp_het_id")
+            h = "\t".join(cols)
+        else:
+            h = "\t".join(cls.required_columns)
+
         # strip variant_id as they didn't request it, but we added it for the
         # required columns
         if gqh.endswith("\tvariant_id"):
@@ -170,7 +189,7 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query, needs_genotypes=True)
 
         is_violation_query = isinstance(self.family_masks[0], dict)
-        print self.get_header(is_violation_query)
+        print self.get_header(self.gq.header, is_violation_query)
 
         # yield the resulting variants for this familiy
         self.candidates = defaultdict(list)
@@ -256,7 +275,7 @@ class GeminiInheritanceModelFactory(object):
         self.gq.run(self.query, needs_genotypes=True)
 
         is_violation_query = isinstance(self.family_masks[0], dict)
-        print self.get_header(is_violation_query)
+        print self.get_header(self.gq.header, is_violation_query)
         gene = None
 
         for row in self.gq:
@@ -304,8 +323,7 @@ class GeminiInheritanceModelFactory(object):
                 key = (variant_id, gene)
                 candidates[key].append([row, family_gt_labels, family_gt_cols, family_id])
                 if is_violation_query:
-                    candidates[key].append(",".join(violations))
-                candidates = {}
+                    candidates[key][-1].append(",".join(violations))
             self.report_candidates(candidates, is_violation_query,
                                    self.args.min_kindreds)
 
