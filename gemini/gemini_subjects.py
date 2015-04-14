@@ -743,40 +743,30 @@ class Family(object):
         return masks
 
 
-    def get_genotype_columns(self):
-        """
-        Return the indices into the gts numpy array for the parents
-        and the children.
-        """
+    def get_gt_field(self, field):
         columns = []
-
+        prefix = field + "["
         if not self.build_family():
             for subject in self.subjects:
-                columns.append('gts[' + str(subject.sample_id - 1) + ']')
+                columns.append(prefix + str(subject.sample_id - 1) + ']')
         else:
-            columns.append('gts[' + str(self.father.sample_id - 1) + ']')
-            columns.append('gts[' + str(self.mother.sample_id - 1) + ']')
+            columns.append(prefix + str(self.father.sample_id - 1) + ']')
+            columns.append(prefix + str(self.mother.sample_id - 1) + ']')
             for child in self.children:
-                columns.append('gts[' + str(child.sample_id - 1) + ']')
-
+                columns.append(prefix + str(child.sample_id - 1) + ']')
         return columns
+
+    def get_genotype_columns(self):
+        return self.get_gt_field("gts")
 
     def get_genotype_depths(self):
-        """
-        Return the indices into the gt_depths numpy array for the parents
-        and the children.
-        """
-        columns = []
-        if not self.build_family():
-            for subject in self.subjects:
-                columns.append('gt_depths[' + str(subject.sample_id - 1) + ']')
-        else:
-            columns.append('gt_depths[' + str(self.father.sample_id - 1) + ']')
-            columns.append('gt_depths[' + str(self.mother.sample_id - 1) + ']')
-            for child in self.children:
-                columns.append('gt_depths[' + str(child.sample_id - 1) + ']')
+        return self.get_gt_field("gt_depths")
 
-        return columns
+    def get_genotype_lls(self):
+        return dict(
+            homref=self.get_gt_field("gt_phred_ll_homref"),
+            het=self.get_gt_field("gt_phred_ll_het"),
+            homalt=self.get_gt_field("gt_phred_ll_homalt"))
 
     def get_genotype_labels(self):
         """
@@ -859,8 +849,7 @@ def get_families(db, selected_families=None):
         if family_id in families_dict:
             families_dict[family_id].append(subject)
         else:
-            families_dict[family_id] = []
-            families_dict[family_id].append(subject)
+            families_dict[family_id] = [subject]
 
     # if the user has specified a set of selected families
     # to which the analysis should be restricted, then
