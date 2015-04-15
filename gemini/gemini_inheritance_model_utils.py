@@ -5,6 +5,8 @@ import sql_utils
 from mendelianerror import mendelian_error
 from gemini_constants import *
 import gemini_subjects as subjects
+import itertools as it
+import re
 
 def get_prob(family_gt_lls, row):
     e = {}
@@ -50,16 +52,16 @@ class GeminiInheritanceModelFactory(object):
         else:
             self._get_all_candidates()
 
-    @classmethod
     def report_candidates(self, candidates, is_violation=False,
-                          min_kindreds=1, is_comp_het=False):
+                          is_comp_het=False):
         """
         Print variants that meet the user's requirements
         If input is a tuple,
         """
+        min_kindreds = self.args.min_kindreds
         family_count = len(candidates)
 
-        if family_count < min_kindreds:
+        if min_kindreds is not None and family_count < min_kindreds:
             return False
 
         candidate_keys = sorted(candidates.keys())
@@ -77,7 +79,8 @@ class GeminiInheritanceModelFactory(object):
                     (row, family_gt_label, family_gt_cols, family_id,
                             family_gt_lls, violation) = tuple(tup)
                 elif is_comp_het:
-                    (row, family_gt_label, family_gt_cols, family_id, comp_het) = tuple(tup)
+                    (row, family_gt_label, family_gt_cols, family_id, comp_het,
+                            subject) = tuple(tup)
                 else:
                     (row, family_gt_label, family_gt_cols, family_id) = tuple(tup)
 
@@ -89,15 +92,45 @@ class GeminiInheritanceModelFactory(object):
                     prob = get_prob(family_gt_lls, row)
                     violation += ("\t%.3f" % prob)
 
-                affected_samples = [x.split("(")[0] for x in family_gt_label if ";affected" in x]
+                gt_cols = [str(eval(s, e)) for s in family_gt_cols]
+                gt_lbls = family_gt_label
 
-                print str(row) + "\t%s\t%s\t%s\t%s\t%s\t%i%s" % (variant_id,
+                if is_comp_het:
+                    affected_samples = [subject]
+                else:
+                    affected_samples = self.get_samples(gt_cols, gt_lbls)
+
+                print str(row) + "\t%s\t%s\t%s\t%s\t%i%s" % (
                              family_id,
-                             ",".join(str(s) for s in family_gt_label),
-                             ",".join(str(eval(s, e)) for s in family_gt_cols),
+                             ",".join(gt_lbls),
+                             ",".join(gt_cols),
                              ",".join(affected_samples),
                              fam_counts_by_variant[variant_id],
                              ("\t" + violation + comp_het).rstrip())
+
+    def get_samples(self, gts, lbls, splitter=re.compile("\/|\|"), model=None):
+        """Hack..."""
+        model = model or self.model
+        if model == "auto_rec":
+            # first will always be parent who must have ref
+            ref = splitter.split(gts[0])[0]
+            return [l.split("(", 1)[0] for gt, l in it.izip(gts, lbls) if not ref in splitter.split(gt)]
+        elif model == "auto_dom":
+            # has to be the affected samples.
+            return [l.split("(", 1)[0] for l in lbls if ";affected" in lbls]
+        elif model == "de_novo":
+            # samples that have alleles that the parents do not.
+            parents = set(splitter.split(gts[0]) + splitter.split(gts[1]))
+            return [l.split("(", 1)[0] for gt, l in it.izip(gts[2:], lbls[2:]) if
+                    set(splitter.split(gt)) - parents]
+        elif model == "mendel_violations":
+            mom, dad = set(splitter.split(gts[0])), set(splitter.split(gts[1]))
+            # denovo
+            samps = self.get_samples(gts, lbls, model="de_novo")
+            # u disomy. kid didn't get one from each parent. and LOH
+            samps += [l.split("(", 1)[0] for gt, l in it.izip(gts[2:], lbls[2:]) if
+                    not (set(splitter.split(gt)) - mom and set(splitter.split(gt)) - dad)]
+            return samps
 
     def _cull_families(self):
         """
@@ -160,8 +193,8 @@ class GeminiInheritanceModelFactory(object):
 
         # auto_rec and auto_dom candidates should be limited to
         # variants affecting genes.
-        if self.model == "auto_rec" or self.model == "auto_dom"\
-        or (self.model == "de_novo" and self.args.min_kindreds is not None):
+        if self.model in ("auto_rec", "auto_dom") or \
+           (self.model == "de_novo" and self.args.min_kindreds is not None):
 
             # we require the "gene" column for the auto_* tools
             self.query = sql_utils.ensure_columns(self.query, ['gene'])
@@ -171,9 +204,9 @@ class GeminiInheritanceModelFactory(object):
                 self.query += " WHERE gene is not NULL ORDER BY chrom, gene"
         self.query = sql_utils.ensure_columns(self.query, ['variant_id'])
 
-    @classmethod
-    def get_header(cls, gqh, is_violation_query, is_comp_het=False):
-        h = "\t".join(cls.required_columns)
+
+    def get_header(self, gqh, is_violation_query, is_comp_het=False):
+        h = "\t".join(self.required_columns)
 
         header = gqh + "\t" + h
         if is_violation_query:
@@ -207,8 +240,7 @@ class GeminiInheritanceModelFactory(object):
 
             # report any candidates for the previous gene
             if curr_gene != prev_gene and prev_gene is not None:
-                self.report_candidates(self.candidates, is_violation_query,
-                        self.args.min_kindreds)
+                self.report_candidates(self.candidates, is_violation_query)
                 # reset for the next gene
                 self.candidates = defaultdict(list)
 
@@ -221,6 +253,7 @@ class GeminiInheritanceModelFactory(object):
 
                 # interrogate the genotypes present in each family member to
                 # conforming to the genetic model being tested
+                e = {}
                 for c in ('gt_types', 'gts', 'gt_depths', 'gt_phred_ll_homalt',
                           'gt_phred_ll_het', 'gt_phred_ll_homref'):
                     e[c] = row[c]
@@ -265,8 +298,7 @@ class GeminiInheritanceModelFactory(object):
             prev_gene = curr_gene
 
         # report any candidates for the last gene
-        self.report_candidates(self.candidates, is_violation_query,
-                self.args.min_kindreds)
+        self.report_candidates(self.candidates, is_violation_query)
 
     def _get_all_candidates(self):
         """
@@ -288,7 +320,9 @@ class GeminiInheritanceModelFactory(object):
         gene = None
 
         for row in self.gq:
+            #variant_id = row.row.pop('variant_id')
             variant_id = row.row['variant_id']
+
             candidates = defaultdict(list)
             cols = {}
             for col in self.gt_cols:
@@ -336,6 +370,5 @@ class GeminiInheritanceModelFactory(object):
                 if is_violation_query:
                     candidates[key][-1].append(family_gt_phred_lls)
                     candidates[key][-1].append(",".join(violations))
-            self.report_candidates(candidates, is_violation_query,
-                                   self.args.min_kindreds)
+            self.report_candidates(candidates, is_violation_query)
 
