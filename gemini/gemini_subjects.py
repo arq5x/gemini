@@ -18,6 +18,8 @@ def compile_decorator(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         query_string = f(*args, **kwargs)
+        if query_string == "False" or query_string == {"any": "False"}:
+            return None
         if not isinstance(query_string, dict):
             return compile(query_string, "<string>", "eval")
         query_dict = query_string
