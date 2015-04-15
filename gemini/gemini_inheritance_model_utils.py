@@ -114,10 +114,12 @@ class GeminiInheritanceModelFactory(object):
         if model == "auto_rec":
             # first will always be parent who must have ref
             ref = splitter.split(gts[0])[0]
-            return [l.split("(", 1)[0] for gt, l in it.izip(gts, lbls) if not ref in splitter.split(gt)]
+            return [l.split("(", 1)[0] for gt, l in it.izip(gts, lbls)
+                    if ref not in splitter.split(gt) and ";affected" in l]
         elif model == "auto_dom":
-            # has to be the affected samples.
-            return [l.split("(", 1)[0] for l in lbls if ";affected" in l]
+            # has to be the affected samples that are hets.
+            return [l.split("(", 1)[0] for gt, l in it.izip(gts, lbls) if
+                    ";affected" in l and len(set(splitter.split(gt))) > 1]
         elif model == "de_novo":
             # samples that have alleles that the parents do not.
             parents = set(splitter.split(gts[0]) + splitter.split(gts[1]))
@@ -128,8 +130,9 @@ class GeminiInheritanceModelFactory(object):
             # denovo
             samps = self.get_samples(gts, lbls, model="de_novo")
             # u disomy. kid didn't get one from each parent. and LOH
-            samps += [l.split("(", 1)[0] for gt, l in it.izip(gts[2:], lbls[2:]) if
-                    not (set(splitter.split(gt)) - mom and set(splitter.split(gt)) - dad)]
+            samps += [l.split("(", 1)[0] for gt, l in it.izip(gts[2:], lbls[2:])
+                      if not (set(splitter.split(gt)) - mom
+                              and set(splitter.split(gt)) - dad)]
             return samps
 
     def _cull_families(self):
