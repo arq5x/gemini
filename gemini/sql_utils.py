@@ -37,6 +37,8 @@ def ensure_columns(query, cols):
     """
     sel_cols, rest = get_select_cols_and_rest(query)
     sel_cols = [x.lower() for x in sel_cols]
+    if "*" in sel_cols:
+        return query
     for c in cols:
         c = c.lower()
         if c not in sel_cols:
