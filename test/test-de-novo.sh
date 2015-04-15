@@ -12,15 +12,15 @@ export -f check
 # 1. Test basic de_novo functionality
 ###################################################################
 echo "    de_novo.t1...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	1142207	1142208	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	WDR37	T	C	stop_loss	HIGH
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	48004991	48004992	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135336655	135336656	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135336655	135336656	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	1
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+ASAH2C	C	T	non_syn_coding	MED	3	3	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	C/C,C/C,C/T	3_kid	1
+SPRN	G	A	intron	LOW	4	4	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	G/G,G/G,G/A	1_kid	2
+SPRN	G	A	intron	LOW	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	G/G,G/G,G/A	2_kid	2
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     test.de_novo.db > obs
@@ -32,8 +32,8 @@ rm obs exp
 # 2. Test de_novo with filter
 ###################################################################
 echo "    de_novo.t2...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	1142207	1142208	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	WDR37	T	C	stop_loss	HIGH"> exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	1" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --filter "impact_severity = 'HIGH'" \
@@ -45,8 +45,8 @@ rm obs exp
 # 3. Test de_novo with filter and minimum depth requirement
 ###################################################################
 echo "    de_novo.t3...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	1" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --filter "impact_severity = 'MED'" \
@@ -59,14 +59,14 @@ rm obs exp
 # 4. Test de_novo with filter with min-kindreds
 ###################################################################
 echo "    de_novo.t4...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	48004991	48004992	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135336655	135336656	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135336655	135336656	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+ASAH2C	C	T	non_syn_coding	MED	3	3	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	C/C,C/C,C/T	3_kid	1
+SPRN	G	A	intron	LOW	4	4	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	G/G,G/G,G/A	1_kid	2
+SPRN	G	A	intron	LOW	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	G/G,G/G,G/A	2_kid	2
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 2 \
@@ -78,12 +78,12 @@ rm obs exp
 # 5. Test de_novo with filter with min-kindreds 2 and filter
 ###################################################################
 echo "    de_novo.t5...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	48004991	48004992	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+ASAH2C	C	T	non_syn_coding	MED	3	3	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	C/C,C/C,C/T	3_kid	1
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 2 \
@@ -96,10 +96,10 @@ rm obs exp
 # 6. Test de_novo with filter with min-kindreds 3 and filter
 ###################################################################
 echo "    de_novo.t6...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 3 \
@@ -112,14 +112,13 @@ rm obs exp
 # 7. Test de_novo with filter with min-kindreds 1 and filter
 ###################################################################
 echo "    de_novo.t7...\c"
-
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	48004991	48004992	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED
-chr10	1142207	1142208	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)	T/T,T/T,T/C	39,29,24	WDR37	T	C	stop_loss	HIGH" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+ASAH2C	C	T	non_syn_coding	MED	3	3	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	C/C,C/C,C/T	3_kid	1
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3
+WDR37	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	1" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -132,18 +131,15 @@ rm obs exp
 # 8. Test de_novo without --only-affected
 ###################################################################
 echo "    de_novo.t8...\c"
-
-
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	1142207	1142208	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid1(child; unaffected),1_kid2(child; affected)	T/T,T/T,T/C,T/C	39,29,24,24	WDR37	T	C	stop_loss	HIGH
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	48004991	48004992	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135336655	135336656	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid1(child; unaffected),1_kid2(child; affected)	G/G,G/G,G/A,G/G	39,29,24,39	SPRN	G	A	intron	LOW
-chr10	135336655	135336656	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid1(child; unaffected),1_kid2(child; affected)	T/T,T/T,T/T,T/C	39,29,24,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED" > exp
-
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid1(child;unaffected),1_kid2(child;affected)	T/T,T/T,T/C,T/C	1_kid1,1_kid2	1
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+ASAH2C	C	T	non_syn_coding	MED	3	3	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	C/C,C/C,C/T	3_kid	1
+SPRN	G	A	intron	LOW	4	4	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid1(child;unaffected),1_kid2(child;affected)	G/G,G/G,G/A,G/G	1_kid1	2
+SPRN	G	A	intron	LOW	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	G/G,G/G,G/A	2_kid	2
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid1(child;unaffected),1_kid2(child;affected)	T/T,T/T,T/T,T/C	1_kid2	3
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     test.de_novo.affected.and.unaffected.db > obs
@@ -154,14 +150,13 @@ rm obs exp
 # 9. Test de_novo with --only-affected
 ###################################################################
 echo "    de_novo.t9...\c"
-
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	48004991	48004992	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135336655	135336656	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid1(child; unaffected),1_kid2(child; affected)	T/T,T/T,T/T,T/C	39,29,24,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	3	3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)	T/T,T/T,T/C	50,50,50	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+ASAH2C	C	T	non_syn_coding	MED	3	3	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	C/C,C/C,C/T	3_kid	1
+SPRN	G	A	intron	LOW	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	G/G,G/G,G/A	2_kid	1
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid1(child;unaffected),1_kid2(child;affected)	T/T,T/T,T/T,T/C	1_kid2	3
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --only-affected \
@@ -175,11 +170,11 @@ exit
 # 10. Test de_novo with --only-affected and --families
 ###################################################################
 echo "    de_novo.t10...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135336655	135336656	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135369531	135369532	1	1_dad(father; unaffected),1_mom(mother; unaffected),1_kid1(child; unaffected),1_kid2(child; affected)	T/T,T/T,T/T,T/C	39,29,24,24	SYCE1	T	C	non_syn_coding	MED
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+SPRN	G	A	intron	LOW	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	G/G,G/G,G/A	2_kid	1
+SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid1(child;unaffected),1_kid2(child;affected)	T/T,T/T,T/T,T/C	1_kid2	2
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	2" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --only-affected \
@@ -192,10 +187,10 @@ rm obs exp
 # 11. Test de_novo with --only-affected and --families
 ###################################################################
 echo "    de_novo.t11...\c"
-echo "chrom	start	end	family_id	family_members	family_genotypes	family_genotype_depths	gene	ref	alt	impact	impact_severity
-chr10	48003991	48003992	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	C/C,C/C,C/T	39,29,24	ASAH2C	C	T	non_syn_coding	MED
-chr10	135336655	135336656	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	G/G,G/G,G/A	39,29,24	SPRN	G	A	intron	LOW
-chr10	135369531	135369532	2	2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)	T/T,T/T,T/C	39,29,24	SYCE1	T	C	non_syn_coding	MED" > exp
+echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+ASAH2C	C	T	non_syn_coding	MED	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+SPRN	G	A	intron	LOW	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	G/G,G/G,G/A	2_kid	1
+SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	1" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --only-affected \
