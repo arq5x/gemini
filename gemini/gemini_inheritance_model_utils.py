@@ -27,7 +27,7 @@ class GeminiInheritanceModelFactory(object):
                'gt_phred_ll_het', 'gt_phred_ll_homalt')
 
     # https://github.com/arq5x/gemini/pull/436
-    required_columns = ("variant_id", "family_id", "family_members",
+    required_columns = ("family_id", "family_members",
                         "family_genotypes", "samples", "family_count")
 
     def __init__(self, args, model):
@@ -89,10 +89,6 @@ class GeminiInheritanceModelFactory(object):
                     prob = get_prob(family_gt_lls, row)
                     violation += ("\t%.3f" % prob)
 
-                v_id = False
-                if 'variant_id' in row.row:
-                    row.row.pop('variant_id')
-                    v_id = True
                 affected_samples = [x.split("(")[0] for x in family_gt_label if ";affected" in x]
 
                 print str(row) + "\t%s\t%s\t%s\t%s\t%s\t%i%s" % (variant_id,
@@ -102,8 +98,6 @@ class GeminiInheritanceModelFactory(object):
                              ",".join(affected_samples),
                              fam_counts_by_variant[variant_id],
                              ("\t" + violation + comp_het).rstrip())
-                if v_id:
-                    row.row['variant_id'] = variant_id
 
     def _cull_families(self):
         """
@@ -181,11 +175,6 @@ class GeminiInheritanceModelFactory(object):
     def get_header(cls, gqh, is_violation_query, is_comp_het=False):
         h = "\t".join(cls.required_columns)
 
-        # strip variant_id as they didn't request it, but we added it for the
-        # required columns
-        if gqh.endswith("\tvariant_id"):
-            gqh, _ = gqh.rsplit("\t", 1)
-
         header = gqh + "\t" + h
         if is_violation_query:
             return header + "\tviolation\tviolation_prob"
@@ -214,7 +203,7 @@ class GeminiInheritanceModelFactory(object):
         for row in self.gq:
 
             curr_gene = row['gene']
-            variant_id = row.row.pop('variant_id')
+            variant_id = row.row['variant_id']
 
             # report any candidates for the previous gene
             if curr_gene != prev_gene and prev_gene is not None:
@@ -299,7 +288,7 @@ class GeminiInheritanceModelFactory(object):
         gene = None
 
         for row in self.gq:
-            variant_id = row.row.pop('variant_id')
+            variant_id = row.row['variant_id']
             candidates = defaultdict(list)
             cols = {}
             for col in self.gt_cols:
