@@ -2,6 +2,18 @@
 Built-in analysis tools
 ############################
 
+As of version 0.14, the tools have a standardized output that is different
+from previous versions.
+Requested `--columns` will come first followed by a standard set of columns:
+ 
+ + variant_id - unique id from the databse
+ + family_id - family id for this row
+ + family_members - which family members were tested
+ + family_genotypes - genotypes of this family
+ + samples - samples contributing to this row appearing in the results
+ + family_count - number of families with this effect
+
+Other tools such as `mendel_errors` additional columns at the end.
 
 ===========================================================================
 ``comp_hets``: Identifying potential compound heterozygotes
@@ -178,6 +190,17 @@ following:
     1	SMS173	5	AL355149.1	chr1	16863313	16863314	A	ACCCCTTTCTGCTG	frame_shift	HIGH
 
 
+===========================================================================
+``mendelian_error``: Identify non-mendelian transmission.
+===========================================================================
+.. note::
+
+    This tool requires that you identify familial relationships via a PED file
+    when loading your VCF into gemini via:
+
+    ``gemini load -v my.vcf -p my.ped my.db``
+
+TODO
 
 
 ===========================================================================
