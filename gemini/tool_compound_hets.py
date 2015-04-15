@@ -184,11 +184,11 @@ class CompoundHet(Factory):
                     for i in (0, 1):
                         row = comp_het[i].row
 
-                        filtered_candidates[(row['variant_id'], row['gene'])]\
+                        filtered_candidates[(row['gene'], family_id)]\
                             .append((row,
                                      family_gt_labels[family_id],
                                      family_gt_cols[family_id],
-                                     family_id,
+                                     row['variant_id'],
                                      ch_id,
                                      s))
             self.report_candidates(filtered_candidates, False, is_comp_het=True)

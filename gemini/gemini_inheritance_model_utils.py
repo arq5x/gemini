@@ -66,20 +66,22 @@ class GeminiInheritanceModelFactory(object):
 
         candidate_keys = sorted(candidates.keys())
         fam_counts_by_variant = defaultdict(int)
-        for (variant_id, gene), li in candidates.items():
-            fam_counts_by_variant[variant_id] += len(li)
+        for (gene, family_id), li in candidates.items():
+            for row in li:
+                variant_id = row[3]
+                fam_counts_by_variant[variant_id] += 1
 
-        for (variant_id, gene) in candidate_keys:
-            for tup in candidates[(variant_id, gene)]:
+        for (gene, family_id) in candidate_keys:
+            for tup in candidates[(gene, family_id)]:
 
                 # (row, family_gt_label, family_gt_cols) \
                 violation = ""
                 comp_het = ""
                 if is_violation:
-                    (row, family_gt_label, family_gt_cols, family_id,
+                    (row, family_gt_label, family_gt_cols, variant_id,
                             family_gt_lls, violation) = tuple(tup)
                 elif is_comp_het:
-                    (row, family_gt_label, family_gt_cols, family_id, comp_het,
+                    (row, family_gt_label, family_gt_cols, variant_id, comp_het,
                             subject) = tuple(tup)
                 else:
                     (row, family_gt_label, family_gt_cols, family_id) = tuple(tup)
@@ -167,13 +169,14 @@ class GeminiInheritanceModelFactory(object):
             elif self.model == "mendel_violations":
                 family_filter = family.get_mendelian_violation_filter(gt_ll=self.args.gt_phred_ll)
 
-            self.family_masks.append(family_filter)
-            self.family_gt_labels.append(family.get_genotype_labels())
-            self.family_gt_columns.append(family.get_genotype_columns())
-            self.family_dp_columns.append(family.get_genotype_depths())
-            self.family_ids.append(family.family_id)
-            if self.model == "mendel_violations":
-                self.family_gt_phred_lls.append(family.get_genotype_lls())
+            if family_filter != "False" and family_filter is not None:
+                self.family_masks.append(family_filter)
+                self.family_gt_labels.append(family.get_genotype_labels())
+                self.family_gt_columns.append(family.get_genotype_columns())
+                self.family_dp_columns.append(family.get_genotype_depths())
+                self.family_ids.append(family.family_id)
+                if self.model == "mendel_violations":
+                    self.family_gt_phred_lls.append(family.get_genotype_lls())
 
     def _construct_query(self):
         """
@@ -230,7 +233,7 @@ class GeminiInheritanceModelFactory(object):
         self._construct_query()
         self.gq.run(self.query, needs_genotypes=True)
 
-        is_violation_query = isinstance(self.family_masks[0], dict)
+        is_violation_query = any(isinstance(m, dict) for m in self.family_masks)
         print self.get_header(self.gq.header, is_violation_query)
 
         # yield the resulting variants for this familiy
@@ -248,7 +251,7 @@ class GeminiInheritanceModelFactory(object):
                 self.candidates = defaultdict(list)
 
             # test the variant for each family in the db
-            for idx, fam_id in enumerate(self.family_ids):
+            for idx, family_id in enumerate(self.family_ids):
                 family_genotype_mask = self.family_masks[idx]
                 family_gt_labels = self.family_gt_labels[idx]
                 family_gt_cols = self.family_gt_columns[idx]
@@ -290,13 +293,14 @@ class GeminiInheritanceModelFactory(object):
 
                 # if it meets a recessive model, add it to the list
                 # of candidates for this gene.
-                self.candidates[(variant_id, curr_gene)].append([row,
-                                                        family_gt_labels,
-                                                        family_gt_cols,
-                                                        fam_id])
+                key = (curr_gene, family_id)
+                self.candidates[key].append([row,
+                                             family_gt_labels,
+                                             family_gt_cols,
+                                             variant_id])
                 if is_violation_query:
-                    self.candidates[(variant_id, curr_gene)][-1].append(family_gt_phred_lls)
-                    self.candidates[(variant_id, curr_gene)][-1].append(",".join(violations))
+                    self.candidates[key][-1].append(family_gt_phred_lls)
+                    self.candidates[key][-1].append(",".join(violations))
 
             prev_gene = curr_gene
 
@@ -368,8 +372,9 @@ class GeminiInheritanceModelFactory(object):
                     continue
 
                 # shoe-horn the variant so we can use report_candidates.
-                key = (variant_id, gene)
-                candidates[key].append([row, family_gt_labels, family_gt_cols, family_id])
+                key = (gene, family_id)
+                candidates[key].append([row, family_gt_labels, family_gt_cols, variant_id])
+
                 if is_violation_query:
                     candidates[key][-1].append(family_gt_phred_lls)
                     candidates[key][-1].append(",".join(violations))
