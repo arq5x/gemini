@@ -494,7 +494,7 @@ class Family(object):
             if only_affected == False:
                 for i, child in enumerate(self.children):
                     mask += '( gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
-                    mask += get_phred_query(child.sample, gt_ll, "het")
+                    mask += get_phred_query(child, gt_ll, "het")
                     mask += ")"
 
                     if i < (len(self.children) - 1):
@@ -507,7 +507,7 @@ class Family(object):
                     if child.affected == True:
                         affected += 1
                         mask += '(gt_types[' + str(child.sample_id - 1) + "] == " + str(HET)
-                        mask += get_phred_query(child.sample, gt_ll, "het") + ")"
+                        mask += get_phred_query(child, gt_ll, "het") + ")"
 
                         if affected < num_affected:
                             mask += " or "
@@ -521,7 +521,7 @@ class Family(object):
                     if child.affected is False:
                         unaffected += 1
                         mask += '(gt_types[' + str(child.sample_id - 1) + "] != " + str(HET)
-                        mask += get_phred_query(child.sample, gt_ll, "het", invert=True) + ")"
+                        mask += get_phred_query(child, gt_ll, "het", invert=True) + ")"
                         if unaffected < num_unaffected:
                             mask += " and "
         mask += ")"
