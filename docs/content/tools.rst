@@ -309,9 +309,8 @@ would use the following:
 
 .. note::
 
-    The output will always start with the family ID, the family members, the
-    observed genotypes, and the observed aligned sequencing depths
-    for the family members.
+    The output will always start with the requested columns followed by
+    the additional columns for each tool.
 
 
 ---------------------
@@ -549,6 +548,24 @@ depth (default: 0) for each sample:
     3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
 
 
+---------------------
+``--gt-pl-max``
+---------------------
+
+In order to eliminate less confident genotypes, it is possible to enforce a maximum PL value
+for each sample. On this scale, lower values indicate more confidence that the called genotype
+is correct. 10 is a reasonable value:
+
+.. code-block:: bash
+
+    $ gemini autosomal_dominant \
+        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+        --filter "impact_severity = 'HIGH'" \
+        --min-kindreds 1 \
+        --gt-pl-max 10 \
+        my.db
+
+TODO
 
 
 ===========================================================================
