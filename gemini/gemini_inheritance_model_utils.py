@@ -117,7 +117,7 @@ class GeminiInheritanceModelFactory(object):
             return [l.split("(", 1)[0] for gt, l in it.izip(gts, lbls) if not ref in splitter.split(gt)]
         elif model == "auto_dom":
             # has to be the affected samples.
-            return [l.split("(", 1)[0] for l in lbls if ";affected" in lbls]
+            return [l.split("(", 1)[0] for l in lbls if ";affected" in l]
         elif model == "de_novo":
             # samples that have alleles that the parents do not.
             parents = set(splitter.split(gts[0]) + splitter.split(gts[1]))
