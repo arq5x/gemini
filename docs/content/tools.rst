@@ -148,18 +148,11 @@ following:
         --filter "impact_severity = 'HIGH'"
         my.db \
         | head -11
-
-    family	sample	comp_het_id	gene	chrom	start	end	ref	alt	impact	impact_severity
-    1	SMS173	1	TMCO4	chr1	20020993	20020994	C	CGT	frame_shift	HIGH
-    1	SMS173	1	TMCO4	chr1	20020994	20020995	G	GTG	frame_shift	HIGH
-    1	SMS173	2	HRNR	chr1	152185788	152185789	G	GCGACTAGG	frame_shift	HIGH
-    1	SMS173	2	HRNR	chr1	152187906	152187907	T	TA	frame_shift	HIGH
-    1	SMS173	3	FAM131C	chr1	16384996	16384997	G	GCA	frame_shift	HIGH
-    1	SMS173	3	FAM131C	chr1	16384998	16384999	G	GCA	frame_shift	HIGH
-    1	SMS173	4	CEP104	chr1	3753055	3753056	T	TTTTT	splice_donor	HIGH
-    1	SMS173	4	CEP104	chr1	3753056	3753057	A	T	splice_donor	HIGH
-    1	SMS173	5	AL355149.1	chr1	16862565	16862566	G	A	stop_gain	HIGH
-    1	SMS173	5	AL355149.1	chr1	16863313	16863314	A	ACCCCTTTCTGCTG	frame_shift	HIGH
+    gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
+    WASH7P	chr1	17362	17366	TTCT	T	splice_acceptor	HIGH	1	3	dad_3(dad;unaffected),mom_3(mom;unaffected),child_3(child;affected)	TTCT|T,TTCT|TTCT,TTCT|T	child_3	2	1
+    WASH7P	chr1	17729	17730	C	A	splice_acceptor	HIGH	2	3	dad_3(dad;unaffected),mom_3(mom;unaffected),child_3(child;affected)	C|A,C|A,A|C	child_3	2	1
+    WASH7P	chr1	17362	17366	TTCT	T	splice_acceptor	HIGH	1	4	dad_4(dad;unaffected),mom_4(mom;unaffected),child_4(child;affected)	TTCT|T,TTCT|TTCT,TTCT|T	child_4	2	1
+    WASH7P	chr1	17729	17730	C	A	splice_acceptor	HIGH	2	4	dad_4(dad;unaffected),mom_4(mom;unaffected),child_4(child;affected)	C|A,C|A,A|C	child_4	2	1
 
 
 ===========================================================================
@@ -216,24 +209,34 @@ your VCF into GEMINI, one can leverage a built-in tool for identifying de novo
 By default, the ``de novo`` tool will report, for each
 family in the database, all columns in the variants table for mutations that
 are not found in the parents yet are observed as heterozygotes in the offspring.
-For example:
+We strongly recommend to pull the desired subset of columns with `--columns`
+
+---------------------
+``--columns``
+---------------------
+
+By default, this tool reports all columns in the ``variants`` table. One may
+choose to report only a subset of the columns using the ``--columns`` option.  For
+example, to report just the ``chrom, start, end, ref``, and ``alt`` columns, one
+would use the following. See usage examples throughout these docs.
 
 .. code-block:: bash
 
-    $ gemini de_novo my.db
-
-    family_id	family_members	family_genotypes   family_genotype_depths	chrom	start	end	variant_id	anno_id	ref	alt	qual	filter	type	sub_type	call_rate	in_dbsnp	rs_ids	in_omim	clinvar_sig	clinvar_disease_name	clinvar_dbsource	clinvar_dbsource_id	clinvar_origin	clinvar_dsdb	clinvar_dsdbid	clinvar_disease_acc	clinvar_in_locus_spec_db	clinvar_on_diag_assay	pfam_domain	cyto_band	rmsk	in_cpg_island	in_segdup	is_conserved	gerp_bp_score	gerp_element_pval	num_hom_ref	num_het	num_hom_alt	num_unknown	aaf	hwe	inbreeding_coeff	pi	recomb_rate	gene	transcript	is_exonic	is_coding	is_lof	exon	codon_change	aa_change	aa_length	biotype	impact	impact_severity	polyphen_pred	polyphen_score	sift_pred	sift_score	anc_allele	rms_bq	cigar	depth	strand_bias	rms_map_qual	in_hom_run	num_mapq_zero	num_alleles	num_reads_w_dels	haplotype_score	qual_depth	allele_count	allele_bal	in_hm2	in_hm3	is_somatic	in_esp	aaf_esp_ea	aaf_esp_aa	aaf_esp_all	exome_chip	in_1kg	aaf_1kg_amr	aaf_1kg_asn	aaf_1kg_afr	aaf_1kg_eur	aaf_1kg_all	grc	gms_illumina	gms_solid	gms_iontorrent	in_cse	encode_tfbs	encode_dnaseI_cell_count	encode_dnaseI_cell_list	encode_consensus_gm12878	encode_consensus_h1hesc	encode_consensus_helas3	encode_consensus_hepg2	encode_consensus_huvec	encode_consensus_k562	gts	gt_types	gt_phases	gt_depths	gt_ref_depths	gt_alt_depths	gt_quals
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	AA/AA,AA/AA,AA/A	1,4,7	chr1	10067	10069	1	1	AA	A	113.21	None	indel	del	0.75	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	Simple_repeat_Simple_repeat_(CCCTAA)n;trf;Satellite_telo_TAR1;trf;trf;trf;trf;trf	0	1	0	None	None	6	1	2	3	0.277777777778	0.0300651703342	0.723076923077	0.424836601307	2.981822	WASH7P	ENST00000423562	0	0	0	None	None	None	None	unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	212	None	11.39	1	84	18	None	30.4532	1.55	5	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	91.7	47.1	94.7	0	None	None	None	CTCF	CTCF	unknown	unknown	unknown	CTCF	AA/A,./.,A/A,AA/AA,AA/AA,AA/AA,A/A,AA/AA,AA/AA,./.,AA/AA,./.	1,2,3,0,0,0,3,0,0,2,0,2	False,False,False,False,False,False,False,False,False,False,False,False	7,-1,2,4,1,4,2,2,1,-1,1,-1	33,-1,28,33,11,12,7,23,7,-1,12,-1	1,-1,2,0,0,0,2,0,0,-1,0,-1	26.74,-1.0,6.02,12.04,3.01,11.81,6.02,6.02,3.01,-1.0,3.01,-1.0
-    4	254(father; unknown),255(mother; unknown),253(child; affected)	G/G,G/G,G/A	38,19,21	chr1	13109	13110	4	1	G	A	34.7	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	9	3	0	0	0.125	0.620690717057	-0.142857142857	0.228260869565	2.981822	WASH7	ENST00000423562	0	0	0	None	None	None	None	unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	458	None	30.96	1	14	24	0.0	2.317	0.32	3	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	unknown	R	unknown	T	G/G,G/G,G/G,G/A,G/G,G/G,G/G,G/A,G/G,G/A,G/G,G/G	0,0,0,1,0,0,0,1,0,1,0,0	False,False,False,False,False,False,False,False,False,False,False,False	55,28,101,54,29,53,14,34,12,21,38,19	55,27,97,42,28,51,13,31,12,18,34,16	0,1,4,12,1,2,1,3,0,3,4,3	81.18,11.7,99.0,59.65,51.14,40.46,18.05,24.49,18.04,3.35,69.19,5.41
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	GTTG/GTTG,GTTG/GTTG,GTTG/G	21,59,41	chr1	14398	14402	13	1	GTTG	G	97.43	None	indel	del	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	9	3	0	0	0.125	0.620690717057	-0.142857142857	0.228260869565	2.981822	DDX11L1	ENST00000450305	0	0	0	None	None	None	None	transcribed_unprocessed_pseudogene	downstream	LOW	None	None	None	None	None	None	None	2045	None	15.9	0	4	24	None	145.8039	0.13	3	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	0.0	0.0	43.5	0	None	None	None	R	R	CTCF	R	R	T	GTTG/G,GTTG/G,GTTG/GTTG,GTTG/G,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG,GTTG/GTTG	1,1,0,1,0,0,0,0,0,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	41,56,69,35,21,59,21,27,8,23,33,15	226,225,235,235,143,214,111,124,115,105,128,101	23,23,15,13,0,1,0,0,0,1,0,5	81.0,36.2,99.0,48.04,63.22,24.03,63.22,81.27,24.08,69.24,48.14,45.15
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	18	1	A	G	1369.37	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	8	0	0	0.333333333333	0.0832645169833	-0.5	0.463768115942	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2095	None	19.42	1	105	24	0.0	0.8894	1.01	8	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/G,A/A,A/G	1,1,0,1,0,0,1,1,1,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	250,247,250,250,152,214,124,171,81,96,124,136	212,231,235,229,144,198,104,162,66,83,114,125	38,16,15,21,8,16,20,9,15,13,10,10	99.0,66.22,99.0,99.0,22.53,26.79,99.0,63.15,99.0,32.64,47.1,99.0    ...
-    ...
+    $ gemini de_novo --columns "chrom,start,end" test.de_novo.db
+    chrom	start	end	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    chr10	1142207	1142208	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	1
+    chr10	48003991	48003992	2	2	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/C,C/C,C/T	2_kid	1
+    chr10	48004991	48004992	3	3	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	C/C,C/C,C/T	3_kid	1
+    chr10	135336655	135336656	4	4	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	G/G,G/G,G/A	1_kid	2
+    chr10	135336655	135336656	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	G/G,G/G,G/A	2_kid	2
+    chr10	135369531	135369532	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	3
+    chr10	135369531	135369532	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	3
+    chr10	135369531	135369532	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3
 
 .. note::
 
-    The output will always start with the family ID, the family members, the
-    observed genotypes, and the observed aligned sequencing depths
-    for the family members.
+    The output will always start with the the requested columns followed by
+    the 5 columns enumerated at the start of this document.
 
 ---------------------
 ``-d [0]``
@@ -249,40 +252,10 @@ as candidates:
 
 .. code-block:: bash
 
-    $ gemini de_novo -d 50 my.db
+    $ gemini de_novo -d 50 --columns "chrom,start,end" test.de_novo.db
+    chrom	start	end	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    chr10	135369531	135369532	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	1
 
-    family_id	family_members	family_genotypes   family_genotype_depths	chrom	start	end	variant_id	anno_id	ref	alt	qual	filter	type	sub_type	call_rate	in_dbsnp	rs_ids	in_omim	clinvar_sig	clinvar_disease_name	clinvar_dbsource	clinvar_dbsource_id	clinvar_origin	clinvar_dsdb	clinvar_dsdbid	clinvar_disease_acc	clinvar_in_locus_spec_db	clinvar_on_diag_assay	pfam_domain	cyto_band	rmsk	in_cpg_island	in_segdup	is_conserved	gerp_bp_score	gerp_element_pval	num_hom_ref	num_het	num_hom_alt	num_unknown	aaf	hwe	inbreeding_coeff	pi	recomb_rate	gene	transcript	is_exonic	is_coding	is_lof	exon	codon_change	aa_change	aa_length	biotype	impact	impact_severity	polyphen_pred	polyphen_score	sift_pred	sift_score	anc_allele	rms_bq	cigar	depth	strand_bias	rms_map_qual	in_hom_run	num_mapq_zero	num_alleles	num_reads_w_dels	haplotype_score	qual_depth	allele_count	allele_bal	in_hm2	in_hm3	is_somatic	in_esp	aaf_esp_ea	aaf_esp_aa	aaf_esp_all	exome_chip	in_1kg	aaf_1kg_amr	aaf_1kg_asn	aaf_1kg_afr	aaf_1kg_eur	aaf_1kg_all	grc	gms_illumina	gms_solid	gms_iontorrent	in_cse	encode_tfbs	encode_dnaseI_cell_count	encode_dnaseI_cell_list	encode_consensus_gm12878	encode_consensus_h1hesc	encode_consensus_helas3	encode_consensus_hepg2	encode_consensus_huvec	encode_consensus_k562	gts	gt_types	gt_phases	gt_depths	gt_ref_depths	gt_alt_depths	gt_quals
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	18	1	A	G	1369.37	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	4	8	0	0	0.333333333333	0.0832645169833	-0.5	0.463768115942	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2095	None	19.42	1	105	24	0.0	0.8894	1.01	8	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/G,A/A,A/G	1,1,0,1,0,0,1,1,1,1,0,1	False,False,False,False,False,False,False,False,False,False,False,False	250,247,250,250,152,214,124,171,81,96,124,136	212,231,235,229,144,198,104,162,66,83,114,125	38,16,15,21,8,16,20,9,15,13,10,10	99.0,66.22,99.0,99.0,22.53,26.79,99.0,63.15,99.0,32.64,47.1,99.0
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	189,250,250	chr1	14573	14574	19	1	A	G	723.72	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	6	6	0	0	0.25	0.248213079014	-0.333333333333	0.391304347826	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2233	None	20.21	0	73	24	0.0	1.1058	0.63	6	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	A/G,A/G,A/A,A/G,A/A,A/A,A/G,A/G,A/G,A/A,A/A,A/A	1,1,0,1,0,0,1,1,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	250,248,250,241,189,250,130,189,92,107,146,141	218,232,237,221,181,232,115,177,76,97,136,134	32,14,13,20,8,17,15,12,16,10,10,7	99.0,31.97,99.0,99.0,96.41,99.0,64.51,35.62,99.0,26.4,65.9,0.76
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	G/G,G/G,G/A	197,247,250	chr1	14589	14590	20	1	G	A	178.22	None	snp	ts	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	8	4	0	0	0.166666666667	0.488422316764	-0.2	0.289855072464	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2234	None	21.45	0	37	24	0.0	0.9191	0.25	4	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	G/A,G/G,G/G,G/A,G/G,G/G,G/A,G/G,G/A,G/G,G/G,G/G	1,0,0,1,0,0,1,0,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	250,238,250,233,197,247,134,192,97,109,149,137	227,228,239,213,186,227,124,181,84,105,144,128	23,10,11,20,11,20,10,11,13,4,5,9	99.0,99.0,99.0,25.64,99.0,99.0,31.54,19.87,54.49,97.64,99.0,42.52
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	21	1	T	A	44.09	None	snp	tv	1.0	0	None	None	None	None	None	None	None	None	None	None	None	None	None	chr1p36.33	None	0	1	0	None	None	10	2	0	0	0.0833333333333	0.752823664836	-0.0909090909091	0.159420289855	2.981822	DDX11L1	ENST00000456328	0	0	0	None	None	None	None	processed_transcript	downstream	LOW	None	None	None	None	None	None	None	2245	None	22.1	0	18	24	0.0	1.1988	0.13	2	None	None	None	None	0	None	None	None	0	0	None	None	None	None	None	None	None	None	None	0	None	None	None	R	R	CTCF	R	R	T	T/A,T/T,T/T,T/T,T/T,T/T,T/T,T/T,T/A,T/T,T/T,T/T	1,0,0,0,0,0,0,0,1,0,0,0	False,False,False,False,False,False,False,False,False,False,False,False	249,237,250,242,195,250,138,209,91,102,148,133	226,229,240,223,187,231,129,198,76,94,140,118	23,8,10,19,8,19,9,11,15,8,8,14	65.38,99.0,99.0,92.74,99.0,99.0,23.58,84.54,30.04,99.0,99.0,45.7
-    ...
-
-
----------------------
-``--columns``
----------------------
-
-By default, this tool reports all columns in the ``variants`` table. One may
-choose to report only a subset of the columns using the ``--columns`` option.  For
-example, to report just the ``chrom, start, end, ref``, and ``alt`` columns, one
-would use the following:
-
-.. code-block:: bash
-
-    $ gemini de_novo -d 50 --columns "chrom, start, end, ref, alt" my.db
-
-    family_id	family_members	family_genotypes   family_genotype_depths	chrom	start	end	ref	alt
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	152,214,250	chr1	14541	14542	A	G
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	A/A,A/A,A/G	189,250,250	chr1	14573	14574	A	G
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	G/G,G/G,G/A	197,247,250	chr1	14589	14590	G	A
-    1	238(father; unknown),239(mother; unknown),173(child; affected)	T/T,T/T,T/A	195,250,249	chr1	14598	14599	T	A
-    ...
-
-.. note::
-
-    The output will always start with the requested columns followed by
-    the additional columns for each tool.
 
 
 ---------------------
@@ -299,17 +272,12 @@ following:
 
 .. code-block:: bash
 
-    $ gemini de_novo -d 50 \
+    $ gemini de_novo \
           --columns "chrom, start, end, ref, alt" \
           --filter "impact_severity = 'HIGH'" \
-          my.db
-
-    family_id	family_members	family_genotypes   family_genotype_depths	chrom	start	end	ref	alt
-    3	243(father; unknown),244(mother; unknown),242(child; affected)	C/C,C/C,C/A	249,243,250	chr1	17729	17730	C	A
-    4	254(father; unknown),255(mother; unknown),253(child; affected)	A/A,A/A,A/G	86,146,83	chr1	168097	16809	A	G
-    4	254(father; unknown),255(mother; unknown),253(child; affected)	G/G,G/G,G/T	107,182,72	chr1	12854400	12854401	G	T
-    3	243(father; unknown),244(mother; unknown),242(child; affected)	A/A,A/A,A/ATGGTGTTG	211,208,208	chr1	12855995	12855996	A	ATGGTGTTG
-    ...
+          test.de_novo.db
+    chrom	start	end	ref	alt	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    chr10	1142207	1142208	T	C	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	1
 
 -------------------------
 ``--min-kindreds [None]``
@@ -323,11 +291,11 @@ For example, the following command would further restrict candidate genes to tho
 
 .. code-block:: bash
 
-    $ gemini de_novo -d 50 \
+    $ gemini de_novo \
           --columns "chrom, start, end, ref, alt" \
           --filter "impact_severity = 'HIGH'" \
           --min-kindreds 2 \
-          my.db
+          test.de_novo.db
 
 
 --------------------
@@ -399,43 +367,25 @@ are not):
 
 .. code-block:: bash
 
-    $ gemini autosomal_recessive my.db
-    family_id   family_members  family_genotypes    family_genotype_depths  chrom   start   end variant_id  anno_id ref alt qual    filter  type    sub_type    call_rate   in_dbsnp    rs_ids  in_omim clinvar_sig clinvar_disease_name    clinvar_dbsource    clinvar_dbsource_id clinvar_origin  clinvar_dsdb    clinvar_dsdbid  clinvar_disease_acc clinvar_in_locus_spec_db    clinvar_on_diag_assay   pfam_domain cyto_band   rmsk    in_cpg_island   in_segdup   is_conserved    gerp_bp_score   gerp_element_pval   num_hom_ref num_het num_hom_alt num_unknown aaf hwe inbreeding_coeff    pi  recomb_rate gene    transcript  is_exonic   is_coding   is_lof  exon    codon_change    aa_change   aa_length   biotype impact  impact_severity polyphen_pred   polyphen_score  sift_pred   sift_score  anc_allele  rms_bq  cigar   depth   strand_bias rms_map_qual    in_hom_run  num_mapq_zero   num_alleles num_reads_w_dels    haplotype_score qual_depth  allele_count    allele_bal  in_hm2  in_hm3  is_somatic  in_esp  aaf_esp_ea  aaf_esp_aa  aaf_esp_all exome_chip  in_1kg  aaf_1kg_amr aaf_1kg_asn aaf_1kg_afr aaf_1kg_eur aaf_1kg_all grc gms_illumina    gms_solid   gms_iontorrent  in_cse  encode_tfbs encode_dnaseI_cell_count    encode_dnaseI_cell_list encode_consensus_gm12878    encode_consensus_h1hesc encode_consensus_helas3 encode_consensus_hepg2  encode_consensus_huvec  encode_consensus_k562   gts gt_types    gt_phases   gt_depths   gt_ref_depths   gt_alt_depths   gt_quals
-    2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  C/T,C/T,T/T 39,29,24    chr10   48004991    48004992    3   1   C   T   1047.87 None    snp ts  1.0 0   None    None    None    None    None    None    None    None    None    None    None    None    None    chr10q11.22 None    0   1   0   None    None    0   8   1   0   0.555555555556  0.0163950703837 -0.8    0.522875816993  1.718591    ASAH2C  ENST00000420079 1   1   0   exon_10_48003968_48004056   tGt/tAt C540Y   610 protein_coding  non_syn_coding  MED None    None    None    None    None    None    None    165 None    20.94   0   0   8   0.0 4.383   9.53    4   None    None    None    None    0   None    None    Non 0   0   None    None    None    None    None    grc_fix None    None    None    0   None    None    None    R   R   R   R   R   R   C/T,C/T,C/T,C/T,C/T,T/T,C/T,C/T,C/T 1,1,1,1,1,3,1,1,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  C/T,C/T,T/T 39,29,24    chr10   48003991    48003992    2   1   C   T   1047.87 None    snp ts  1.0 1   rs142685947 None    None    None    None    None    None    None    None    None    None    None    None    chr10q11.22 None    0   1   1   None    3.10871e-42 0   8   1   0   0.555555555556  0.0163950703837 -0.8    0.522875816993  1.718591    ASAH2C  ENST00000420079 1   1   0   exon_10_48003968_48004056   tGt/tAt C540Y   610 protein_coding  non_syn_coding  MED None    None    None    None    None    None    None    165 None    20.94   0   0   8   0.0 4.383   9.53    4   None    None    None    None    0   Non None    None    0   0   None    None    None    None    None    grc_fix 73.3    40.3    92.8    0   None    None    None    R   R   R   R   R   R   C/T,C/T,T/T,C/T,C/T,C/T,C/T,C/T,C/T 1,1,3,1,1,1,1,1,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    3   3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)  T/C,T/C,C/C 39,29,24    chr10   135369531   135369532   5   6   T   C   122.62  None    snp ts  1.0 1   rs3747881   None    None    None    None    None    None    None    None    None    None    None    None    chr10q26.3  None    0   0   1   None    3.86096e-59 0   8   1   0   0.555555555556  0.0163950703837 -0.8    0.522875816993  0.022013    SYCE1   ENST00000368517 1   1   0   exon_10_135369485_135369551 aAg/aGg K147R   282 protein_coding  non_syn_coding  MED None    None    None    None    None    None    None    239 None    36.02   2   0   8   0.0 5.7141  2.31    2   None    None    None    None    1   0.093837    0.163867    0.117561    1   0   None    None    None    None    None    None    None    None    None    0   None    None    None    R   R   R   R   R   R   T/C,T/C,T/C,T/C,T/C,T/C,T/C,T/C,C/C 1,1,1,1,1,1,1,1,3   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  T/C,T/C,C/C 39,29,24    chr10   1142207 1142208 1   4   T   C   3404.3  None    snp ts  1.0 1   rs10794716  None    None    None    None    None    None    None    None    None    None    None    None    chr10p15.3  None    0   0   0   None    None    0   7   2   0   0.611111111111  0.0562503650686 -0.636363636364 0.503267973856  0.200924    WDR37   ENST00000381329 1   1   1   exon_10_1142110_1142566 Tga/Cga *250R   249 protein_coding  stop_loss   HIG None    None    None    None    None    None    None    122 None    36.0    0   0   8   0.0 2.6747  27.9    8   None    None    None    None    1   0.000465    0.024966    0.008765    0   1   1   1   0.98    1   0.99    None    None    None    None    0   None    2   Osteobl;Progfib T   T   T   T   T   T   T/C,T/C,C/C,T/C,T/C,C/C,T/C,T/C,T/C 1,1,3,1,1,3,1,1,1   False,False,False,False,False,False,False,False,False   39,29,24,59,49,64,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  T/C,T/C,C/C 59,49,64    chr10   1142207 1142208 1   4   T   C   3404.3  None    snp ts  1.0 1   rs10794716  None    None    None    None    None    None    None    None    None    None    None    None    chr10p15.3  None    0   0   0   None    None    0   7   2   0   0.611111111111  0.0562503650686 -0.636363636364 0.503267973856  0.200924    WDR37   ENST00000381329 1   1   1   exon_10_1142110_1142566 Tga/Cga *250R   249 protein_coding  stop_loss   HIG None    None    None    None    None    None    None    122 None    36.0    0   0   8   0.0 2.6747  27.9    8   None    None    None    None    1   0.000465    0.024966    0.008765    0   1   1   1   0.98    1   0.99    None    None    None    None    0   None    2   Osteobl;Progfib T   T   T   T   T   T   T/C,T/C,C/C,T/C,T/C,C/C,T/C,T/C,T/C 1,1,3,1,1,3,1,1,1   False,False,False,False,False,False,False,False,False   39,29,24,59,49,64,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    ...
+    $ gemini autosomal_recessive test.auto_rec.db --columns "chrom,start,end,gene"
+    chrom	start	end	gene	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    chr10	48003991	48003992	ASAH2C	2	2	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	C/T,C/T,T/T	1_kid	1
+    chr10	48004991	48004992	ASAH2C	3	3	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/T,C/T,T/T	2_kid	1
+    chr10	135369531	135369532	SYCE1	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/C,T/C,C/C	3_kid	1
+    chr10	1142207	1142208	WDR37	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/C,T/C,C/C	1_kid	2
+    chr10	1142207	1142208	WDR37	1	1	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/C,T/C,C/C	2_kid	2
+
 
 .. note::
 
-    The output will always start with the family ID, the family members, the
-    observed genotypes, and the observed aligned sequencing depths
-    for the family members.
+    The output will always start with the requested columns and end with the 5 extra columns
+    enumerated at the start of this document.
 
 ---------------------
 ``--columns``
 ---------------------
 
-By default, this tool reports all columns in the ``variants`` table. One may
-choose to report only a subset of the columns using the ``--columns`` option.  For
-example, to report just the ``gene, chrom, start, end, ref, alt, impact``, and ``impact_severity`` columns, one
-would use the following:
-
-.. code-block:: bash
-
-    $ gemini autosomal_recessive \
-        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-        my.db
-
-    family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
-    2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  C/T,C/T,T/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
-    1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  C/T,C/T,T/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
-    3   3_dad(father; unaffected),3_mom(mother; unaffected),3_kid(child; affected)  T/C,T/C,C/C 39,29,24    SYCE1   chr10   135369531   135369532   T   C   non_syn_coding  MED
-    1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  T/C,T/C,C/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  T/C,T/C,C/C 59,49,64    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-
+Choose a subset of columns as in the examples listed here.
 
 ----------------------
 ``--min-kindreds [1]``
@@ -454,12 +404,12 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
     $ gemini autosomal_recessive \
         --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
         --min-kindreds 2 \
-        my.db
-    family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
-    2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  C/T,C/T,T/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
-    1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  C/T,C/T,T/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
-    1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  T/C,T/C,C/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  T/C,T/C,C/C 59,49,64    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
+        test.auto_rec.db
+    gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	2	2	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	C/T,C/T,T/T	1_kid	1
+    ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	3	3	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	C/T,C/T,T/T	2_kid	1
+    WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/C,T/C,C/C	1_kid	2
+    WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/C,T/C,C/C	2_kid	2
 
 --------------------
 ``--families``
@@ -493,11 +443,10 @@ following:
         --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
         --min-kindreds 2 \
         --filter "impact_severity = 'HIGH'" \
-        my.db
-
-    family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
-    1   1_dad(father; unaffected),1_mom(mother; unaffected),1_kid(child; affected)  T/C,T/C,C/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    2   2_dad(father; unaffected),2_mom(mother; unaffected),2_kid(child; affected)  T/C,T/C,C/C 59,49,64    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
+        test.auto_rec.db
+    gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/C,T/C,C/C	1_kid	2
+    WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/C,T/C,C/C	2_kid	2
 
 ---------------------
 ``-d [0]``
@@ -508,16 +457,13 @@ depth (default: 0) for each sample:
 
 .. code-block:: bash
 
-    $ gemini autosomal_dominant \
+    $ gemini autosomal_recessive \
         --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
         --filter "impact_severity = 'HIGH'" \
         --min-kindreds 1 \
         -d 40 \
-        my.db
-
-    family_id   family_members  family_genotypes    gene    chrom   start   end ref alt impact  impact_severity
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    T/T,T/C,T/C WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
+        test.auto_rec.db
+    gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 
 
 ---------------------
@@ -536,8 +482,6 @@ is correct. 10 is a reasonable value:
         --min-kindreds 1 \
         --gt-pl-max 10 \
         my.db
-
-TODO
 
 
 ===========================================================================
@@ -590,47 +534,27 @@ are not):
 
 .. code-block:: bash
 
-    $ gemini autosomal_dominant my.db | head
-
-    family_id   family_members  family_genotypes    family_genotype_depths  chrom   start   end variant_id  anno_id ref alt qual    filter  type    sub_type    call_rate   in_dbsnp    rs_ids  in_omim clinvar_sig clinvar_disease_name    clinvar_dbsource    clinvar_dbsource_id clinvar_origin  clinvar_dsdb    clinvar_dsdbid  clinvar_disease_acc clinvar_in_locus_spec_db    clinvar_on_diag_assay   pfam_domain cyto_band   rmsk    in_cpg_island   in_segdup   is_conserved    gerp_bp_score   gerp_element_pval   num_hom_ref num_het num_hom_alt num_unknown aaf hwe inbreeding_coeff    pi  recomb_rate gene    transcript  is_exonic   is_coding   is_lof  exon    codon_change    aa_change   aa_length   biotype impact  impact_severity polyphen_pred   polyphen_score  sift_pred   sift_score  anc_allele  rms_bq  cigar   depth   strand_bias rms_map_qual    in_hom_run  num_mapq_zero   num_alleles num_reads_w_dels    haplotype_score qual_depth  allele_count    allele_bal  in_hm2  in_hm3  is_somatic  in_esp  aaf_esp_ea  aaf_esp_aa  aaf_esp_all exome_chip  in_1kg  aaf_1kg_amr aaf_1kg_asn aaf_1kg_afr aaf_1kg_eur aaf_1kg_all grc gms_illumina    gms_solid   gms_iontorrent  in_cse  encode_tfbs encode_dnaseI_cell_count    encode_dnaseI_cell_list encode_consensus_gm12878    encode_consensus_h1hesc encode_consensus_helas3 encode_consensus_hepg2  encode_consensus_huvec  encode_consensus_k562   gts gt_types    gt_phases   gt_depths   gt_ref_depths   gt_alt_depths   gt_quals
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    chr10   48003991    48003992    3   1   C   T   1047.87 None    snp ts  1.0 1   rs142685947 None    None    None    None    None    None    None    None    None    None    None    None    chr10q11.22 None    0   1   1   None    3.10871e-42 4   5   0   0   0.277777777778  0.248563248239  -0.384615384615 0.424836601307  1.718591    ASAH2C  ENST00000420079 1   1   0   exon_10_48003968_48004056   tGt/tAt C540Y   610 protein_coding  non_syn_coding  MED None    None    None    None    None    None    None    165 None    20.94   0   0   8   0.0 4.383   9.53    4   None    None    None    None    0   Non None    None    0   0   None    None    None    None    None    grc_fix 73.3    40.3    92.8    0   None    None    None    R   R   R   R   R   R   C/C,C/C,C/T,C/C,C/T,C/T,C/T,C/C,C/T 0,0,1,0,1,1,1,0,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    chr10   48004991    48004992    4   1   C   T   1047.87 None    snp ts  1.0 0   None    None    None    None    None    None    None    None    None    None    None    None    None    chr10q11.22 None    0   1   0   None    None    4   5   0   0   0.277777777778  0.248563248239  -0.384615384615 0.424836601307  1.718591    ASAH2C  ENST00000420079 1   1   0   exon_10_48003968_48004056   tGt/tAt C540Y   610 protein_coding  non_syn_coding  MED None    None    None    None    None    None    None    165 None    20.94   0   0   8   0.0 4.383   9.53    4   None    None    None    None    0   None    None    Non 0   0   None    None    None    None    None    grc_fix None    None    None    0   None    None    None    R   R   R   R   R   R   C/C,C/C,C/T,C/C,C/T,C/T,C/T,C/C,C/T 0,0,1,0,1,1,1,0,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    chr10   48003991    48003992    3   1   C   T   1047.87 None    snp ts  1.0 1   rs142685947 None    None    None    None    None    None    None    None    None    None    None    None    chr10q11.22 None    0   1   1   None    3.10871e-42 4   5   0   0   0.277777777778  0.248563248239  -0.384615384615 0.424836601307  1.718591    ASAH2C  ENST00000420079 1   1   0   exon_10_48003968_48004056   tGt/tAt C540Y   610 protein_coding  non_syn_coding  MED None    None    None    None    None    None    None    165 None    20.94   0   0   8   0.0 4.383   9.53    4   None    None    None    None    0   None    None    None    0   0   None    None    None    None    None    grc_fix 73.3    40.3    92.8    0   None    None    None    R   R   R   R   R   R   C/C,C/C,C/T,C/C,C/T,C/T,C/T,C/C,C/T 0,0,1,0,1,1,1,0,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    chr10   48004991    48004992    4   1   C   T   1047.87 None    snp ts  1.0 0   None    None    None    None    None    None    None    None    None    None    None    None    None    chr10q11.22 None    0   1   0   None    None    4   5   0   0   0.277777777778  0.248563248239  -0.384615384615 0.424836601307  1.718591    ASAH2C  ENST00000420079 1   1   0   exon_10_48003968_48004056   tGt/tAt C540Y   610 protein_coding  non_syn_coding  MED None    None    None    None    None    None    None    165 None    20.94   0   0   8   0.0 4.383   9.53    4   None    None    None    None    0   None    Non None    0   0   None    None    None    None    None    grc_fix None    None    None    0   None    None    None    R   R   R   R   R   R   C/C,C/C,C/T,C/C,C/T,C/T,C/T,C/C,C/T 0,0,1,0,1,1,1,0,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   G/A,G/G,G/A 39,29,24    chr10   135336655   135336656   5   1   G   A   38.34   None    snp ts  1.0 1   rs6537611   None    None    None    None    None    None    None    None    None    None    None    None    chr10q26.3  None    0   0   0   None    None    1   8   0   0   0.444444444444  0.0163950703837 -0.8    0.522875816993  0.43264 SPRN    ENST00000541506 0   0   0   None    None    None    151 protein_coding  intron  LOW None    None    None    Non None    None    None    2   None    37.0    4   0   4   0.0 0.0 19.17   4   None    None    None    None    0   None    None    None    0   0   None    None    None    Non None    None    None    None    None    0   None    None    None    R   R   R   R   unknown R   G/A,G/A,G/A,G/A,G/A,G/A,G/A,G/G,G/A 1,1,1,1,1,1,1,0,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    T/T,T/C,T/C 39,29,24    chr10   1142207 1142208 1   4   T   C   3404.3  None    snp ts  1.0 1   rs10794716  None    None    None    None    None    None    None    None    None    None    None    None    chr10p15.3  None    0   0   0   None    None    4   5   0   0   0.277777777778  0.248563248239  -0.384615384615 0.424836601307  0.200924    WDR37   ENST00000381329 1   1   1   exon_10_1142110_1142566 Tga/Cga *250R   249 protein_coding  stop_loss   HIG None    None    None    None    None    None    None    122 None    36.0    0   0   8   0.0 2.6747  27.9    8   None    None    None    None    1   0.000465    0.024966    0.008765    0   1   1   1   0.98    1   0.99    None    None    None    None    0   None    2   Osteobl;Progfib T   T   T   T   T   T   T/T,T/T,T/C,T/T,T/C,T/C,T/C,T/T,T/C 0,0,1,0,1,1,1,0,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C 39,29,24    chr10   1142207 1142208 1   4   T   C   3404.3  None    snp ts  1.0 1   rs10794716  None    None    None    None    None    None    None    None    None    None    None    None    chr10p15.3  None    0   0   0   None    None    4   5   0   0   0.277777777778  0.248563248239  -0.384615384615 0.424836601307  0.200924    WDR37   ENST00000381329 1   1   1   exon_10_1142110_1142566 Tga/Cga *250R   249 protein_coding  stop_loss   HIG None    None    None    None    None    None    None    122 None    36.0    0   0   8   0.0 2.6747  27.9    8   None    None    None    None    1   0.000465    0.024966    0.008765    0   1   1   1   0.98    1   0.99    None    None    None    None    0   None    2   Osteobl;Progfib T   T   T   T   T   T   T/T,T/T,T/C,T/T,T/C,T/C,T/C,T/T,T/C 0,0,1,0,1,1,1,0,1   False,False,False,False,False,False,False,False,False   39,29,24,39,29,24,39,29,24  1,0,0,1,0,0,1,0,0   37,29,24,37,29,24,37,29,24  87.16,78.2,66.14,87.16,78.2,66.14,87.16,78.2,66.14
-
+    $ gemini autosomal_dominant test.auto_dom.db --columns "chrom,start,end,gene"
+    chrom	start	end	gene	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    chr10	48003991	48003992	ASAH2C	3	3	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+    chr10	48004991	48004992	ASAH2C	4	4	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+    chr10	48003991	48003992	ASAH2C	3	3	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+    chr10	48004991	48004992	ASAH2C	4	4	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+    chr10	135336655	135336656	SPRN	5	5	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+    chr10	1142207	1142208	WDR37	1	1	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+    chr10	1142207	1142208	WDR37	1	1	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	T/C,T/T,T/C	3_dad,3_kid	2
 
 ---------------------
 ``--columns``
 ---------------------
 
 By default, this tool reports all columns in the ``variants`` table. One may
-choose to report only a subset of the columns using the ``--columns`` option.  For
-example, to report just the ``gene, chrom, start, end, ref, alt, impact``, and ``impact_severity`` columns, one
-would use the following:
-
-.. code-block:: bash
-
-    $ gemini autosomal_dominant \
-        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-        my.db
-
-    family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   G/A,G/G,G/A 39,29,24    SPRN    chr10   135336655   135336656   G   A   intron  LOW
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    T/T,T/C,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
+choose to report only a subset of the columns using the ``--columns`` option.
 
 .. note::
 
-    The output will always start with the family ID, the family members, and the
-    observed genotypes for the family members.
-
+    The output will always start with the requested columns and end with the 
+    5 columns enumerated at the start of this document.
 
 ----------------------
 ``--min-kindreds [1]``
@@ -649,16 +573,14 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
     $ gemini autosomal_dominant \
         --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
         --min-kindreds 2 \
-        my.db
-
-    family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   C/T,C/C,C/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    ASAH2C  chr10   48003991    48003992    C   T   non_syn_coding  MED
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    C/C,C/T,C/T 39,29,24    ASAH2C  chr10   48004991    48004992    C   T   non_syn_coding  MED
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    T/T,T/C,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-
+        test.auto_dom.db
+    gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+    ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+    ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	4	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+    ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+    ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	4	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+    WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+    WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	T/C,T/T,T/C	3_dad,3_kid	2
 
 --------------------
 ``--families``
@@ -694,11 +616,6 @@ following:
         --min-kindreds 2 \
         my.db
 
-    family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
-    2   2_dad(father; unaffected),2_mom(mother; affected),2_kid(child; affected)    T/T,T/C,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-    3   3_dad(father; affected),3_mom(mother; unknown),3_kid(child; affected)   T/C,T/T,T/C 39,29,24    WDR37   chr10   1142207 1142208 T   C   stop_loss   HIGH
-
-
 ---------------------
 ``-d [0]``
 ---------------------
@@ -714,10 +631,6 @@ depth (default: 0) for each sample (in this case, no variants would meet this cr
         --min-kindreds 1 \
         -d 40 \
         my.db
-
-    family_id   family_members  family_genotypes    family_genotype_depths  gene    chrom   start   end ref alt impact  impact_severity
-
-
 
 ===========================================================================
 ``pathways``: Map genes and variants to KEGG pathways.
