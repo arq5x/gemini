@@ -7,6 +7,8 @@ import sqlite3
 import numpy as np
 from itertools import repeat
 import json
+import shutil
+import uuid
 
 # third-party imports
 import cyvcf as vcf
@@ -274,9 +276,10 @@ class GeminiLoader(object):
         and create the gemini schema.
         """
         # open up a new database
-        if os.path.exists(self.args.db):
-            os.remove(self.args.db)
-        self.conn = sqlite3.connect(self.args.db)
+        db_path = self.args.db if not hasattr(self.args, 'tmp_db') else self.args.tmp_db
+        if os.path.exists(db_path):
+            os.remove(db_path)
+        self.conn = sqlite3.connect(db_path)
         self.conn.isolation_level = None
         self.c = self.conn.cursor()
         self.c.execute('PRAGMA synchronous = OFF')
@@ -718,13 +721,28 @@ def load(parser, args):
 
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
-    gemini_loader = GeminiLoader(args)
-    gemini_loader.store_resources()
-    gemini_loader.store_version()
-    gemini_loader.store_vcf_header()
-    gemini_loader.populate_from_vcf()
-    gemini_loader.update_gene_table()
-    # gemini_loader.build_indices_and_disconnect()
+    for try_count in range(2):
+        try:
+            if try_count > 0:
+                args.tmp_db = os.path.join(args.tempdir, "%s.db" % uuid.uuid4())
 
-    if not args.no_genotypes and not args.no_load_genotypes:
-        gemini_loader.store_sample_gt_counts()
+            gemini_loader = GeminiLoader(args)
+            gemini_loader.store_resources()
+            gemini_loader.store_version()
+            gemini_loader.store_vcf_header()
+            gemini_loader.populate_from_vcf()
+            gemini_loader.update_gene_table()
+            # gemini_loader.build_indices_and_disconnect()
+
+            if not args.no_genotypes and not args.no_load_genotypes:
+                gemini_loader.store_sample_gt_counts()
+
+            if try_count > 0:
+                shutil.move(args.tmp_db, args.db)
+            break
+        except sqlite3.OperationalError, e:
+            sys.stderr.write("sqlite3.OperationalError: %s\n" % e)
+    else:
+        raise Exception(("Attempted workaround for SQLite locking issue on NFS "
+            "drives has failed. One possible reason is that the temp directory "
+            "%s is also on an NFS drive.") % args.tempdir)
