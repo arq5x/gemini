@@ -97,7 +97,6 @@ def main(args, remotes=remotes):
         install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
     os.chdir(work_dir)
     install_data(gemini["python"], gemini["data_script"], args)
-    print os.listdir(args.datadir)
     os.chdir(work_dir)
     test_script = install_testbase(args.datadir, remotes["gemini"], gemini)
     print "Finished: gemini, tools and data installed"
@@ -279,10 +278,11 @@ def install_testbase(datadir, repo, gemini):
         else:
             subprocess.check_call(["git", "clone", repo])
         os.makedirs(os.path.join(gemini_dir, "data"))
-        for f in os.listdir(os.path.join(cur_dir, "gtmp", "data")):
-            shutil.move(os.path.join(cur_dir, "gtmp", "data", f), os.path.join(gemini_dir, "data"))
-        #shutil.move(os.path.join(cur_dir, "gtmp"), gemini_dir)
-        shutil.rmtree(os.path.join(cur_dir, "gtmp", "data"))
+        if os.path.exists(os.path.join(cur_dir, "gtmp", "data")):
+            for f in os.listdir(os.path.join(cur_dir, "gtmp", "data")):
+                shutil.move(os.path.join(cur_dir, "gtmp", "data", f), os.path.join(gemini_dir, "data"))
+            #shutil.move(os.path.join(cur_dir, "gtmp"), gemini_dir)
+            shutil.rmtree(os.path.join(cur_dir, "gtmp", "data"))
     os.chdir(gemini_dir)
     if branch is None: # otherwise, we use the test structure at current head.
         _update_testdir_revision(gemini["cmd"])
