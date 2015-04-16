@@ -171,7 +171,7 @@ class TPEDRowFormat(RowFormat):
         end = str(row.row['end'])
         ref = row['ref']
         alt = row['alt']
-        geno = [re.split('\||/', x) for x in row.row['gts'].split(",")]
+        geno = [re.split('\||/', x) for x in row['gts']]
         geno = [self._fix_genotype(chrom, start, genotype, self.samples[i].sex)
                 for i, genotype in enumerate(geno)]
         genotypes = " ".join(list(flatten(geno)))
@@ -182,8 +182,8 @@ class TPEDRowFormat(RowFormat):
         NEED_COLUMNS = ["chrom", "rs_ids", "start", "ref", "alt", "gts", "type", "variant_id"]
         return ensure_columns(query, NEED_COLUMNS)
 
-    def predicate(self, row):
-        geno = [re.split("\||/", x) for x in row['gts']]
+    def predicate(self, row, _splitter=re.compile("\||/")):
+        geno = [_splitter.split(x) for x in row['gts']]
         geno = list(flatten(geno))
         num_alleles = len(set(geno).difference(self.NULL_GENOTYPES))
         return num_alleles > 0 and num_alleles <= 2 and row['type'] != "sv"
@@ -679,6 +679,9 @@ class GeminiQuery(object):
                 hom_ref_names = genotype_dict[HOM_REF]
                 unknown_names = genotype_dict[UNKNOWN]
                 variant_names = het_names + hom_alt_names
+
+            if isinstance(self.formatter, TPEDRowFormat) and not unpacked.get('gts'):
+                unpacked['gts'] = unpack(row['gts'])
 
             fields = OrderedDict()
 
