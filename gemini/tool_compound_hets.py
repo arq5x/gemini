@@ -33,53 +33,60 @@ class Site(object):
         return sum(ord(c) for c in self.row['chrom']) + int(self.row['start'])
 
 
-def _add_necessary_columns(args, custom_columns):
-    """
-    Convenience function to tack on columns that are necessary for
-    the functionality of the tool but yet have not been specifically
-    requested by the user.
-    """
-    # we need to add the variant's chrom, start and gene if
-    # not already there.
-    if custom_columns.find("gene") < 0:
-        custom_columns += ", gene"
-    if custom_columns.find("start") < 0:
-        custom_columns += ", start"
-    if custom_columns.find("alt") < 0:
-        custom_columns += ", alt"
-    if custom_columns.find("variant_id") < 0:
-        custom_columns += ", variant_id"
-
-    return custom_columns
-
-def create_query(args):
-    """
-    Construct a query to identify candidate compound heterozygotes
-    based on the user's columns and filters
-    """
-    if args.columns is not None:
-        custom_columns = _add_necessary_columns(args, str(args.columns))
-        query = "SELECT " + custom_columns + \
-                " FROM variants " + \
-                " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
-    else:
-        # report the kitchen sink
-        query = "SELECT *" + \
-                ", gts, gt_types, gt_phases, gt_depths, \
-                gt_ref_depths, gt_alt_depths, gt_quals" + \
-                " FROM variants " + \
-                " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
-
-    # add any non-genotype column limits to the where clause
-    if args.filter:
-        query += " AND " + args.filter
-
-    # we need to order results by gene so that we can sweep through the results
-    query += " ORDER BY gene"
-    return query
 
 
 class CompoundHet(Factory):
+
+
+    def create_query(self):
+        """
+        Construct a query to identify candidate compound heterozygotes
+        based on the user's columns and filters
+        """
+        args = self.args
+        if args.columns is not None:
+            custom_columns = self._add_necessary_columns(str(args.columns))
+            query = "SELECT " + custom_columns + \
+                    " FROM variants " + \
+                    " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+        else:
+            # report the kitchen sink
+            query = "SELECT *" + \
+                    ", gts, gt_types, gt_phases, gt_depths, \
+                    gt_ref_depths, gt_alt_depths, gt_quals" + \
+                    " FROM variants " + \
+                    " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+
+        # add any non-genotype column limits to the where clause
+        if args.filter:
+            query += " AND " + args.filter
+
+        # we need to order results by gene so that we can sweep through the results
+        query += " ORDER BY gene"
+        return query
+
+    def _add_necessary_columns(self, custom_columns):
+        """
+        Convenience function to tack on columns that are necessary for
+        the functionality of the tool but yet have not been specifically
+        requested by the user.
+        """
+        # we need to add the variant's chrom, start and gene if
+        # not already there.
+        self.added = []
+        if custom_columns.find("gene") < 0:
+            custom_columns += ", gene"
+            self.added.append("gene")
+        if custom_columns.find("start") < 0:
+            custom_columns += ", start"
+            self.added.append("start")
+        if custom_columns.find("alt") < 0:
+            custom_columns += ", alt"
+            self.added.append("alt")
+        if custom_columns.find("variant_id") < 0:
+            custom_columns += ", variant_id"
+
+        return custom_columns
 
     def find_valid_het_pairs(self, sample_hets):
         """
@@ -206,7 +213,7 @@ class CompoundHet(Factory):
         self.subjects_dict = subjects.get_subjects(args)
 
         # run the query applying any genotype filters provided by the user.
-        gq.run(create_query(args))
+        gq.run(self.create_query())
 
         families = subjects.get_families(args.db, args.families)
         family_gt_labels, family_gt_cols = {}, {}

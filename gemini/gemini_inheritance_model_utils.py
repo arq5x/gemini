@@ -99,6 +99,9 @@ class GeminiInheritanceModelFactory(object):
 
                 if is_comp_het:
                     affected_samples = [subject]
+                    for c in self.added:
+                        if c in row.row:
+                            row.row.pop(c)
                 else:
                     affected_samples = self.get_samples(gt_cols, gt_lbls)
 
@@ -210,7 +213,6 @@ class GeminiInheritanceModelFactory(object):
                 self.query += " WHERE gene is not NULL ORDER BY chrom, gene"
         self.query = sql_utils.ensure_columns(self.query, ['variant_id'])
 
-
     def get_header(self, gqh, is_violation_query, is_comp_het=False):
         h = "\t".join(self.required_columns)
 
@@ -218,7 +220,8 @@ class GeminiInheritanceModelFactory(object):
         if is_violation_query:
             return header + "\tviolation\tviolation_prob"
         elif is_comp_het:
-            return header + "\tcomp_het_id"
+            gqh = "\t".join([hd.strip() for hd in gqh.split("\t") if not hd.strip() in self.added])
+            return gqh + "\t" + h + "\tcomp_het_id"
         else:
             return header
 
