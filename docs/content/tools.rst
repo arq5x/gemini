@@ -39,8 +39,7 @@ heterozygotes for each sample/gene.
     to ignore phasing in search of _putative_ compound heterozygotes, please
     see the ``--ignore-phasing`` option below.
 
-Example usage with default parameters:
-
+Example usage with a subset of columns:
 
 .. note::
 
@@ -50,49 +49,22 @@ Example usage with default parameters:
 
 .. code-block:: bash
 
-    $ gemini comp_hets my.db
+    $ gemini comp_hets my.db --columns "chrom, start, end" test.comp_het_default.2.db
+    chrom   start   end gene    alt variant_id  family_id   family_members  family_genotypes    samples family_count    comp_het_id
+    chr1    17362   17366   WASH7P  T   1   3   dad_3(dad;unaffected),mom_3(mom;unaffected),child_3(child;affected) TTCT|T,TTCT|TTCT,TTCT|T child_3 2   1
+    chr1    17729   17730   WASH7P  A   2   3   dad_3(dad;unaffected),mom_3(mom;unaffected),child_3(child;affected) C|A,C|A,A|C child_3 2   1
+    chr1    17362   17366   WASH7P  T   1   4   dad_4(dad;unaffected),mom_4(mom;unaffected),child_4(child;affected) TTCT|T,TTCT|TTCT,TTCT|T child_4 2   1
+    chr1    17729   17730   WASH7P  A   2   4   dad_4(dad;unaffected),mom_4(mom;unaffected),child_4(child;affected) C|A,C|A,A|C child_4 2   1
 
-    family  sample  comp_het_id     chrom   start   end     variant_id      anno_id ref     alt     qual    filter  type    sub_type        call_rate       in_dbsnp        rs_ids  in_omim clinvar_sig     clinvar_disease_name    clinvar_dbsource        clinvar_dbsource_id     clinvar_origin  clinvar_dsdb    clinvar_dsdbid  clinvar_disease_acc     clinvar_in_locus_spec_db        clinvar_on_diag_assay   pfam_domain     cyto_band       rmsk    in_cpg_island   in_segdup       is_conserved    gerp_bp_score   gerp_element_pval       num_hom_ref     num_het num_hom_alt     num_unknown     aaf     hwe     inbreeding_coeff        pi      recomb_rate     gene    transcript      is_exonic       is_coding       is_lof  exon    codon_change    aa_change       aa_length       biotype impact  impact_severity polyphen_pred   polyphen_score  sift_pred       sift_score      anc_allele      rms_bq  cigar   depth   strand_bias     rms_map_qual    in_hom_run      num_mapq_zero   num_alleles     num_reads_w_dels        haplotype_score qual_depth      allele_count    allele_bal      in_hm2  in_hm3  is_somatic      in_esp  aaf_esp_ea      aaf_esp_aa      aaf_esp_all     exome_chip      in_1kg  aaf_1kg_amr     aaf_1kg_asn     aaf_1kg_afr     aaf_1kg_eur     aaf_1kg_all     grc     gms_illumina    gms_solid       gms_iontorrent  in_cse  encode_tfbs     encode_dnaseI_cell_count        encode_dnaseI_cell_list encode_consensus_gm12878        encode_consensus_h1hesc encode_consensus_helas3 encode_consensus_hepg2  encode_consensus_huvec  encode_consensus_k562   gts     gt_types        gt_phases       gt_depths       gt_ref_depths   gt_alt_depths   gt_quals
-    1       SMS173  1       chr1    100336360       100336361       60429   1       C       T       25701.56        None    snp     ts      1.0     1       rs2230306       None    None    None    None    None    None    None    None    None    None    None    None    chr1p21.2       None    0       0       1       None    2.24376e-65     2       6       4       0       0.583333333333  0.921158650238  -0.0285714285714        0.507246376812  0.274757        AGL     ENST00000361522 1       1       0       5       ctC/ctT L281    1515    protein_coding  synonymous_coding       LOW     None    None    None    None    None    None    None    1452    None    70.01   1       0       24      0.0     1.3604  19.85   14      None    None    None    None    1       0.304251        0.091728        0.232894        0       1       0.7     0.68    0.95    0.67    0.74    None    None    None    None    0       CEBPB_1 2       HCM;HCPEpiC     T       R       T       R       T       R       C|T,T|T,C|T,C||T,C|T,T|T,T|T,C|T,T|T,C|C,C|C,C|T 1,3,1,1,1,3,3,1,3,0,0,1 False,False,False,False,False,False,False,False,False,False,False,False 161,151,131,168,115,132,103,122,106,74,83,106   81,3,66,82,62,1,1,59,4,70,80,48 80,148,65,86,53,130,102,63,102,4,3,58   99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,80.05,99.0,99.0
-    1       SMS173  1       chr1    100358102       100358103       60456   1       C       T       9734.77 None    snp     ts      1.0     1       rs3753494       None    None    None    None    None    None    None    None    None    None    None    GDE_C   chr1p21.2       None    0       0       1       None    2.26616e-55     8       3       1       0       0.208333333333  0.401650457515  0.242105263158  0.344202898551  0.243448        AGL     ENST00000361522 1       1       0       22      Cct|Tct P1050S  1515    protein_coding  non_syn_coding  MED     None    None    None    None    None    None    None    1476    None    70.03   0       0       24      0.0     1.8167  16.42   5       None    None    None    None    1       0.146163        0.126419        0.139474        1       1       0.12    0.02    0.14    0.15    0.11    None    None    None    None    0       None    None    None    T       R       T       T       R       T       C|T,C|C,C|C,C|C,C|C,T|T,C|T,C|T,C|C,C|C,C|C,C|C 1,0,0,0,0,3,1,1,0,0,0,0 False,False,False,False,False,False,False,False,False,False,False,False 213,122,152,169,114,143,119,118,106,69,55,96    108,119,152,166,113,7,59,64,104,67,53,92        105,3,0,3,1,136,60,54,2,2,2,4   99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0
-    1       SMS173  2       chr1    15808197        15808198        14245   3       C       T       8880.77 None    snp     ts      1.0     1       rs7520335       None    None    None    None    None    None    None    None    None    None    None    None    chr1p36.21      None    0       1       0       None    None    7       5       0       0       0.208333333333  0.36197632685   -0.263157894737 0.344202898551  0.248348        CELA2B  ENST00000375909 1       1       0       4       Cgt/Tgt R68C    113     protein_coding  non_syn_coding  MED     None    None    None    None    None    None    None    1549    None    69.51   0   0       24      0.0     1.3894  12.7    5       None    None    None    None    0       None    None    None    0       1       0.22    0.53    0.19    0.25    0.31    None    None    None    None    0   None    None    None    R       R       T       R       T       R       C|T,C|C,C|T,C|C,C|T,C|C,C|T,C|T,C|C,C|C,C|C,C|C 1,0,1,0,1,0,1,1,0,0,0,0 False,False,False,False,False,False,False,False,False,False,False,False 214,134,199,233,86,172,83,117,91,55,61,104      125,131,111,231,50,171,28,62,91,53,61,104       89,3,88,2,36,0,55,55,0,2,0,0    99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,99.0,96.6,99.0,99.0
-    1       SMS173  2       chr1    15808766        15808767        14249   2       G       A       3435.51 None    snp     ts      1.0     1       rs3820071       None    None    None    None    None    None    None    None    None    None    None    Trypsin chr1p36.21      None    0       1       0       None    6.64484e-08     7       5       0       0       0.208333333333  0.36197632685   -0.263157894737 0.344202898551  0.248209        CELA2B  ENST00000375910 1       1       0       4       Ggg/Agg G79R    269     protein_coding  non_syn_coding  MED     None    None    None    None    None    None    None    678     None    70.0    0       0       24      0.0     0.5304  11.08   5       None    None    None    None    1       0.245698        0.260781        0.250807        1       1       0.31    0.54    0.25    0.26    0.34    None    None    None    None    0       None    None    None    T       R       R       R       R       unknown G|A,G|G,G|A,G|G,G|A,G|G,G|A,G|A,G|G,G|G,G|G,G|G 1,0,1,0,1,0,1,1,0,0,0,0 False,False,False,False,False,False,False,False,False,False,False,False 86,53,101,106,50,58,35,38,46,25,34,46   55,51,57,104,32,55,19,23,45,25,33,46    31,2,44,2,18,3,16,15,1,0,1,0    99.0,56.03,99.0,99.0,99.0,76.93,99.0,99.0,91.93,69.16,59.8,99.0
 
-This indicates that sample SMS173 has a candidate compound heterozygote in
-AGL and CELA2B.
+This indicates that samples child_3 and child_4 have a candidate compound heterozygotes in WASH.
 
 ---------------------
 ``--columns``
 ---------------------
 
 By default, this tool reports all columns in the ``variants`` table. One may
-choose to report only a subset of the columns using the ``--columns`` option.  For
-example, to report just the ``chrom, start, end, ref``, and ``alt`` columns, one
-would use the following:
-
-.. code-block:: bash
-
-    $ gemini gemini comp_hets \
-        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-        my.db \
-        | head -11
-
-    family	sample	comp_het_id	gene	chrom	start	end	ref	alt	impact	impact_severity
-    1	SMS173	1	AGL	chr1	100336360	100336361	C	T	synonymous_coding	LOW
-    1	SMS173	1	AGL	chr1	100358102	100358103	C	T	non_syn_coding	MED
-    1	SMS173	2	CELA2B	chr1	15808197	15808198	C	T	non_syn_coding	MED
-    1	SMS173	2	CELA2B	chr1	15808766	15808767	G	A	non_syn_coding	MED
-    1	SMS173	3	CELA2B	chr1	15808197	15808198	C	T	non_syn_coding	MED
-    1	SMS173	3	CELA2B	chr1	15808871	15808872	G	A	non_syn_coding	MED
-    1	SMS173	4	CELA2B	chr1	15808766	15808767	G	A	non_syn_coding	MED
-    1	SMS173	4	CELA2B	chr1	15808871	15808872	G	A	non_syn_coding	MED
-    1	SMS173	5	AJAP1	chr1	4772052	4772053	T	C	synonymous_coding	LOW
-    1	SMS173	5	AJAP1	chr1	4834605	4834606	T	C	UTR_3_prime	LOW
-
-.. note::
-
-    The output will always start with the family ID, the sample name, and
-    the compound heterozygote identification number.
+choose to report only a subset of the columns using the ``--columns`` option as seen above.
 
 --------------------
 ``--only-affected``
