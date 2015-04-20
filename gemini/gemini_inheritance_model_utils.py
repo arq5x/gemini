@@ -52,7 +52,7 @@ class GeminiInheritanceModelFactory(object):
         else:
             self._get_all_candidates()
 
-    def report_candidates(self, candidates, is_violation=False,
+    def report_candidates(self, candidates,
                           is_comp_het=False):
         """
         Print variants that meet the user's requirements
@@ -77,7 +77,7 @@ class GeminiInheritanceModelFactory(object):
                 # (row, family_gt_label, family_gt_cols) \
                 violation = ""
                 comp_het = ""
-                if is_violation:
+                if self.model == "mendel_violations":
                     (row, family_gt_label, family_gt_cols, variant_id,
                             family_gt_lls, violation) = tuple(tup)
                 elif is_comp_het:
@@ -90,7 +90,7 @@ class GeminiInheritanceModelFactory(object):
                 for k in ('gt_types', 'gts', 'gt_depths'):
                     e[k] = row[k]
 
-                if is_violation:
+                if self.model == "mendel_violations":
                     prob = get_prob(family_gt_lls, row)
                     violation += ("\t%.3f" % prob)
 
@@ -146,6 +146,7 @@ class GeminiInheritanceModelFactory(object):
         of families, then we need to prune the list of possible families
         to that specific subset.
         """
+        pass
 
     def _get_family_info(self):
         """
@@ -213,11 +214,11 @@ class GeminiInheritanceModelFactory(object):
                 self.query += " WHERE gene is not NULL ORDER BY chrom, gene"
         self.query = sql_utils.ensure_columns(self.query, ['variant_id'])
 
-    def get_header(self, gqh, is_violation_query, is_comp_het=False):
+    def get_header(self, gqh, is_comp_het=False):
         h = "\t".join(self.required_columns)
 
         header = gqh + "\t" + h
-        if is_violation_query:
+        if self.model == "mendel_violations":
             return header + "\tviolation\tviolation_prob"
         elif is_comp_het:
             gqh = "\t".join([hd.strip() for hd in gqh.split("\t") if not hd.strip() in self.added])
@@ -236,8 +237,7 @@ class GeminiInheritanceModelFactory(object):
         self._construct_query()
         self.gq.run(self.query, needs_genotypes=True)
 
-        is_violation_query = any(isinstance(m, dict) for m in self.family_masks)
-        print self.get_header(self.gq.header, is_violation_query)
+        print self.get_header(self.gq.header)
 
         # yield the resulting variants for this familiy
         self.candidates = defaultdict(list)
@@ -249,7 +249,7 @@ class GeminiInheritanceModelFactory(object):
 
             # report any candidates for the previous gene
             if curr_gene != prev_gene and prev_gene is not None:
-                self.report_candidates(self.candidates, is_violation_query)
+                self.report_candidates(self.candidates)
                 # reset for the next gene
                 self.candidates = defaultdict(list)
 
@@ -267,13 +267,12 @@ class GeminiInheritanceModelFactory(object):
                           'gt_phred_ll_het', 'gt_phred_ll_homref'):
                     e[c] = row[c]
 
-                if is_violation_query:
-                    family_gt_phred_lls = self.family_gt_phred_lls[idx]
 
                 # skip if the variant doesn't meet a recessive model
                 # for this family
                 violations = []
-                if is_violation_query:
+                if self.model == "mendel_violations":
+                    family_gt_phred_lls = self.family_gt_phred_lls[idx]
                     for violation, mask in family_genotype_mask.items():
                         if eval(mask, e):
                             violations.append(violation)
@@ -301,14 +300,14 @@ class GeminiInheritanceModelFactory(object):
                                              family_gt_labels,
                                              family_gt_cols,
                                              variant_id])
-                if is_violation_query:
+                if self.model == "mendel_violations":
                     self.candidates[key][-1].append(family_gt_phred_lls)
                     self.candidates[key][-1].append(",".join(violations))
 
             prev_gene = curr_gene
 
         # report any candidates for the last gene
-        self.report_candidates(self.candidates, is_violation_query)
+        self.report_candidates(self.candidates)
 
     def _get_all_candidates(self):
         """
@@ -325,8 +324,7 @@ class GeminiInheritanceModelFactory(object):
         self._construct_query()
         self.gq.run(self.query, needs_genotypes=True)
 
-        is_violation_query = isinstance(self.family_masks[0], dict)
-        print self.get_header(self.gq.header, is_violation_query)
+        print self.get_header(self.gq.header)
         gene = None
 
         for row in self.gq:
@@ -344,8 +342,6 @@ class GeminiInheritanceModelFactory(object):
                 family_gt_labels = self.family_gt_labels[idx]
                 family_gt_cols = self.family_gt_columns[idx]
                 family_dp_cols = self.family_dp_columns[idx]
-                if is_violation_query:
-                    family_gt_phred_lls = self.family_gt_phred_lls[idx]
 
                 # interrogate the genotypes present in each family member to
                 # conforming to the genetic model being tested
@@ -353,7 +349,8 @@ class GeminiInheritanceModelFactory(object):
                 # skip if the variant doesn't meet a recessive model
                 # for this family
                 violations = []
-                if is_violation_query:
+                if self.model == "mendel_violations":
+                    family_gt_phred_lls = self.family_gt_phred_lls[idx]
                     for violation, mask in family_genotype_mask.items():
                         if eval(mask, cols):
                             violations.append(violation)
@@ -378,8 +375,8 @@ class GeminiInheritanceModelFactory(object):
                 key = (gene, family_id)
                 candidates[key].append([row, family_gt_labels, family_gt_cols, variant_id])
 
-                if is_violation_query:
+                if self.model == "mendel_violations":
                     candidates[key][-1].append(family_gt_phred_lls)
                     candidates[key][-1].append(",".join(violations))
-            self.report_candidates(candidates, is_violation_query)
+            self.report_candidates(candidates)
 
