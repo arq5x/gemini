@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os.path
 import sys
+import tempfile
 import argparse
 import gemini.version
 
@@ -119,6 +120,8 @@ def main():
                              help='Cluster scheduler to use.')
     parser_load.add_argument('--queue', dest='queue',
                              default=None, help='Cluster queue to use.')
+    parser_load.add_argument('--tempdir', dest='tempdir',
+                             default=tempfile.gettempdir(), help='<TODO add help>')
     parser_load.add_argument('--passonly',
                              dest='passonly',
                              default=False,
@@ -220,6 +223,8 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
+    parser_loadchunk.add_argument('--tempdir', dest='tempdir',
+                        default=tempfile.gettempdir(), help='<TODO add help>')
     def loadchunk_fn(parser, args):
         import gemini_load_chunk
         gemini_load_chunk.load(parser, args)
@@ -237,6 +242,8 @@ def main():
             nargs='*',
             dest='chunkdbs',
             action='append')
+    parser_mergechunks.add_argument('--tempdir', dest='tempdir',
+            default=tempfile.gettempdir(), help='<TODO add help>')
 
     def mergechunk_fn(parser, args):
         import gemini_merge_chunks
