@@ -12,14 +12,13 @@ def get_prob(family_gt_lls, row):
     e = {}
     for k in ('gt_phred_ll_homref', 'gt_phred_ll_het', 'gt_phred_ll_homalt'):
         e[k] = row[k]
+
     for k, li in family_gt_lls.iteritems():
-        for i in range(len(li)):
-            if isinstance(li[i], basestring) or li[i].__class__ == "code":
-                li[i] = eval(li[i], e)
+        e[k] = [eval(item, e) for item in li]
         # order is father, mother, child
-    father = [family_gt_lls[k][0] for k in ("homref", "het", "homalt")]
-    mother = [family_gt_lls[k][1] for k in ("homref", "het", "homalt")]
-    child = [family_gt_lls[k][2] for k in ("homref", "het", "homalt")]
+    father = [e[k][0] for k in ("homref", "het", "homalt")]
+    mother = [e[k][1] for k in ("homref", "het", "homalt")]
+    child = [e[k][2] for k in ("homref", "het", "homalt")]
     return mendelian_error(father, mother, child, pls=True)
 
 class GeminiInheritanceModelFactory(object):
