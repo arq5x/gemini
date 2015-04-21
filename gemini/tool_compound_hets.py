@@ -198,7 +198,7 @@ class CompoundHet(Factory):
                                      row['variant_id'],
                                      ch_id,
                                      s))
-            self.report_candidates(filtered_candidates, False, is_comp_het=True)
+            self.report_candidates(filtered_candidates, is_comp_het=True)
 
     def get_candidates(self):
         self.get_compound_hets()
@@ -222,7 +222,7 @@ class CompoundHet(Factory):
             family_gt_cols[family.family_id] = family.get_genotype_columns()
 
         # output header
-        print self.get_header(gq.header, False, is_comp_het=True)
+        print self.get_header(gq.header, is_comp_het=True)
 
         # Collect all of the genic heterozygotes for each sample / gene
         for gene, row_list in groupby(gq, itemgetter('gene')):
