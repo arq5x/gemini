@@ -165,8 +165,56 @@ following:
 
     ``gemini load -v my.vcf -p my.ped my.db``
 
-TODO
+We can query for mendelian errors in trios including:
 
+- loss of heterozygosity
+- implausible de-novo mutations
+- de-novo mutations
+- uniparental disomy
+
+This tool will report the probability of a mendelian error in the final column 
+that is derived from the genotype likelihoods if they are available.
+
+Example:
+
+.. code-block:: bash
+
+    $ gemini mendel_errors --columns "chrom,start,end" test.mendel.db --gt-pl-max 1
+    chrom	start	end	variant_id	family_id	family_members	family_genotypes	samples	family_count	violation	violation_prob
+    chr1	10670	10671	1	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	G/G,G/G,G/C	NA12877	1	plausible de novo	0.962
+    chr1	28493	28494	2	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	T/C,T/T,C/C	NA12877	1	loss of heterozygosity	0.660
+    chr1	28627	28628	3	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	C/C,C/C,C/T	NA12877	1	plausible de novo	0.989
+    chr1	267558	267560	5	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	C/C,C/C,CT/C	NA12877	1	plausible de novo	0.896
+    chr1	537969	537970	7	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	C/C,C/C,C/T	NA12877	1	plausible de novo	0.928
+    chr1	547518	547519	11	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	G/G,G/G,G/T	NA12877	1	plausible de novo	1.000
+    chr1	589081	589086	14	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	G/G,GAGAA/GAGAA,G/G	NA12877	1	uniparental disomy	0.940
+    chr1	749688	749689	16	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	T/T,T/T,G/G	NA12877	1	implausible de novo	0.959
+    chr1	788944	788945	17	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	C/C,G/G,G/G	NA12877	1	uniparental disomy	0.914
+    chr1	1004248	1004249	22	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	G/G,G/G,G/C	NA12877	1	plausible de novo	1.000
+
+Where, here, we have required the called genotype to have at most a PL of 1 (lower is more confident).
+Note that the "violation" column indicates the type of mendelian error and the final column can be used for further filtering, 
+with higher numbers indicating a greater probability of mendelian error. We have found > 0.99 to be a reasonable
+cutoff.
+
+Arguments are similar to the other tools:
+
+
+.. code-block:: bash
+    
+    --columns STRING      A list of columns that you would like returned. Def. =
+                            "*"
+    --filter STRING       Restrictions to apply to variants (SQL syntax)
+    --min-kindreds MIN_KINDREDS
+                          The min. number of kindreds that must have a candidate
+                          variant in a gene.
+    --families FAMILIES   Restrict analysis to a specific set of 1 or more
+                          (comma) separated) families
+    -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth (genotype DP) req'd
+                          for each sample (def. = 0)
+    --gt-pl-max GT_PHRED_LL
+                        The maximum phred-scaled genotype likelihod (PL)
+                        allowed for each sample.
 
 ===========================================================================
 ``de_novo``: Identifying potential de novo mutations.
