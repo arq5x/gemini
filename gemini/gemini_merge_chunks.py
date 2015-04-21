@@ -1,6 +1,10 @@
 #!/usr/bin/env python
-import sqlite3
 import os
+import shutil
+import sqlite3
+import sys
+import uuid
+
 import database as gemini_db
 import gemini_utils as util
 
@@ -202,4 +206,28 @@ def merge_db_chunks(args):
 
 
 def merge_chunks(parser, args):
-    merge_db_chunks(args)
+    for try_count in range(2):
+        try:
+            if try_count > 0:
+                tmp_dbs = [os.path.join(args.tempdir, "%s.db" % uuid.uuid4())
+                           for _ in args.chunkdbs]
+                for chunk_db, tmp_db in zip(args.chunkdbs, tmp_dbs):
+                    shutil.copyfile(chunk_db[0], tmp_db)
+                    chunk_db[0] = tmp_db
+
+                output_db = args.db
+                args.db = os.path.join(args.tempdir, "%s.db" % uuid.uuid4())
+
+            merge_db_chunks(args)
+
+            if try_count > 0:
+                shutil.move(args.db, output_db)
+                for tmp_db in tmp_dbs:
+                    os.remove(tmp_db)
+            break
+        except sqlite3.OperationalError, e:
+            sys.stderr.write("sqlite3.OperationalError: %s\n" % e)
+    else:
+        raise Exception(("Attempted workaround for SQLite locking issue on NFS "
+            "drives has failed. One possible reason is that the temp directory "
+            "%s is also on an NFS drive.") % args.tempdir)
