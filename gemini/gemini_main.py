@@ -161,7 +161,8 @@ def main():
     parser_load.add_argument('--queue', dest='queue',
                              default=None, help='Cluster queue to use.')
     parser_load.add_argument('--tempdir', dest='tempdir',
-                             default=tempfile.gettempdir(), help='<TODO add help>')
+                             default=tempfile.gettempdir(),
+                             help="temp directory to use when loading with multiple cores")
     parser_load.add_argument('--passonly',
                              dest='passonly',
                              default=False,
