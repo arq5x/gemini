@@ -7,9 +7,9 @@ Release History
 1. Leverage genotype likelihoods in tools (e.g., de_novo and mendelelian_violations) as a means to prioritize confident variants.
 2. Standardize the output from the built-in tools into a common, BED+ format.
 3. Update parsing for newer snpEff version
-4. Improve and tighten up the database loading.
-5. Tools for X-linked inheritance.
-6. Include preprocess script to support varscan, platypus (https://gist.github.com/brentp/4db670df147cbd5a2b32)
+4. Improve preprocess script to support varscan, platypus (https://gist.github.com/brentp/4db670df147cbd5a2b32)
+5. Expose `mendelian_error` tool which also outputs the type of error and the probability (based on PL's)
+6. Performance improvement to tools (pre-compile evals)
 
 0.13.1 (2015-Apr-09)
 =======================================

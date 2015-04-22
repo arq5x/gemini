@@ -5,6 +5,46 @@ import tempfile
 import argparse
 import gemini.version
 
+def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
+    """Common arguments added to various sub-parsers"""
+    parser.add_argument('db',
+            metavar='db',
+            help='The name of the database to be queried.')
+    parser.add_argument('--columns',
+            dest='columns',
+            metavar='STRING',
+            help='A list of columns that you would like returned. Def. = "*"',
+            )
+    parser.add_argument('--filter',
+            dest='filter',
+            metavar='STRING',
+            help='Restrictions to apply to variants (SQL syntax)')
+    parser.add_argument('--min-kindreds',
+            dest='min_kindreds',
+            type=int,
+            default=min_kindreds,
+            help='The min. number of kindreds that must have a candidate variant in a gene.')
+    parser.add_argument('--families',
+            dest='families',
+            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
+            default=None)
+    # this is for comp_het, eventually, we could add depth support to that tool.
+    if depth:
+        parser.add_argument('-d',
+            dest='min_sample_depth',
+            type=int,
+            help="The minimum aligned\
+              sequence depth (genotype DP) req'd for\
+              each sample (def. = 0)",
+            default=0)
+
+    if gt_ll:
+        parser.add_argument('--gt-pl-max',
+                            dest='gt_phred_ll',
+                            type=int,
+                            help="The maximum phred-scaled genotype likelihod"
+                                 " (PL) allowed for each sample.",
+                            default=None)
 
 def examples(parser, args):
 
@@ -579,40 +619,21 @@ def main():
     #########################################
     parser_comp_hets = subparsers.add_parser('comp_hets',
             help='Identify compound heterozygotes')
-    parser_comp_hets.add_argument('db',
-            metavar='db',
-            help='The name of the database to be created.')
-    parser_comp_hets.add_argument('--columns',
-            dest='columns',
-            metavar='STRING',
-            help='A list of columns that you would like returned. Def. = "*"',
-            )
-    parser_comp_hets.add_argument('--filter',
-            dest='filter',
-            metavar='STRING',
-            help='Restrictions to apply to variants (SQL syntax)')
+    add_inheritance_args(parser_comp_hets, depth=False)
+
     parser_comp_hets.add_argument('--only-affected',
             dest='only_affected',
             action='store_true',
             help='Report those compound heterozygotes that solely impact samples \
                   labeled as affected.',
             default=False)
-    parser_comp_hets.add_argument('--min-kindreds',
-                              dest='min_kindreds',
-                              default=1,
-                              type=int,
-                              help=('Minimum number of families for a variant passing '
-                                    'a family-wise filter to be in.'))
-    parser_comp_hets.add_argument('--families',
-            dest='families',
-            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
-            default=None)
     parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
             help='Ignore phasing when screening for compound hets. \
                   Candidates are inherently _putative_.',
             default=False)
+
     def comp_hets_fn(parser, args):
         import tool_compound_hets
         tool_compound_hets.run(parser, args)
@@ -766,34 +787,9 @@ def main():
     parser_auto_rec = subparsers.add_parser('autosomal_recessive',
             help='Identify variants meeting an autosomal \
                   recessive inheritance model')
-    parser_auto_rec.add_argument('db',
-            metavar='db',
-            help='The name of the database to be queried.')
-    parser_auto_rec.add_argument('--columns',
-            dest='columns',
-            metavar='STRING',
-            help='A list of columns that you would like returned. Def. = "*"',
-            )
-    parser_auto_rec.add_argument('--filter',
-            dest='filter',
-            metavar='STRING',
-            help='Restrictions to apply to variants (SQL syntax)')
-    parser_auto_rec.add_argument('--min-kindreds',
-            dest='min_kindreds',
-            type=int,
-            default=1,
-            help='The min. number of kindreds that must have a candidate variant in a gene.')
-    parser_auto_rec.add_argument('--families',
-            dest='families',
-            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
-            default=None)
-    parser_auto_rec.add_argument('-d',
-            dest='min_sample_depth',
-            type=int,
-            help="The minimum aligned\
-              sequence depth (genotype DP) req'd for\
-              each sample (def. = 0)",
-            default=0)
+    add_inheritance_args(parser_auto_rec, gt_ll=True)
+
+
     def autosomal_recessive_fn(parser, args):
         import tool_autosomal_recessive
         tool_autosomal_recessive.run(parser, args)
@@ -805,34 +801,8 @@ def main():
     parser_auto_dom = subparsers.add_parser('autosomal_dominant',
             help='Identify variants meeting an autosomal \
                   dominant inheritance model')
-    parser_auto_dom.add_argument('db',
-            metavar='db',
-            help='The name of the database to be queried.')
-    parser_auto_dom.add_argument('--columns',
-            dest='columns',
-            metavar='STRING',
-            help='A list of columns that you would like returned. Def. = "*"',
-            )
-    parser_auto_dom.add_argument('--filter',
-            dest='filter',
-            metavar='STRING',
-            help='Restrictions to apply to variants (SQL syntax)')
-    parser_auto_dom.add_argument('--min-kindreds',
-            dest='min_kindreds',
-            type=int,
-            default=1,
-            help='The min. number of kindreds that must have a candidate variant in a gene.')
-    parser_auto_dom.add_argument('--families',
-            dest='families',
-            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
-            default=None)
-    parser_auto_dom.add_argument('-d',
-            dest='min_sample_depth',
-            type=int,
-            help="The minimum aligned\
-              sequence depth (genotype DP) req'd for\
-              each sample (def. = 0)",
-            default=0)
+    add_inheritance_args(parser_auto_dom, gt_ll=True)
+
     def autosomal_dominant_fn(parser, args):
         import tool_autosomal_dominant
         tool_autosomal_dominant.run(parser, args)
@@ -843,42 +813,16 @@ def main():
     #########################################
     parser_de_novo = subparsers.add_parser('de_novo',
             help='Identify candidate de novo mutations')
-    parser_de_novo.add_argument('db',
-            metavar='db',
-            help='The name of the database to be queried.')
-    parser_de_novo.add_argument('--columns',
-            dest='columns',
-            metavar='STRING',
-            help='A list of columns that you would like returned. Def. = "*"',
-            )
-    parser_de_novo.add_argument('--filter',
-            dest='filter',
-            metavar='STRING',
-            help='Restrictions to apply to variants (SQL syntax)')
-    parser_de_novo.add_argument('--min-kindreds',
-            dest='min_kindreds',
-            type=int,
-            default=None,
-            help='The min. number of kindreds that must have a \
-                  de novo mutation in a gene. This option restricts \
-                  the reported variants to those affectting genes.')
+
+    add_inheritance_args(parser_de_novo, min_kindreds=None, gt_ll=True)
+
     parser_de_novo.add_argument('--only-affected',
             dest='only_affected',
             action='store_true',
             help='Report solely those de novos that impact a sample \
                   labeled as affected.',
             default=False)
-    parser_de_novo.add_argument('--families',
-            dest='families',
-            help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
-            default=None)
-    parser_de_novo.add_argument('-d',
-            dest='min_sample_depth',
-            type=int,
-            help="The minimum aligned\
-                  sequence depth (genotype DP) req'd for\
-                  each sample (def. = 0)",
-            default=0)
+
     def de_novo_fn(parser, args):
         import tool_de_novo_mutations
         tool_de_novo_mutations.run(parser, args)
@@ -890,25 +834,8 @@ def main():
     #########################################
     parser_mendel = subparsers.add_parser('mendel_errors',
             help='Identify candidate violations of Mendelian inheritance')
-    parser_mendel.add_argument('db',
-            metavar='db',
-            help='The name of the database to be queried.')
-    parser_mendel.add_argument('--columns',
-            dest='columns',
-            metavar='STRING',
-            help='A list of columns that you would like returned. Def. = "*"',
-            )
-    parser_mendel.add_argument('--filter',
-            dest='filter',
-            metavar='STRING',
-            help='Restrictions to apply to variants (SQL syntax)')
-    parser_mendel.add_argument('-d',
-            dest='min_sample_depth',
-            type=int,
-            help="The minimum aligned\
-                  sequence depth (genotype DP) req'd for\
-                  each sample (def. = 0)",
-            default=0)
+    add_inheritance_args(parser_mendel, gt_ll=True)
+
     def mendel_fn(parser, args):
         import tool_mendel_errors
         tool_mendel_errors.run(parser, args)

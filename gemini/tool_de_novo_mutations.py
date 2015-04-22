@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import sys
 from gemini_inheritance_model_utils import GeminiInheritanceModelFactory
 
 
