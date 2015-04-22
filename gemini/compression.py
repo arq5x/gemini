@@ -1,4 +1,3 @@
-import zlib
 import cPickle
 import sqlite3
 import numpy
@@ -13,16 +12,16 @@ def pack_blob(obj):
     return sqlite3.Binary(zdumps(obj))
 
 def unpack_genotype_blob(blob):
-    return cPickle.loads(zlib.decompress(blob))
-    
+    return cPickle.loads(blob)
+
 def unpack_ordereddict_blob(blob):
-	blob_val = cPickle.loads(zlib.decompress(blob))
-	if blob_val is not None:
-	    return OrderedDict(blob_val)
-	return None
+    blob_val = cPickle.loads(blob)
+    if blob_val is not None:
+        return OrderedDict(blob_val)
+    return None
 
 def zdumps(obj):
-    return zlib.compress(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL), 9)
+    return cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL)
 
 def zloads(obj):
-    return cPickle.loads(zlib.decompress(obj))
+    return cPickle.loads(obj)
