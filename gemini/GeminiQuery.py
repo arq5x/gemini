@@ -550,10 +550,23 @@ class GeminiQuery(object):
             # in order to use the numexpr vm
             # this currenlty works using the python vm on filters like:
             # (gt_ref_depths[:, 0] >= 20) & (gt_ref_depths[:, 1] >= 22)
-            subs = np.where(bcolz.eval(gt_filter, user_dict=self.carray, vm="python"))
+            ud = dict(self.carray)
+            ud['HOM_REF'] = HOM_REF
+            ud['HET'] = HET
+            ud['UKNOWN'] = UNKNOWN
+            ud['HOM_ALT'] = HOM_ALT
+
+            ud['MISSING'] = MISSING
+            ud['AFFECTED'] = AFFECTED
+            ud['UNAFFECTED'] = UNAFFECTED
+
+            subs, = np.where(bcolz.eval(gt_filter, user_dict=ud, vm="python"))
+            subs += 1
             # now subs is a list of indexes that pass the gt_filter
-            print subs
+        # TODO: will need to do chunks of subs.
+        query += " WHERE variant_id IN(%s)" % ",".join(map(str, subs))
         self.query = self.formatter.format_query(query)
+        gt_filter=None
         self.gt_filter = gt_filter
         if self._is_gt_filter_safe() is False:
             sys.exit("ERROR: invalid --gt-filter command.")
