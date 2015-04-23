@@ -492,12 +492,13 @@ class GeminiQuery(object):
 
     def setup_carrays(self):
         dname = os.path.join(self.db + ".gts")
-        self.carray = {}
-        for gt in ('gts', 'gt_phases', 'gt_types', 'gt_depths',
-                   'gt_ref_depths', 'gt_alt_depths', 'gt_quals',
-                   'gt_copy_numbers', 'gt_phred_ll_homref',
-                   'gt_phred_ll_het', 'gt_phred_ll_homalt'):
-            self.carray[gt] = bcolz.open(rootdir=os.path.join(dname, gt), mode="r")
+        #self.carray = {}
+        #for gt in ('gts', 'gt_phases', 'gt_types', 'gt_depths',
+        #           'gt_ref_depths', 'gt_alt_depths', 'gt_quals',
+        #           'gt_copy_numbers', 'gt_phred_ll_homref',
+        #           'gt_phred_ll_het', 'gt_phred_ll_homalt'):
+        #    self.carray[gt] = bcolz.open(rootdir=os.path.join(dname, gt), mode="r")
+        self.ctable = bcolz.open(dname, mode="r")
 
     def __init__(self, db, include_gt_cols=False,
                  out_format=DefaultRowFormat(None)):
@@ -550,7 +551,7 @@ class GeminiQuery(object):
             # in order to use the numexpr vm
             # this currenlty works using the python vm on filters like:
             # (gt_ref_depths[:, 0] >= 20) & (gt_ref_depths[:, 1] >= 22)
-            ud = dict(self.carray)
+            ud = {}
             ud['HOM_REF'] = HOM_REF
             ud['HET'] = HET
             ud['UKNOWN'] = UNKNOWN
@@ -559,14 +560,18 @@ class GeminiQuery(object):
             ud['MISSING'] = MISSING
             ud['AFFECTED'] = AFFECTED
             ud['UNAFFECTED'] = UNAFFECTED
+            gt_filter = gt_filter.replace(".", "__")
+            gt_filter = " & ".join("(%s)" % token for token in gt_filter.split(" and "))
+            gt_filter = " | ".join("(%s)" % token for token in gt_filter.split(" or "))
 
-            subs, = np.where(bcolz.eval(gt_filter, user_dict=ud, vm="python"))
+            # TODO: need user_dict
+            subs, = np.where(self.ctable.eval(gt_filter, vm="numexpr"))
             subs += 1
             # now subs is a list of indexes that pass the gt_filter
         # TODO: will need to do chunks of subs.
         query += " WHERE variant_id IN(%s)" % ",".join(map(str, subs))
         self.query = self.formatter.format_query(query)
-        gt_filter=None
+        gt_filter = None
         self.gt_filter = gt_filter
         if self._is_gt_filter_safe() is False:
             sys.exit("ERROR: invalid --gt-filter command.")
@@ -686,11 +691,15 @@ class GeminiQuery(object):
 
             unpacked = {'self': self}
             row_id = row['variant_id'] - 1
+            # extracting a single row kills performance.
+            gt_row = self.ctable[row_id]
+            cols = gt_row.dtype.names
             if self._query_needs_genotype_info():
                 # TODO: see if HET, etc. are needed. if not, we can skip
                 # _group_samples_by_genotype
-                unpacked['gt_types'] = self.carray['gt_types'][row_id]
-                genotype_dict = self._group_samples_by_genotype(unpacked['gt_types'])
+                #unpacked['gt_types'] = self.carray['gt_types'][row_id]
+                gt_types = [gt_row[k] for k in cols if k.startswith('gt_types__')]
+                genotype_dict = self._group_samples_by_genotype(gt_types)
                 if self.gt_filter or self.include_gt_cols:
                     for k in ('gts', 'gt_phases', 'gt_depths', 'gt_ref_depths',
                               'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',

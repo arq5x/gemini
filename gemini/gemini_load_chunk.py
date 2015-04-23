@@ -64,7 +64,7 @@ class GeminiLoader(object):
         # create a reader for the VCF file
         self.vcf_reader = self._get_vcf_reader()
         # load sample information
-        self._create_bcolz(num_lines(args.vcf), len(self.vcf_reader.samples))
+        self._create_bcolz(num_lines(args.vcf), self.vcf_reader.samples)
 
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             # load the sample info from the VCF file.
@@ -151,8 +151,8 @@ class GeminiLoader(object):
                 buffer_count += 1
                 # buffer full - time to insert into DB
                 if buffer_count >= self.buffer_size:
-                    for k in self.carray:
-                        self.carray[k].flush()
+                    #for k in self.carray:
+                    #   self.carray[k].flush()
                     sys.stderr.write("pid " + str(os.getpid()) + ": " +
                                      str(self.counter) + " variants processed.\n")
                     database.insert_variation(self.c, self.var_buffer)
@@ -172,8 +172,7 @@ class GeminiLoader(object):
             os.remove(extra_file)
         # final load to the database
         self.v_id -= 1
-        for k in self.carray:
-            self.carray[k].flush()
+        self.ctable.flush()
         database.insert_variation(self.c, self.var_buffer)
         database.insert_variation_impacts(self.c, self.var_impacts_buffer)
         sys.stderr.write("pid " + str(os.getpid()) + ": " +
@@ -278,7 +277,7 @@ class GeminiLoader(object):
                 "\nhttp://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-vep"
         sys.exit(error)
 
-    def _create_bcolz(self, expected_len, n_samples):
+    def _create_bcolz(self, expected_len, samples):
         db_path = self.args.db if not hasattr(self.args, 'tmp_db') else self.args.tmp_db
         dname = os.path.join(db_path + ".gts")
         try:
@@ -287,6 +286,24 @@ class GeminiLoader(object):
             pass
         elen = expected_len + 10
 
+        dtypes = [('gts__%s' % s, np.object) for s in samples]
+        dtypes += [('gt_types__%s' %s, np.int8) for s in samples]
+        dtypes += [('gt_phases__%s' %s, np.bool) for s in samples]
+        dtypes += [('gt_depths__%s' %s, np.int32) for s in samples]
+        dtypes += [('gt_ref_depths__%s' %s, np.int32) for s in samples]
+        dtypes += [('gt_alt_depths__%s' %s, np.int32) for s in samples]
+        dtypes += [('gt_quals__%s' %s, np.float32) for s in samples]
+        dtypes += [('gt_copy_numbers__%s' %s, np.int32) for s in samples]
+        dtypes += [('gt_phred_ll_homref__%s' %s, np.int32) for s in samples]
+        dtypes += [('gt_phred_ll_het__%s' %s, np.int32) for s in samples]
+        dtypes += [('gt_phred_ll_homalt__%s' %s, np.int32) for s in samples]
+        dtype = np.dtype(dtypes)
+
+        self.ctable = bcolz.ctable(np.empty(0, dtype=dtype), expectedlen=elen,
+                                   mode="w",
+                                   rootdir=dname)
+
+        """
         self.carray = {}
         self.carray['gts'] = bcolz.carray(np.empty((0, n_samples), dtype=np.object),
                                                expectedlen=elen,
@@ -342,6 +359,7 @@ class GeminiLoader(object):
                                                expectedlen=elen,
                                                mode="w",
                                                rootdir=os.path.join(dname, 'gt_phred_ll_homalt'))
+        """
 
     def _create_db(self):
         """
@@ -508,27 +526,37 @@ class GeminiLoader(object):
         # and loaded as SqlLite BLOB values (see compression.pack_blob)
 
         gt_phred_likelihoods = None
+        row = []
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
-            self.carray['gts'].append(var.gt_bases)
-            self.carray['gt_types'].append(var.gt_types)
+            #self.carray['gts'].append(var.gt_bases)
+            #self.carray['gt_types'].append(var.gt_types)
+            row.extend(var.gt_bases)
+            row.extend(var.gt_types)
+
 
             #gt_bases = np.array(var.gt_bases, np.str)  # 'A/G', './.'
             #gt_types = np.array(var.gt_types, np.int8)  # -1, 0, 1, 2
 
-            self.carray['gt_phases'].append(var.gt_phases)
-            self.carray['gt_depths'].append(var.gt_depths)
+            #self.carray['gt_phases'].append(var.gt_phases)
+            #self.carray['gt_depths'].append(var.gt_depths)
+            row.extend(var.gt_phases)
+            row.extend(var.gt_depths)
 
             #gt_phases = np.array(var.gt_phases, np.bool)  # T F F
             #gt_depths = np.array(var.gt_depths, np.int32)  # 10 37 0
 
-            self.carray['gt_ref_depths'].append(var.gt_ref_depths)
-            self.carray['gt_alt_depths'].append(var.gt_alt_depths)
+            #self.carray['gt_ref_depths'].append(var.gt_ref_depths)
+            #self.carray['gt_alt_depths'].append(var.gt_alt_depths)
+            row.extend(var.gt_ref_depths)
+            row.extend(var.gt_alt_depths)
 
             #gt_ref_depths = np.array(var.gt_ref_depths, np.int32)  # 2 21 0 -1
             #gt_alt_depths = np.array(var.gt_alt_depths, np.int32)  # 8 16 0 -1
 
-            self.carray['gt_quals'].append(var.gt_quals)
-            self.carray['gt_copy_numbers'].append(var.gt_copy_numbers)
+            #self.carray['gt_quals'].append(var.gt_quals)
+            #self.carray['gt_copy_numbers'].append(var.gt_copy_numbers)
+            row.extend(var.gt_quals)
+            row.extend(var.gt_copy_numbers)
 
             #gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
             #gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
@@ -539,14 +567,20 @@ class GeminiLoader(object):
                 gt_phred_ll_het = gt_phred_likelihoods[:, 1]
                 gt_phred_ll_homalt = gt_phred_likelihoods[:, 2]
 
-                self.carray['gt_phred_ll_homref'].append(gt_phred_ll_homref)
-                self.carray['gt_phred_ll_het'].append(gt_phred_ll_het)
-                self.carray['gt_phred_ll_homalt'].append(gt_phred_ll_homalt)
+                #self.carray['gt_phred_ll_homref'].append(gt_phred_ll_homref)
+                #self.carray['gt_phred_ll_het'].append(gt_phred_ll_het)
+                #self.carray['gt_phred_ll_homalt'].append(gt_phred_ll_homalt)
+                row.extend(gt_phred_ll_homref)
+                row.extend(gt_phred_ll_het)
+                row.extend(gt_phred_ll_homalt)
             else:
-                self.carray['gt_phred_ll_homref'].append(np.zeros(len(var.gt_bases)) - 1)
-                self.carray['gt_phred_ll_het'].append(np.zeros(len(var.gt_bases)) - 1)
-                self.carray['gt_phred_ll_homalt'].append(np.zeros(len(var.gt_bases)) - 1)
-
+                #self.carray['gt_phred_ll_homref'].append(np.zeros(len(var.gt_bases)) - 1)
+                #self.carray['gt_phred_ll_het'].append(np.zeros(len(var.gt_bases)) - 1)
+                #self.carray['gt_phred_ll_homalt'].append(np.zeros(len(var.gt_bases)) - 1)
+                row.extend(np.zeros(len(var.gt_bases)) - 1)
+                row.extend(np.zeros(len(var.gt_bases)) - 1)
+                row.extend(np.zeros(len(var.gt_bases)) - 1)
+            self.ctable.append(tuple(row))
             # tally the genotypes
             self._update_sample_gt_counts(var.gt_types)
 
