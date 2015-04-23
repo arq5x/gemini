@@ -302,6 +302,7 @@ class GeminiLoader(object):
         self.ctable = bcolz.ctable(np.empty(0, dtype=dtype), expectedlen=elen,
                                    mode="w",
                                    rootdir=dname)
+        self.ctable.auto_flush = False
 
         """
         self.carray = {}

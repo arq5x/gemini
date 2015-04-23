@@ -546,11 +546,6 @@ class GeminiQuery(object):
             2. (opt.) a genotype filter.
         """
         if gt_filter:
-            # WORK IN PROGRESS. We'd need to extract e.g.:
-            # gt_ref_depths[:, 1] to a local for use in self.carray
-            # in order to use the numexpr vm
-            # this currenlty works using the python vm on filters like:
-            # (gt_ref_depths[:, 0] >= 20) & (gt_ref_depths[:, 1] >= 22)
             ud = {}
             ud['HOM_REF'] = HOM_REF
             ud['HET'] = HET
@@ -564,12 +559,22 @@ class GeminiQuery(object):
             gt_filter = " & ".join("(%s)" % token for token in gt_filter.split(" and "))
             gt_filter = " | ".join("(%s)" % token for token in gt_filter.split(" or "))
 
-            # TODO: need user_dict
-            subs, = np.where(self.ctable.eval(gt_filter, vm="numexpr"))
-            subs += 1
+            # i added user_dict: see
+            # https://groups.google.com/forum/#!topic/bcolz/-XrDhQknLFY
+            import time
+            t = time.time()
+            subs, = np.where(self.ctable.eval(gt_filter, user_dict=ud, vm="numexpr"))
+            print subs.shape
+
+            print >>sys.stderr, "gt-filter time:", time.time() - t
+            # this is faster than self.ctable[subs]
+            self.subset = dict((k, self.ctable.cols[k][subs]) for k in self.ctable.cols)
+            subs = 1 + subs
             # now subs is a list of indexes that pass the gt_filter
-        # TODO: will need to do chunks of subs.
-        query += " WHERE variant_id IN(%s)" % ",".join(map(str, subs))
+            # TODO: will need to do chunks of subs.
+            query += " WHERE variant_id IN(%s)" % ",".join(map(str, subs))
+            self._i = -1
+
         self.query = self.formatter.format_query(query)
         gt_filter = None
         self.gt_filter = gt_filter
@@ -676,6 +681,7 @@ class GeminiQuery(object):
         while (1):
             try:
                 row = self.c.next()
+                self._i += 1
             except Exception as e:
                 self.conn.close()
                 raise StopIteration
@@ -690,15 +696,15 @@ class GeminiQuery(object):
                 info = compression.unpack_ordereddict_blob(row['info'])
 
             unpacked = {'self': self}
-            row_id = row['variant_id'] - 1
+            row_id = self._i
             # extracting a single row kills performance.
-            gt_row = self.ctable[row_id]
-            cols = gt_row.dtype.names
+            cols = [k for k in self.ctable.cols]
+            gt_row = [self.subset[k][row_id] for k in cols]
             if self._query_needs_genotype_info():
                 # TODO: see if HET, etc. are needed. if not, we can skip
                 # _group_samples_by_genotype
                 #unpacked['gt_types'] = self.carray['gt_types'][row_id]
-                gt_types = [gt_row[k] for k in cols if k.startswith('gt_types__')]
+                gt_types = [gt_row[i] for i, k in enumerate(cols) if k.startswith('gt_types__')]
                 genotype_dict = self._group_samples_by_genotype(gt_types)
                 if self.gt_filter or self.include_gt_cols:
                     for k in ('gts', 'gt_phases', 'gt_depths', 'gt_ref_depths',
