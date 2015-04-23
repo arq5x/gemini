@@ -13,6 +13,7 @@ import os
 import yaml
 
 CONFIG_FILE = "gemini-config.yaml"
+CONFIG_ENVIRONMENT_VARIABLE = "GEMINI_CONFIG"
 
 def get_config_dirs(use_globals=True):
     virtualenv_loc = __file__.find("gemini-virtualenv")
@@ -26,6 +27,9 @@ def get_config_dirs(use_globals=True):
     else:
         dirs = []
     if use_globals:
+        environment_config = os.getenv(CONFIG_ENVIRONMENT_VARIABLE)
+        if environment_config is not None:
+            dirs.append(environment_config)
         dirs.append("/usr/local/share/gemini")
         dirs.append(os.path.join(os.environ["HOME"], ".gemini"))
     return dirs
