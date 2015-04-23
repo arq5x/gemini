@@ -8,6 +8,8 @@ import collections
 import json
 import abc
 import numpy as np
+import bcolz
+import itertools as it
 
 # gemini imports
 import gemini_utils as util
@@ -16,6 +18,9 @@ from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
+
+def RowFactory(cursor, row):
+    return dict(it.izip((c[0] for c in cursor.description), row))
 
 class RowFormat:
     """A row formatter to output rows in a custom format.  To provide
@@ -64,7 +69,7 @@ class DefaultRowFormat(RowFormat):
 
     def format(self, row):
         r = row.row
-        return '\t'.join([str(r[c]) for c in r])
+        return '\t'.join(str(r[c]) for c in r)
 
     def format_query(self, query):
         return query
@@ -485,6 +490,16 @@ class GeminiQuery(object):
             print row, gts[idx]
     """
 
+    def setup_carrays(self):
+        dname = os.path.join(self.db + ".gts")
+        #self.carray = {}
+        #for gt in ('gts', 'gt_phases', 'gt_types', 'gt_depths',
+        #           'gt_ref_depths', 'gt_alt_depths', 'gt_quals',
+        #           'gt_copy_numbers', 'gt_phred_ll_homref',
+        #           'gt_phred_ll_het', 'gt_phred_ll_homalt'):
+        #    self.carray[gt] = bcolz.open(rootdir=os.path.join(dname, gt), mode="r")
+        self.ctable = bcolz.open(dname, mode="r")
+
     def __init__(self, db, include_gt_cols=False,
                  out_format=DefaultRowFormat(None)):
         assert os.path.exists(db), "%s does not exist." % db
@@ -496,6 +511,7 @@ class GeminiQuery(object):
 
         # try to connect to the provided database
         self._connect_to_database()
+        self.setup_carrays()
 
         # extract the column names from the sample table.
         # needed for gt-filter wildcard support.
@@ -529,7 +545,38 @@ class GeminiQuery(object):
             1. (reqd.) an SQL `query`.
             2. (opt.) a genotype filter.
         """
+        if gt_filter:
+            ud = {}
+            ud['HOM_REF'] = HOM_REF
+            ud['HET'] = HET
+            ud['UKNOWN'] = UNKNOWN
+            ud['HOM_ALT'] = HOM_ALT
+
+            ud['MISSING'] = MISSING
+            ud['AFFECTED'] = AFFECTED
+            ud['UNAFFECTED'] = UNAFFECTED
+            gt_filter = gt_filter.replace(".", "__")
+            gt_filter = " & ".join("(%s)" % token for token in gt_filter.split(" and "))
+            gt_filter = " | ".join("(%s)" % token for token in gt_filter.split(" or "))
+
+            # i added user_dict: see
+            # https://groups.google.com/forum/#!topic/bcolz/-XrDhQknLFY
+            import time
+            t = time.time()
+            subs, = np.where(self.ctable.eval(gt_filter, user_dict=ud, vm="numexpr"))
+            print subs.shape
+
+            print >>sys.stderr, "gt-filter time:", time.time() - t
+            # this is faster than self.ctable[subs]
+            self.subset = dict((k, self.ctable.cols[k][subs]) for k in self.ctable.cols)
+            subs = 1 + subs
+            # now subs is a list of indexes that pass the gt_filter
+            # TODO: will need to do chunks of subs.
+            query += " WHERE variant_id IN(%s)" % ",".join(map(str, subs))
+            self._i = -1
+
         self.query = self.formatter.format_query(query)
+        gt_filter = None
         self.gt_filter = gt_filter
         if self._is_gt_filter_safe() is False:
             sys.exit("ERROR: invalid --gt-filter command.")
@@ -634,6 +681,7 @@ class GeminiQuery(object):
         while (1):
             try:
                 row = self.c.next()
+                self._i += 1
             except Exception as e:
                 self.conn.close()
                 raise StopIteration
@@ -648,12 +696,16 @@ class GeminiQuery(object):
                 info = compression.unpack_ordereddict_blob(row['info'])
 
             unpacked = {'self': self}
-            unpack = compression.unpack_genotype_blob
+            row_id = self._i
+            # extracting a single row kills performance.
+            cols = [k for k in self.ctable.cols]
+            gt_row = [self.subset[k][row_id] for k in cols]
             if self._query_needs_genotype_info():
                 # TODO: see if HET, etc. are needed. if not, we can skip
                 # _group_samples_by_genotype
-                unpacked['gt_types'] = unpack(row['gt_types'])
-                genotype_dict = self._group_samples_by_genotype(unpacked['gt_types'])
+                #unpacked['gt_types'] = self.carray['gt_types'][row_id]
+                gt_types = [gt_row[i] for i, k in enumerate(cols) if k.startswith('gt_types__')]
+                genotype_dict = self._group_samples_by_genotype(gt_types)
                 if self.gt_filter or self.include_gt_cols:
                     for k in ('gts', 'gt_phases', 'gt_depths', 'gt_ref_depths',
                               'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',
@@ -663,7 +715,7 @@ class GeminiQuery(object):
                               ):
                         # only unpack what is needed.
                         if (self.gt_filter is not None and k in self.gt_filter) or self.include_gt_cols:
-                            unpacked[k] = unpack(row[k])
+                            unpacked[k] = self.carray[k][row_id]
                     # skip the record if it does not meet the user's genotype filter
                     # short circuit some expensive ops
                     try:
@@ -681,7 +733,7 @@ class GeminiQuery(object):
                 variant_names = het_names + hom_alt_names
 
             if isinstance(self.formatter, TPEDRowFormat) and not unpacked.get('gts'):
-                unpacked['gts'] = unpack(row['gts'])
+                unpacked['gts'] = self.carray['gts'][row_id]
 
             fields = OrderedDict()
 
@@ -700,7 +752,7 @@ class GeminiQuery(object):
 
                         source, extra = col.split('[', 1)
                         if not source in unpacked:
-                            unpacked[source] = unpack(row[source])
+                            unpacked[source] = self.carray[source][row_id]
                         assert extra[-1] == ']'
                         if source.startswith('gt_phred_ll') and unpacked[source] is None:
                             fields[orig_col] = None
@@ -719,9 +771,9 @@ class GeminiQuery(object):
                     else:
                         # asked for "gts" or "gt_types", e.g.
                         if not col in unpacked:
-                            unpacked[col] = unpack(row[col])
+                            unpacked[col] = self.carray[col][row_id]
                         if unpacked[col] is not None:
-                            fields[col] = ",".join(str(v) for v in unpacked[col])
+                            fields[col] = unpacked[col]
                         else:
                             fields[col] = str(None)
 
@@ -789,11 +841,12 @@ class GeminiQuery(object):
         Establish a connection to the requested Gemini database.
         """
         # open up a new database
+
         if os.path.exists(self.db):
             self.conn = sqlite3.connect(self.db)
             self.conn.isolation_level = None
             # allow us to refer to columns by name
-            self.conn.row_factory = sqlite3.Row
+            self.conn.row_factory = RowFactory
             self.c = self.conn.cursor()
 
 
@@ -863,6 +916,7 @@ class GeminiQuery(object):
 
             # we only need genotype information if the user is
             # querying the variants table
+            # TODO: rename method to remove
             self.query = self._add_gt_cols_to_query()
 
             self._execute_query()
@@ -1037,7 +1091,6 @@ class GeminiQuery(object):
 
         return " ".join(corrected_gt_filter)
 
-
     def _add_gt_cols_to_query(self):
         """
         We have to modify the raw query to select the genotype
@@ -1065,20 +1118,13 @@ class GeminiQuery(object):
                not ".GT" in token:
                 select_clause_list.append(token)
 
+        if "variant_id" not in select_clause_list:
+            # TODO: have to remove variant id in this case.
+            select_clause_list.append("variant_id")
         # reconstruct the query with the GT* columns added
-        if len(select_clause_list) > 0:
-            select_clause = ",".join(select_clause_list) + \
-                    (", gts, gt_types, gt_phases, gt_depths,"
-                     " gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers,"
-                     " gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
+        select_clause = ",".join(select_clause_list)
 
-        else:
-            select_clause = ",".join(select_clause_list) + \
-                    (" gts, gt_types, gt_phases, gt_depths, "
-                    "  gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, "
-                    "  gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
-
-        self.query = "select " + select_clause + rest_of_query
+        self.query = "select %s %s" % (select_clause, rest_of_query)
 
         # extract the original select columns
         return self.query
