@@ -2,14 +2,24 @@
 Release History
 #############################
 
-0.14.0 (Future)
+0.15.0 (Future)
 =======================================
-1. Leverage genotype likelihoods in tools (e.g., de_novo and mendelelian_violations) as a means to prioritize confident variants.
-2. Standardize the output from the built-in tools into a common, BED+ format.
-3. Update parsing for newer snpEff version
+1. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to prioritize confident variants.
+2. Update parsing for snpEff >= 4.0
+3. Add an `is_splicing` column.
+4. Support for multi-generational families.
+5. Attempt to provide better backwards compatibility.
+6. Continue to improve performance.
+
+0.14.0 
+=======================================
+1. Standardized the output from the built-in tools into a common, BED+ format. Thanks to feedback from Jessica Chong and Daniel Gaston.
+2. Release of `mendel_errors` tool which also outputs the type of error and the probability (based on PL's)
+3. Improvements to the `load` tool when running on large compute clusters using PBS, SGE, SLURM, etc. Also provde a workaround for NFS locking issues. Many thanks to Ben Weisburd in Daniel Macarthur's lab.
 4. Improve preprocess script to support varscan, platypus (https://gist.github.com/brentp/4db670df147cbd5a2b32)
-5. Expose `mendelian_error` tool which also outputs the type of error and the probability (based on PL's)
-6. Performance improvement to tools (pre-compile evals)
+5. Performance improvements for many of the built-in tools (pre-compile evals)
+6. Bug fix for installation with sudo privileges.
+
 
 0.13.1 (2015-Apr-09)
 =======================================
