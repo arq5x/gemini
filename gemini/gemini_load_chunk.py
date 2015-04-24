@@ -65,6 +65,7 @@ class GeminiLoader(object):
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             # load the sample info from the VCF file.
             self._prepare_samples()
+            self._init_expanded_gt_tables()
             # initialize genotype counts for each sample
             self._init_sample_gt_counts()
             self.num_samples = len(self.samples)
@@ -121,6 +122,9 @@ class GeminiLoader(object):
         self.counter = 0
         self.var_buffer = []
         self.var_impacts_buffer = []
+        self.gt_types_buffer = []
+        self.gt_depths_buffer = []
+        self.gt_quals_buffer = []
         buffer_count = 0
         self.skipped = 0
         extra_file, extraheader_file = gemini_annotate.get_extra_files(self.args.db)
@@ -134,12 +138,21 @@ class GeminiLoader(object):
                 if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
                     self.skipped += 1
                     continue
-                (variant, variant_impacts, extra_fields) = self._prepare_variation(var)
+                (variant, variant_impacts, extra_fields, gt_types, gt_depths, gt_quals) = self._prepare_variation(var)
                 if extra_fields:
                     extra_handle.write("%s\n" % json.dumps(extra_fields))
                     extra_headers = self._update_extra_headers(extra_headers, extra_fields)
                 # add the core variant info to the variant buffer
                 self.var_buffer.append(variant)
+
+                # add the expanded genotype fields
+                if gt_types is not None:
+                    self.gt_types_buffer.append([self.v_id] + map(int, gt_types))
+                if gt_depths is not None:
+                    self.gt_depths_buffer.append([self.v_id] + map(int, gt_depths))
+                if gt_quals is not None:
+                    self.gt_quals_buffer.append([self.v_id] + map(float, gt_quals))
+
                 # add each of the impact for this variant (1 per gene/transcript)
                 for var_impact in variant_impacts:
                     self.var_impacts_buffer.append(var_impact)
@@ -150,12 +163,22 @@ class GeminiLoader(object):
                     sys.stderr.write("pid " + str(os.getpid()) + ": " +
                                      str(self.counter) + " variants processed.\n")
                     database.insert_variation(self.c, self.var_buffer)
+                    if self.gt_types_buffer:
+                        database.insert_into_expanded_gt_table('expanded_gt_types', self.c, self.gt_types_buffer)
+                    if self.gt_depths_buffer:
+                        database.insert_into_expanded_gt_table('expanded_gt_depths', self.c, self.gt_depths_buffer)
+                    if self.gt_quals_buffer:
+                        database.insert_into_expanded_gt_table('expanded_gt_quals', self.c, self.gt_quals_buffer)
+
                     database.insert_variation_impacts(self.c,
                                                       self.var_impacts_buffer)
                     # binary.genotypes.append(var_buffer)
                     # reset for the next batch
                     self.var_buffer = []
                     self.var_impacts_buffer = []
+                    self.gt_types_buffer = []
+                    self.gt_depths_buffer = []
+                    self.gt_quals_buffer = []
                     buffer_count = 0
                 self.v_id += 1
                 self.counter += 1
@@ -167,6 +190,12 @@ class GeminiLoader(object):
         # final load to the database
         self.v_id -= 1
         database.insert_variation(self.c, self.var_buffer)
+        if self.gt_types_buffer:
+            database.insert_into_expanded_gt_table('expanded_gt_types', self.c, self.gt_types_buffer)
+        if self.gt_depths_buffer:
+            database.insert_into_expanded_gt_table('expanded_gt_depths', self.c, self.gt_depths_buffer)
+        if self.gt_quals_buffer:
+            database.insert_into_expanded_gt_table('expanded_gt_quals', self.c, self.gt_quals_buffer)
         database.insert_variation_impacts(self.c, self.var_impacts_buffer)
         sys.stderr.write("pid " + str(os.getpid()) + ": " +
                          str(self.counter) + " variants processed.\n")
@@ -580,7 +609,8 @@ class GeminiLoader(object):
                    Exac.aaf_NFE, Exac.aaf_OTH,
                    Exac.aaf_SAS]
 
-        return variant, variant_impacts, extra_fields
+
+        return variant, variant_impacts, extra_fields, gt_types, gt_depths, gt_quals
 
     def _prepare_samples(self):
         """
@@ -670,10 +700,13 @@ class GeminiLoader(object):
         """
         gene_table.update_cosmic_census_genes(self.c, self.args)
 
+    def _init_expanded_gt_tables(self):
+        database.create_expanded_gt_tables(self.c, self.vcf_reader.samples)
+
     def _init_sample_gt_counts(self):
         """
         Initialize a 2D array of counts for tabulating
-        the count of each genotype type for eaxh sample.
+        the count of each genotype type for each sample.
 
         The first dimension is one bucket for each sample.
         The second dimension (size=4) is a count for each gt type.

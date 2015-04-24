@@ -19,12 +19,10 @@ def append_variant_info(main_curr, chunk_db):
     main_curr.execute(cmd, (chunk_db, ))
 
     main_curr.execute("BEGIN TRANSACTION")
-    cmd = "INSERT INTO variants SELECT * FROM toMerge.variants"
-    main_curr.execute(cmd)
+    for table_name in ["variants", "variant_impacts", "expanded_gt_types", "expanded_gt_depths", "expanded_gt_quals"]:
+        cmd = "INSERT INTO {0} SELECT * FROM toMerge.{0}".format(table_name)
+        main_curr.execute(cmd)
 
-    cmd = \
-        "INSERT INTO variant_impacts SELECT * FROM toMerge.variant_impacts"
-    main_curr.execute(cmd)
     main_curr.execute("END TRANSACTION")
 
     cmd = "detach toMerge"
@@ -186,6 +184,11 @@ def merge_db_chunks(args):
     for idx, database in enumerate(databases):
 
         db = database[0]
+
+        # create expanded_gt_* tables
+        if idx == 0:
+            expanded_gt_column_names = gemini_db.get_column_names(sqlite3.connect(db).cursor(), 'expanded_gt_types')
+            gemini_db.create_expanded_gt_tables(main_curr, sample_names=expanded_gt_column_names[1:])
 
         append_variant_info(main_curr, db)
 
