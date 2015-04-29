@@ -99,8 +99,8 @@ class GeminiInheritanceModelFactory(object):
                 if is_comp_het:
                     affected_samples = [subject]
                     for c in self.added:
-                        if c in row.row:
-                            row.row.pop(c)
+                        if c in row.print_fields:
+                            row.print_fields.pop(c)
                 else:
                     affected_samples = self.get_samples(gt_cols, gt_lbls)
 
