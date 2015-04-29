@@ -252,10 +252,10 @@ def _summarize_by_gene_and_sample(args, query):
         gene_name = row['gene']
         if not gene_name:
             continue
-        new_counts = Counter(row["HET_samples"])
+        new_counts = Counter(row["het_samples"])
         # Counter can't do scalar multiplication
-        new_counts = new_counts + Counter(row["HOM_ALT_samples"])
-        new_counts = new_counts + Counter(row["HOM_ALT_samples"])
+        new_counts = new_counts + Counter(row["hom_alt_samples"])
+        new_counts = new_counts + Counter(row["hom_alt_samples"])
 
         del new_counts['']
         burden[gene_name] += new_counts
