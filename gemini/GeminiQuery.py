@@ -1039,19 +1039,8 @@ class GeminiQuery(object):
                 select_clause_list.append(token)
 
         # reconstruct the query with the GT* columns added
-        if len(select_clause_list) > 0:
-            select_clause = ",".join(select_clause_list) + \
-                    (", gts, gt_types, gt_phases, gt_depths,"
-                     " gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers,"
-                     " gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
-
-        else:
-            select_clause = ",".join(select_clause_list) + \
-                    (" gts, gt_types, gt_phases, gt_depths, "
-                    "  gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, "
-                    "  gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
-
-        self.query = "select " + select_clause + rest_of_query
+        select_clause = ", ".join(select_clause_list)
+        self.query = "select %s %s" % (select_clause, rest_of_query)
 
         # extract the original select columns
         return self.query
@@ -1179,9 +1168,9 @@ class GeminiQuery(object):
         including all arrays for allelic-level info.
         """
         if info is not None:
-            return ';'.join(['%s=%s' % (key, value) if not isinstance(value, list) \
-                             else '%s=%s' % (key, ','.join([str(v) for v in value])) \
-                             for (key, value) in info.items()])
+            return ';'.join('%s=%s' % (key, value) if not isinstance(value, list)
+                             else '%s=%s' % (key, ','.join(str(v) for v in value))
+                             for (key, value) in info.items())
         else:
             return None
 
