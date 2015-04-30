@@ -1039,7 +1039,12 @@ class GeminiQuery(object):
                 select_clause_list.append(token)
 
         # reconstruct the query with the GT* columns added
-        select_clause = ", ".join(select_clause_list)
+        select_clause = (", ".join(select_clause_list)).strip()
+        if select_clause: select_clause += ","
+        select_clause += (" gts, gt_types, gt_phases, gt_depths, "
+                          " gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, "
+                          " gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
+
         self.query = "select %s %s" % (select_clause, rest_of_query)
 
         # extract the original select columns
