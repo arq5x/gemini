@@ -4,6 +4,7 @@ import os
 import sys
 import sqlite3
 import re
+import compiler
 import collections
 import json
 import abc
@@ -19,6 +20,7 @@ from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
+from gemini_bcolz import query as bcolz_query
 
 
 def RowFactory(cursor, row):
@@ -514,13 +516,15 @@ class GeminiQuery(object):
     """
 
     def __init__(self, db, include_gt_cols=False,
-                 out_format=DefaultRowFormat(None)):
+                 out_format=DefaultRowFormat(None),
+                 variant_id_getter=None):
         assert os.path.exists(db), "%s does not exist." % db
 
         self.db = db
         self.query_executed = False
         self.for_browser = False
         self.include_gt_cols = include_gt_cols
+        self.variant_id_getter = variant_id_getter
 
         # try to connect to the provided database
         self._connect_to_database()
@@ -595,14 +599,42 @@ class GeminiQuery(object):
                 self.query_type = "filter-genotypes"
 
         if self.gt_filter:
-            import compiler
+            # here's how we use the fast
+            if self.variant_id_getter:
+                print >>sys.stderr, "using bcolz index"
+                user_dict = dict(HOM_REF=0, HET=1, UNKNOWN=2, HOM_ALT=3,
+                                sample_info=self.sample_info,
+                                 MISSING=None, UNAFFECTED=1, AFFECTED=2)
+                vids = self.variant_id_getter(self.db, None, self.gt_filter, user_dict)
+                if vids is None:
+                    print >>sys.stderr, "can't use bcolz for this filter: %s" % self.gt_filter
+                else:
+                    self.add_vids_to_query(vids)
+
+        if self.gt_filter:
             self.gt_filter_compiled = compiler.compile(self.gt_filter, self.gt_filter, 'eval')
+
         self._apply_query()
         self.query_executed = True
 
-
     def __iter__(self):
         return self
+
+    def add_vids_to_query(self, vids):
+        extra = " variant_id IN (%s)" % ",".join(map(str, vids))
+        if " where " in self.query.lower():
+            extra = " and " + extra
+        else:
+            extra = " where " + extra
+        # don't adjust the query if we
+        if len(self.query) + len(extra) + 8 < 1000000:
+            match = re.search(" (limit \d+)\s*", self.query,
+                              flags=re.I | re.DOTALL |re.MULTILINE)
+            if match:
+                self.query = self.query.replace(match.group(), " ") + extra + " " + match.group()
+            else:
+                self.query += extra
+            self.gt_filter = None
 
     @property
     def header(self):
@@ -675,6 +707,7 @@ class GeminiQuery(object):
                     for col in row.gt_cols:
                         if col in self.gt_filter:
                             unpacked[col] = row[col]
+
                     if not eval(self.gt_filter_compiled, unpacked):
                         continue
                 # eval on a phred_ll column that was None
@@ -836,7 +869,6 @@ class GeminiQuery(object):
             # we only need genotype information if the user is
             # querying the variants table
             self.query = self._add_gt_cols_to_query()
-
             self._execute_query()
 
             self.all_query_cols = [
@@ -993,6 +1025,7 @@ class GeminiQuery(object):
                 # build the rule based on the wildcard the user has supplied.
                 if wildcard_op in ["all", "any"]:
                     rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
+
                 elif wildcard_op == "none":
                     rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
                 elif "count" in wildcard_op:

@@ -373,6 +373,12 @@ def main():
                               action='store_true',
                               help='Request drug-gene interaction info from DGIdb.',
                               default=False)
+    parser_query.add_argument('--use-bcolz',
+                              dest='bcolz',
+                              action='store_true',
+                              help='use a (previously created) bcolz index to speed genotype queries',
+                              default=False)
+
     def query_fn(parser, args):
         import gemini_query
         gemini_query.query(parser, args)
@@ -1023,6 +1029,17 @@ def main():
         run(parser, args)
     parser_hom_run.set_defaults(func=homozygosity_runs_fn)
 
+    #########################################
+    # bcolz indexing
+    #########################################
+    bci = subparsers.add_parser('bcolz_index', help='index an existing gemini'
+                                ' database so it can use bcolze for faster '
+                                ' genotype queries.')
+    bci.add_argument('db', help='The path of the database to indexed with bcolz.')
+    def bci_fn(parser, args):
+        from gemini_bcolz import create
+        create(args.db)
+    bci.set_defaults(func=bci_fn)
 
     #########################################
     # $ gemini fusions

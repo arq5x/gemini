@@ -13,7 +13,8 @@ provided with the following functions:
     load(db_path)
     # take a gemini --gt-filter string and return a list of variant_ids that meet
     # that filter. `obj` is the thing returned by load().
-    query(db_path, obj, gt_filter)
+    # user_dict contains things like HET, UNKNOWN, etc. used in the eval.
+    query(db_path, obj, gt_filter, user_dict)
 
 See below for an implementation using bcolz.
 It is using carray rather than ctable because with ctable, we'd be limited to
@@ -22,9 +23,11 @@ samples on ext3. These limits are not an issue for ext4.
 
 """
 
+import os
+import sys
 import sqlite3
 import time
-import os
+import re
 
 import numpy as np
 import bcolz
@@ -84,19 +87,22 @@ def create(db):
     print >>sys.stderr, "loading %i variants for %i samples" % (nv, len(samples))
 
     carrays = {}
-    for name in gt_cols:
-        carrays[name] = []
-        dt = dict(gt_cols_types)[name]
+    for gtc in gt_cols:
+        carrays[gtc] = []
+        dt = dict(gt_cols_types)[gtc]
         for s in samples:
             mkdir("%s/%s" % (bcpath, s))
-            carrays[name].append(bcolz.carray(np.empty(0, dtype=dt),
-                expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, name), mode='w'))
+            carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
+                expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc), mode='w'))
 
     t0 = time.time()
 
+    empty = [-1] * len(samples)
     for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
         for j, gt_col in enumerate(gt_cols):
             vals = decomp(row[j])
+            if vals is None: # empty gt_phred_ll
+                vals = empty
             for isamp, sample in enumerate(samples):
                 carrays[gt_col][isamp].append(vals[isamp])
                 if i % 100 == 0 or i == nv - 1:
@@ -114,14 +120,18 @@ def load(db):
     bcpath = get_bcolz_dir(db)
 
     carrays = {}
-    for name in gt_cols:
-        carrays[name] = []
+    for gtc in gt_cols:
+        carrays[gtc] = []
         for s in samples:
-            carrays[name].append(
-                    bcolz.open("%s/%s/%s" % (bcpath, s, name), mode="r"))
+            carrays[gtc].append(
+                    bcolz.open("%s/%s/%s" % (bcpath, s, gtc), mode="r"))
     return carrays
 
-def query(db, carrays, query):
+def query(db, carrays, query, user_dict):
+    if "any(" in query or "all(" in query:
+        return None
+    if carrays is None:
+        carrays = load(db)
     query = query.replace(".", "__")
     query = " & ".join("(%s)" % token for token in query.split(" and "))
     query = " | ".join("(%s)" % token for token in query.split(" or "))
@@ -130,19 +140,31 @@ def query(db, carrays, query):
     cur = conn.cursor()
     samples = get_samples(cur)
 
-    cache = dict(HOM_REF=0, HET=1, UNKNOWN=2, HOM_ALT=3,
-                 MISSING=None, UNAFFECTED=1, AFFECTED=2)
+    # convert gt_col[index] to gt_col__sample_name
+    patt = "(%s)\[(\d+)\]" % "|".join(carrays.keys())
+
+    def subfn(x):
+        """Turn gt_types[1] into gt_types__sample"""
+        field, idx = x.groups()
+        return "%s__%s" % (field, samples[int(idx)])
+
+    query = re.sub(patt, subfn, query)
+    print >>sys.stderr, query
+
     # loop through and create a cache of "$gt__$sample"
     for gt_col in carrays:
         # if not gt_col in query: continue
         for i, sample_array in enumerate(carrays[gt_col]):
             sample = samples[i]
             # if not sample in query: continue
-            cache["%s__%s" % (gt_col, sample)] = sample_array
+            user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
-    variant_ids, = np.where(bcolz.eval(query, user_dict=cache, vm="numexpr"))
+    variant_ids, = np.where(bcolz.eval(query, user_dict=user_dict, vm="numexpr"))
     # variant ids are 1-based.
-    return 1 + variant_ids
+    if len(variant_ids) > 0:
+        return 1 + variant_ids
+    else:
+        return []
 
 if __name__ == "__main__":
 
@@ -156,7 +178,8 @@ if __name__ == "__main__":
     else:
         q = "gt_types.1094PC0012 == HET and gt_types.1719PC0016 == HET and gts.1094PC0012 == 'A/C'"
 
-    print query(db, carrays, q)
+    print query(db, carrays, q, user_dict=dict(HET=1, HOM_REF=0, HOM_ALT=3,
+        UNKNOWN=2))
     print "compare to:", ("""gemini query -q "select variant_id, gts.1719PC0016 from variants" """
                           """ --gt-filter "%s" %s""" % (q, db))
 
