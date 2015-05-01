@@ -87,16 +87,19 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
     print >>sys.stderr, "loading %i variants for %i samples" % (nv, len(samples))
 
     carrays = {}
-    paths = {}
+    tmps = {}
     for gtc in gt_cols:
         carrays[gtc] = []
-        paths[gtc] = []
+        tmps[gtc] = []
+
         dt = dict(gt_cols_types)[gtc]
         for s in samples:
             mkdir("%s/%s" % (bcpath, s))
             carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
-                expectedlen=nv))
-            paths[gtc].append("%s/%s/%s" % (bcpath, s, gtc))
+                expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc),
+                mode="w"))
+            tmps[gtc].append([])
+
 
     t0 = time.time()
 
@@ -107,15 +110,13 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
             if vals is None: # empty gt_phred_ll
                 vals = empty
             for isamp, sample in enumerate(samples):
-                carrays[gt_col][isamp].append(vals[isamp])
-                if i % 10000 == 0 or i == nv - 1:
-                    carrays[gt_col][isamp].flush()
+                tmps[gt_col][isamp].append(vals[isamp])
+                if i % 20000 == 0 or i == nv - 1:
+                    carrays[gt_col][isamp].append(tmps[gt_col][isamp])
+                    tmps[gt_col][isamp] = []
 
-        if i % 10000 == 0:
-            print >>sys.stderr, "at %i:" % i
-    for gtc in paths:
-        for i, path in enumerate(paths[gtc]):
-            bcolz.carray(carrays[gtc][i], rootdir=paths[gtc][i], mode="w")
+        if i % 20000 == 0:
+            print >>sys.stderr, "at %i" % i
 
     t = float(time.time() - t0)
     print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][isamp]), nv / t)
