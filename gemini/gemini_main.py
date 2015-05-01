@@ -1043,9 +1043,14 @@ def main():
                                 ' database so it can use bcolze for faster '
                                 ' genotype queries.')
     bci.add_argument('db', help='The path of the database to indexed with bcolz.')
+    bci.add_argument('cols', help='list of gt columns to index. default is all')
+
     def bci_fn(parser, args):
         from gemini_bcolz import create
-        create(args.db)
+        if args.cols:
+            create(args.db, [x.strip() for x in args.cols.split(",")])
+        else:
+            create(args.db)
     bci.set_defaults(func=bci_fn)
 
     #########################################
