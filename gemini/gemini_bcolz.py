@@ -116,6 +116,7 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
                 if (i > 0 and i % step == 0) or i == nv - 1:
                     carrays[gt_col][isamp].append(tmps[gt_col][isamp])
                     tmps[gt_col][isamp] = []
+                    carrays[gt_col][isamp].flush()
 
         if i % step == 0 and i > 0:
             print >>sys.stderr, "at %iK (%.1f rows / second)" % (i / 1000, i / float(time.time() - t0))
