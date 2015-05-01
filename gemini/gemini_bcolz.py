@@ -97,12 +97,13 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
             mkdir("%s/%s" % (bcpath, s))
             carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
                 expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc),
+                chunklen=16384*8,
                 mode="w"))
             tmps[gtc].append([])
 
 
     t0 = time.time()
-    step = 20000
+    step = 80000
 
     empty = [-1] * len(samples)
     for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
