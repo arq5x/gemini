@@ -102,6 +102,7 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
 
 
     t0 = time.time()
+    step = 20000
 
     empty = [-1] * len(samples)
     for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
@@ -111,12 +112,12 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
                 vals = empty
             for isamp, sample in enumerate(samples):
                 tmps[gt_col][isamp].append(vals[isamp])
-                if i % 20000 == 0 or i == nv - 1:
+                if (i > 0 and i % step == 0) or i == nv - 1:
                     carrays[gt_col][isamp].append(tmps[gt_col][isamp])
                     tmps[gt_col][isamp] = []
 
-        if i % 20000 == 0:
-            print >>sys.stderr, "at %i" % i
+        if i % step == 0 and i > 0:
+            print >>sys.stderr, "at %i (%.1f rows / second)" % (i, i / float(time.time() - t0))
 
     t = float(time.time() - t0)
     print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][isamp]), nv / t)
