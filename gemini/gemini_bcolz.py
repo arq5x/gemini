@@ -73,7 +73,7 @@ def mkdir(path):
     except OSError:
         pass
 
-def create(db, cols=[x[1] for x in gt_cols_types]):
+def create(db, cols=[x[0] for x in gt_cols_types]):
     conn = sqlite3.connect(db)
     cur = conn.cursor()
     gt_cols = [x for x in get_gt_cols(cur) if x in cols]
@@ -87,13 +87,16 @@ def create(db, cols=[x[1] for x in gt_cols_types]):
     print >>sys.stderr, "loading %i variants for %i samples" % (nv, len(samples))
 
     carrays = {}
+    paths = {}
     for gtc in gt_cols:
         carrays[gtc] = []
+        paths[gtc] = []
         dt = dict(gt_cols_types)[gtc]
         for s in samples:
             mkdir("%s/%s" % (bcpath, s))
             carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
-                expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc), mode='w'))
+                expectedlen=nv))
+            paths[gtc].append("%s/%s/%s" % (bcpath, s, gtc))
 
     t0 = time.time()
 
@@ -105,11 +108,15 @@ def create(db, cols=[x[1] for x in gt_cols_types]):
                 vals = empty
             for isamp, sample in enumerate(samples):
                 carrays[gt_col][isamp].append(vals[isamp])
-                if i % 100 == 0 or i == nv - 1:
+                if i % 10000 == 0 or i == nv - 1:
                     carrays[gt_col][isamp].flush()
 
         if i % 10000 == 0:
             print >>sys.stderr, "at %i:" % i
+    for gtc in paths:
+        for i, path in enumerate(paths[gtc]):
+            bcolz.carray(carrays[gtc][i], rootdir=paths[gtc][i], mode="w")
+
     t = float(time.time() - t0)
     print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][isamp]), nv / t)
 
