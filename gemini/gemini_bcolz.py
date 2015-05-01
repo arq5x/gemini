@@ -73,10 +73,10 @@ def mkdir(path):
     except OSError:
         pass
 
-def create(db):
+def create(db, cols=[x[1] for x in gt_cols_types]):
     conn = sqlite3.connect(db)
     cur = conn.cursor()
-    gt_cols = get_gt_cols(cur)
+    gt_cols = [x for x in get_gt_cols(cur) if x in cols]
     samples = get_samples(cur)
     bcpath = get_bcolz_dir(db)
 
