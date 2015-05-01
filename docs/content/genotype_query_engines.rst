@@ -48,8 +48,17 @@ It can be used from gemini by running::
 
     gemini bcolz_index $db
 
-once to create the bcolz index and then adding `--use-bcolz` to an existing
-gemini query command. e.g.::
+This is easily parallelized by specifying a column per process, e.g.:
+
+     gemini bcolz_index $db --cols gt_types
+
+Which can index nearly 9K variants / second for 17 samples in our testing.
+
+It is recommended to only index the columns you'll be using in the 
+`--gt-filter`.
+
+Indexing is done only once to create the bcolz index.
+After that, add `--use-bcolz` to an existing gemini query command. e.g.::
 
     gemini query -q "select variant_id, gts.1719PC0016 from variants"  \
         --gt-filter "gt_types.1094PC0012 == HET and gt_types.1719PC0016 == HET and gts.1094PC0012 == 'A/C'" \
