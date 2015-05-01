@@ -108,6 +108,8 @@ def create(db):
                 if i % 100 == 0 or i == nv - 1:
                     carrays[gt_col][isamp].flush()
 
+        if i % 10000 == 0:
+            print >>sys.stderr, "at %i:" % i
     t = float(time.time() - t0)
     print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][isamp]), nv / t)
 
@@ -159,6 +161,8 @@ def query(db, carrays, query, user_dict):
             # if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
+    print [x for x in user_dict.keys() if not x.startswith("gt")]
+    print user_dict['sample_info']
     variant_ids, = np.where(bcolz.eval(query, user_dict=user_dict, vm="numexpr"))
     # variant ids are 1-based.
     if len(variant_ids) > 0:
