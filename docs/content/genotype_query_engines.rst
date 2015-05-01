@@ -31,7 +31,7 @@ where `db_path` is the path to the gemini sqlite database, `gt_filter` is
 the genotype query string. user_dict will be pre-filled with things like
 user_dict contains things like HET, UNKNOWN, etc. used in gemini.
 
-The `query` function must a list of variant_ids that meet the specified
+The `query` function must return a list of variant_ids that meet the specified
 filter. If it can not perform the query, it must return `None`.
 
 `gemini` will internally use the returned variant_ids to modifiy the sqlite
