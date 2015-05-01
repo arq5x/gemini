@@ -136,8 +136,9 @@ def load(db):
     for gtc in gt_cols:
         carrays[gtc] = []
         for s in samples:
-            carrays[gtc].append(
-                    bcolz.open("%s/%s/%s" % (bcpath, s, gtc), mode="r"))
+            path = "%s/%s/%s" % (bcpath, s, gtc)
+            if os.path.exists(path):
+                carrays[gtc].append(bcolz.open(path, mode="r"))
     return carrays
 
 def query(db, carrays, query, user_dict):
