@@ -1024,8 +1024,12 @@ class GeminiQuery(object):
 
                 # build the rule based on the wildcard the user has supplied.
                 if wildcard_op in ["all", "any"]:
-                    rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
-
+                    if self.variant_id_getter:
+                        joiner = " and " if wildcard_op == "all" else " or "
+                        rule = ("%s" % joiner).join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = "(" + rule + ")"
+                    else:
+                        rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
                 elif wildcard_op == "none":
                     rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
                 elif "count" in wildcard_op:
