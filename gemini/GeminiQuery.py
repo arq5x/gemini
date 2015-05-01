@@ -20,8 +20,6 @@ from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
-from gemini_bcolz import query as bcolz_query
-
 
 def RowFactory(cursor, row):
     return dict(it.izip((c[0] for c in cursor.description), row))
