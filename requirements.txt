@@ -15,4 +15,5 @@ openpyxl>=1.6.1,<2.0.0
 scipy>=0.12.0
 Unidecode>=0.04.14
 cyordereddict==0.2.2
+bcolz>=0.8.1
 gemini>=0.14.0
