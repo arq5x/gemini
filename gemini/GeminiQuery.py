@@ -602,10 +602,10 @@ class GeminiQuery(object):
                 import time
                 t0 = time.time()
                 vids = self.variant_id_getter(self.db, None, self.gt_filter, user_dict)
-                print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
                 if vids is None:
                     print >>sys.stderr, "bcolz: can't parse this filter (falling back to gemini): %s" % self.gt_filter
                 else:
+                    print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
                     self.add_vids_to_query(vids)
 
         if self.gt_filter:
