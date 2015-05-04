@@ -277,7 +277,7 @@ def _get_cadd_scores(var, labels, hit):
         return raw[pos], scaled[pos]
 
 
-def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
+def annotations_in_region(var, anno, parser_type=None, naming="ucsc", region_only=False):
     """Iterator of annotations found in a genomic region.
 
     - var: PyVCF object or database query with chromosome, start and end.
@@ -285,11 +285,24 @@ def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
             a standard annotation
     - parser_type: string specifying the filetype of the tabix file
     - naming: chromosome naming scheme used, ucsc or grch37
+    - match_var: match variant reference and alternate; only used for VCF annotations
     """
     coords = _get_var_coords(var, naming)
     if isinstance(anno, basestring):
         anno = annos[anno]
-    return _get_hits(coords, anno, parser_type)
+
+    hits = _get_hits(coords, anno, parser_type)
+    if not region_only:
+        # Return only hits where variants match.
+        matched_hits = []
+        for h in hits:
+            fields = h.split('\t')
+            ref, alt = fields[3:5]
+            if var["ref"] == ref and var["alt"] == alt:
+                matched_hits.append(h)
+        hits = matched_hits
+
+    return hits
 
 
 def bigwig_summary(var, anno, naming="ucsc"):
