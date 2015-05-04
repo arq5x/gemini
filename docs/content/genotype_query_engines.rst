@@ -52,7 +52,7 @@ This is easily parallelized by specifying a column per process, e.g.:
 
      gemini bcolz_index $db --cols gt_types
 
-Which can index nearly 9K variants / second for 17 samples in our testing.
+Which can index about 20K variants / second for 17 samples in our testing.
 
 It is recommended to only index the columns you'll be using in the 
 `--gt-filter`.

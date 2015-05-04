@@ -183,8 +183,6 @@ def query(db, carrays, query, user_dict):
             # if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
-    print [x for x in user_dict.keys() if not x.startswith("gt")]
-    print user_dict['sample_info']
     variant_ids, = np.where(bcolz.eval(query, user_dict=user_dict, vm="numexpr"))
     # variant ids are 1-based.
     if len(variant_ids) > 0:
