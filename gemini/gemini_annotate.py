@@ -11,7 +11,7 @@ import numpy as np
 from scipy.stats import mode
 import pysam
 
-from gemini.annotations import annotations_in_region, guess_contig_naming
+from gemini.annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
 from database import database_transaction
 
 def add_requested_columns(args, update_cursor, col_names, col_types=None):
@@ -85,7 +85,7 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
     CHUNK_SIZE = 100000
     to_update = []
 
-    select_cursor.execute('''SELECT chrom, start, end, variant_id FROM variants''')
+    select_cursor.execute('''SELECT chrom, start, end, ref, alt, variant_id FROM variants''')
     while True:
         for row in select_cursor.fetchmany(CHUNK_SIZE):
 
@@ -93,7 +93,10 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
             # be used to populate the new columns for the current row.
             # Prefer no pysam parsing over tuple parsing to work around bug in pysam 0.8.0
             # https://github.com/pysam-developers/pysam/pull/44
-            update_data = get_val_fn(annotations_in_region(row, anno, None, naming))
+            if args.anno_file.endswith(('.vcf', '.vcf.gz')):
+                update_data = get_val_fn(annotations_in_vcf(row, anno, None, naming, args.region_only, True))
+            else:
+                update_data = get_val_fn(annotations_in_region(row, anno, None, naming, args.region_only))
             #update_data = get_val_fn(annotations_in_region(row, anno, "tuple", naming))
             # were there any hits for this row?
             if len(update_data) > 0:
@@ -265,7 +268,6 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
                               col_names, col_types, col_ops)
 
 def annotate(parser, args):
-
     def _validate_args(args):
         if (args.col_operations or args.col_types or args.col_extracts):
             sys.exit('EXITING: You may only specify a column name (-c) when '
@@ -275,6 +277,10 @@ def annotate(parser, args):
         if len(col_names) > 1:
             sys.exit('EXITING: You may only specify a single column name (-c) '
                      'when using \"-a boolean\" or \"-a count\".\n')
+
+        if not args.anno_file.endswith(('.vcf', '.vcf.gz')) and args.region_only:
+            sys.exit('EXITING: You may only specify --region-only when annotation is a VCF.')
+           
         return col_names
 
     def _validate_extract_args(args):
@@ -283,6 +289,9 @@ def annotate(parser, args):
                 args.col_names = args.col_extracts
             elif not args.col_extracts:
                 args.col_extracts = args.col_names
+        elif args.region_only:
+            sys.exit('EXITING: You may only specify --region-only when annotation is a VCF.')
+
         if not args.col_types:
             sys.exit('EXITING: need to give column types ("-t")\n')
         col_ops = args.col_operations.split(',')
