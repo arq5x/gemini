@@ -264,6 +264,25 @@ def _get_var_coords(var, naming):
         chrom = _get_chr_as_grch37(chrom)
     return chrom, start, end
 
+def _get_var_ref_and_alt(var):
+    """Retrieve variant reference and alternate alleles from multiple input objects.
+    """
+    if isinstance(var, basestring):
+        # Assume var is a line from a VCF. 
+        ref, alt = var.split('\t')[3:5]
+    elif isinstance(var, dict) or isinstance(var, sqlite3.Row):
+        ref = var["ref"]
+        alt = var["alt"]
+    else:
+        try:
+            ref = var.REF
+            alt = var.ALT
+        except KeyError:
+            # For Pysam reader:
+            ref = var.ref
+            alt = var.alt
+    return ref, alt
+
 def _get_cadd_scores(var, labels, hit):
     """
     get cadd scores
@@ -290,6 +309,77 @@ def annotations_in_region(var, anno, parser_type=None, naming="ucsc"):
     if isinstance(anno, basestring):
         anno = annos[anno]
     return _get_hits(coords, anno, parser_type)
+
+def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=False, warnings=False):
+    """Iterator of annotations found in a VCF. For variants with multiple alleles,
+       match using intersection and warn that decomposition, etc. is recommended.
+
+    - var: PyVCF object or database query with chromosome, start and end.
+    - anno: pysam Tabix annotation file or string to reference
+            a standard annotation
+    - parser_type: string specifying the filetype of the tabix file
+    - naming: chromosome naming scheme used, ucsc or grch37
+    - region_only: match using only region coordinates, not variant reference 
+                   and alternate; only used for VCF annotations
+    """
+
+    # Get hits by region only.
+    coords = _get_var_coords(var, naming)
+    if isinstance(anno, basestring):
+        anno = annos[anno]
+    hits = _get_hits(coords, anno, parser_type)
+
+    # Now filter by allele.
+    if not region_only:
+        def multiallele_warning(chrom, start, alt, is_annotation):
+            """
+            Print warnings for multi-allelic sites and recommend decomposition, etc.
+            """
+
+            # Check for multiple alleles and warnings flag.
+            if not warnings:
+                return
+            if len(alt) == 1:
+                return
+
+            variant_text = 'variant'
+            if is_annotation:
+                variant_text = 'annotation variant'
+
+            sys.stderr.write("warning: %s with multiple alternate alleles found at %s:%i (alt: %s)\n"
+                             "in order to reduce the number of false negatives we recommend splitting multiple alts. see:\n"
+                             "http://gemini.readthedocs.org/en/latest/content/preprocessing.html#preprocess\n"
+                             % (variant_text, chrom, start, ','.join(alt) ) )
+
+        # Get variant ref, alt.
+        var_ref, var_alt = _get_var_ref_and_alt(var)
+        var_alt = set(var_alt)
+
+        # Warn for multiple alleles.
+        chrom, start, end = coords
+        multiallele_warning(chrom, start, ','.join(var_alt), False)
+        
+        # Filter hits to those that match ref and alt.
+        matched_hits = []
+        for h in hits:
+            # Get annotation fields.
+            anno_ref, anno_alt = _get_var_ref_and_alt(h)
+            anno_alt = set( anno_alt )
+
+            # Warn for multiple alleles.
+            if isinstance(h, basestring):
+                start = int( h.split('\t')[1] )
+            else:
+                # Assume it's a Pysam entry.
+                start = h.pos
+            multiallele_warning(chrom, start - 1, anno_alt, True)
+
+            # Match via ref and set intersection of alternates.
+            if var_ref == anno_ref and len(var_alt & anno_alt) >= 1:
+                matched_hits.append(h)
+        hits = matched_hits
+
+    return hits
 
 
 def bigwig_summary(var, anno, naming="ucsc"):
@@ -453,7 +543,7 @@ def get_cosmic_info(var):
     """
     # report the first overlapping ClinVar variant Most often, just one).
     cosmic_ids = []
-    for hit in annotations_in_region(var, "cosmic", "vcf", "grch37"):
+    for hit in annotations_in_vcf(var, "cosmic", "vcf", "grch37"):
         cosmic_ids.append(hit.id)
     return ",".join(cosmic_ids) if len(cosmic_ids) > 0 else None
 
@@ -481,7 +571,7 @@ def get_clinvar_info(var):
     clinvar = ClinVarInfo()
 
     # report the first overlapping ClinVar variant Most often, just one).
-    for hit in annotations_in_region(var, "clinvar", "vcf", "grch37"):
+    for hit in annotations_in_vcf(var, "clinvar", "vcf", "grch37"):
         # load each VCF INFO key/value pair into a DICT
         info_map = {}
         for info in hit.info.split(";"):
@@ -544,7 +634,7 @@ def get_dbsnp_info(var):
     Returns a suite of annotations from dbSNP
     """
     rs_ids = []
-    for hit in annotations_in_region(var, "dbsnp", "vcf", "grch37"):
+    for hit in annotations_in_vcf(var, "dbsnp", "vcf", "grch37"):
         rs_ids.append(hit.id)
     return ",".join(rs_ids) if len(rs_ids) > 0 else None
 
@@ -565,7 +655,7 @@ def get_esp_info(var):
     found = False
     info_map = {}
     acs = {}
-    for hit in annotations_in_region(var, "esp", "vcf", "grch37"):
+    for hit in annotations_in_vcf(var, "esp", "vcf", "grch37"):
         if hit.contig not in ['Y']:
             fetched.append(hit)
             # We need a single ESP entry for a variant
@@ -614,7 +704,7 @@ def get_1000G_info(var, empty=EMPTY_1000G):
     #fetched = []
     info_map = {}
 
-    for hit in annotations_in_region(var, "1000g", "vcf", "grch37"):
+    for hit in annotations_in_vcf(var, "1000g", "vcf", "grch37"):
         # We need to ensure we are dealing with the exact sample variant
         # based on position and the alleles present.
         # var.start is used since the chromosomal pos in pysam.asVCF is zero based (hit.pos)
@@ -641,7 +731,7 @@ def get_exac_info(var, empty=EXAC_EMTPY):
 
     info_map = {}
     afs = {}
-    for hit in annotations_in_region(var,"exac", "vcf", "grch37"):
+    for hit in annotations_in_vcf(var,"exac", "vcf", "grch37"):
         # Does not handle anything beyond var.ALT[0] in the VCF (in case of multi-allelic variants)
         # var.start is used since the chromosomal pos in pysam.asVCF is zero based (hit.pos)
         # and would be equivalent to (POS-1) i.e var.start
@@ -763,7 +853,7 @@ def get_gms(var):
     """
     techs = ["illumina", "solid", "iontorrent"]
     hit = _get_first_vcf_hit(
-        annotations_in_region(var, "gms", "vcf", "grch37"))
+        annotations_in_vcf(var, "gms", "vcf", "grch37"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
     return apply(GmsTechs,
                  [attr_map.get("GMS_{0}".format(x), None) for x in techs])
