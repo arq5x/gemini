@@ -378,9 +378,6 @@ class SampleDetailRowFormat(RowFormat):
         return "\t".join(fields + self.cols)
 
 class GeminiRow(object):
-    gt_cols = ('gts', 'gt_types', 'gt_phases', 'gt_depths', 'gt_ref_depths',
-               'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',
-               'gt_phred_ll_homref', 'gt_phred_ll_het', "gt_phred_ll_homalt",)
     __slots__ = ('cache', 'genotype_dict', 'row', 'formatter', 'query',
                 'print_fields')
 
@@ -391,7 +388,7 @@ class GeminiRow(object):
         self.genotype_dict = {}
         self.row = getattr(row, "row", row)
         self.cache = getattr(row, "cache", {})
-        self.genotype_dict = getattr(row, "genotype_dict", None)
+        self.genotype_dict = getattr(row, "genotype_dict", {})
 
         # for the eval.
         #self.cache['sample_info'] = dict(query.sample_info)
@@ -424,9 +421,9 @@ class GeminiRow(object):
             if 'info' not in self.cache:
                 self.cache['info'] = compression.unpack_ordereddict_blob(self.row['info'])
             return self.cache['info']
-        if key not in self.gt_cols:
+        if key not in self.query.gt_cols:
             return self.row[key]
-        elif key in self.gt_cols:
+        elif key in self.query.gt_cols:
             if key not in self.cache:
                 self.cache[key] = compression.unpack_genotype_blob(self.row[key])
             return self.cache[key]
@@ -523,6 +520,9 @@ class GeminiQuery(object):
 
         # try to connect to the provided database
         self._connect_to_database()
+
+        # save the gt_cols in the database and don't hard-code them anywhere.
+        self.gt_cols = util.get_gt_cols(self.conn)
 
         # extract the column names from the sample table.
         # needed for gt-filter wildcard support.
@@ -704,7 +704,7 @@ class GeminiQuery(object):
                 try:
                     if 'False' == self.gt_filter: continue
                     unpacked = {'sample_info': self.sample_info}
-                    for col in row.gt_cols:
+                    for col in self.gt_cols:
                         if col in self.gt_filter:
                             unpacked[col] = row[col]
 
@@ -830,12 +830,7 @@ class GeminiQuery(object):
             return False
 
         # make sure a "gt" col is in the string
-        valid_cols = ["gts.", "gt_types.", "gt_phases.", "gt_quals.",
-                      "gt_depths.", "gt_ref_depths.", "gt_alt_depths.", "gt_copy_numbers.",
-                      "gt_phred_ll_homref", "gt_phred_ll_het", "gt_phred_ll_homalt",
-                      "(gts).", "(gt_types).", "(gt_phases).", "(gt_quals).", "(gt_copy_numbers).",
-                      "(gt_phred_ll_homref).", "(gt_phred_ll_het).", "(gt_phred_ll_homalt).",
-                      "(gt_depths).", "(gt_ref_depths).", "(gt_alt_depths)."]
+        valid_cols = list(flatten(("%s." % gtc, "(%s)." % gtc) for gtc in self.gt_cols))
         if any(s in self.gt_filter for s in valid_cols):
             return True
 
@@ -1078,9 +1073,7 @@ class GeminiQuery(object):
         # reconstruct the query with the GT* columns added
         select_clause = (", ".join(select_clause_list)).strip()
         if select_clause: select_clause += ","
-        select_clause += (" gts, gt_types, gt_phases, gt_depths, "
-                          " gt_ref_depths, gt_alt_depths, gt_quals, gt_copy_numbers, "
-                          " gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt ")
+        select_clause += ",".join(self.gt_cols)
 
         self.query = "select %s %s" % (select_clause, rest_of_query)
 

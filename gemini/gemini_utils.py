@@ -9,6 +9,18 @@ try:
 except ImportError:
     from collections import OrderedDict
 
+def get_gt_cols(cur):
+    keys = ('cid', 'name', 'type', '_', '_', '_')
+    gts = []
+    for row in cur.execute("pragma table_info(variants)"):
+        if not isinstance(row, dict):
+            d = dict(zip(keys, row))
+        else:
+            d = row
+        if d['name'][:2] == 'gt' and d['type'] == 'blob':
+            gts.append(d['name'])
+    return gts
+
 def map_samples_to_indices(c):
     """Return a dict mapping samples names (key)
        to sample indices in the numpy genotype arrays (value).

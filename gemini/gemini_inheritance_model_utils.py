@@ -23,10 +23,6 @@ def get_prob(family_gt_lls, row):
 
 class GeminiInheritanceModelFactory(object):
 
-    gt_cols = ('gts', 'gt_types', 'gt_phases', 'gt_depths', 'gt_ref_depths',
-               'gt_alt_depths', 'gt_quals', 'gt_phred_ll_homref',
-               'gt_phred_ll_het', 'gt_phred_ll_homalt')
-
     # https://github.com/arq5x/gemini/pull/436
     required_columns = ("family_id", "family_members",
                         "family_genotypes", "samples", "family_count")
@@ -34,12 +30,15 @@ class GeminiInheritanceModelFactory(object):
     def __init__(self, args, model):
 
         # default to all genotype columns and all columns
-        if not args.columns:
-            args.columns = "*," + ", ".join(self.gt_cols)
 
         self.args = args
         self.model = model
         self.gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True)
+
+        self.gt_cols = self.gq.gt_cols
+
+        if not args.columns:
+            args.columns = "*," + ", ".join(self.gt_cols)
 
     def get_candidates(self):
         """
@@ -89,7 +88,8 @@ class GeminiInheritanceModelFactory(object):
                 for k in ('gt_types', 'gts', 'gt_depths'):
                     e[k] = row[k]
 
-                if self.model == "mendel_violations":
+                if self.model == "mendel_violations" and \
+                                 "gt_phred_ll_homref" in self.gt_cols:
                     prob = get_prob(family_gt_lls, row)
                     violation += ("\t%.3f" % prob)
 
@@ -105,12 +105,12 @@ class GeminiInheritanceModelFactory(object):
                     affected_samples = self.get_samples(gt_cols, gt_lbls)
 
                 print str(row) + "\t%s\t%s\t%s\t%s\t%i%s" % (
-                             family_id,
-                             ",".join(gt_lbls),
-                             ",".join(gt_cols),
-                             ",".join(affected_samples),
-                             fam_counts_by_variant[variant_id],
-                             ("\t" + violation + comp_het).rstrip())
+                    family_id,
+                    ",".join(gt_lbls),
+                    ",".join(gt_cols),
+                    ",".join(affected_samples),
+                    fam_counts_by_variant[variant_id],
+                    ("\t" + violation + comp_het).rstrip())
 
     def get_samples(self, gts, lbls, splitter=re.compile("\/|\|"), model=None):
         """Hack..."""
@@ -178,7 +178,8 @@ class GeminiInheritanceModelFactory(object):
                 self.family_gt_columns.append(family.get_genotype_columns())
                 self.family_dp_columns.append(family.get_genotype_depths())
                 self.family_ids.append(family.family_id)
-                if self.model == "mendel_violations":
+                if self.model == "mendel_violations": #and \
+                    #self.args.gt_phred_ll is not None:
                     self.family_gt_phred_lls.append(family.get_genotype_lls())
 
     def _construct_query(self):
@@ -190,11 +191,8 @@ class GeminiInheritanceModelFactory(object):
             self.query = "SELECT " + str(self.args.columns) + " FROM variants "
         else:
             # report the kitchen sink
-            self.query = "SELECT chrom, start, end, * \
-                    , gts, gt_types, gt_phases, gt_depths, \
-                    gt_ref_depths, gt_alt_depths, gt_quals, \
-                    gt_phred_ll_homref, gt_phred_ll_het, gt_phred_ll_homalt \
-                    FROM variants "
+            self.query = "SELECT chrom, start, end, * %s " \
+                + "FROM variants" % ", ".join(self.gt_cols)
 
         # add any non-genotype column limits to the where clause
         if self.args.filter:
@@ -262,8 +260,9 @@ class GeminiInheritanceModelFactory(object):
                 # interrogate the genotypes present in each family member to
                 # conforming to the genetic model being tested
                 e = {}
-                for c in ('gt_types', 'gts', 'gt_depths', 'gt_phred_ll_homalt',
-                          'gt_phred_ll_het', 'gt_phred_ll_homref'):
+                for c in (cc for cc in ('gt_types', 'gts', 'gt_depths', 'gt_phred_ll_homalt',
+                          'gt_phred_ll_het', 'gt_phred_ll_homref')
+                          if cc in self.gt_cols):
                     e[c] = row[c]
 
 
@@ -349,7 +348,10 @@ class GeminiInheritanceModelFactory(object):
                 # for this family
                 violations = []
                 if self.model == "mendel_violations":
-                    family_gt_phred_lls = self.family_gt_phred_lls[idx]
+                    try:
+                        family_gt_phred_lls = self.family_gt_phred_lls[idx]
+                    except IndexError:
+                        family_gt_phred_lls = {}
                     for violation, mask in family_genotype_mask.items():
                         if eval(mask, cols):
                             violations.append(violation)

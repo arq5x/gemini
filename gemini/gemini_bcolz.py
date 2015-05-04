@@ -35,16 +35,8 @@ import bcolz
 bcolz.blosc_set_nthreads(2)
 
 import compression
+from gemini_utils import get_gt_cols
 decomp = compression.unpack_genotype_blob
-
-def get_gt_cols(cur):
-    keys = ('col_num', 'col_name', 'col_type', '_', '_', '_')
-    gts = []
-    for row in cur.execute("pragma table_info(variants)"):
-        d = dict(zip(keys, row))
-        if d['col_name'][:2] == 'gt' and d['col_type'] == 'blob':
-            gts.append(d['col_name'])
-    return gts
 
 def get_samples(cur):
     return [x[0] for x in cur.execute("select name from samples")]
