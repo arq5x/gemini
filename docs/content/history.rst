@@ -10,7 +10,11 @@ Release History
 4. Support for multi-generational families.
 5. Attempt to provide better backwards compatibility.
 6. Continue to improve performance (see genotype query engine docs).
-7. Use optional external index to speed genotype queries.
+
+x. Use optional external index to speed genotype queries.
+x. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
+x. Faster queries due to lazy loading of genotype columns.
+x. Read gt\* columns from the database for better backward compatibility.
 
 0.14.0 
 =======================================

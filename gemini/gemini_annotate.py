@@ -62,7 +62,7 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
 
 def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, col_ops=None):
     """Generalized annotation of variants with a new column.
-    
+
     get_val_fn takes a list of annotations in a region and returns
     the value for that region to update the database with.
 
@@ -96,7 +96,7 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
             if args.anno_file.endswith(('.vcf', '.vcf.gz')):
                 update_data = get_val_fn(annotations_in_vcf(row, anno, None, naming, args.region_only, True))
             else:
-                update_data = get_val_fn(annotations_in_region(row, anno, None, naming, args.region_only))
+                update_data = get_val_fn(annotations_in_region(row, anno, None, naming))
             #update_data = get_val_fn(annotations_in_region(row, anno, "tuple", naming))
             # were there any hits for this row?
             if len(update_data) > 0:
@@ -212,7 +212,7 @@ def fix_val(val, type):
         return fn(val)
     except ValueError:
         sys.exit('Non %s value found in annotation file: %s\n' % (type, val))
-    
+
 def get_hit_list(hits, col_idxs, args):
     hits = list(hits)
     if len(hits) == 0:
@@ -278,9 +278,9 @@ def annotate(parser, args):
             sys.exit('EXITING: You may only specify a single column name (-c) '
                      'when using \"-a boolean\" or \"-a count\".\n')
 
-        if not args.anno_file.endswith(('.vcf', '.vcf.gz')) and args.region_only:
+        if not args.anno_file.endswith(('.vcf', '.vcf.gz')) and args.region_only and parser is not None:
             sys.exit('EXITING: You may only specify --region-only when annotation is a VCF.')
-           
+
         return col_names
 
     def _validate_extract_args(args):
@@ -289,8 +289,8 @@ def annotate(parser, args):
                 args.col_names = args.col_extracts
             elif not args.col_extracts:
                 args.col_extracts = args.col_names
-        elif args.region_only:
-            sys.exit('EXITING: You may only specify --region-only when annotation is a VCF.')
+        elif args.region_only and parser is not None:
+            sys.exit('EXITING: You may only specify --region-only when annotation is a VCF.1')
 
         if not args.col_types:
             sys.exit('EXITING: need to give column types ("-t")\n')
@@ -361,7 +361,7 @@ def annotate(parser, args):
 
 # ## Automate addition of extra fields to database
 
-def add_extras(gemini_db, chunk_dbs):
+def add_extras(gemini_db, chunk_dbs, region_only):
     """Annotate gemini database with extra columns from processed chunks, if available.
     """
     extra_files = []
@@ -377,10 +377,11 @@ def add_extras(gemini_db, chunk_dbs):
         ops = ["first" for t in types]
         extra_beds = [_json_to_bed(x, header) for x in extra_files]
         final_bed = _merge_beds(extra_beds, gemini_db)
-        Args = namedtuple("Args", "db,anno_file,anno_type,col_operations,col_names,col_types,col_extracts")
+        Args = namedtuple("Args", "db,anno_file,anno_type,col_operations,col_names,col_types,col_extracts,region_only")
         args = Args(gemini_db, final_bed, "extract", ",".join(ops),
                     ",".join(header), ",".join(types),
-                    ",".join([str(i + 4) for i in range(len(header))]))
+                    ",".join([str(i + 4) for i in range(len(header))]),
+                    region_only)
         annotate(None, args)
         for fname in extra_beds + [final_bed, final_bed + ".tbi"] + header_files + extra_files:
             if os.path.exists(fname):

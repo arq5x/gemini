@@ -173,7 +173,6 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
-
     def load_fn(parser, args):
         import gemini_load
         gemini_load.load(parser, args)
@@ -265,7 +264,9 @@ def main():
                          help='Load in test mode (faster)',
                          default=False)
     parser_loadchunk.add_argument('--tempdir', dest='tempdir',
-                        default=tempfile.gettempdir(), help='<TODO add help>')
+                                  default=tempfile.gettempdir(),
+                                  help='temporary dir for loading')
+
     def loadchunk_fn(parser, args):
         import gemini_load_chunk
         gemini_load_chunk.load(parser, args)
