@@ -28,6 +28,7 @@ import sys
 import sqlite3
 import time
 import re
+import shutil
 
 import numpy as np
 import bcolz
@@ -88,41 +89,50 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
 
     carrays = {}
     tmps = {}
-    for gtc in gt_cols:
-        carrays[gtc] = []
-        tmps[gtc] = []
+    try:
+        for gtc in gt_cols:
+            carrays[gtc] = []
+            tmps[gtc] = []
 
-        dt = dict(gt_cols_types)[gtc]
-        for s in samples:
-            mkdir("%s/%s" % (bcpath, s))
-            carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
-                expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc),
-                chunklen=16384*8,
-                mode="w"))
-            tmps[gtc].append([])
+            dt = dict(gt_cols_types)[gtc]
+            for s in samples:
+                mkdir("%s/%s" % (bcpath, s))
+                carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
+                    expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc),
+                    chunklen=16384*8,
+                    mode="w"))
+                tmps[gtc].append([])
 
 
-    t0 = time.time()
-    step = 100000
+        t0 = time.time()
+        step = 200000
 
-    empty = [-1] * len(samples)
-    for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
-        for j, gt_col in enumerate(gt_cols):
-            vals = decomp(row[j])
-            if vals is None: # empty gt_phred_ll
-                vals = empty
-            for isamp, sample in enumerate(samples):
-                tmps[gt_col][isamp].append(vals[isamp])
-                if (i > 0 and i % step == 0) or i == nv - 1:
-                    carrays[gt_col][isamp].append(tmps[gt_col][isamp])
-                    tmps[gt_col][isamp] = []
-                    carrays[gt_col][isamp].flush()
+        empty = [-1] * len(samples)
+        for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
+            for j, gt_col in enumerate(gt_cols):
+                vals = decomp(row[j])
+                if vals is None: # empty gt_phred_ll
+                    vals = empty
+                for isamp, sample in enumerate(samples):
+                    tmps[gt_col][isamp].append(vals[isamp])
+                    if (i > 0 and i % step == 0) or i == nv - 1:
+                        carrays[gt_col][isamp].append(tmps[gt_col][isamp])
+                        tmps[gt_col][isamp] = []
+                        carrays[gt_col][isamp].flush()
 
-        if i % step == 0 and i > 0:
-            print >>sys.stderr, "at %iK (%.1f rows / second)" % (i / 1000, i / float(time.time() - t0))
+            if i % step == 0 and i > 0:
+                print >>sys.stderr, "at %.1fM (%.0f rows / second)" % (i / 1000000., i / float(time.time() - t0))
 
-    t = float(time.time() - t0)
-    print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][isamp]), nv / t)
+        t = float(time.time() - t0)
+        print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][isamp]), nv / t)
+    except:
+        # on error, we remove the dirs so we can't have weird problems.
+        for k, li in carrays.items():
+            for ca in li:
+                print >>sys.stderr, "removing:", ca.rootdir
+                ca.flush()
+                shutil.rmtree(ca.rootdir)
+        raise
 
 def load(db):
     conn = sqlite3.connect(db)
