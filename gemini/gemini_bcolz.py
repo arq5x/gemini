@@ -117,7 +117,7 @@ def create(db, cols=[x[0] for x in gt_cols_types]):
                 print >>sys.stderr, "at %.1fM (%.0f rows / second)" % (i / 1000000., i / float(time.time() - t0))
 
         t = float(time.time() - t0)
-        print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][isamp]), nv / t)
+        print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][0]), nv / t)
     except:
         # on error, we remove the dirs so we can't have weird problems.
         for k, li in carrays.items():
@@ -145,7 +145,7 @@ def load(db):
     return carrays
 
 def query(db, carrays, query, user_dict):
-    if "any(" in query or "all(" in query:
+    if "any(" in query or "all(" in query or "sum(" in query:
         return None
     if carrays is None:
         carrays = load(db)
@@ -176,9 +176,12 @@ def query(db, carrays, query, user_dict):
             # if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
-    #variant_ids, = np.where(bcolz.eval(query, user_dict=user_dict, vm="numexpr"))
-    variant_ids = np.array(list(bcolz.eval(query, user_dict=user_dict,
-        vm="numexpr").wheretrue()))
+    res = bcolz.eval(query, user_dict=user_dict, vm="numexpr")
+    if res.shape[0] == 1 and len(res.shape) > 1:
+        res = res[0]
+    variant_ids, = np.where(res)
+    #variant_ids = np.array(list(bcolz.eval(query, user_dict=user_dict,
+    #    vm="numexpr").wheretrue()))
     # variant ids are 1-based.
     if len(variant_ids) > 0:
         return 1 + variant_ids
