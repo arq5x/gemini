@@ -65,6 +65,14 @@ After that, add `--use-bcolz` to an existing gemini query command. e.g.::
         --use-bcolz \
         test/test.query.db 
 
+
 This query will return identical results with or without using bcolz. It is likely
 only faster to use `bcolz` on complex queries that are slow with the default gemini
 apparatus.
+
+.. note ::
+
+    indexing the 'gts' column will be much slower (only about 350 variants per second instead of
+    up to 25K per second) as it must be stored as an object rather than a fixed-size numeric type.
+    It will be a much larger index. So only create an index on 'gts' if necessary.
+

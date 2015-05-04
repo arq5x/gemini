@@ -9,7 +9,8 @@ Release History
 3. Add an `is_splicing` column.
 4. Support for multi-generational families.
 5. Attempt to provide better backwards compatibility.
-6. Continue to improve performance.
+6. Continue to improve performance (see genotype query engine docs).
+7. Use optional external index to speed genotype queries.
 
 0.14.0 
 =======================================
