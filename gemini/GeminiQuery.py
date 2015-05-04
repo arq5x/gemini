@@ -381,23 +381,20 @@ class GeminiRow(object):
     gt_cols = ('gts', 'gt_types', 'gt_phases', 'gt_depths', 'gt_ref_depths',
                'gt_alt_depths', 'gt_quals', 'gt_copy_numbers',
                'gt_phred_ll_homref', 'gt_phred_ll_het', "gt_phred_ll_homalt",)
+    __slots__ = ('cache', 'genotype_dict', 'row', 'formatter', 'query',
+                'print_fields')
 
     def __init__(self, row, query, formatter=DefaultRowFormat(None), print_fields=None):
         # row can be a dict() from the database or another GeminiRow (from the
         # same db entry). we try to re-use the cached stuff if possible.
         self.cache = {}
         self.genotype_dict = {}
-        if hasattr(row, "row"):
-            self.row = row.row
-        else:
-            self.row = row
-        if hasattr(row, "cache"):
-            self.cache = row.cache
-        if hasattr(row, "genotype_dict"):
-            self.genotype_dict = row.genotype_dict
+        self.row = getattr(row, "row", row)
+        self.cache = getattr(row, "cache", {})
+        self.genotype_dict = getattr(row, "genotype_dict", None)
 
         # for the eval.
-        self.cache['sample_info'] = dict(query.sample_info)
+        #self.cache['sample_info'] = dict(query.sample_info)
 
         self.formatter = formatter
         self.query = query
@@ -542,7 +539,6 @@ class GeminiQuery(object):
         self.sample_to_sample_object = util.map_samples_to_sample_objects(self.c)
         self.formatter = out_format
         self.predicates = [self.formatter.predicate]
-
         self.sample_show_fields = ["variant_samples", "het_samples", "hom_alt_samples"]
 
     def _set_gemini_browser(self, for_browser):
@@ -599,13 +595,16 @@ class GeminiQuery(object):
         if self.gt_filter:
             # here's how we use the fast
             if self.variant_id_getter:
-                print >>sys.stderr, "using bcolz index"
+                print >>sys.stderr, "bcolz: using index"
                 user_dict = dict(HOM_REF=0, HET=1, UNKNOWN=2, HOM_ALT=3,
                                 sample_info=self.sample_info,
                                  MISSING=None, UNAFFECTED=1, AFFECTED=2)
+                import time
+                t0 = time.time()
                 vids = self.variant_id_getter(self.db, None, self.gt_filter, user_dict)
+                print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
                 if vids is None:
-                    print >>sys.stderr, "can't use bcolz for this filter: %s" % self.gt_filter
+                    print >>sys.stderr, "bcolz: can't parse this filter (falling back to gemini): %s" % self.gt_filter
                 else:
                     self.add_vids_to_query(vids)
 
@@ -619,7 +618,10 @@ class GeminiQuery(object):
         return self
 
     def add_vids_to_query(self, vids):
-        extra = " variant_id IN (%s)" % ",".join(map(str, vids))
+        #extra = " variant_id IN (%s)" % ",".join(map(str, vids))
+        # faster way to convert to string.
+        # http://stackoverflow.com/a/13861407
+        extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
         if " where " in self.query.lower():
             extra = " and " + extra
         else:
@@ -627,7 +629,7 @@ class GeminiQuery(object):
         # don't adjust the query if we
         if len(self.query) + len(extra) + 8 < 1000000:
             match = re.search(" (limit \d+)\s*", self.query,
-                              flags=re.I | re.DOTALL |re.MULTILINE)
+                              flags=re.I | re.DOTALL | re.MULTILINE)
             if match:
                 self.query = self.query.replace(match.group(), " ") + extra + " " + match.group()
             else:

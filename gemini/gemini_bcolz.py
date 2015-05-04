@@ -32,6 +32,7 @@ import shutil
 
 import numpy as np
 import bcolz
+bcolz.blosc_set_nthreads(2)
 
 import compression
 decomp = compression.unpack_genotype_blob
@@ -183,7 +184,9 @@ def query(db, carrays, query, user_dict):
             # if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
-    variant_ids, = np.where(bcolz.eval(query, user_dict=user_dict, vm="numexpr"))
+    #variant_ids, = np.where(bcolz.eval(query, user_dict=user_dict, vm="numexpr"))
+    variant_ids = np.array(list(bcolz.eval(query, user_dict=user_dict,
+        vm="numexpr").wheretrue()))
     # variant ids are 1-based.
     if len(variant_ids) > 0:
         return 1 + variant_ids
