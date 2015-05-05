@@ -3,6 +3,7 @@
 # platform: linux-64
 bx-python=0.7.2=np18py27_1
 conda=3.5.5=py27_0
+cython=0.20.1=py27_0
 dateutil=2.1=py27_2
 ipython=2.1.0=py27_2
 jinja2=2.7.2=py27_0
