@@ -43,3 +43,5 @@ test/obs
 
 # emacs temporary file
 .#*
+
+test/*.gts/

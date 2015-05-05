@@ -268,7 +268,7 @@ def _get_var_ref_and_alt(var):
     """Retrieve variant reference and alternate alleles from multiple input objects.
     """
     if isinstance(var, basestring):
-        # Assume var is a line from a VCF. 
+        # Assume var is a line from a VCF.
         ref, alt = var.split('\t')[3:5]
     elif isinstance(var, dict) or isinstance(var, sqlite3.Row):
         ref = var["ref"]
@@ -281,6 +281,9 @@ def _get_var_ref_and_alt(var):
             # For Pysam reader:
             ref = var.ref
             alt = var.alt
+
+    if isinstance(alt, basestring):
+        alt = alt.split(",")
     return ref, alt
 
 def _get_cadd_scores(var, labels, hit):
@@ -319,7 +322,7 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
             a standard annotation
     - parser_type: string specifying the filetype of the tabix file
     - naming: chromosome naming scheme used, ucsc or grch37
-    - region_only: match using only region coordinates, not variant reference 
+    - region_only: match using only region coordinates, not variant reference
                    and alternate; only used for VCF annotations
     """
 
@@ -349,7 +352,7 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
             sys.stderr.write("warning: %s with multiple alternate alleles found at %s:%i (alt: %s)\n"
                              "in order to reduce the number of false negatives we recommend splitting multiple alts. see:\n"
                              "http://gemini.readthedocs.org/en/latest/content/preprocessing.html#preprocess\n"
-                             % (variant_text, chrom, start, ','.join(alt) ) )
+                             % (variant_text, chrom, start, ','.join(alt)))
 
         # Get variant ref, alt.
         var_ref, var_alt = _get_var_ref_and_alt(var)
@@ -358,24 +361,26 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
         # Warn for multiple alleles.
         chrom, start, end = coords
         multiallele_warning(chrom, start, ','.join(var_alt), False)
-        
+
         # Filter hits to those that match ref and alt.
         matched_hits = []
         for h in hits:
             # Get annotation fields.
             anno_ref, anno_alt = _get_var_ref_and_alt(h)
-            anno_alt = set( anno_alt )
+            anno_alt = set(anno_alt)
 
             # Warn for multiple alleles.
             if isinstance(h, basestring):
-                start = int( h.split('\t')[1] )
+                start = int(h.split('\t', 1)[1])
             else:
                 # Assume it's a Pysam entry.
                 start = h.pos
             multiallele_warning(chrom, start - 1, anno_alt, True)
 
             # Match via ref and set intersection of alternates.
-            if var_ref == anno_ref and len(var_alt & anno_alt) >= 1:
+            # the mappability uses "." as the alt for all rows. so
+            if var_ref == anno_ref and (len(var_alt & anno_alt) >= 1 \
+                    or anno_alt == set(".")):
                 matched_hits.append(h)
         hits = matched_hits
 

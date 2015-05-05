@@ -74,18 +74,11 @@ class CompoundHet(Factory):
         # we need to add the variant's chrom, start and gene if
         # not already there.
         self.added = []
-        if custom_columns.find("gene") < 0:
-            custom_columns += ", gene"
-            self.added.append("gene")
-        if custom_columns.find("start") < 0:
-            custom_columns += ", start"
-            self.added.append("start")
-        if custom_columns.find("alt") < 0:
-            custom_columns += ", alt"
-            self.added.append("alt")
-        if custom_columns.find("variant_id") < 0:
-            custom_columns += ", variant_id"
-
+        for col in ("gene", "start", "alt", "variant_id"):
+            if custom_columns.find(col) < 0:
+                custom_columns += "," + col
+                if col != "variant_id":
+                    self.added.append(col)
         return custom_columns
 
     def find_valid_het_pairs(self, sample_hets):

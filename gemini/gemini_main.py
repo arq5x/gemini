@@ -173,7 +173,6 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
-
     def load_fn(parser, args):
         import gemini_load
         gemini_load.load(parser, args)
@@ -265,7 +264,9 @@ def main():
                          help='Load in test mode (faster)',
                          default=False)
     parser_loadchunk.add_argument('--tempdir', dest='tempdir',
-                        default=tempfile.gettempdir(), help='<TODO add help>')
+                                  default=tempfile.gettempdir(),
+                                  help='temporary dir for loading')
+
     def loadchunk_fn(parser, args):
         import gemini_load_chunk
         gemini_load_chunk.load(parser, args)
@@ -373,6 +374,12 @@ def main():
                               action='store_true',
                               help='Request drug-gene interaction info from DGIdb.',
                               default=False)
+    parser_query.add_argument('--use-bcolz',
+                              dest='bcolz',
+                              action='store_true',
+                              help='use a (previously created) bcolz index to speed genotype queries',
+                              default=False)
+
     def query_fn(parser, args):
         import gemini_query
         gemini_query.query(parser, args)
@@ -1030,6 +1037,22 @@ def main():
         run(parser, args)
     parser_hom_run.set_defaults(func=homozygosity_runs_fn)
 
+    #########################################
+    # bcolz indexing
+    #########################################
+    bci = subparsers.add_parser('bcolz_index', help='index an existing gemini'
+                                ' database so it can use bcolze for faster '
+                                ' genotype queries.')
+    bci.add_argument('db', help='The path of the database to indexed with bcolz.')
+    bci.add_argument('--cols', help='list of gt columns to index. default is all')
+
+    def bci_fn(parser, args):
+        from gemini_bcolz import create
+        if args.cols:
+            create(args.db, [x.strip() for x in args.cols.split(",")])
+        else:
+            create(args.db)
+    bci.set_defaults(func=bci_fn)
 
     #########################################
     # $ gemini fusions

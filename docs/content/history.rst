@@ -8,8 +8,12 @@ Release History
 2. Update parsing for snpEff >= 4.0
 3. Add an `is_splicing` column.
 4. Support for multi-generational families.
-5. Attempt to provide better backwards compatibility.
-6. Continue to improve performance.
+
+x. Use optional external index to speed genotype queries.
+x. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
+x. Faster queries due to lazy loading of genotype columns.
+x. Read gt\* columns from the database for better backward compatibility.
+x. Use optional external index to speed genotype queries.
 
 0.14.0 
 =======================================
