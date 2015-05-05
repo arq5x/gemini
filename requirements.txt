@@ -14,6 +14,10 @@ pandas>=0.11.0
 openpyxl>=1.6.1,<2.0.0
 scipy>=0.12.0
 Unidecode>=0.04.14
+<<<<<<< HEAD
 cyordereddict==0.2.2
 bcolz>=0.8.1
-gemini>=0.14.0
+# Uncomment for 0.15.0 release with bcolz support
+#cython>=0.22
+#bcolz>=0.8.1
+gemini==0.14.0
