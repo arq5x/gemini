@@ -2,13 +2,15 @@
 Release History
 #############################
 
-0.15.0 (Future)
+0.16.0 (Future)
 =======================================
 1. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to prioritize confident variants.
 2. Update parsing for snpEff >= 4.0
 3. Add an `is_splicing` column.
 4. Support for multi-generational families.
 
+0.15.0
+=======================================
 x. Use optional external index to speed genotype queries.
 x. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
 x. Faster queries due to lazy loading of genotype columns.

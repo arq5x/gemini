@@ -85,3 +85,30 @@ is `here <https://gist.github.com/brentp/e2189dbfee8784ab5f13>`_.
     up to 25K per second) as it must be stored as an object rather than a fixed-size numeric type.
     It will be a much larger index. So only create an index on 'gts' if necessary.
 
+
+Usage
+=====
+
+First, make sure you have gemini version 0.15 or greater:
+
+.. code-block:: bash
+
+    gemini --version
+
+Then, you can index an existing database (`$db`) with:
+
+.. code-block:: bash
+
+    gemini bcolz_index $db
+
+Then, wherever you have a slow query that's using the `--gt-filter`, you
+can add `--use-bcolz` to the query command.
+
+.. code-block:: bash
+
+    gemini query -q "select chrom, start, end from variants" $db \
+            --use-bcolz \
+            --gt-filter "gt_depth.samples1 >= 20 and gt_depth.samples2 >= 20 and gt_depth.samples3 >= 20 \
+              and (gt_types.sample1 == HOM_REF and gt_types.sample2 == HOM_REF and gt_types.sample3 != HOM_REF)"
+
+Note that nothing has changed except that `--use-bcolz` is added to the query.
