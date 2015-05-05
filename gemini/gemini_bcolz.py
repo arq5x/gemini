@@ -67,7 +67,13 @@ def mkdir(path):
     except OSError:
         pass
 
-def create(db, cols=[x[0] for x in gt_cols_types]):
+def create(db, cols=None):
+    if cols is None:
+        cols = [x[0] for x in gt_cols_types if x[0] != 'gts']
+        print >>sys.stderr, (
+                "indexing all columns execpt 'gts'; to index that column, "
+                "run gemini bcolz_index %s --cols gts" % db)
+
     conn = sqlite3.connect(db)
     cur = conn.cursor()
     gt_cols = [x for x in get_gt_cols(cur) if x in cols]
