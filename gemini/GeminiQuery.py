@@ -595,9 +595,11 @@ class GeminiQuery(object):
         if self.gt_filter:
             # here's how we use the fast
             if self.variant_id_getter:
-                print >>sys.stderr, "bcolz: using index"
+                if os.environ.get('GEMINI_DEBUG') == 'TRUE':
+                    print >>sys.stderr, "bcolz: using index"
+
                 user_dict = dict(HOM_REF=0, HET=1, UNKNOWN=2, HOM_ALT=3,
-                                sample_info=self.sample_info,
+                                 sample_info=self.sample_info,
                                  MISSING=None, UNAFFECTED=1, AFFECTED=2)
                 import time
                 t0 = time.time()
@@ -605,7 +607,8 @@ class GeminiQuery(object):
                 if vids is None:
                     print >>sys.stderr, "bcolz: can't parse this filter (falling back to gemini): %s" % self.gt_filter
                 else:
-                    print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
+                    if os.environ.get('GEMINI_DEBUG') == 'TRUE':
+                        print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
                     self.add_vids_to_query(vids)
 
         if self.gt_filter:
@@ -1021,12 +1024,16 @@ class GeminiQuery(object):
                 if wildcard_op in ["all", "any"]:
                     if self.variant_id_getter:
                         joiner = " and " if wildcard_op == "all" else " or "
-                        rule = ("%s" % joiner).join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = joiner.join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
                         rule = "(" + rule + ")"
                     else:
                         rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
                 elif wildcard_op == "none":
-                    rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
+                    if self.variant_id_getter:
+                        rule = " or ".join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = "not (" + rule + ")"
+                    else:
+                        rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
                 elif "count" in wildcard_op:
                     # break "count>=2" into ['', '>=2']
                     tokens = wildcard_op.split('count')

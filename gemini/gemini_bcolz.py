@@ -151,10 +151,16 @@ def load(db):
     return carrays
 
 def query(db, carrays, query, user_dict):
+    # these should be translated to a bunch or or/and statements within gemini
+    # so they are supported, but must be translated before getting here.
     if "any(" in query or "all(" in query or "sum(" in query:
         return None
+
     if carrays is None:
         carrays = load(db)
+    if query.startswith("not "):
+        # "~" is not to numexpr.
+        query = "~" + query[4:]
     query = query.replace(".", "__")
     query = " & ".join("(%s)" % token for token in query.split(" and "))
     query = " | ".join("(%s)" % token for token in query.split(" or "))
@@ -172,7 +178,8 @@ def query(db, carrays, query, user_dict):
         return "%s__%s" % (field, samples[int(idx)])
 
     query = re.sub(patt, subfn, query)
-    print >>sys.stderr, query
+    if os.environ.get('GEMINI_DEBUG') == 'TRUE':
+        print >>sys.stderr, query
 
     # loop through and create a cache of "$gt__$sample"
     for gt_col in carrays:
@@ -196,7 +203,6 @@ def query(db, carrays, query, user_dict):
 
 if __name__ == "__main__":
 
-    import sys
     db = sys.argv[1]
     #create(sys.argv[1])
     carrays = load(db)
