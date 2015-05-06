@@ -144,7 +144,6 @@ def merge_chunks_multicore(chunks, args):
         procs = []
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
-        print "***", tmp_dbs
         for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
             cmd = get_merge_chunks_cmd(sub_merge, tmp_db, tempdir=args.tempdir)
             procs.append(subprocess.Popen(cmd, shell=True))
