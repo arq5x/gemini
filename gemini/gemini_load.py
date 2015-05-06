@@ -184,7 +184,10 @@ def load_chunks_multicore(grabix_file, args):
 
     tempdir = ""
     if args.tempdir is not None:
+        if not os.path.exists(args.tempdir):
+            os.makedirs(args.tempdir)
         tempdir = "--tempdir " + args.tempdir
+    chunk_dir = args.tempdir + "/" if args.tempdir else ""
 
     no_genotypes = ""
     if args.no_genotypes is True:
@@ -229,10 +232,11 @@ def load_chunks_multicore(grabix_file, args):
         start, stop = chunk
         print "Loading chunk " + str(chunk_num) + "."
         gemini_load = gemini_pipe_load_cmd().format(**locals())
+        print "***", gemini_load
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
 
-        chunk_vcf = vcf + ".chunk" + str(chunk_num)
+        chunk_vcf = chunk_dir + vcf + ".chunk" + str(chunk_num)
         chunk_vcfs.append(chunk_vcf)
         chunk_dbs.append(chunk_vcf + ".db")
 
@@ -253,7 +257,10 @@ def load_chunks_ipython(grabix_file, args, view):
 
     tempdir = ""
     if args.tempdir is not None:
+        if not os.path.exists(args.tempdir):
+            os.makedirs(args.tempdir)
         tempdir = "--tempdir " + args.tempdir
+    chunk_dir = args.tempdir + "/" if args.tempdir else ""
 
     no_genotypes = ""
     if args.no_genotypes is True:
@@ -294,6 +301,7 @@ def load_chunks_ipython(grabix_file, args, view):
     load_args = {"ped_file": ped_file,
                  "anno_type": anno_type,
                  "tempdir": tempdir,
+                 "chunk_dir": chunk_dir,
                  "vcf": vcf,
                  "grabix_file": grabix_file,
                  "no_genotypes": no_genotypes,
@@ -315,11 +323,15 @@ def load_chunk(chunk_step, kwargs):
     args = combine_dicts(locals(), kwargs)
     gemini_load = gemini_pipe_load_cmd().format(**args)
     subprocess.check_call(gemini_load, shell=True)
-    chunk_db = args["vcf"] + ".chunk" + str(chunk_num) + ".db"
+    chunk_db = kwargs["chunk_dir"] + args["vcf"] + ".chunk" + str(chunk_num) + ".db"
     return chunk_db
 
 def wait_until_finished(procs):
-    [p.wait() for p in procs]
+    """Wait for parts to finish and ensure a clean finish for each.
+    """
+    pids = [p.wait() for p in procs]
+    if len([p for p in pids if p != 0]) > 0:
+        raise ValueError("Processing failed on GEMINI chunk load")
 
 def cleanup_temp_db_files(chunk_dbs):
     for chunk_db in chunk_dbs:
@@ -332,7 +344,7 @@ def gemini_pipe_load_cmd():
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
                        " {skip_gerp_bp} {skip_gene_tables} {skip_cadd}"
                        " {passonly} {skip_info_string} {test_mode} {tempdir}"
-                       " -o {start} {vcf}.chunk{chunk_num}.db")
+                       " -o {start} {chunk_dir}{vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
 
 def get_chunk_steps(grabix_file, args):
