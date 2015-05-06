@@ -1038,7 +1038,11 @@ class GeminiQuery(object):
                     # break "count>=2" into ['', '>=2']
                     tokens = wildcard_op.split('count')
                     count_comp = tokens[len(tokens) - 1]
-                    rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
+                    if self.variant_id_getter:
+                        rule = "|count|".join("((%s[%s]%s))" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = "%s|count|%s" % (rule, count_comp.strip())
+                    else:
+                        rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
                 else:
                     sys.exit("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
 

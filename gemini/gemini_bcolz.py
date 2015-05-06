@@ -32,7 +32,9 @@ import shutil
 
 import numpy as np
 import bcolz
+import numexpr as ne
 bcolz.blosc_set_nthreads(2)
+ne.set_num_threads(2)
 
 import compression
 from gemini_utils import get_gt_cols
@@ -153,14 +155,22 @@ def load(db):
 def query(db, carrays, query, user_dict):
     # these should be translated to a bunch or or/and statements within gemini
     # so they are supported, but must be translated before getting here.
-    if "any(" in query or "all(" in query or "sum(" in query:
+    if "any(" in query or "all(" in query or ("sum(" in query and not
+            query.startswith("sum(") and query.count("sum(") == 1):
         return None
+    user_dict['where'] = np.where
 
     if carrays is None:
         carrays = load(db)
     if query.startswith("not "):
         # "~" is not to numexpr.
         query = "~" + query[4:]
+    sum_cmp = False
+    if query.startswith("sum("):
+        assert query[-1].isdigit()
+        query, sum_cmp = query[4:].rsplit(")", 1)
+        query = "(%s) %s" % (query, sum_cmp)
+
     query = query.replace(".", "__")
     query = " & ".join("(%s)" % token for token in query.split(" and "))
     query = " | ".join("(%s)" % token for token in query.split(" or "))
@@ -168,7 +178,6 @@ def query(db, carrays, query, user_dict):
     conn = sqlite3.connect(db)
     cur = conn.cursor()
     samples = get_samples(cur)
-
     # convert gt_col[index] to gt_col__sample_name
     patt = "(%s)\[(\d+)\]" % "|".join(carrays.keys())
 
@@ -189,7 +198,18 @@ def query(db, carrays, query, user_dict):
             # if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
-    res = bcolz.eval(query, user_dict=user_dict, vm="numexpr")
+    # had to special-case count. it won't quite be as efficient
+    if "|count|" in query:
+        tokens = query[2:-2].split("|count|")
+        icmp = tokens[-1]
+        # a list of carrays, so not in memory.
+        res = [bcolz.eval(tok, user_dict=user_dict) for tok in tokens[:-1]]
+        # in memory after this, but just a single axis array.
+        res = np.sum(res, axis=0)
+        res = ne.evaluate('res%s' % icmp)
+    else:
+        res = bcolz.eval(query, user_dict=user_dict)
+
     if res.shape[0] == 1 and len(res.shape) > 1:
         res = res[0]
     variant_ids, = np.where(res)
