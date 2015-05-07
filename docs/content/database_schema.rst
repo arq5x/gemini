@@ -20,7 +20,7 @@ vcf_id                    STRING        The VCF ``ID`` field.
 variant_id                INTEGER       PRIMARY_KEY
 anno_id                   INTEGER       Variant transcript number for the most severely affected transcript
 ref                       STRING        Reference allele (from VCF ``REF`` field)
-alt                       STRING        Alternate alele for the variant (from VCF ``ALT`` field)
+alt                       STRING        Alternate allele for the variant (from VCF ``ALT`` field)
 qual                      INTEGER       Quality score for the assertion made in ALT (from VCF ``QUAL`` field)
 filter                    STRING        A string of filters passed/failed in variant calling (from VCF ``FILTER`` field)
 ========================  ========      ==============================================================================================
@@ -88,16 +88,16 @@ Gene information
 ========================  ========      ==============================================================================================
 gene                      STRING        Corresponding gene name of the highly affected transcript
 transcript                STRING        | The variant transcript that was most severely affected
-                                        | (for two equally affected transcripts,the protein_coding
-										biotype is prioritized (snpEff/VEP)
-is_exonic                 BOOL          Does the variant affect an exon for >= 1transcript?
+                                        | (for two equally affected transcripts, the protein_coding
+										biotype is prioritized (SnpEff/VEP)
+is_exonic                 BOOL          Does the variant affect an exon for >= 1 transcript?
 is_coding                 BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
 is_lof                    BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
 exon                      STRING        Exon information for the severely affected transcript
 codon_change              STRING        What is the codon change?
-aa_change                 STRING        What is the amino acid change (for an snp)?
-aa_length                 STRING        The length of CDS in terms of number of amino acids (``only snpEff``)
-biotype                   STRING        The 'type' of the severely affected transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``only snpEff``)
+aa_change                 STRING        What is the amino acid change (for a snp)?
+aa_length                 STRING        The length of CDS in terms of number of amino acids (``only SnpEff``)
+biotype                   STRING        The 'type' of the severely affected transcript (e.g., protein-coding, pseudogene, rRNA etc.) (``only SnpEff``)
 impact                    STRING        The consequence of the most severely affected transcript
 impact_so                 STRING        The Sequence ontology term for the most severe consequence
 impact_severity           STRING        Severity of the highest order observed for the variant
@@ -137,10 +137,10 @@ Population information
 ........................
 ========================  =========     =================================================================================================
 ========================  =========     =================================================================================================
-in_dbsnp                  BOOL          | Is this variant found in dbSnp (build 137)?
+in_dbsnp                  BOOL          | Is this variant found in dbSNP (build 137)?
                                         | 0 : Absence of the variant in dbsnp
                                         | 1 : Presence of the variant in dbsnp
-rs_ids                    STRING        | A comma-separated list of rs ids for variants present in dbsnp
+rs_ids                    STRING        | A comma-separated list of rs ids for variants present in dbSNP
 in_hm2                    BOOL          Whether the variant was part of HapMap2.
 in_hm3                    BOOL          Whether the variant was part of HapMap3.
 in_esp                    BOOL          Presence/absence of the variant in the ESP project data
@@ -224,7 +224,7 @@ Genome annotations
 ........................
 ========================  ========      =========================================================================================================================================
 ========================  ========      =========================================================================================================================================
-exome_chip                BOOL          Whether an SNP is on the Illumina HumanExome Chip
+exome_chip                BOOL          Whether a SNP is on the Illumina HumanExome Chip
 cyto_band                 STRING        Chromosomal cytobands that a variant overlaps
 rmsk                      STRING        | A comma-separated list of RepeatMasker annotations that the variant overlaps.
                                         | Each hit is of the form: ``name_class_family``
@@ -348,8 +348,8 @@ is_lof            BOOL          Based on the value of the impact col, is the var
 exon              STRING        Exon information for the variants that are exonic
 codon_change      STRING        What is the codon change?
 aa_change         STRING        What is the amino acid change?
-aa_length         STRING        The length of CDS in terms of number of amino acids (``snpEff only``)
-biotype           STRING        The type of transcript (e.g.protein-coding, pseudogene, rRNA etc.) (``SnpEff only``)
+aa_length         STRING        The length of CDS in terms of number of amino acids (``SnpEff only``)
+biotype           STRING        The type of transcript (e.g., protein-coding, pseudogene, rRNA etc.) (``SnpEff only``)
 impact            STRING        Impacts due to variation (ref.impact category)
 impact_so         STRING        The sequence ontology term for the impact
 impact_severity   STRING        Severity of the impact based on the impact column value (ref.impact category)
@@ -483,7 +483,7 @@ gene                STRING        The gene name
 is_hgnc             BOOL          Flag for gene column: 0 for non HGNC symbol and 1 for HGNC symbol = TRUE
 ensembl_gene_id     STRING        The ensembl gene id for the gene
 transcript          STRING        The ensembl transcript id for the gene
-biotype             STRING        The biotype (e.g protein coding) of the transcript
+biotype             STRING        The biotype (e.g., protein coding) of the transcript
 transcript_status   STRING        The status of the transcript (e.g. KNOWN, PUTATIVE etc.)
 ccds_id             STRING        The consensus coding sequence transcript identifier
 hgnc_id             STRING        The HGNC identifier for the gene if HGNC symbol is TRUE
