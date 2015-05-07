@@ -260,7 +260,7 @@ snpEff/VEP.
 The table below shows the alternate `GEMINI` terms used for `snpEff/VEP`.
 
 =============================================       ===================================    =================================================
-Gemini terms                                        snpEff terms                           VEP terms (uses SO by default)
+GEMINI terms                                        snpEff terms                           VEP terms (uses SO by default)
 =============================================       ===================================    =================================================
 splice_acceptor                                     SPLICE_SITE_ACCEPTOR                   splice_acceptor_variant_
 splice_donor                                        SPLICE_SITE_DONOR                      splice_donor_variant_
@@ -327,7 +327,7 @@ The below table shows the `Sequence Ontology (SO)` term mappings for the GEMINI 
 defined in GEMINI for these impacts.
 
 =============================================     =======================================================     =================
-Gemini terms (column: impact)                     Sequence Ontology terms (column: impact_so)                 Impact severity
+GEMINI terms (column: impact)                     Sequence Ontology terms (column: impact_so)                 Impact severity
 =============================================     =======================================================     =================
 splice_acceptor                                   splice_acceptor_variant_                                    HIGH
 splice_donor                                      splice_donor_variant_                                       HIGH
