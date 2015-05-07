@@ -137,7 +137,7 @@ Population information
 ........................
 ========================  =========     =================================================================================================
 ========================  =========     =================================================================================================
-in_dbsnp                  BOOL          | Is this variant found in dbSNP (build 137)?
+in_dbsnp                  BOOL          | Is this variant found in dbSNP?
                                         | 0 : Absence of the variant in dbsnp
                                         | 1 : Presence of the variant in dbsnp
 rs_ids                    STRING        | A comma-separated list of rs ids for variants present in dbSNP
