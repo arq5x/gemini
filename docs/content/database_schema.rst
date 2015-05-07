@@ -1,5 +1,5 @@
 ##########################
-The Gemini database schema
+The GEMINI database schema
 ##########################
 
 
@@ -446,7 +446,7 @@ ethnicity      STRING      The ethnic group to which the sample belongs [User de
 The ``resources`` table
 -----------------------
 
-Establishes provenance of annotation resources used to create a Gemini database.
+Establishes provenance of annotation resources used to create a GEMINI database.
 
 =============  ==========  ==================================================
 column name    type        notes
