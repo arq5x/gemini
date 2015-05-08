@@ -125,7 +125,7 @@ def run_query(args):
     kwargs = {}
     if args.bcolz:
         import gemini_bcolz
-        kwargs['variant_id_getter'] = gemini_bcolz.query
+        kwargs['variant_id_getter'] = gemini_bcolz.filter
 
     gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter, **kwargs)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,

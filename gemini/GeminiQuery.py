@@ -603,7 +603,7 @@ class GeminiQuery(object):
                                  MISSING=None, UNAFFECTED=1, AFFECTED=2)
                 import time
                 t0 = time.time()
-                vids = self.variant_id_getter(self.db, None, self.gt_filter, user_dict)
+                vids = self.variant_id_getter(self.db, self.gt_filter, user_dict)
                 if vids is None:
                     print >>sys.stderr, "bcolz: can't parse this filter (falling back to gemini): %s" % self.gt_filter
                 else:

@@ -25,19 +25,19 @@ Design of Genotype Query Engines
 Genotype Query Engines can be plugged in to `gemini`. They must be
 exposed with a single function:
 
-    query(db_path, gt_filter, user_dict)
+    filter(db_path, gt_filter, user_dict)
 
 where `db_path` is the path to the gemini sqlite database, `gt_filter` is
 the genotype query string. user_dict will be pre-filled with things like
 user_dict contains things like HET, UNKNOWN, etc. used in gemini.
 
-The `query` function must return a list of integer variant_ids that meet the specified
+The `filter` function must return a list of integer variant_ids that meet the specified
 filter. If it can not perform the query, it must return `None`.
 
 `gemini` will internally use the returned variant_ids to modifiy the sqlite
 query to select only those rows.
 
-The `query` function only needs to worry about which variant_ids to return,
+The `filter` function only needs to worry about which variant_ids to return,
 not how to integrate with the rest of `gemini`.
 
 bcolz implementation

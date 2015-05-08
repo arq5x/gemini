@@ -4,17 +4,12 @@ An engine only has to have a query() function that returns a list of
 variant ids that meet a gemini genotype query.
 
 Any engine can be added in a post-hoc fashion provided a module is
-provided with the following functions:
+provided with the single filter():
 
-    # create the index given the database for the first time
-    create(db_path)
-    # load an existing genotype-query engine (this returns any object needed to query).
-    # this may not be needed by some engines and can return None in that case.
-    load(db_path)
     # take a gemini --gt-filter string and return a list of variant_ids that meet
     # that filter. `obj` is the thing returned by load().
     # user_dict contains things like HET, UNKNOWN, etc. used in the eval.
-    query(db_path, obj, gt_filter, user_dict)
+    filter(db_path, obj, gt_filter, user_dict)
 
 See below for an implementation using bcolz.
 It is using carray rather than ctable because with ctable, we'd be limited to
@@ -25,6 +20,7 @@ samples on ext3. These limits are not an issue for ext4.
 
 import os
 import sys
+sys.setrecursionlimit(8192)
 import sqlite3
 import time
 import re
@@ -107,6 +103,7 @@ def create(db, cols=None):
 
         t0 = time.time()
         step = 200000
+        del gtc
 
         empty = [-1] * len(samples)
         for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
@@ -129,8 +126,11 @@ def create(db, cols=None):
     except:
         # on error, we remove the dirs so we can't have weird problems.
         for k, li in carrays.items():
-            for ca in li:
-                print >>sys.stderr, "removing:", ca.rootdir
+            for i, ca in enumerate(li):
+                if i < 5:
+                    print >>sys.stderr, "removing:", ca.rootdir
+                if i == 5:
+                    print >>sys.stderr, "not reporting further removals for %s" % k
                 ca.flush()
                 shutil.rmtree(ca.rootdir)
         raise
@@ -152,7 +152,7 @@ def load(db):
                 carrays[gtc].append(bcolz.open(path, mode="r"))
     return carrays
 
-def query(db, carrays, query, user_dict):
+def filter(db, query, user_dict):
     # these should be translated to a bunch or or/and statements within gemini
     # so they are supported, but must be translated before getting here.
     if "any(" in query or "all(" in query or ("sum(" in query and not
@@ -160,8 +160,7 @@ def query(db, carrays, query, user_dict):
         return None
     user_dict['where'] = np.where
 
-    if carrays is None:
-        carrays = load(db)
+    carrays = load(db)
     if query.startswith("not "):
         # "~" is not to numexpr.
         query = "~" + query[4:]
