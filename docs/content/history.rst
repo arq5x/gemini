@@ -11,11 +11,10 @@ Release History
 
 0.15.0
 =======================================
-x. Use optional external index to speed genotype queries.
+x. Use external index to speed genotype queries (this is created by default on load unless --no-bcolz is specified)
 x. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
 x. Faster queries due to lazy loading of genotype columns.
 x. Read gt\* columns from the database for better backward compatibility.
-x. Use optional external index to speed genotype queries.
 
 0.14.0 
 =======================================

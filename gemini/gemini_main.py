@@ -151,6 +151,11 @@ def main():
                              action='store_true',
                              help='There are no genotypes in the file (e.g. some 1000G VCFs)',
                              default=False)
+    parser_load.add_argument('--no-bcolz',
+                             dest='no_bcolz',
+                             action='store_true',
+                             help='Don\'t automatically create a bcolz index for genotypes',
+                             default=False)
     parser_load.add_argument('--cores', dest='cores',
                              default=1,
                              type=int,

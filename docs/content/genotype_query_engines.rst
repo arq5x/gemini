@@ -13,38 +13,20 @@ array and then evaluate the genotype filter. Even if the filter involves only a
 single sample, we must deserialize the entire array. This design works quite well
 and we have improved performance greatly, but for complex queries, it is quite slow.
 
-We aim to provide the means to *optionally* provide an additional index that can
-be (again) *optionally* used to perform the genotype filtering.
+We provide the means to index genotype fields and *optionally* use those indexes
+to perform the genotype filtering.
 These are external to gemini in that they do not change the behavior of `gemini`
-when used without the engine, but they could create additional tables in the
-gemini database.
+when used without the engine.
 
-Design of Genotype Query Engines
-================================
 
-Genotype Query Engines can be plugged in to `gemini`. They must be
-exposed with a single function:
+bcolz indexes
+=============
 
-    filter(db_path, gt_filter, user_dict)
+We have a implemented indexes using `bcolz <http://bcolz.blosc.org/>`_.
+As of version 0.15, gemini will create the bcolz indexes by default at
+the end of the database load unless `--no-bcolz` is specified.
 
-where `db_path` is the path to the gemini sqlite database, `gt_filter` is
-the genotype query string. user_dict will be pre-filled with things like
-user_dict contains things like HET, UNKNOWN, etc. used in gemini.
-
-The `filter` function must return a list of integer variant_ids that meet the specified
-filter. If it can not perform the query, it must return `None`.
-
-`gemini` will internally use the returned variant_ids to modifiy the sqlite
-query to select only those rows.
-
-The `filter` function only needs to worry about which variant_ids to return,
-not how to integrate with the rest of `gemini`.
-
-bcolz implementation
-====================
-
-We have a reference implementation using `bcolz <http://bcolz.blosc.org/>`_.
-It can be used from gemini by first creating the external indexes:
+It can be used for existing databases by creating the external indexes:
 
     gemini bcolz_index $db
 
@@ -112,3 +94,28 @@ can add `--use-bcolz` to the query command.
               and (gt_types.sample1 == HOM_REF and gt_types.sample2 == HOM_REF and gt_types.sample3 != HOM_REF)"
 
 Note that nothing has changed except that `--use-bcolz` is added to the query.
+
+
+Design of Genotype Query Engines
+================================
+
+This sections is for those wishing to create their own genotype query engines to plug
+in to gemini and will not be needed for most users.
+
+Genotype Query Engines can be plugged in to `gemini`. They must be
+exposed with a single function:
+
+    filter(db_path, gt_filter, user_dict)
+
+where `db_path` is the path to the gemini sqlite database, `gt_filter` is
+the genotype query string. user_dict will be pre-filled with things like
+user_dict contains things like HET, UNKNOWN, etc. used in gemini.
+
+The `filter` function must return a list of integer variant_ids that meet the specified
+filter. If it can not perform the query, it must return `None`.
+
+`gemini` will internally use the returned variant_ids to modifiy the sqlite
+query to select only those rows.
+
+The `filter` function only needs to worry about which variant_ids to return,
+not how to integrate with the rest of `gemini`.

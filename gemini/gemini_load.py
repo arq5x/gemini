@@ -22,7 +22,7 @@ def load(parser, args):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
 
-    annos = annotations.get_anno_files( args )
+    annos = annotations.get_anno_files(args)
     # force skipping CADD and GERP if the data files have not been installed
     if args.skip_cadd is False:
         if 'cadd_score' not in annos:
@@ -42,7 +42,7 @@ def load(parser, args):
         else:
             sys.stderr.write("GERP per bp is being loaded (to skip use:--skip-gerp-bp).\n")
     # collect of the the add'l annotation files
-    annotations.load_annos( args )
+    annotations.load_annos(args)
 
     if args.scheduler:
         load_ipython(args)
@@ -50,6 +50,11 @@ def load(parser, args):
         load_multicore(args)
     else:
         load_singlecore(args)
+
+    if not args.no_bcolz:
+        from gemini.gemini_bcolz import create
+        create(args.db)
+
 
 def load_singlecore(args):
     # create a new gemini loader and populate

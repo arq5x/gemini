@@ -82,7 +82,7 @@ def create(db, cols=None):
 
     nv = get_n_variants(cur)
 
-    print >>sys.stderr, "loading %i variants for %i samples" % (nv, len(samples))
+    print >>sys.stderr, "loading %i variants for %i samples into bcolz" % (nv, len(samples))
 
     carrays = {}
     tmps = {}
@@ -99,7 +99,6 @@ def create(db, cols=None):
                     chunklen=16384*8,
                     mode="w"))
                 tmps[gtc].append([])
-
 
         t0 = time.time()
         step = 200000
@@ -135,7 +134,10 @@ def create(db, cols=None):
                 shutil.rmtree(ca.rootdir)
         raise
 
+
 def load(db):
+
+    t0 = time.time()
     conn = sqlite3.connect(db)
     cur = conn.cursor()
 
@@ -150,13 +152,17 @@ def load(db):
             path = "%s/%s/%s" % (bcpath, s, gtc)
             if os.path.exists(path):
                 carrays[gtc].append(bcolz.open(path, mode="r"))
+    if os.environ.get("GEMINI_DEBUG") == "TRUE":
+        print >>sys.stderr, "it took %.2f seconds to load arrays" \
+            % (time.time() - t0)
     return carrays
+
 
 def filter(db, query, user_dict):
     # these should be translated to a bunch or or/and statements within gemini
     # so they are supported, but must be translated before getting here.
-    if "any(" in query or "all(" in query or ("sum(" in query and not
-            query.startswith("sum(") and query.count("sum(") == 1):
+    if "any(" in query or "all(" in query or \
+       ("sum(" in query and not query.startswith("sum(") and query.count("sum(") == 1):
         return None
     user_dict['where'] = np.where
 
