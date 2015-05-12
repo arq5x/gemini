@@ -136,14 +136,14 @@ def _download_to_dir(url, out_fname, dirname, version, cur_version):
         max_retries = 2
         retries = 0
         while 1:
-            cmd = ["curl", "-C", "-", "-L", "-o", out_fname, url]
+            cmd = ["wget", "-O", out_fname, url]
             retcode = subprocess.call(cmd)
             if retcode == 0:
                 break
             else:
-                print "Curl failed with non-zero exit code %s. Retrying" % retcode
+                print "wget failed with non-zero exit code %s. Retrying" % retcode
                 if retries >= max_retries:
-                    raise ValueError("Failed to download with curl")
+                    raise ValueError("Failed to download with wget")
                 time.sleep(10)
                 retries += 1
         with open(out_fname) as in_handle:

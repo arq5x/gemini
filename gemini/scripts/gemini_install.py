@@ -338,8 +338,7 @@ def check_dependencies():
     """
     print "Checking required dependencies..."
     for cmd, url in [("git", "http://git-scm.com/"),
-                     ("wget", "http://www.gnu.org/software/wget/"),
-                     ("curl", "http://curl.haxx.se/")]:
+                     ("wget", "http://www.gnu.org/software/wget/")]:
         try:
             retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:

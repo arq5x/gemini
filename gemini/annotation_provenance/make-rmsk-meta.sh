@@ -1,14 +1,14 @@
-curl -s http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz | \
+wget -O - -q http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz | \
      gzcat | \
      awk '{OFS="\t"; print $6,$7,$8,$12"_"$13"_"$11}' \
      > rmsk.bed
 
-curl -s http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz | \
+wget -O - -q http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz | \
      gzcat | \
      cut -f 2-5 \
      > simrep.bed
 
-curl -s http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/microsat.txt.gz | \
+wget -O - -q http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/microsat.txt.gz | \
      gzcat | \
      cut -f 2-5 \
          > microsat.bed
