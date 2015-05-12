@@ -135,6 +135,8 @@ def create(db, cols=None):
         raise
 
 
+# TODO: since we call this from query, we can improve speed by only loading
+# samples that appear in the query with an optional query=None arg to load.
 def load(db):
 
     t0 = time.time()
