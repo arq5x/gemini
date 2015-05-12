@@ -222,7 +222,7 @@ def load_chunks_multicore(grabix_file, args):
         skip_info_string = "--skip-info-string"
 
     submit_command = "{cmd}"
-    vcf, _ = os.path.splitext(grabix_file)
+    vcf, _ = os.path.splitext(os.path.basename(grabix_file))
     chunk_steps = get_chunk_steps(grabix_file, args)
     chunk_vcfs = []
     chunk_dbs = []
@@ -232,7 +232,6 @@ def load_chunks_multicore(grabix_file, args):
         start, stop = chunk
         print "Loading chunk " + str(chunk_num) + "."
         gemini_load = gemini_pipe_load_cmd().format(**locals())
-        print "***", gemini_load
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
 
@@ -295,7 +294,7 @@ def load_chunks_ipython(grabix_file, args, view):
         skip_info_string = "--skip-info-string"
 
 
-    vcf, _ = os.path.splitext(grabix_file)
+    vcf, _ = os.path.splitext(os.path.basename(grabix_file))
     chunk_steps = get_chunk_steps(grabix_file, args)
     total_chunks = len(chunk_steps)
     scheduler, queue, cores = get_ipython_args(args)
