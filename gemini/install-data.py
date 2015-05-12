@@ -94,7 +94,6 @@ def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
             os.makedirs(anno_dir)
         if not os.path.isdir(anno_dir):
             sys.exit(anno_dir + " is not a valid directory.")
-        _check_dependencies()
         to_dl = anno_files[:]
         if extra:
             to_dl += [extra_anno_files[x] for x in extra]
@@ -102,20 +101,6 @@ def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
                              to_dl, anno_dir, cur_config)
     #_download_anno_files("https://s3.amazonaws.com/chapmanb/gemini",
     #                     toadd_anno_files, cur_config)
-
-def _check_dependencies():
-    """Ensure required tools for download are present.
-    """
-    print "Checking required dependencies..."
-    for cmd, url in [("curl", "http://curl.haxx.se/")]:
-        try:
-            retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        except OSError:
-            retcode = 127
-        if retcode == 127:
-            raise OSError("gemini requires %s (%s)" % (cmd, url))
-        else:
-            print " %s found" % cmd
 
 def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
