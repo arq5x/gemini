@@ -59,7 +59,28 @@ for speed improvement with `bcolz`
 An example of the types of improvements (usually 20X to 50X) with various queries
 is `here <https://gist.github.com/brentp/e2189dbfee8784ab5f13>`_.
 
+limitations
+-----------
 
+As the number of samples grows, it becomes less beneficial to use `--gt-filter` s that
+touch all samples. For example: `(gt_types).(*).(!=HOM_REF).(all)` will become slower
+as samples are added since it must test every sample. However, a query like:
+`(gt_types.DAD == HOM_REF and gt_types.MOM == HOM_REF and gt_types.KID != HOM_REF)` will
+be much less affected by the number of samples in the database because they are only touching
+3 samples.
+
+The image below shows the time to perform the filters on a database with 1.8 million variants
+and varying sample size:
+
+1. `(gt_types).(*).(!=HOM_REF).(all)` which is affected by sample size
+2. `(gt_types.DAD == HOM_REF and gt_types.MOM == HOM_REF and gt_types.KID != HOM_REF)`
+   which is less affected by sample-size
+
+Note that at 2500 samples, using bcolz is slower than the standard gemini query, however using
+bcolz is consistently 30 to 50 times faster for the 2nd query. (This is up to 1000 times faster
+than versions of gemini before 0.12). The y-axis is log10-scaled.
+
+.. image:: ../images/query-speed.png
 
 .. note ::
 
