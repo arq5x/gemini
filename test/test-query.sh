@@ -1,3 +1,13 @@
+check()
+{
+	if diff $1 $2; then
+    	echo ok
+	else
+    	echo fail
+	fi
+}
+export -f check
+
 ####################################################################
 # 1. Test the samples table
 ####################################################################
@@ -304,7 +314,7 @@ rm obs exp
 # 16. Test a basic query of the variants table with show-variant-samples
 #########################################################################
 echo "    query.t16...\c"
-echo "chrom	start	end	ref	alt	variant_samples	HET_samples	HOM_ALT_samples
+echo "chrom	start	end	ref	alt	variant_samples	het_samples	hom_alt_samples
 chr1	30547	30548	T	G	1478PC0016,1719PC0007,1719PC0009		1478PC0016,1719PC0007,1719PC0009
 chr1	30859	30860	G	C	1719PC0005,1478PC0017B	1719PC0005	1478PC0017B
 chr1	30866	30869	CCT	C	1094PC0012,1094PC0021,1478PC0011,1719PC0005,1478PC0014B	1094PC0012,1094PC0021,1478PC0011,1719PC0005	1478PC0014B
@@ -320,7 +330,7 @@ rm obs exp
 # request for all sample genotype types and a request for the sample names
 ##########################################################################
 echo "    query.t17...\c"
-echo "chrom	start	end	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples
+echo "chrom	start	end	ref	alt	gt_types	variant_samples	het_samples	hom_alt_samples
 chr1	30547	30548	T	G	2,2,2,2,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,0,2,3,2,3,2,2,2,2,2,0,2,2,2,2,2,2,2	1478PC0016,1719PC0007,1719PC0009		1478PC0016,1719PC0007,1719PC0009
 chr1	30859	30860	G	C	0,0,0,0,2,2,0,2,0,0,0,2,2,0,0,2,2,2,2,2,0,2,2,0,2,0,0,0,0,3,0,2,0,2,2,2,2,2,2,2,2,2,1,2,0,2,0,2,2,0,0,0,0,2,2,2,2,2,2,2	1719PC0005,1478PC0017B	1719PC0005	1478PC0017B
 chr1	30866	30869	CCT	C	0,0,1,0,2,2,0,2,0,1,0,2,2,0,0,2,2,2,2,2,0,2,2,1,2,0,3,0,0,0,0,2,0,2,2,2,2,0,2,2,2,2,1,2,0,2,0,0,2,0,0,0,0,2,2,2,2,2,2,2	1094PC0012,1094PC0021,1478PC0011,1719PC0005,1478PC0014B	1094PC0012,1094PC0021,1478PC0011,1719PC0005	1478PC0014B
@@ -491,7 +501,7 @@ rm obs exp
 # 29. Test the carrier/noncarrier column summary
 ########################################################################
 echo "    query.t29...\c"
-echo "chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	unaffected_carrier	affected_carrier	unaffected_noncarrier	affected_noncarrier	unknown
+echo "chrom	start	ref	alt	gt_types	variant_samples	het_samples	hom_alt_samples	unaffected_carrier	affected_carrier	unaffected_noncarrier	affected_noncarrier	unknown
 chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	2	2	0	0	0
 chr10	48003991	C	T	3,1,1,0	M10478,M10500,M10475	M10478,M10500	M10475	1	2	1	0	0
 chr10	52004314	T	C	2,2,3,3	M10500,M128215		M10500,M128215	1	1	0	0	2

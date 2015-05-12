@@ -107,6 +107,7 @@ Table of contents
    content/browser
    content/database_schema
    content/api
+   content/genotype_query_engines
    content/acknowledgements
    content/caveats
    content/history

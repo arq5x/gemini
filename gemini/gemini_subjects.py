@@ -74,7 +74,7 @@ class Subject(object):
         self.mother = True
 
     def _set_fields_from_row(self, row):
-        self.__dict__.update(dict(zip(row.keys(), row)))
+        self.__dict__.update(row)
         #for k, v in zip(row.keys(), row):
         #    self.__dict__[k] = v
         self.phenotype = int(self.phenotype) if self._has_phenotype() else None

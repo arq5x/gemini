@@ -122,7 +122,12 @@ def run_query(args):
     genotypes_needed = needs_genotypes(args)
     gene_needed = needs_gene(args)
     subjects = get_subjects(args)
-    gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
+    kwargs = {}
+    if args.bcolz:
+        import gemini_bcolz
+        kwargs['variant_id_getter'] = gemini_bcolz.query
+
+    gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter, **kwargs)
     gq.run(args.query, args.gt_filter, args.show_variant_samples,
            args.sample_delim, predicates, genotypes_needed,
            gene_needed, args.show_families, subjects=subjects)
@@ -147,7 +152,7 @@ def run_query(args):
         gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
         gq.run(args.query, args.gt_filter, args.show_variant_samples,
                args.sample_delim, predicates, genotypes_needed,
-               gene_needed, args.show_families, subjects=subjects)
+               gene_needed, args.show_families, subjects=subjects, **kwargs)
 
         # report the query results with DGIdb info added at the end.
         for row in gq:

@@ -535,14 +535,14 @@ a variant with the --show-sample-variants flag:
    	$ gemini query --header --show-samples -q "select chrom, start, end, ref, alt \
                                         from variants where is_lof=1 limit 5" test.query.db
 
-	chrom	start	end	ref	alt	variant_samples	HET_samples	HOM_ALT_samples
+	chrom	start	end	ref	alt	variant_samples	het_samples	hom_alt_samples
 	chr1	874815	874816	C	CT	1478PC0006B,1478PC0007B,1478PC0010,1478PC0013B,1478PC0022B,1478PC0023B,1478PC0025,1719PC0007,1719PC0009,1719PC0010,1719PC0022	1478PC0006B,1478PC0007B,1478PC0010,1478PC0013B,1478PC0022B,1478PC0023B,1719PC0007,1719PC0009,1719PC0010	1478PC0025,1719PC0022
 	chr1	1140811	1140813	TC	T	1478PC0011	1478PC0011
 	chr1	1219381	1219382	C	G	1719PC0012	1719PC0012
 	chr1	1221487	1221490	CAA	C	1478PC0004	1478PC0004
 
-variant_samples is a list of all of the samples with a variant, HET_samples is the subset
-of those heterozygous for the variant and HOM_ALT_samples is the subset homozygous for
+variant_samples is a list of all of the samples with a variant, het_samples is the subset
+of those heterozygous for the variant and hom_alt_samples is the subset homozygous for
 the variant.
 
 ============================================================================
@@ -654,7 +654,7 @@ a semi-colon instead of a comma, one would do the following:
                    -q "select chrom, start, end, ref, alt \
                        from variants where is_lof=1 limit 5" test.query.db
 
-  chrom start end ref alt variant_samples HET_samples HOM_ALT_samples
+  chrom start end ref alt variant_samples het_samples hom_alt_samples
   chr1  874815  874816  C CT  1478PC0006B;1478PC0007B;1478PC0010,1478PC0013B;1478PC0022B;1478PC0023B;1478PC0025;1719PC0007;1719PC0009;1719PC0010;1719PC0022 1478PC0006B;1478PC0007B;1478PC0010;1478PC0013B;1478PC0022B;1478PC0023B;1719PC0007;1719PC0009;1719PC0010 1478PC0025;1719PC0022
   chr1  1140811 1140813 TC  T 1478PC0011  1478PC0011
   chr1  1219381 1219382 C G 1719PC0012  1719PC0012
@@ -749,7 +749,7 @@ to get a summary of how a set of variants segregate with affected status:
 .. code-block:: bash
 
 	$ gemini query --show-samples --carrier-summary-by-phenotype affected --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped_test.db
-	chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	unaffected_carrier	affected_carrier	unaffected_noncarrier	affected_noncarrier	unknown
+	chrom	start	ref	alt	gt_types	variant_samples	het_samples	hom_alt_samples	unaffected_carrier	affected_carrier	unaffected_noncarrier	affected_noncarrier	unknown
 	chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	2	2	0	0	0
 	chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	1	2	1	0	0
 	chr10	52004314	T	C	2,2,3,3	M10500,M128215		M10500,M128215	1	1	0	0	2
@@ -766,7 +766,7 @@ like hair color:
 .. code-block:: bash
 
 	$ gemini query --show-samples --carrier-summary-by-phenotype hair_color --header -q "select chrom, start, ref, alt, gt_types from variants" extended_ped.db
-	chrom	start	ref	alt	gt_types	variant_samples	HET_samples	HOM_ALT_samples	blue_carrier	brown_carrier	purple_carrier	blue_noncarrier	brown_noncarrier	purple_noncarrier	unknown
+	chrom	start	ref	alt	gt_types	variant_samples	het_samples	hom_alt_samples	blue_carrier	brown_carrier	purple_carrier	blue_noncarrier	brown_noncarrier	purple_noncarrier	unknown
 	chr10	1142207	T	C	3,3,3,3	M10475,M10478,M10500,M128215		M10475,M10478,M10500,M128215	1	2	1	0	0	0	0
 	chr10	48003991	C	T	3,1,1,0	M10475,M10478,M10500	M10478,M10500	M10475	0	2	1	1	0	0	0
 	chr10	52004314	T	C	2,2,3,3	M10500,M128215		M10500,M128215	1	0	1	0	0	0	2

@@ -5,7 +5,6 @@ import os.path
 import sys
 import sqlite3
 import numpy as np
-from itertools import repeat
 import json
 import shutil
 import uuid
@@ -15,7 +14,7 @@ import cyvcf as vcf
 
 # gemini modules
 import version
-from ped import default_ped_fields, load_ped_file
+from ped import load_ped_file
 import gene_table
 import infotag
 import database

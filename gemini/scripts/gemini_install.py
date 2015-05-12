@@ -163,7 +163,7 @@ def install_conda_pkgs(anaconda, remotes, args):
         pkgs = ["--file", remotes['requirements_conda']]
     else:
         pkgs = ["bcolz", "conda", "cython", "ipython",
-                "jinja2", "nose", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
+                "jinja2", "nose", "numexpr", "numpy", "openssl", "pip", "pycrypto", "pyparsing",
                 "python-graph-core", "python-graph-dot",
                 "pyyaml", "pyzmq", "pandas", "scipy"]
         if platform.architecture()[0] != "32bit":

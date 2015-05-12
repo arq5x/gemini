@@ -162,7 +162,7 @@ def main():
                              default=None, help='Cluster queue to use.')
     parser_load.add_argument('--tempdir', dest='tempdir',
                              default=tempfile.gettempdir(),
-                             help="temp directory to use when loading with multiple cores")
+                             help='Temp directory for storing intermediate files when loading in parallel.')
     parser_load.add_argument('--passonly',
                              dest='passonly',
                              default=False,
@@ -173,7 +173,6 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
-
     def load_fn(parser, args):
         import gemini_load
         gemini_load.load(parser, args)
@@ -265,7 +264,10 @@ def main():
                          help='Load in test mode (faster)',
                          default=False)
     parser_loadchunk.add_argument('--tempdir', dest='tempdir',
-                        default=tempfile.gettempdir(), help='<TODO add help>')
+                                  default=tempfile.gettempdir(),
+                                  help='Local (non-NFS) temp directory to use for working around SQLite locking issues '
+                                       'on NFS drives.')
+
     def loadchunk_fn(parser, args):
         import gemini_load_chunk
         gemini_load_chunk.load(parser, args)
@@ -284,7 +286,12 @@ def main():
             dest='chunkdbs',
             action='append')
     parser_mergechunks.add_argument('--tempdir', dest='tempdir',
-            default=tempfile.gettempdir(), help='<TODO add help>')
+            default=tempfile.gettempdir(),
+            help='Local (non-NFS) temp directory to use for working around SQLite locking issues on NFS drives.')
+    parser_mergechunks.add_argument('--index', dest='index',
+            action='store_true',
+            help='Create all database indexes. If multiple merges are used to create a database, only the last merge '
+                 'should create the indexes.')
 
     def mergechunk_fn(parser, args):
         import gemini_merge_chunks
@@ -373,6 +380,12 @@ def main():
                               action='store_true',
                               help='Request drug-gene interaction info from DGIdb.',
                               default=False)
+    parser_query.add_argument('--use-bcolz',
+                              dest='bcolz',
+                              action='store_true',
+                              help='use a (previously created) bcolz index to speed genotype queries',
+                              default=False)
+
     def query_fn(parser, args):
         import gemini_query
         gemini_query.query(parser, args)
@@ -564,6 +577,13 @@ def main():
                   'in the event that a variant overlaps multiple annotations '
                   'in your annotation file (-f).'
                   'Any of {sum, mean, median, min, max, mode, list, uniq_list, first, last}')
+    parser_get.add_argument('--region-only',
+            dest='region_only',
+            action='store_true',
+            default=False,
+            help='If set, only region coordinates will be considered when annotating variants.'
+                 'The default is to annotate using region coordinates as well as REF and ALT variant values'
+                 'This option is only valid if annotation is a VCF file')
     def annotate_fn(parser, args):
         import gemini_annotate
         gemini_annotate.annotate(parser, args)
@@ -1023,6 +1043,22 @@ def main():
         run(parser, args)
     parser_hom_run.set_defaults(func=homozygosity_runs_fn)
 
+    #########################################
+    # bcolz indexing
+    #########################################
+    bci = subparsers.add_parser('bcolz_index', help='index an existing gemini'
+                                ' database so it can use bcolze for faster '
+                                ' genotype queries.')
+    bci.add_argument('db', help='The path of the database to indexed with bcolz.')
+    bci.add_argument('--cols', help='list of gt columns to index. default is all')
+
+    def bci_fn(parser, args):
+        from gemini_bcolz import create
+        if args.cols:
+            create(args.db, [x.strip() for x in args.cols.split(",")])
+        else:
+            create(args.db)
+    bci.set_defaults(func=bci_fn)
 
     #########################################
     # $ gemini fusions
