@@ -21,6 +21,9 @@ import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
 
+class GeminiError(Exception):
+    pass
+
 def RowFactory(cursor, row):
     return dict(it.izip((c[0] for c in cursor.description), row))
 
@@ -973,6 +976,7 @@ class GeminiQuery(object):
         #    (gt_types).(*).(!=HOM_REF).(all)
         # and
         #    (   gt_types).(*).(!=HOM_REF).(all)
+        seen_count = False
         wildcard_tokens = re.split(r'(\(\s*gt\w+\s*\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
         for token_idx, token in enumerate(wildcard_tokens):
             # NOT a WILDCARD
@@ -1041,6 +1045,7 @@ class GeminiQuery(object):
                     if self.variant_id_getter:
                         rule = "|count|".join("((%s[%s]%s))" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
                         rule = "%s|count|%s" % (rule, count_comp.strip())
+                        seen_count = True
                     else:
                         rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
                 else:
@@ -1050,6 +1055,8 @@ class GeminiQuery(object):
             else:
                 if len(token) > 0:
                     corrected_gt_filter.append(token.lower())
+        if seen_count and len(corrected_gt_filter) > 1 and self.variant_id_getter:
+            raise GeminiError("count operations can not be combined with other operations")
 
         return " ".join(corrected_gt_filter)
 
