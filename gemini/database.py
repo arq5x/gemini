@@ -5,7 +5,7 @@ import sys
 from itertools import repeat
 import contextlib
 
-from ped import get_ped_fields, default_ped_fields
+from ped import get_ped_fields
 
 
 def index_variation(cursor):

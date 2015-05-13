@@ -1,7 +1,6 @@
 import zlib
 import cPickle
 import sqlite3
-import collections
 
 try:
     from cyordereddict import OrderedDict

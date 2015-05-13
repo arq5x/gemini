@@ -8,4 +8,3 @@ def run(parser, args):
         de_novo_factory = \
             GeminiInheritanceModelFactory(args, model="de_novo")
         de_novo_factory.get_candidates()
-

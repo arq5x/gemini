@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sqlite3
 import os
-import gemini_utils as util
 
 import pybedtools as pbt
 

@@ -3,9 +3,6 @@
 ############################################################
 # Gives a final pathway map of uniprot -> hsa -> gene for ensembl
 #########################################################
-import sys
-import os
-import itertools
 from collections import defaultdict
 
 filename = 'map_uni2hsa2gene'

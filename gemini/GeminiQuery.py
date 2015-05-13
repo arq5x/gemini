@@ -10,8 +10,8 @@ import json
 import abc
 import numpy as np
 from itertools import chain
-import itertools as it
 flatten = chain.from_iterable
+import itertools as it
 
 # gemini imports
 import gemini_utils as util
@@ -1253,7 +1253,6 @@ def select_formatter(args):
                                   % (args.format, SUPPORTED_FORMATS))
     else:
         return SUPPORTED_FORMATS[args.format](args)
-
 
 
 if __name__ == "__main__":
