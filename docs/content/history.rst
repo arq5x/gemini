@@ -15,6 +15,7 @@ x. Use external index to speed genotype queries (this is created by default on l
 x. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
 x. Faster queries due to lazy loading of genotype columns.
 x. Read gt\* columns from the database for better backward compatibility.
+x. Code cleanup. Thanks to Christian Brueffer.
 
 0.14.0 
 =======================================
