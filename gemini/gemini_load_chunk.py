@@ -27,6 +27,7 @@ from gemini_constants import *
 from compression import pack_blob
 from gemini.config import read_gemini_config
 
+
 def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=-1):
     """
     Force each sample to have 3 GL's (0/0, 0/1, 1/1).
@@ -46,6 +47,7 @@ def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=-1):
     if all_empty:
         return None
     return np.array(out, dtype=dtype)
+
 
 class GeminiLoader(object):
     """
@@ -91,7 +93,7 @@ class GeminiLoader(object):
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
         """
-        database.insert_resources(self.c, annotations.get_resources( self.args ))
+        database.insert_resources(self.c, annotations.get_resources(self.args))
 
     def store_version(self):
         """Create table documenting which gemini version was used for this db.
@@ -597,7 +599,7 @@ class GeminiLoader(object):
                 sample_list = [i] + fields
             elif len(self.ped_hash) > 0:
                 sys.exit("EXITING: sample %s found in the VCF but "
-                                 "not in the PED file.\n" % (sample))
+                         "not in the PED file.\n" % (sample))
             else:
                 # if there is no ped file given, just fill in the name and
                 # sample_id and set the other required fields to None
@@ -612,7 +614,7 @@ class GeminiLoader(object):
         i = 0
         table_contents = detailed_list = []
 
-        config = read_gemini_config( args = self.args )
+        config = read_gemini_config(args=self.args)
         path_dirname = config["annotation_dir"]
         file_handle = os.path.join(path_dirname, 'detailed_gene_table_v75')
 
@@ -638,7 +640,7 @@ class GeminiLoader(object):
         i = 0
         contents = summary_list = []
 
-        config = read_gemini_config( args = self.args )
+        config = read_gemini_config(args=self.args)
         path_dirname = config["annotation_dir"]
         file = os.path.join(path_dirname, 'summary_gene_table_v75')
 
@@ -710,7 +712,7 @@ def load(parser, args):
         exit("\nERROR: Unsupported selection for -t\n")
 
     # collect of the the add'l annotation files
-    annotations.load_annos( args )
+    annotations.load_annos(args)
 
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
