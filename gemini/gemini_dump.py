@@ -106,5 +106,3 @@ def dump(parser, args):
             get_samples(c, args)
         elif args.tfam:
             tfam(args)
-
-

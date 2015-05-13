@@ -378,4 +378,3 @@ class GeminiInheritanceModelFactory(object):
                     candidates[key][-1].append(family_gt_phred_lls)
                     candidates[key][-1].append(",".join(violations))
             self.report_candidates(candidates)
-

@@ -135,4 +135,3 @@ def tag_somatic_mutations(args):
 def set_somatic(parser, args):
     
     tag_somatic_mutations(args)
-

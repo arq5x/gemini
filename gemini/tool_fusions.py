@@ -184,4 +184,3 @@ def get_fusions(args):
 def run(parser, args):
     if os.path.exists(args.db):
         get_fusions(args)
-        

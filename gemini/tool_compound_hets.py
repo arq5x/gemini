@@ -254,4 +254,3 @@ class CompoundHet(Factory):
 def run(parser, args):
     if os.path.exists(args.db):
         CompoundHet(args, "comp_het").get_compound_hets()
-
