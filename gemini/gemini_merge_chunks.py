@@ -200,6 +200,9 @@ def merge_db_chunks(args):
         else:
             update_sample_genotype_counts(main_curr, db)
 
+    if args.index:
+        gemini_db.create_indices(main_curr)
+
     main_conn.commit()
     main_curr.close()
 

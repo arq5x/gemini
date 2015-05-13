@@ -167,7 +167,7 @@ def main():
                              default=None, help='Cluster queue to use.')
     parser_load.add_argument('--tempdir', dest='tempdir',
                              default=tempfile.gettempdir(),
-                             help="temp directory to use when loading with multiple cores")
+                             help='Temp directory for storing intermediate files when loading in parallel.')
     parser_load.add_argument('--passonly',
                              dest='passonly',
                              default=False,
@@ -270,7 +270,8 @@ def main():
                          default=False)
     parser_loadchunk.add_argument('--tempdir', dest='tempdir',
                                   default=tempfile.gettempdir(),
-                                  help='temporary dir for loading')
+                                  help='Local (non-NFS) temp directory to use for working around SQLite locking issues '
+                                       'on NFS drives.')
 
     def loadchunk_fn(parser, args):
         import gemini_load_chunk
@@ -290,7 +291,12 @@ def main():
             dest='chunkdbs',
             action='append')
     parser_mergechunks.add_argument('--tempdir', dest='tempdir',
-            default=tempfile.gettempdir(), help='<TODO add help>')
+            default=tempfile.gettempdir(),
+            help='Local (non-NFS) temp directory to use for working around SQLite locking issues on NFS drives.')
+    parser_mergechunks.add_argument('--index', dest='index',
+            action='store_true',
+            help='Create all database indexes. If multiple merges are used to create a database, only the last merge '
+                 'should create the indexes.')
 
     def mergechunk_fn(parser, args):
         import gemini_merge_chunks
