@@ -3,6 +3,7 @@ import warnings
 from collections import namedtuple
 
 import GeminiQuery
+from gemini_inheritance_model_utils import GeminiInheritanceModelFactory
 
 import tool_de_novo_mutations as de_novo_tool
 import tool_autosomal_recessive as recessive_tool
