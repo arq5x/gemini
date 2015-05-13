@@ -1,8 +1,6 @@
 import zlib
 import cPickle
 import sqlite3
-import numpy
-import collections
 
 from gemini_utils import OrderedDict
 

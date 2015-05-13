@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sqlite3
-from collections import Counter
 from gemini_constants import *
 import gemini_subjects
 import GeminiQuery

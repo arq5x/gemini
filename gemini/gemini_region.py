@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sqlite3
 import re
 import os
 import sys

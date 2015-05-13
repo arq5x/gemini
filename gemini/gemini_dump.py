@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import sqlite3
-import numpy as np
 import compression as Z
-import re
 import os
 
 import gemini_utils as util

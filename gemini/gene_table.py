@@ -1,4 +1,3 @@
-import sys
 import os
 import database
 from gemini.config import read_gemini_config

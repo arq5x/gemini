@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import sys
-import os
-import itertools
 from collections import defaultdict
 
 files = 'gene_table'

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sqlite3
 import collections
 from collections import defaultdict
 from itertools import tee, ifilterfalse

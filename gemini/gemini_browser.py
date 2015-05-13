@@ -20,7 +20,7 @@ import tool_autosomal_dominant as dominant_tool
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     from bottle import TEMPLATE_PATH, Bottle, run, static_file, debug, request
-    from bottle import jinja2_view as view, jinja2_template as template
+    from bottle import jinja2_template as template
 
 debug(True)
 
