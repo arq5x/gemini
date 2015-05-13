@@ -162,7 +162,7 @@ ExacInfo = collections.namedtuple("ExacInfo",
                                    aaf_OTH \
                                    aaf_SAS")
 
-def load_annos( args ):
+def load_annos(args):
     """
     Populate a dictionary of Tabixfile handles for
     each annotation file.  Other modules can then
@@ -172,7 +172,7 @@ def load_annos( args ):
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
     """
-    anno_files = get_anno_files( args )
+    anno_files = get_anno_files(args)
     for anno in anno_files:
         try:
             # .gz denotes Tabix files.
@@ -180,7 +180,7 @@ def load_annos( args ):
                 annos[anno] = pysam.Tabixfile(anno_files[anno])
             # .bw denotes BigWig files.
             elif anno_files[anno].endswith(".bw"):
-                annos[anno] = BigWigFile( open( anno_files[anno] ) )
+                annos[anno] = BigWigFile(open(anno_files[anno]))
 
         except IOError:
             sys.exit("Gemini cannot open this annotation file: %s. \n"

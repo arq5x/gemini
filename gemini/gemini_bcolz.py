@@ -82,7 +82,11 @@ def create(db, cols=None):
 
     nv = get_n_variants(cur)
 
-    print >>sys.stderr, "loading %i variants for %i samples into bcolz" % (nv, len(samples))
+    sys.stderr.write("loading %i variants for %i samples into bcolz\n"
+                     % (nv, len(samples)))
+
+    if nv == 0 or len(samples) == 0:
+        return
 
     carrays = {}
     tmps = {}
@@ -95,9 +99,10 @@ def create(db, cols=None):
             for s in samples:
                 mkdir("%s/%s" % (bcpath, s))
                 carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
-                    expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc),
-                    chunklen=16384*8,
-                    mode="w"))
+                                    expectedlen=nv,
+                                    rootdir="%s/%s/%s" % (bcpath, s, gtc),
+                                    chunklen=16384*8,
+                                    mode="w"))
                 tmps[gtc].append([])
 
         t0 = time.time()

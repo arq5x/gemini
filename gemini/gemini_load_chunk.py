@@ -121,7 +121,6 @@ class GeminiLoader(object):
         self.counter = 0
         self.var_buffer = []
         self.var_impacts_buffer = []
-        buffer_count = 0
         self.skipped = 0
         extra_file, extraheader_file = gemini_annotate.get_extra_files(self.args.db)
         extra_headers = {}
@@ -144,9 +143,8 @@ class GeminiLoader(object):
                 for var_impact in variant_impacts:
                     self.var_impacts_buffer.append(var_impact)
 
-                buffer_count += 1
                 # buffer full - time to insert into DB
-                if buffer_count >= self.buffer_size:
+                if len(self.var_buffer) >= self.buffer_size:
                     sys.stderr.write("pid " + str(os.getpid()) + ": " +
                                      str(self.counter) + " variants processed.\n")
                     database.insert_variation(self.c, self.var_buffer)
@@ -156,7 +154,6 @@ class GeminiLoader(object):
                     # reset for the next batch
                     self.var_buffer = []
                     self.var_impacts_buffer = []
-                    buffer_count = 0
                 self.v_id += 1
                 self.counter += 1
         if extra_headers:
@@ -453,35 +450,28 @@ class GeminiLoader(object):
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
         else:
-            gt_bases = None
-            gt_types = None
-            gt_phases = None
-            gt_depths = None
-            gt_ref_depths = None
-            gt_alt_depths = None
-            gt_quals = None
-            gt_copy_numbers = None
+            gt_bases = gt_types = gt_phases = gt_depths = gt_ref_depths = None
+            gt_alt_depths = gt_quals = gt_copy_numbers = None
 
-        if self.args.skip_info_string is False:
-            info = var.INFO
-        else:
+        if self.args.skip_info_string:
             info = None
+        else:
+            info = var.INFO
 
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
         variant_impacts = []
-        if impacts is not None:
-            for idx, impact in enumerate(impacts):
-                var_impact = [self.v_id, (idx + 1), impact.gene,
-                              impact.transcript, impact.is_exonic,
-                              impact.is_coding, impact.is_lof,
-                              impact.exon, impact.codon_change,
-                              impact.aa_change, impact.aa_length,
-                              impact.biotype, impact.consequence,
-                              impact.so, impact.effect_severity,
-                              impact.polyphen_pred, impact.polyphen_score,
-                              impact.sift_pred, impact.sift_score]
-                variant_impacts.append(var_impact)
+        for idx, impact in enumerate(impacts or [], start=1):
+            var_impact = [self.v_id, idx, impact.gene,
+                          impact.transcript, impact.is_exonic,
+                          impact.is_coding, impact.is_lof,
+                          impact.exon, impact.codon_change,
+                          impact.aa_change, impact.aa_length,
+                          impact.biotype, impact.consequence,
+                          impact.so, impact.effect_severity,
+                          impact.polyphen_pred, impact.polyphen_score,
+                          impact.sift_pred, impact.sift_score]
+            variant_impacts.append(var_impact)
 
         # extract structural variants
         sv = svs.StructuralVariant(var)
@@ -491,7 +481,10 @@ class GeminiLoader(object):
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         if extra_fields:
-            extra_fields.update({"chrom": var.CHROM, "start": var.start, "end": var.end})
+            extra_fields.update({"chrom": var.CHROM,
+                                 "start": var.start,
+                                 "end": var.end})
+
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
                    vcf_id, self.v_id, anno_id, var.REF, ','.join([x or "" for x in var.ALT]),

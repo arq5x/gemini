@@ -120,13 +120,11 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
         to_update = []
 
 def _update_variants(to_update, col_names, cursor):
-        update_qry = "UPDATE variants SET "
-
-        update_cols = ",".join(col_name + " = ?" for col_name in col_names)
-        update_qry += update_cols
-        update_qry += " WHERE variant_id = ?"
-        cursor.executemany(update_qry, to_update)
-
+    update_qry = "UPDATE variants SET "
+    update_cols = ",".join(col_name + " = ?" for col_name in col_names)
+    update_qry += update_cols
+    update_qry += " WHERE variant_id = ?"
+    cursor.executemany(update_qry, to_update)
 
 def annotate_variants_bool(args, conn, col_names):
     """
