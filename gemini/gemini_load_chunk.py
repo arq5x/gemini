@@ -5,7 +5,6 @@ import os.path
 import sys
 import sqlite3
 import numpy as np
-import json
 import shutil
 import uuid
 
@@ -118,51 +117,50 @@ class GeminiLoader(object):
     def populate_from_vcf(self):
         """
         """
-        import gemini_annotate  # avoid circular dependencies
+        import gemini_annotate as ga
+        extra_vcf_fields = set()
+
         self.v_id = self._get_vid()
         self.counter = 0
         self.var_buffer = []
         self.var_impacts_buffer = []
         self.skipped = 0
-        extra_file, extraheader_file = gemini_annotate.get_extra_files(self.args.db)
-        extra_headers = {}
-        with open(extra_file, "w") as extra_handle:
-            # process and load each variant in the VCF file
-            for var in self.vcf_reader:
-                if len(var.ALT) > 1 and not self.seen_multi:
-                    self._multiple_alts_message()
 
-                if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
-                    self.skipped += 1
-                    continue
-                (variant, variant_impacts, extra_fields) = self._prepare_variation(var)
-                if extra_fields:
-                    extra_handle.write("%s\n" % json.dumps(extra_fields))
-                    extra_headers = self._update_extra_headers(extra_headers, extra_fields)
-                # add the core variant info to the variant buffer
-                self.var_buffer.append(variant)
-                # add each of the impact for this variant (1 per gene/transcript)
-                for var_impact in variant_impacts:
-                    self.var_impacts_buffer.append(var_impact)
+        # we save the vcf in this chunk for extra annotations.
+        self.extra_vcf_writer = ga.get_extra_vcf(self.args.db, self.vcf_reader)
 
-                # buffer full - time to insert into DB
-                if len(self.var_buffer) >= self.buffer_size:
-                    sys.stderr.write("pid " + str(os.getpid()) + ": " +
-                                     str(self.counter) + " variants processed.\n")
-                    database.insert_variation(self.c, self.var_buffer)
-                    database.insert_variation_impacts(self.c,
-                                                      self.var_impacts_buffer)
-                    # binary.genotypes.append(var_buffer)
-                    # reset for the next batch
-                    self.var_buffer = []
-                    self.var_impacts_buffer = []
-                self.v_id += 1
-                self.counter += 1
-        if extra_headers:
-            with open(extraheader_file, "w") as out_handle:
-                out_handle.write(json.dumps(extra_headers))
-        else:
-            os.remove(extra_file)
+        # process and load each variant in the VCF file
+        for var in self.vcf_reader:
+            if len(var.ALT) > 1 and not self.seen_multi:
+                self._multiple_alts_message()
+
+            if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
+                self.skipped += 1
+                continue
+            (variant, variant_impacts, extra_fields) = self._prepare_variation(var)
+            if extra_fields:
+                var.INFO.update(extra_fields)
+                self.extra_vcf_writer.write_record(var)
+                extra_vcf_fields.update(extra_fields.keys())
+            # add the core variant info to the variant buffer
+            self.var_buffer.append(variant)
+            # add each of the impact for this variant (1 per gene/transcript)
+            for var_impact in variant_impacts:
+                self.var_impacts_buffer.append(var_impact)
+
+            # buffer full - time to insert into DB
+            if len(self.var_buffer) >= self.buffer_size:
+                sys.stderr.write("pid " + str(os.getpid()) + ": " +
+                                 str(self.counter) + " variants processed.\n")
+                database.insert_variation(self.c, self.var_buffer)
+                database.insert_variation_impacts(self.c,
+                                                  self.var_impacts_buffer)
+                # binary.genotypes.append(var_buffer)
+                # reset for the next batch
+                self.var_buffer = []
+                self.var_impacts_buffer = []
+            self.v_id += 1
+            self.counter += 1
         # final load to the database
         self.v_id -= 1
         database.insert_variation(self.c, self.var_buffer)
@@ -173,6 +171,12 @@ class GeminiLoader(object):
             sys.stderr.write("pid " + str(os.getpid()) + ": " +
                              str(self.skipped) + " skipped due to having the "
                              "FILTER field set.\n")
+        self.extra_vcf_writer.stream.close()
+        if len(extra_vcf_fields) == 0:
+            os.unlink(self.extra_vcf_writer.stream.name)
+        else:
+            with open(self.extra_vcf_writer.stream.name + ".fields", "w") as o:
+                o.write("\n".join(list(extra_vcf_fields)))
 
     def _update_extra_headers(self, headers, cur_fields):
         """Update header information for extra fields.
@@ -482,11 +486,6 @@ class GeminiLoader(object):
 
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
-        if extra_fields:
-            extra_fields.update({"chrom": var.CHROM,
-                                 "start": var.start,
-                                 "end": var.end})
-
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
                    vcf_id, self.v_id, anno_id, var.REF, ','.join([x or "" for x in var.ALT]),
@@ -725,7 +724,7 @@ def load(parser, args):
             gemini_loader.store_resources()
             gemini_loader.store_version()
             gemini_loader.store_vcf_header()
-            gemini_loader.populate_from_vcf()
+            extra_fields = gemini_loader.populate_from_vcf()
             gemini_loader.update_gene_table()
             # gemini_loader.build_indices_and_disconnect()
 

@@ -65,7 +65,6 @@ def load_singlecore(args):
     gemini_loader.store_vcf_header()
     gemini_loader.populate_from_vcf()
 
-
     if not args.skip_gene_tables and not args.test_mode:
         gemini_loader.update_gene_table()
     if not args.test_mode:
@@ -73,20 +72,21 @@ def load_singlecore(args):
 
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
-    gemini_annotate.add_extras(args.db, [args.db], region_only=True)
+
+    gemini_annotate.add_extras(args.db, [args.db], region_only=False)
 
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)
     chunks = load_chunks_multicore(grabix_file, args)
     merge_chunks_multicore(chunks, args)
-    gemini_annotate.add_extras(args.db, chunks, region_only=True)
+    gemini_annotate.add_extras(args.db, chunks, region_only=False)
 
 def load_ipython(args):
     grabix_file = bgzip(args.vcf)
     with cluster_view(*get_ipython_args(args)) as view:
         chunks = load_chunks_ipython(grabix_file, args, view)
         merge_chunks_ipython(chunks, args, view)
-    gemini_annotate.add_extras(args.db, chunks, region_only=True)
+    gemini_annotate.add_extras(args.db, chunks, region_only=False)
 
 def merge_chunks(chunks, db, kwargs):
     cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"))
@@ -354,7 +354,8 @@ def gemini_pipe_load_cmd():
 def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
-    chunk_size = int(num_lines) / int(args.cores)
+    args.cores = min(int(args.cores), num_lines)
+    chunk_size = int(num_lines) / args.cores
     print "Breaking {0} into {1} chunks.".format(grabix_file, args.cores)
 
     starts = []

@@ -342,7 +342,7 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
             # Check for multiple alleles and warnings flag.
             if not warnings:
                 return
-            if len(alt) == 1:
+            if len(alt) == 1 or isinstance(alt, basestring):
                 return
 
             variant_text = 'variant'
@@ -371,7 +371,7 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
 
             # Warn for multiple alleles.
             if isinstance(h, basestring):
-                start = int(h.split('\t', 1)[1])
+                start = int(h.split('\t', 2)[1])
             else:
                 # Assume it's a Pysam entry.
                 start = h.pos
