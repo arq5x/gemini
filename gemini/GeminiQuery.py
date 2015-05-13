@@ -8,6 +8,7 @@ import collections
 import json
 import abc
 import numpy as np
+from itertools.chain import from_iterable as flatten
 
 # gemini imports
 import gemini_utils as util
@@ -1238,28 +1239,6 @@ def select_formatter(args):
                                   % (args.format, SUPPORTED_FORMATS))
     else:
         return SUPPORTED_FORMATS[args.format](args)
-
-
-def flatten(l):
-    """
-    flatten an irregular list of lists
-    example: flatten([[[1, 2, 3], [4, 5]], 6]) -> [1, 2, 3, 4, 5, 6]
-    lifted from: http://stackoverflow.com/questions/2158395/
-
-    """
-    for el in l:
-        if isinstance(el, collections.Iterable) and not isinstance(el,
-                                                                   basestring):
-            for sub in flatten(el):
-                yield sub
-        else:
-            yield el
-
-try:
-    from itertools import chain
-    flatten = chain.from_iterable
-except ImporError:
-    pass
 
 
 if __name__ == "__main__":
