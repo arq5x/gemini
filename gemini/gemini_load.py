@@ -360,7 +360,7 @@ def get_chunk_steps(grabix_file, args):
 
     starts = []
     stops = []
-    for chunk in range(0, int(args.cores)):
+    for chunk in range(args.cores):
         start = (chunk * chunk_size) + 1
         stop  = start + chunk_size - 1
         # make sure the last chunk covers the remaining lines
