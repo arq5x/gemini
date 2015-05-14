@@ -38,7 +38,7 @@ def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=-1):
     empty_line = [empty_val] * 3
     for row in gt_phred_likelihoods:
         # we only try to use the correct PL's if it already has size 3
-        if row is not None and len(row) == 3:
+        if row is not None and isinstance(row, (list, tuple)) and len(row) == 3:
             out.append([int(v) if v is not None else empty_val for v in row])
             all_empty = False
         else:
