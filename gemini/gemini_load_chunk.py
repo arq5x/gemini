@@ -5,7 +5,6 @@ import os.path
 import sys
 import sqlite3
 import numpy as np
-import json
 import shutil
 import uuid
 
@@ -27,24 +26,27 @@ from gemini_constants import *
 from compression import pack_blob
 from gemini.config import read_gemini_config
 
+
 def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=-1):
     """
     Force each sample to have 3 GL's (0/0, 0/1, 1/1).
     If no samples have GL's, then we just return None to save space.
     """
+    m = np.iinfo(dtype).max - 1
     out = []
     all_empty = True
     empty_line = [empty_val] * 3
     for row in gt_phred_likelihoods:
         # we only try to use the correct PL's if it already has size 3
         if row is not None and len(row) == 3:
-            out.append([int(v) if v is not None else empty_val for v in row])
+            out.append([min(m, int(v)) if v is not None else empty_val for v in row])
             all_empty = False
         else:
             out.append(empty_line)
     if all_empty:
         return None
     return np.array(out, dtype=dtype)
+
 
 class GeminiLoader(object):
     """
@@ -90,7 +92,7 @@ class GeminiLoader(object):
     def store_resources(self):
         """Create table of annotation resources used in this gemini database.
         """
-        database.insert_resources(self.c, annotations.get_resources( self.args ))
+        database.insert_resources(self.c, annotations.get_resources(self.args))
 
     def store_version(self):
         """Create table documenting which gemini version was used for this db.
@@ -115,54 +117,50 @@ class GeminiLoader(object):
     def populate_from_vcf(self):
         """
         """
-        import gemini_annotate  # avoid circular dependencies
+        import gemini_annotate as ga
+        extra_vcf_fields = set()
+
         self.v_id = self._get_vid()
         self.counter = 0
         self.var_buffer = []
         self.var_impacts_buffer = []
-        buffer_count = 0
         self.skipped = 0
-        extra_file, extraheader_file = gemini_annotate.get_extra_files(self.args.db)
-        extra_headers = {}
-        with open(extra_file, "w") as extra_handle:
-            # process and load each variant in the VCF file
-            for var in self.vcf_reader:
-                if len(var.ALT) > 1 and not self.seen_multi:
-                    self._multiple_alts_message()
 
-                if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
-                    self.skipped += 1
-                    continue
-                (variant, variant_impacts, extra_fields) = self._prepare_variation(var)
-                if extra_fields:
-                    extra_handle.write("%s\n" % json.dumps(extra_fields))
-                    extra_headers = self._update_extra_headers(extra_headers, extra_fields)
-                # add the core variant info to the variant buffer
-                self.var_buffer.append(variant)
-                # add each of the impact for this variant (1 per gene/transcript)
-                for var_impact in variant_impacts:
-                    self.var_impacts_buffer.append(var_impact)
+        # we save the vcf in this chunk for extra annotations.
+        self.extra_vcf_writer = ga.get_extra_vcf(self.args.db, self.vcf_reader)
 
-                buffer_count += 1
-                # buffer full - time to insert into DB
-                if buffer_count >= self.buffer_size:
-                    sys.stderr.write("pid " + str(os.getpid()) + ": " +
-                                     str(self.counter) + " variants processed.\n")
-                    database.insert_variation(self.c, self.var_buffer)
-                    database.insert_variation_impacts(self.c,
-                                                      self.var_impacts_buffer)
-                    # binary.genotypes.append(var_buffer)
-                    # reset for the next batch
-                    self.var_buffer = []
-                    self.var_impacts_buffer = []
-                    buffer_count = 0
-                self.v_id += 1
-                self.counter += 1
-        if extra_headers:
-            with open(extraheader_file, "w") as out_handle:
-                out_handle.write(json.dumps(extra_headers))
-        else:
-            os.remove(extra_file)
+        # process and load each variant in the VCF file
+        for var in self.vcf_reader:
+            if len(var.ALT) > 1 and not self.seen_multi:
+                self._multiple_alts_message()
+
+            if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
+                self.skipped += 1
+                continue
+            (variant, variant_impacts, extra_fields) = self._prepare_variation(var)
+            if extra_fields:
+                var.INFO.update(extra_fields)
+                self.extra_vcf_writer.write_record(var)
+                extra_vcf_fields.update(extra_fields.keys())
+            # add the core variant info to the variant buffer
+            self.var_buffer.append(variant)
+            # add each of the impact for this variant (1 per gene/transcript)
+            for var_impact in variant_impacts:
+                self.var_impacts_buffer.append(var_impact)
+
+            # buffer full - time to insert into DB
+            if len(self.var_buffer) >= self.buffer_size:
+                sys.stderr.write("pid " + str(os.getpid()) + ": " +
+                                 str(self.counter) + " variants processed.\n")
+                database.insert_variation(self.c, self.var_buffer)
+                database.insert_variation_impacts(self.c,
+                                                  self.var_impacts_buffer)
+                # binary.genotypes.append(var_buffer)
+                # reset for the next batch
+                self.var_buffer = []
+                self.var_impacts_buffer = []
+            self.v_id += 1
+            self.counter += 1
         # final load to the database
         self.v_id -= 1
         database.insert_variation(self.c, self.var_buffer)
@@ -173,6 +171,12 @@ class GeminiLoader(object):
             sys.stderr.write("pid " + str(os.getpid()) + ": " +
                              str(self.skipped) + " skipped due to having the "
                              "FILTER field set.\n")
+        self.extra_vcf_writer.stream.close()
+        if len(extra_vcf_fields) == 0:
+            os.unlink(self.extra_vcf_writer.stream.name)
+        else:
+            with open(self.extra_vcf_writer.stream.name + ".fields", "w") as o:
+                o.write("\n".join(list(extra_vcf_fields)))
 
     def _update_extra_headers(self, headers, cur_fields):
         """Update header information for extra fields.
@@ -452,35 +456,28 @@ class GeminiLoader(object):
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
         else:
-            gt_bases = None
-            gt_types = None
-            gt_phases = None
-            gt_depths = None
-            gt_ref_depths = None
-            gt_alt_depths = None
-            gt_quals = None
-            gt_copy_numbers = None
+            gt_bases = gt_types = gt_phases = gt_depths = gt_ref_depths = None
+            gt_alt_depths = gt_quals = gt_copy_numbers = None
 
-        if self.args.skip_info_string is False:
-            info = var.INFO
-        else:
+        if self.args.skip_info_string:
             info = None
+        else:
+            info = var.INFO
 
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
         variant_impacts = []
-        if impacts is not None:
-            for idx, impact in enumerate(impacts):
-                var_impact = [self.v_id, (idx + 1), impact.gene,
-                              impact.transcript, impact.is_exonic,
-                              impact.is_coding, impact.is_lof,
-                              impact.exon, impact.codon_change,
-                              impact.aa_change, impact.aa_length,
-                              impact.biotype, impact.consequence,
-                              impact.so, impact.effect_severity,
-                              impact.polyphen_pred, impact.polyphen_score,
-                              impact.sift_pred, impact.sift_score]
-                variant_impacts.append(var_impact)
+        for idx, impact in enumerate(impacts or [], start=1):
+            var_impact = [self.v_id, idx, impact.gene,
+                          impact.transcript, impact.is_exonic,
+                          impact.is_coding, impact.is_lof,
+                          impact.exon, impact.codon_change,
+                          impact.aa_change, impact.aa_length,
+                          impact.biotype, impact.consequence,
+                          impact.so, impact.effect_severity,
+                          impact.polyphen_pred, impact.polyphen_score,
+                          impact.sift_pred, impact.sift_score]
+            variant_impacts.append(var_impact)
 
         # extract structural variants
         sv = svs.StructuralVariant(var)
@@ -489,8 +486,6 @@ class GeminiLoader(object):
 
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
-        if extra_fields:
-            extra_fields.update({"chrom": var.CHROM, "start": var.start, "end": var.end})
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
                    vcf_id, self.v_id, anno_id, var.REF, ','.join([x or "" for x in var.ALT]),
@@ -603,7 +598,7 @@ class GeminiLoader(object):
                 sample_list = [i] + fields
             elif len(self.ped_hash) > 0:
                 sys.exit("EXITING: sample %s found in the VCF but "
-                                 "not in the PED file.\n" % (sample))
+                         "not in the PED file.\n" % (sample))
             else:
                 # if there is no ped file given, just fill in the name and
                 # sample_id and set the other required fields to None
@@ -618,7 +613,7 @@ class GeminiLoader(object):
         i = 0
         table_contents = detailed_list = []
 
-        config = read_gemini_config( args = self.args )
+        config = read_gemini_config(args=self.args)
         path_dirname = config["annotation_dir"]
         file_handle = os.path.join(path_dirname, 'detailed_gene_table_v75')
 
@@ -644,7 +639,7 @@ class GeminiLoader(object):
         i = 0
         contents = summary_list = []
 
-        config = read_gemini_config( args = self.args )
+        config = read_gemini_config(args=self.args)
         path_dirname = config["annotation_dir"]
         file = os.path.join(path_dirname, 'summary_gene_table_v75')
 
@@ -716,7 +711,7 @@ def load(parser, args):
         exit("\nERROR: Unsupported selection for -t\n")
 
     # collect of the the add'l annotation files
-    annotations.load_annos( args )
+    annotations.load_annos(args)
 
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
@@ -729,7 +724,7 @@ def load(parser, args):
             gemini_loader.store_resources()
             gemini_loader.store_version()
             gemini_loader.store_vcf_header()
-            gemini_loader.populate_from_vcf()
+            extra_fields = gemini_loader.populate_from_vcf()
             gemini_loader.update_gene_table()
             # gemini_loader.build_indices_and_disconnect()
 

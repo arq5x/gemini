@@ -46,4 +46,3 @@ for line in open("BINARY_PROTEIN_PROTEIN_INTERACTIONS.txt", 'r'):
 
 cPickle.dump(gr, output)
 output.close()
-              

@@ -4,17 +4,12 @@ An engine only has to have a query() function that returns a list of
 variant ids that meet a gemini genotype query.
 
 Any engine can be added in a post-hoc fashion provided a module is
-provided with the following functions:
+provided with the single filter():
 
-    # create the index given the database for the first time
-    create(db_path)
-    # load an existing genotype-query engine (this returns any object needed to query).
-    # this may not be needed by some engines and can return None in that case.
-    load(db_path)
     # take a gemini --gt-filter string and return a list of variant_ids that meet
     # that filter. `obj` is the thing returned by load().
     # user_dict contains things like HET, UNKNOWN, etc. used in the eval.
-    query(db_path, obj, gt_filter, user_dict)
+    filter(db_path, obj, gt_filter, user_dict)
 
 See below for an implementation using bcolz.
 It is using carray rather than ctable because with ctable, we'd be limited to
@@ -25,6 +20,7 @@ samples on ext3. These limits are not an issue for ext4.
 
 import os
 import sys
+sys.setrecursionlimit(8192)
 import sqlite3
 import time
 import re
@@ -32,7 +28,9 @@ import shutil
 
 import numpy as np
 import bcolz
+import numexpr as ne
 bcolz.blosc_set_nthreads(2)
+ne.set_num_threads(2)
 
 import compression
 from gemini_utils import get_gt_cols
@@ -84,7 +82,11 @@ def create(db, cols=None):
 
     nv = get_n_variants(cur)
 
-    print >>sys.stderr, "loading %i variants for %i samples" % (nv, len(samples))
+    sys.stderr.write("loading %i variants for %i samples into bcolz\n"
+                     % (nv, len(samples)))
+
+    if nv == 0 or len(samples) == 0:
+        return
 
     carrays = {}
     tmps = {}
@@ -97,14 +99,15 @@ def create(db, cols=None):
             for s in samples:
                 mkdir("%s/%s" % (bcpath, s))
                 carrays[gtc].append(bcolz.carray(np.empty(0, dtype=dt),
-                    expectedlen=nv, rootdir="%s/%s/%s" % (bcpath, s, gtc),
-                    chunklen=16384*8,
-                    mode="w"))
+                                    expectedlen=nv,
+                                    rootdir="%s/%s/%s" % (bcpath, s, gtc),
+                                    chunklen=16384*8,
+                                    mode="w"))
                 tmps[gtc].append([])
-
 
         t0 = time.time()
         step = 200000
+        del gtc
 
         empty = [-1] * len(samples)
         for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
@@ -127,13 +130,21 @@ def create(db, cols=None):
     except:
         # on error, we remove the dirs so we can't have weird problems.
         for k, li in carrays.items():
-            for ca in li:
-                print >>sys.stderr, "removing:", ca.rootdir
+            for i, ca in enumerate(li):
+                if i < 5:
+                    print >>sys.stderr, "removing:", ca.rootdir
+                if i == 5:
+                    print >>sys.stderr, "not reporting further removals for %s" % k
                 ca.flush()
                 shutil.rmtree(ca.rootdir)
         raise
 
+
+# TODO: since we call this from query, we can improve speed by only loading
+# samples that appear in the query with an optional query=None arg to load.
 def load(db):
+
+    t0 = time.time()
     conn = sqlite3.connect(db)
     cur = conn.cursor()
 
@@ -148,13 +159,30 @@ def load(db):
             path = "%s/%s/%s" % (bcpath, s, gtc)
             if os.path.exists(path):
                 carrays[gtc].append(bcolz.open(path, mode="r"))
+    if os.environ.get("GEMINI_DEBUG") == "TRUE":
+        print >>sys.stderr, "it took %.2f seconds to load arrays" \
+            % (time.time() - t0)
     return carrays
 
-def query(db, carrays, query, user_dict):
-    if "any(" in query or "all(" in query or "sum(" in query:
+
+def filter(db, query, user_dict):
+    # these should be translated to a bunch or or/and statements within gemini
+    # so they are supported, but must be translated before getting here.
+    if "any(" in query or "all(" in query or \
+       ("sum(" in query and not query.startswith("sum(") and query.count("sum(") == 1):
         return None
-    if carrays is None:
-        carrays = load(db)
+    user_dict['where'] = np.where
+
+    carrays = load(db)
+    if query.startswith("not "):
+        # "~" is not to numexpr.
+        query = "~" + query[4:]
+    sum_cmp = False
+    if query.startswith("sum("):
+        assert query[-1].isdigit()
+        query, sum_cmp = query[4:].rsplit(")", 1)
+        query = "(%s) %s" % (query, sum_cmp)
+
     query = query.replace(".", "__")
     query = " & ".join("(%s)" % token for token in query.split(" and "))
     query = " | ".join("(%s)" % token for token in query.split(" or "))
@@ -162,7 +190,6 @@ def query(db, carrays, query, user_dict):
     conn = sqlite3.connect(db)
     cur = conn.cursor()
     samples = get_samples(cur)
-
     # convert gt_col[index] to gt_col__sample_name
     patt = "(%s)\[(\d+)\]" % "|".join(carrays.keys())
 
@@ -172,7 +199,8 @@ def query(db, carrays, query, user_dict):
         return "%s__%s" % (field, samples[int(idx)])
 
     query = re.sub(patt, subfn, query)
-    print >>sys.stderr, query
+    if os.environ.get('GEMINI_DEBUG') == 'TRUE':
+        print >>sys.stderr, query
 
     # loop through and create a cache of "$gt__$sample"
     for gt_col in carrays:
@@ -182,7 +210,18 @@ def query(db, carrays, query, user_dict):
             # if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
-    res = bcolz.eval(query, user_dict=user_dict, vm="numexpr")
+    # had to special-case count. it won't quite be as efficient
+    if "|count|" in query:
+        tokens = query[2:-2].split("|count|")
+        icmp = tokens[-1]
+        # a list of carrays, so not in memory.
+        res = [bcolz.eval(tok, user_dict=user_dict) for tok in tokens[:-1]]
+        # in memory after this, but just a single axis array.
+        res = np.sum(res, axis=0)
+        res = ne.evaluate('res%s' % icmp)
+    else:
+        res = bcolz.eval(query, user_dict=user_dict)
+
     if res.shape[0] == 1 and len(res.shape) > 1:
         res = res[0]
     variant_ids, = np.where(res)
@@ -196,7 +235,6 @@ def query(db, carrays, query, user_dict):
 
 if __name__ == "__main__":
 
-    import sys
     db = sys.argv[1]
     #create(sys.argv[1])
     carrays = load(db)

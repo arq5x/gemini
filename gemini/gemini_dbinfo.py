@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sqlite3
 import os
-import gemini_utils as util
 
 
 def get_table_info(c, table_name, out_template):

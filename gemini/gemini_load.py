@@ -22,7 +22,7 @@ def load(parser, args):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
 
-    annos = annotations.get_anno_files( args )
+    annos = annotations.get_anno_files(args)
     # force skipping CADD and GERP if the data files have not been installed
     if args.skip_cadd is False:
         if 'cadd_score' not in annos:
@@ -42,7 +42,7 @@ def load(parser, args):
         else:
             sys.stderr.write("GERP per bp is being loaded (to skip use:--skip-gerp-bp).\n")
     # collect of the the add'l annotation files
-    annotations.load_annos( args )
+    annotations.load_annos(args)
 
     if args.scheduler:
         load_ipython(args)
@@ -50,6 +50,11 @@ def load(parser, args):
         load_multicore(args)
     else:
         load_singlecore(args)
+
+    if not args.no_bcolz:
+        from gemini.gemini_bcolz import create
+        create(args.db)
+
 
 def load_singlecore(args):
     # create a new gemini loader and populate
@@ -60,7 +65,6 @@ def load_singlecore(args):
     gemini_loader.store_vcf_header()
     gemini_loader.populate_from_vcf()
 
-
     if not args.skip_gene_tables and not args.test_mode:
         gemini_loader.update_gene_table()
     if not args.test_mode:
@@ -68,20 +72,21 @@ def load_singlecore(args):
 
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
-    gemini_annotate.add_extras(args.db, [args.db], region_only=True)
+
+    gemini_annotate.add_extras(args.db, [args.db], region_only=False)
 
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)
     chunks = load_chunks_multicore(grabix_file, args)
     merge_chunks_multicore(chunks, args)
-    gemini_annotate.add_extras(args.db, chunks, region_only=True)
+    gemini_annotate.add_extras(args.db, chunks, region_only=False)
 
 def load_ipython(args):
     grabix_file = bgzip(args.vcf)
     with cluster_view(*get_ipython_args(args)) as view:
         chunks = load_chunks_ipython(grabix_file, args, view)
         merge_chunks_ipython(chunks, args, view)
-    gemini_annotate.add_extras(args.db, chunks, region_only=True)
+    gemini_annotate.add_extras(args.db, chunks, region_only=False)
 
 def merge_chunks(chunks, db, kwargs):
     cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"))
@@ -184,7 +189,10 @@ def load_chunks_multicore(grabix_file, args):
 
     tempdir = ""
     if args.tempdir is not None:
+        if not os.path.exists(args.tempdir):
+            os.makedirs(args.tempdir)
         tempdir = "--tempdir " + args.tempdir
+    chunk_dir = args.tempdir + "/" if args.tempdir else ""
 
     no_genotypes = ""
     if args.no_genotypes is True:
@@ -219,7 +227,7 @@ def load_chunks_multicore(grabix_file, args):
         skip_info_string = "--skip-info-string"
 
     submit_command = "{cmd}"
-    vcf, _ = os.path.splitext(grabix_file)
+    vcf, _ = os.path.splitext(os.path.basename(grabix_file))
     chunk_steps = get_chunk_steps(grabix_file, args)
     chunk_vcfs = []
     chunk_dbs = []
@@ -232,7 +240,7 @@ def load_chunks_multicore(grabix_file, args):
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
 
-        chunk_vcf = vcf + ".chunk" + str(chunk_num)
+        chunk_vcf = chunk_dir + vcf + ".chunk" + str(chunk_num)
         chunk_vcfs.append(chunk_vcf)
         chunk_dbs.append(chunk_vcf + ".db")
 
@@ -253,7 +261,10 @@ def load_chunks_ipython(grabix_file, args, view):
 
     tempdir = ""
     if args.tempdir is not None:
+        if not os.path.exists(args.tempdir):
+            os.makedirs(args.tempdir)
         tempdir = "--tempdir " + args.tempdir
+    chunk_dir = args.tempdir + "/" if args.tempdir else ""
 
     no_genotypes = ""
     if args.no_genotypes is True:
@@ -287,13 +298,14 @@ def load_chunks_ipython(grabix_file, args, view):
     if args.skip_info_string is True:
         skip_info_string = "--skip-info-string"
 
-    vcf, _ = os.path.splitext(grabix_file)
+    vcf, _ = os.path.splitext(os.path.basename(grabix_file))
     chunk_steps = get_chunk_steps(grabix_file, args)
     total_chunks = len(chunk_steps)
     scheduler, queue, cores = get_ipython_args(args)
     load_args = {"ped_file": ped_file,
                  "anno_type": anno_type,
                  "tempdir": tempdir,
+                 "chunk_dir": chunk_dir,
                  "vcf": vcf,
                  "grabix_file": grabix_file,
                  "no_genotypes": no_genotypes,
@@ -315,11 +327,15 @@ def load_chunk(chunk_step, kwargs):
     args = combine_dicts(locals(), kwargs)
     gemini_load = gemini_pipe_load_cmd().format(**args)
     subprocess.check_call(gemini_load, shell=True)
-    chunk_db = args["vcf"] + ".chunk" + str(chunk_num) + ".db"
+    chunk_db = kwargs["chunk_dir"] + args["vcf"] + ".chunk" + str(chunk_num) + ".db"
     return chunk_db
 
 def wait_until_finished(procs):
-    [p.wait() for p in procs]
+    """Wait for parts to finish and ensure a clean finish for each.
+    """
+    pids = [p.wait() for p in procs]
+    if len([p for p in pids if p != 0]) > 0:
+        raise ValueError("Processing failed on GEMINI chunk load")
 
 def cleanup_temp_db_files(chunk_dbs):
     for chunk_db in chunk_dbs:
@@ -332,18 +348,19 @@ def gemini_pipe_load_cmd():
                        " {no_genotypes} {no_load_genotypes} {no_genotypes}"
                        " {skip_gerp_bp} {skip_gene_tables} {skip_cadd}"
                        " {passonly} {skip_info_string} {test_mode} {tempdir}"
-                       " -o {start} {vcf}.chunk{chunk_num}.db")
+                       " -o {start} {chunk_dir}{vcf}.chunk{chunk_num}.db")
     return " | ".join([grabix_cmd, gemini_load_cmd])
 
 def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
-    chunk_size = int(num_lines) / int(args.cores)
+    args.cores = min(int(args.cores), num_lines)
+    chunk_size = int(num_lines) / args.cores
     print "Breaking {0} into {1} chunks.".format(grabix_file, args.cores)
 
     starts = []
     stops = []
-    for chunk in range(0, int(args.cores)):
+    for chunk in range(args.cores):
         start = (chunk * chunk_size) + 1
         stop  = start + chunk_size - 1
         # make sure the last chunk covers the remaining lines

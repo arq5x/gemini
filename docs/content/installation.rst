@@ -221,7 +221,7 @@ Installing annotation files
 One of the more appealing features in ``GEMINI`` is that it automatically
 annotates variants in a VCF file with several genome annotations.  However,
 you must first install these data files on your system. It's easy enough ---
-you just need to run the following script and tell it in which what full path
+you just need to run the following script and tell it in which full path
 you'd like to install the necessary data files. The recommended path is
 ``/usr/local/share``, but you can install the data files wherever you want.
 

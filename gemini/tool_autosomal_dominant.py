@@ -7,4 +7,3 @@ def run(parser, args):
         auto_dominant_factory = \
             GeminiInheritanceModelFactory(args, model="auto_dom")
         auto_dominant_factory.get_candidates()
-

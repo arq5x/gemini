@@ -47,3 +47,13 @@ echo "gt_phred_ll_het.A	gt_phred_ll_het.B	gt_phred_ll_het.C	gt_phred_ll_het.D	gt
 0	0	0	0	0	0	0	0	0	0	0	0
 0	0	65	0	0	0	0	0	0	0	0	0" > exp
 check obs exp "GLs.t05"
+
+
+gemini query --header -q "select (gt_phred_ll_het).(*) from variants" --gt-filter "(gt_phred_ll_het).(*).(>=0).(any) and gt_types.G == HOM_REF or gt_types.G == HET" test.PLs.db > obs
+echo "gt_phred_ll_het.A	gt_phred_ll_het.B	gt_phred_ll_het.C	gt_phred_ll_het.D	gt_phred_ll_het.E	gt_phred_ll_het.F	gt_phred_ll_het.G	gt_phred_ll_het.H	gt_phred_ll_het.I	gt_phred_ll_het.J	gt_phred_ll_het.K	gt_phred_ll_het.L
+0	99	280	78	0	0	48	42	15	0	66	0
+0	0	0	0	0	0	0	0	-1	-1	0	0
+247	0	0	184	159	0	0	0	0	105	0	69
+0	0	0	0	0	0	0	0	0	0	0	0
+0	0	65	0	0	0	0	0	0	0	0	0" > exp
+check obs exp "GLs.t06"

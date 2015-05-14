@@ -6,7 +6,6 @@ import sys
 import uuid
 
 import database as gemini_db
-import gemini_utils as util
 
 
 def append_variant_info(main_curr, chunk_db):
@@ -200,6 +199,9 @@ def merge_db_chunks(args):
             append_gene_detailed(main_curr, db)
         else:
             update_sample_genotype_counts(main_curr, db)
+
+    if args.index:
+        gemini_db.create_indices(main_curr)
 
     main_conn.commit()
     main_curr.close()

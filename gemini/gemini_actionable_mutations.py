@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sqlite3
 from collections import defaultdict
 from gemini_constants import *
 import gemini_subjects
