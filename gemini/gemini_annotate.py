@@ -367,9 +367,9 @@ def add_extras(gemini_db, chunk_dbs, region_only):
     """Annotate gemini database with extra columns from processed chunks, if available.
     """
     for chunk in chunk_dbs:
-        try:
-            extra_file = get_extra_vcf(chunk)
-        except AssertionError:
+        extra_file = get_extra_vcf(chunk)
+        if extra_file is False:
+            # there was not extra annotation so we just continue
             continue
         # these the the field names that we'll pull from the info field.
         fields = [x.strip() for x in open(extra_file[:-3] + ".fields")]
@@ -385,19 +385,25 @@ def add_extras(gemini_db, chunk_dbs, region_only):
         annotate(None, args)
         os.unlink(extra_file[:-3] + ".fields")
 
+
 def rm(path):
     try:
         os.unlink(path)
     except:
         pass
+
+
 def get_extra_vcf(gemini_db, tmpl=None):
-    """Retrieve extra file names associated with a gemini database, for flexible loading.
+    """Retrieve extra file associated with a gemini database.
+    Most commonly, this will be with VEP annotations added.
+    Returns false if there are no vcfs associated with the database.
     """
     base = os.path.basename(gemini_db)
     path = os.path.join(tempfile.gettempdir(), "extra.%s.vcf" % base)
     mode = "r" if tmpl is None else "w"
     if mode == "r":
-        assert os.path.exists(path), path
+        if not os.path.exists(path):
+            return False
         if not path.endswith(".gz"):
             subprocess.check_call(["bgzip", "-f", path])
             bgzip_out = path + ".gz"
