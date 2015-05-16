@@ -8,15 +8,17 @@ Release History
 2. Update parsing for snpEff >= 4.0
 3. Add an `is_splicing` column.
 4. Support for multi-generational families.
+5. Support for both SO and HGVS terms.
+6. Phase genotypes by transmission.
 
 0.15.0
 =======================================
-x. Use external index to speed genotype queries (this is created by default on load unless --no-bcolz is specified)
-x. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
-x. Related to matching, we now load extra annotation, e.g. VEP as VCF and require ref and alt matching. Previously was done with bed overlap.
-x. Faster queries due to lazy loading of genotype columns.
-x. Read gt\* columns from the database for better backward compatibility.
-x. Code cleanup. Thanks to Christian Brueffer.
+1. Use external index to speed genotype queries (this is created by default on load unless --no-bcolz is specified)
+2. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
+3. Related to matching, we now load extra annotation, e.g. VEP as VCF and require ref and alt matching. Previously was done with bed overlap.
+4. Faster queries due to lazy loading of genotype columns.
+5. Read gt\* columns from the database for better backward compatibility.
+6. Code cleanup. Thanks to Christian Brueffer.
 
 0.14.0 
 =======================================
