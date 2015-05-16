@@ -5,11 +5,12 @@ Release History
 0.16.0 (Future)
 =======================================
 1. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to prioritize confident variants.
-2. Update parsing for snpEff >= 4.0
-3. Add an `is_splicing` column.
-4. Support for multi-generational families.
-5. Support for both SO and HGVS terms.
-6. Phase genotypes by transmission.
+2. Leverage bcolz indexing in built-in inheritance pattern tools.
+3. Update parsing for snpEff >= 4.0
+4. Add an `is_splicing` column.
+5. Support for multi-generational families.
+6. Support for both SO and HGVS terms.
+7. Phase genotypes by transmission.
 
 0.15.0
 =======================================

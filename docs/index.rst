@@ -6,8 +6,31 @@
     :width: 400pt
     :align: center
 
+=============================
+Much faster genotype queries
+=============================
+As of version 0.15.0, GEMINI creates auxilliary index files
+using the `bcolz` library. This allows queries that filter
+on sample genotype information via the ``--gt-filter`` option
+to be **up to 1000 times faster than identical queries using
+version 0.14.0 or earlier**. Details of the implementation and caveats can be found :doc:`here <content/genotype_query_engines>`.
+
+.. note::
+
+    In order to expedite your queries with the new bcolz indexing strategy, one must invoke the ``--use-bcolz`` 
+    option. We will likely phase this option out over time.
+    For example::
+
+        gemini query \
+          -q "select variant_id, gts.kid from variants"  \
+          --gt-filter "gt_types.mom == HET and gt_types.dad == HET and gts.kid != 'HET'" \
+          --use-bcolz \
+        foo.db
+
+
+
 ==========================
-IMPORTANT CHANGE TO GEMINI
+New GEMINI Workflow
 ==========================
 At long last, version 0.12.2 of GEMINI supports multi-allelic variants thanks to great work from Brent Pedersen. In order to provide this support, GEMINI now requires that your input VCF file undergo additional preprocessing such that multi-allelic variants are decomposed and normalized using the `vt <http://genome.sph.umich.edu/wiki/Vt>`_ toolset from
 the `Abecasis lab <http://genome.sph.umich.edu/wiki/Main_Page>`_. Note that we have also decomposed and normalized all of the VCF-based annotation files (e.g., ExAC, dbSNP, ClinVar, etc.) so that variants and alleles are properly annotated and we minimize false negative and false positive annotations. For a great discussion of why this is necessary, please read `this blog post <http://www.cureffi.org/2014/04/24/converting-genetic-variants-to-their-minimal-representation/>`_ from Eric Minikel in Daniel MacArthur's lab.  

@@ -30,7 +30,9 @@ It can be used for existing databases by creating the external indexes:
 
     gemini bcolz_index $db
 
-This is easily parallelized by specifying a column per process, e.g.:
+This is easily parallelized by specifying a column per process, e.g.
+
+.. code-block:: bash
 
      gemini bcolz_index $db --cols gt_types
      gemini bcolz_index $db --cols gt_depths # in another process
@@ -43,7 +45,9 @@ See note below.
 It is recommended to only index the columns you'll be using in the 
 `--gt-filter`.
 
-Indexing is done only once; after that, add `--use-bcolz` to an existing gemini query command. e.g.::
+Indexing is done only once; after that, add `--use-bcolz` to an existing gemini query command. e.g.
+
+.. code-block:: bash
 
     gemini query -q "select variant_id, gts.1719PC0016 from variants"  \
         --gt-filter "gt_types.1094PC0012 == HET and gt_types.1719PC0016 == HET and gts.1094PC0012 == 'A/C'" \
