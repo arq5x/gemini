@@ -28,6 +28,8 @@ the end of the database load unless `--no-bcolz` is specified.
 
 It can be used for existing databases by creating the external indexes:
 
+.. code-block:: bash
+
     gemini bcolz_index $db
 
 This is easily parallelized by specifying a column per process, e.g.
