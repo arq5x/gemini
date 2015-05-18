@@ -193,10 +193,13 @@ def filter(db, query, user_dict):
     # convert gt_col[index] to gt_col__sample_name
     patt = "(%s)\[(\d+)\]" % "|".join(carrays.keys())
 
+    def fix_sample_name(s):
+        return s.replace("-", "_").replace(" ", "_")
+
     def subfn(x):
         """Turn gt_types[1] into gt_types__sample"""
         field, idx = x.groups()
-        return "%s__%s" % (field, samples[int(idx)])
+        return "%s__%s" % (field, fix_sample_name(samples[int(idx)]))
 
     query = re.sub(patt, subfn, query)
     if os.environ.get('GEMINI_DEBUG') == 'TRUE':
@@ -206,7 +209,7 @@ def filter(db, query, user_dict):
     for gt_col in carrays:
         # if not gt_col in query: continue
         for i, sample_array in enumerate(carrays[gt_col]):
-            sample = samples[i]
+            sample = fix_sample_name(samples[i])
             # if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 

@@ -49,3 +49,4 @@ gemini load -p test.somatic.ped -v test.somatic.vcf  --skip-gerp-bp --skip-cadd 
 gemini load -p test.fusions.ped -v test.fusions.vcf  --skip-gerp-bp --skip-cadd -t VEP test.fusions.db --no-bcolz
 gemini load --skip-gene-tables --test-mode -v test.exac.vcf --skip-gerp-bp --skip-cadd test.exac.db --no-bcolz
 gemini load -t VEP -v test.esp.zero.vcf test.esp.db --skip-gerp-bp --skip-gene-tables --test-mode --no-bcolz
+gemini load --skip-gene-tables --test-mode -v test.dashes.vcf --skip-gerp-bp --skip-cadd -t snpEff test.dashes.db -p test.dashes.ped

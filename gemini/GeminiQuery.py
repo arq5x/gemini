@@ -905,11 +905,11 @@ class GeminiQuery(object):
         For example, convert gt_types.1478PC0011 to gt_types[11]
         """
         if raw_col == "*":
-            return raw_col.lower()
+            return raw_col
         # e.g., "gts.NA12878"
         elif '.' in raw_col:
             (column, sample) = raw_col.split('.', 1)
-            corrected = column.lower() + "[" + str(self.sample_to_idx[sample]).lower() + "]"
+            corrected = "%s[%d]" % (column.lower(), self.sample_to_idx[sample])
         else:
             # e.g. "gts" - do nothing
             corrected = raw_col
@@ -994,6 +994,8 @@ class GeminiQuery(object):
                         corrected_gt_filter.append(corrected)
                     else:
                         t = _swap_genotype_for_number(t)
+                        if t.strip() in ("AND", "OR"):
+                            t = t.lower()
                         corrected_gt_filter.append(t)
             # IS a WILDCARD
             # e.g., "gt_types.(affected==1).(==HET)"
@@ -1054,7 +1056,9 @@ class GeminiQuery(object):
                 corrected_gt_filter.append(rule)
             else:
                 if len(token) > 0:
-                    corrected_gt_filter.append(token.lower())
+                    if token.strip() in ("AND", "OR"):
+                        token = token.lower()
+                    corrected_gt_filter.append(token)
         if seen_count and len(corrected_gt_filter) > 1 and self.variant_id_getter:
             raise GeminiError("count operations can not be combined with other operations")
 

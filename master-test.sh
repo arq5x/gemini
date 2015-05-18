@@ -123,11 +123,10 @@ bash test-multiple-alts.sh
 bash test-bcolz.sh
 
 bash test-esp.sh
+
+bash test-dashes.sh
+
 # cleanup
-
-
-
-
 rm ./*.db
 rm ./file.dot
 
