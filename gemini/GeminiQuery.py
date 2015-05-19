@@ -627,19 +627,9 @@ class GeminiQuery(object):
         #extra = " variant_id IN (%s)" % ",".join(map(str, vids))
         # faster way to convert to string.
         # http://stackoverflow.com/a/13861407
-        extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
-        if " where " in self.query.lower():
-            extra = " and " + extra
-        else:
-            extra = " where " + extra
-        # don't adjust the query if we
-        if len(self.query) + len(extra) + 8 < 1000000:
-            match = re.search(" (limit \d+)\s*", self.query,
-                              flags=re.I | re.DOTALL | re.MULTILINE)
-            if match:
-                self.query = self.query.replace(match.group(), " ") + extra + " " + match.group()
-            else:
-                self.query += extra
+        q = add_variant_ids_to_query(self.query, vids)
+        if q:
+            self.query = q
             self.gt_filter = None
 
     @property
@@ -1251,13 +1241,36 @@ def select_formatter(args):
     if hasattr(args, 'carrier_summary') and args.carrier_summary:
         return SUPPORTED_FORMATS["carrier_summary"](args)
 
-    if not args.format in SUPPORTED_FORMATS:
+    if args.format not in SUPPORTED_FORMATS:
         raise NotImplementedError("Conversion to %s not supported. Valid "
                                   "formats are %s."
                                   % (args.format, SUPPORTED_FORMATS))
     else:
         return SUPPORTED_FORMATS[args.format](args)
 
+
+def add_variant_ids_to_query(query, vids):
+    extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
+    if " where " in query.lower():
+        extra = " and " + extra
+    else:
+        extra = " where " + extra
+    # don't adjust the query if we
+    if len(query) + len(extra) + 8 < 1000000:
+        match = re.search(" (limit \d+)\s*", query,
+                          flags=re.I | re.DOTALL | re.MULTILINE)
+        q0, q1, o = query, "", ""
+        if " order by " in query.lower():
+            q0, q1 = re.split(" order by ", q0, flags=re.IGNORECASE | re.MULTILINE)
+            o, q1 = re.split("\s+", q1, maxsplit=1)
+        if match:
+            q0 = q0.replace(match.group(), " ") + extra + " " + match.group()
+        else:
+            q0 += extra
+        if o:
+            q0 += " order by " + o + " " + q1.strip()
+        return q0
+    return False
 
 if __name__ == "__main__":
 
