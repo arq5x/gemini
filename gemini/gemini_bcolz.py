@@ -168,10 +168,13 @@ def load(db):
 def filter(db, query, user_dict):
     # these should be translated to a bunch or or/and statements within gemini
     # so they are supported, but must be translated before getting here.
+    if query == "False":
+        return []
     if "any(" in query or "all(" in query or \
        ("sum(" in query and not query.startswith("sum(") and query.count("sum(") == 1):
         return None
     user_dict['where'] = np.where
+
 
     carrays = load(db)
     if query.startswith("not "):
@@ -224,7 +227,8 @@ def filter(db, query, user_dict):
         res = ne.evaluate('res%s' % icmp)
     else:
         res = bcolz.eval(query, user_dict=user_dict)
-
+    if not res:
+        return []
     if res.shape[0] == 1 and len(res.shape) > 1:
         res = res[0]
     variant_ids, = np.where(res)
