@@ -83,8 +83,8 @@ class Sample(object):
     def __repr__(self):
         c = self.__class__.__name__
         s = "%s(%s" % (c, self.name or self.sample_id)
-        if self.affected is not None:
-            s += (";affected" if self.affected else ";unaffected")
+        s += (";affected" if self.affected else (";unaffected"
+                  if self.affected is False else ";unknown"))
         if self.gender is not None:
             s += ";sex=%s" % self.gender
         return s + ")"
@@ -284,12 +284,12 @@ class Family(object):
 
         return af & un & depth
 
-    def auto_rec(self, min_depth=0, gt_ll=False, strict=False):
+    def auto_rec(self, min_depth=0, gt_ll=False, strict=True):
         """
         If strict, then if parents exist, they must be het for all affecteds
         """
-        af = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.affecteds], True)
-        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], True)
+        af = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.affecteds])
+        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds])
         if strict:
             # if parents exist, they must be het or affected for all affecteds
             # if both parents are not het then it's a de novo.
@@ -297,8 +297,12 @@ class Family(object):
             for kid in self.affecteds:
                 usable_kid = usable_kid or (kid.mom and kid.dad)
                 for parent in (kid.mom, kid.dad):
-                    if parent is not None and not parent.affected:
+                    if parent is not None:
                         af &= parent.gt_types == HET
+                        if parent.affected:
+                            sys.stderr.write("WARNING: auto-recessive called on family "
+                                    "%s where affected has affected parents\n" % self.family_id)
+                            return "False"
                 if not usable_kid:
                     sys.stderr.write("WARNING: auto-recessive called on family "
                             "%s where no affected has parents\n" % self.family_id)
@@ -310,7 +314,7 @@ class Family(object):
 
         return af & un & depth
 
-    def de_novo(self, min_depth=0, gt_ll=False, strict=False):
+    def de_novo(self, min_depth=0, gt_ll=False, strict=True):
         """
         all affected must be het.
         all unaffected must be homref.
@@ -484,7 +488,7 @@ class Family(object):
                 'loss of heterozygosity': self.mendel_LOH(min_depth, gt_ll)
                 }
 
-    def comp_het(self, min_depth=0, gt_ll=False, strict=False):
+    def comp_het(self, min_depth=0, gt_ll=False, strict=True):
         """
         affecteds are het.
         unaffecteds are not hom_alt

@@ -850,8 +850,8 @@ def main():
             default=False)
 
     def de_novo_fn(parser, args):
-        import tool_de_novo_mutations
-        tool_de_novo_mutations.run(parser, args)
+        from .gimu import DeNovo
+        DeNovo(args).run()
     parser_de_novo.set_defaults(func=de_novo_fn)
 
 
@@ -863,8 +863,8 @@ def main():
     add_inheritance_args(parser_mendel, gt_ll=True)
 
     def mendel_fn(parser, args):
-        import tool_mendel_errors
-        tool_mendel_errors.run(parser, args)
+        from .gimu import MendelViolation
+        MendelViolation(args).run()
     parser_mendel.set_defaults(func=mendel_fn)
 
 

@@ -2,6 +2,7 @@
 from collections import Counter
 import GeminiQuery
 import sql_utils
+import compiler
 from gemini_constants import *
 from .gemini_bcolz import filter
 import itertools as it
@@ -26,6 +27,7 @@ class GeminiInheritanceModel(object):
 
     @property
     def query(self):
+        # TODO: need
         if self.args.columns is not None:
             # the user only wants to report a subset of the columns
             query = "SELECT " + str(self.args.columns) + " FROM variants "
@@ -52,32 +54,29 @@ class GeminiInheritanceModel(object):
                 query += " WHERE gene is not NULL ORDER BY chrom, gene"
         return query
 
-    def bcolz_candidates(self, min_kindreds=None):
+    def bcolz_candidates(self):
         """
-        Get all the variant ids that meet the genotype filter and the min-kindreds
+        Get all the variant ids that meet the genotype filter for any fam.
         """
-
-        # keys are variant_ids values are how many families each is seen in.
-        family_count = Counter()
+        variant_ids = set()
         for i, family_id in enumerate(self.family_ids):
             gt_filter = self.family_masks[i]
-            family_count.update(filter(self.args.db, gt_filter, {}))
+            variant_ids.update(filter(self.args.db, gt_filter, {}))
 
-        return [variant_id for variant_id, count in family_count.iteritems() if count >= min_kindreds]
+        return sorted(set(variant_ids))
 
-    def gen_candidates(self, group_key='gene'):
+    def gen_candidates(self, group_key):
         if isinstance(group_key, basestring):
             group_key = op.itemgetter(group_key)
 
         q = self.query
-        vids = self.bcolz_candidates(self.args.min_kindreds)
+        vids = self.bcolz_candidates()
         q = GeminiQuery.add_variant_ids_to_query(q, vids)
         self.gq.run(q, needs_genotypes=True)
 
         def update(gr):
             # gr is a gemini row
             return gr
-
 
         for grp_key, grp in it.groupby(self.gq, group_key):
             ogrp = (update(gr) for gr in grp)
@@ -123,13 +122,15 @@ class GeminiInheritanceModel(object):
 
         masks = ['False' if m is None or m.strip('(').strip(')') == 'False'
                  else m for m in self.family_masks]
-        for gene, li in self.gen_candidates():
+        masks = [compiler.compile(m, m, 'eval') for m in masks]
+
+        for gene, li in self.candidates():
 
             for row in li:
-                # TODO: pre-compile
                 cols = dict((col, row[col]) for col in req_cols)
                 fams = [f for i, f in enumerate(self.families)
                         if masks[i] != 'False' and eval(masks[i], cols)]
+                if len(fams) < self.args.min_kindreds: continue
 
                 # an ordered dict.
                 pdict = row.print_fields
@@ -150,9 +151,30 @@ class GeminiInheritanceModel(object):
             print "\t".join(map(str, s.values()))
 
 
-class AutoRec(GeminiInheritanceModel):
-    model = "auto_rec"
-
 class AutoDom(GeminiInheritanceModel):
     model = "auto_dom"
 
+    def candidates(self):
+        for g, li in self.gen_candidates('gene'):
+            yield g, li
+
+
+class AutoRec(AutoDom):
+    model = "auto_rec"
+
+
+class DeNovo(GeminiInheritanceModel):
+    model = "de_novo"
+
+    def candidates(self):
+        kins = self.args.min_kindreds
+        for g, li in self.gen_candidates('gene' if kins is not None else None):
+            yield g, li
+
+
+class MendelViolations(GeminiInheritanceModel):
+    model = "mendel_violations"
+
+    def candidates(self):
+        for g, li in self.gen_candidates(None):
+            yield g, li
