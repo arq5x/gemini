@@ -16,7 +16,7 @@ Release History
 0.15.1
 ======
 1. Fix regression in grabix. Thanks to Sven-Eric Shelhorn for reporting.
-2. Fix handling of samples with "-". Thanks to Uma for reporting.
+2. Fix handling of samples with "-". Thanks to Uma Paila for reporting.
 
 0.15.0
 =======================================
