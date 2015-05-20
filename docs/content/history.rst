@@ -13,6 +13,11 @@ Release History
 7. Add an `is_splicing` column.
 8. Phase genotypes by transmission.
 
+0.15.1
+======
+1. Fix regression in grabix. Thanks to Sven-Eric Shelhorn for reporting.
+2. Fix handling of samples with "-". Thanks to Uma for reporting.
+
 0.15.0
 =======================================
 1. Use external index to speed genotype queries (this is created by default on load unless --no-bcolz is specified)
