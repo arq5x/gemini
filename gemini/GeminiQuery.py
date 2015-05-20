@@ -195,6 +195,7 @@ class TPEDRowFormat(RowFormat):
         NEED_COLUMNS = ["chrom", "rs_ids", "start", "ref", "alt", "gts", "type", "variant_id"]
         return ensure_columns(query, NEED_COLUMNS)
 
+
     def predicate(self, row, _splitter=re.compile("\||/")):
         geno = [_splitter.split(x) for x in row['gts']]
         geno = list(flatten(geno))
@@ -1248,29 +1249,42 @@ def select_formatter(args):
     else:
         return SUPPORTED_FORMATS[args.format](args)
 
-
 def add_variant_ids_to_query(query, vids):
+    """
+    >>> vids = range(1, 4)
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants limit 10", vids)
+    'select gene, chrom, start, end from variants where  variant_id IN (1,2,3)  limit 10'
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants where gene = 'asdf' limit 10", vids)
+    "select gene, chrom, start, end from variants where gene = 'asdf' and  variant_id IN (1,2,3)  limit 10"
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants where gene = 'asdf' order by gene limit 10", vids)
+    "select gene, chrom, start, end from variants where gene = 'asdf' and  variant_id IN (1,2,3) order by gene limit 10"
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants", vids)
+    'select gene, chrom, start, end from variants where  variant_id IN (1,2,3)'
+    """
+    assert len(vids) > 0
     extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
+
+    # order by, then limit.
+    limit_idx = query.lower().index(" limit ") if " limit " in query.lower() else None
+    if limit_idx:
+        query, qlimit = query[:limit_idx].strip(), query[limit_idx:].strip()
+        assert qlimit.lower().startswith("limit ")
+    else:
+        qlimit = ""
+
+    order_idx = query.lower().index(" order by ") if " order by " in query.lower() else None
+    if order_idx:
+        query, qorder = query[:order_idx].strip(), query[order_idx:].strip()
+        assert qorder.lower().startswith("order by ")
+    else:
+        qorder = ""
+
     if " where " in query.lower():
         extra = " and " + extra
     else:
         extra = " where " + extra
-    # don't adjust the query if we
-    if len(query) + len(extra) + 8 < 1000000:
-        match = re.search(" (limit \d+)\s*", query,
-                          flags=re.I | re.DOTALL | re.MULTILINE)
-        q0, q1, o = query, "", ""
-        if " order by " in query.lower():
-            q0, q1 = re.split(" order by ", q0, flags=re.IGNORECASE | re.MULTILINE)
-            o, q1 = re.split("\s+", q1, maxsplit=1)
-        if match:
-            q0 = q0.replace(match.group(), " ") + extra + " " + match.group()
-        else:
-            q0 += extra
-        if o:
-            q0 += " order by " + o + " " + q1.strip()
-        return q0
-    return False
+    return " ".join([x.strip() for x in (query, extra, qorder, qlimit)]).strip()
+
 
 if __name__ == "__main__":
 

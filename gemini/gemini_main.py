@@ -817,8 +817,8 @@ def main():
 
 
     def autosomal_recessive_fn(parser, args):
-        import tool_autosomal_recessive
-        tool_autosomal_recessive.run(parser, args)
+        from .gimu import AutoRec
+        AutoRec(args).run()
     parser_auto_rec.set_defaults(func=autosomal_recessive_fn)
 
     #########################################
@@ -830,8 +830,8 @@ def main():
     add_inheritance_args(parser_auto_dom, gt_ll=True)
 
     def autosomal_dominant_fn(parser, args):
-        import tool_autosomal_dominant
-        tool_autosomal_dominant.run(parser, args)
+        from .gimu import AutoDom
+        AutoDom(args).run()
     parser_auto_dom.set_defaults(func=autosomal_dominant_fn)
 
     #########################################

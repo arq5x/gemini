@@ -34,6 +34,7 @@ class GeminiInheritanceModel(object):
             query = "SELECT chrom, start, end, * %s " \
                 + "FROM variants" % ", ".join(self.gt_cols)
 
+        query = sql_utils.ensure_columns(query, ['variant_id'])
         # add any non-genotype column limits to the where clause
         if self.args.filter:
             query += " WHERE " + self.args.filter
@@ -49,7 +50,7 @@ class GeminiInheritanceModel(object):
                 query += " AND gene is not NULL ORDER BY chrom, gene"
             else:
                 query += " WHERE gene is not NULL ORDER BY chrom, gene"
-        return sql_utils.ensure_columns(query, ['variant_id'])
+        return query
 
     def bcolz_candidates(self, min_kindreds=None):
         """
@@ -104,16 +105,13 @@ class GeminiInheritanceModel(object):
         self.family_ids = []
         self.family_masks = []
         for family in families:
+            # e.g. family.auto_rec(gt_ll, min_depth)
             family_filter = getattr(family,
                     self.model)(gt_ll=self.args.gt_phred_ll,
                                 min_depth=self.args.min_sample_depth)
 
-            if family_filter != "False" and family_filter is not None:
-                self.family_masks.append(family_filter)
-                self.family_ids.append(family.family_id)
-
-class AutoRec(GeminiInheritanceModel):
-    model = "auto_rec"
+            self.family_masks.append(family_filter)
+            self.family_ids.append(family.family_id)
 
     def report_candidates(self):
         req_cols = ['gt_types', 'gts']
@@ -123,20 +121,38 @@ class AutoRec(GeminiInheritanceModel):
             req_cols.extend(['gt_phred_ll_homref', 'gt_phred_ll_het',
                              'gt_phred_ll_homalt'])
 
-
-        header = False
+        masks = ['False' if m is None or m.strip('(').strip(')') == 'False'
+                 else m for m in self.family_masks]
         for gene, li in self.gen_candidates():
+
             for row in li:
-                if not header:
-                    print "\t".join(row.print_fields.keys()) + "\t" + "\t".join(self.required_columns)
-                    header = True
                 # TODO: pre-compile
                 cols = dict((col, row[col]) for col in req_cols)
-                fams = [f for i, f in enumerate(self.families) if eval(self.family_masks[i], cols)]
+                fams = [f for i, f in enumerate(self.families)
+                        if masks[i] != 'False' and eval(masks[i], cols)]
+
+                # an ordered dict.
+                pdict = row.print_fields
+
                 for fam in fams:
-                    fam_gts = ",".join([eval(str(s), cols) for s in fam.gts])
-                    fam_str = ",".join("%s" % m for m in fam.subjects)
-                    samples = ",".join([x.name or x.sample_id for x in fam.subjects if x.affected])
-                    print "%s\t%s\t%s\t%s\t%s\t%d" % (row, fam.family_id, fam_str,
-                            fam_gts, samples, len(fams))
+                    # populate with the fields required by the tools.
+                    pdict["family_id"] = fam.family_id
+                    pdict["family_members"] = ",".join("%s" % m for m in fam.subjects)
+                    pdict["family_genotypes"] = ",".join([eval(str(s), cols) for s in fam.gts])
+                    pdict["samples"] = ",".join([x.name or x.sample_id for x in fam.subjects if x.affected])
+                    pdict["family_count"] = len(fams)
+                    yield pdict
+
+    def run(self):
+        for i, s in enumerate(self.report_candidates()):
+            if i == 0:
+                print "\t".join(s.keys())
+            print "\t".join(map(str, s.values()))
+
+
+class AutoRec(GeminiInheritanceModel):
+    model = "auto_rec"
+
+class AutoDom(GeminiInheritanceModel):
+    model = "auto_dom"
 

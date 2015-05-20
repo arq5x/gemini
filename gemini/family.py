@@ -4,6 +4,7 @@ See: https://github.com/arq5x/gemini/issues/388
 """
 from collections import defaultdict
 import operator as op
+import sys
 try:
     reduce
 except NameError:
@@ -28,15 +29,18 @@ valid_gts = (
 
 def _bracket(other):
     o = str(other)
+    if o in ("True", "False"): return o
     return "(%s)" % o
 
 class ostr(str):
     def __and__(self, other):
         if other is None: return self
+        if other == "False": return "False"
         return ostr("%s and %s" % (_bracket(self), _bracket(other)))
 
     def __or__(self, other):
         if other is None: return self
+        if other == "True": return "True"
         return ostr("%s or %s" % (_bracket(self), _bracket(other)))
 
     def __nonzero__(self):
@@ -189,12 +193,14 @@ class Family(object):
         gender_lookup = {'1': 'male', '2': 'female'}
         for fam_id, indv, pat_id, mat_id, sex, pheno, name in gen:
             assert indv not in fams[fam_id]
-            fams[fam_id][indv] = Sample(indv, pheno_lookup.get(pheno),
+            fams[fam_id][name] = Sample(indv, pheno_lookup.get(pheno),
                                         gender=gender_lookup.get(sex))
-            fams[fam_id][indv].mom = mat_id
-            fams[fam_id][indv].dad = pat_id
+            fams[fam_id][name].mom = mat_id
+            fams[fam_id][name].dad = pat_id
+            # name in gemini is actually the id from the ped.
+            # sample_id in gemini si the primary key
             if name is not None:
-                fams[fam_id][indv].name = name
+                fams[fam_id][name].name = name
 
         ofams = {}
         for fam_id, fam_dict in fams.items():
@@ -241,18 +247,25 @@ class Family(object):
         else:
             return None
 
-    def auto_dom(self, min_depth=0, gt_ll=False, strict=False):
+    def auto_dom(self, min_depth=0, gt_ll=False, strict=True):
         """
         At least 1 affected child must have at least 1 affected/unknown parent.
         If strict then at least 1 affected child must have at least 1 affected
         parent.
         """
+        if len(self.affecteds) == 0:
+            return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
-        un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
+        if len(self.unaffecteds):
+            un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
+        else:
+            un = None
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
+            # TODO: translate this to other methods.
+            if len(self.unaffecteds):
+                un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
 
         if strict:
             # all affected kids must have at least 1 affected parent (or no parents)
@@ -266,8 +279,8 @@ class Family(object):
                 if not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
                     return 'False'
             if not kid_with_parents:
-                sys.stderr.write("WARNING: family %s had no usable samples for \
-                        autosomal dominant test" % self.family_id)
+                sys.stderr.write("WARNING: family %s had no usable samples for"
+                                 " autosomal dominant test\n" % self.family_id)
 
         return af & un & depth
 
@@ -275,8 +288,8 @@ class Family(object):
         """
         If strict, then if parents exist, they must be het for all affecteds
         """
-        af = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.affecteds])
-        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds])
+        af = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.affecteds], True)
+        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], True)
         if strict:
             # if parents exist, they must be het or affected for all affecteds
             # if both parents are not het then it's a de novo.
@@ -287,8 +300,8 @@ class Family(object):
                     if parent is not None and not parent.affected:
                         af &= parent.gt_types == HET
                 if not usable_kid:
-                    sys.stderr.write("WARNING: auto-recessive called on family \
-                            %s where no affected has parents" % self.family_id)
+                    sys.stderr.write("WARNING: auto-recessive called on family "
+                            "%s where no affected has parents\n" % self.family_id)
 
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
@@ -311,6 +324,8 @@ class Family(object):
         '((gt_types[kid] == HET) and ((gt_types[mom] == HOM_REF) and (gt_types[dad] == HOM_REF))) and ((gt_depths[kid] >= 10) and ((gt_depths[mom] >= 10) and (gt_depths[dad] >= 10)))'
 
         """
+        if len(self.affecteds) == 0:
+            return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
         un = reduce(op.and_, [s.gt_types == HOM_REF for s in self.unaffecteds])
         depth = self._restrict_to_min_depth(min_depth)
