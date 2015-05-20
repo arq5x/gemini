@@ -251,7 +251,7 @@ if __name__ == "__main__":
     else:
         q = "gt_types.1094PC0012 == HET and gt_types.1719PC0016 == HET and gts.1094PC0012 == 'A/C'"
 
-    print query(db, carrays, q, user_dict=dict(HET=1, HOM_REF=0, HOM_ALT=3,
+    print filter(db, carrays, q, user_dict=dict(HET=1, HOM_REF=0, HOM_ALT=3,
         UNKNOWN=2))
     print "compare to:", ("""gemini query -q "select variant_id, gts.1719PC0016 from variants" """
                           """ --gt-filter "%s" %s""" % (q, db))

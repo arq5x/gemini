@@ -645,7 +645,7 @@ def main():
     #########################################
     parser_comp_hets = subparsers.add_parser('comp_hets',
             help='Identify compound heterozygotes')
-    add_inheritance_args(parser_comp_hets, depth=False)
+    add_inheritance_args(parser_comp_hets, gt_ll=True)
 
     parser_comp_hets.add_argument('--only-affected',
             dest='only_affected',
@@ -661,8 +661,8 @@ def main():
             default=False)
 
     def comp_hets_fn(parser, args):
-        import tool_compound_hets
-        tool_compound_hets.run(parser, args)
+        from .gimu import CompoundHet
+        CompoundHet(args).run()
     parser_comp_hets.set_defaults(func=comp_hets_fn)
 
     #########################################

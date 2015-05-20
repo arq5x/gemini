@@ -11,7 +11,6 @@ except NameError:
     from functools import reduce
 
 HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
-#HOM_REF, HET, UNKNOWN, HOM_ALT = "HOM_REF HET UNKNOWN HOM_ALT".split()
 
 valid_gts = (
     'gts',
@@ -35,16 +34,20 @@ def _bracket(other):
 class ostr(str):
     def __and__(self, other):
         if other is None: return self
-        if other == "False": return "False"
+        if other is empty: return self
+        if self is empty: return other
         return ostr("%s and %s" % (_bracket(self), _bracket(other)))
 
     def __or__(self, other):
         if other is None: return self
-        if other == "True": return "True"
+        if other is empty: return self
+        if self is empty: return other
         return ostr("%s or %s" % (_bracket(self), _bracket(other)))
 
     def __nonzero__(self):
         raise Exception("shouldn't be here. use & instead of 'and'. and wrap in parens")
+
+empty = ostr("empty")
 
 class Sample(object):
     """
@@ -65,9 +68,11 @@ class Sample(object):
     '(gt_phred_ll_homref[0] < 2) or (gt_phred_ll_homalt[1] > 2)'
     """
 
-    __slots__ = ('sample_id', 'name', 'affected', 'gender', 'mom', 'dad')
+    __slots__ = ('sample_id', 'name', 'affected', 'gender', 'mom', 'dad',
+                 'family_id')
 
-    def __init__(self, sample_id, affected, gender=None, name=None):
+    def __init__(self, sample_id, affected, gender=None, name=None,
+                 family_id=None):
         #assert isinstance(sample_id, (long, int)), sample_id
         assert affected in (True, False, None)
         self.sample_id = sample_id
@@ -75,6 +80,7 @@ class Sample(object):
         self.mom = None
         self.dad = None
         self.gender = gender
+        self.family_id = family_id
 
     def __getattr__(self, gt_field):
         assert gt_field in valid_gts, gt_field
@@ -178,7 +184,7 @@ class Family(object):
     def from_cursor(klass, cursor):
         keys = "sample_id|family_id|name|paternal_id|maternal_id|sex|phenotype".split("|")
         def agen():
-            for row in cursor.execute("select * from samples"):
+            for row in cursor.execute("select %s from samples" % ",".join(keys)):
                 if not isinstance(row, dict):
                     row = dict(zip(keys, row))
                 yield (row['family_id'], row['sample_id'], row['paternal_id'],
@@ -199,8 +205,8 @@ class Family(object):
             fams[fam_id][name].dad = pat_id
             # name in gemini is actually the id from the ped.
             # sample_id in gemini si the primary key
-            if name is not None:
-                fams[fam_id][name].name = name
+            fams[fam_id][name].name = name
+            fams[fam_id][name].family_id = fam_id
 
         ofams = {}
         for fam_id, fam_dict in fams.items():
@@ -488,15 +494,19 @@ class Family(object):
                 'loss of heterozygosity': self.mendel_LOH(min_depth, gt_ll)
                 }
 
-    def comp_het(self, min_depth=0, gt_ll=False, strict=True):
+    def comp_het(self, min_depth=0, gt_ll=False, strict=False):
         """
         affecteds are het.
         unaffecteds are not hom_alt
         (later remove candidates if unaffected share same het pair)
         """
-        af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
-        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds])
+        af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
+        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
+
         depth = self._restrict_to_min_depth(min_depth)
+        if not strict:
+            af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
+
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
             un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
@@ -505,6 +515,7 @@ class Family(object):
 
 if __name__ == "__main__":
 
+    HOM_REF, HET, UNKNOWN, HOM_ALT = "HOM_REF HET UNKNOWN HOM_ALT".split()
     import doctest
     import sys
     sys.stderr.write(str(doctest.testmod(optionflags=
