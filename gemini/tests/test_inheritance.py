@@ -1,6 +1,25 @@
 """
 Create a setup so we can easily define families. Input is a ped file to define
 the pedigree and a vector indicating the genotype.
+>>> fam = TestFamily(\"\"\"
+... #family_id  sample_id   paternal_id maternal_id sex phenotype
+... 1   1_dad   0   0   -1  1
+... 1   1_mom   0   0   -1  1
+... 1   1_kid   1_dad   1_mom   -1  2\"\"\")
+
+>>> fam.gt_types = [HET, HET, HOM_ALT]
+>>> fam.gt_depths = [9, 9, 9]
+>>> fam.auto_rec()
+True
+>>> fam.auto_rec(min_depth=10)
+False
+
+>>> fam.auto_dom()
+False
+
+>>> fam.gt_types = [HOM_REF, HOM_REF, HET]
+>>> fam.de_novo()
+True
 
 """
 import os
@@ -16,11 +35,13 @@ def tmp(pedstr, suf=".ped"):
     t = tempfile.mktemp(suffix=suf)
     atexit.register(os.unlink, t)
     with open(t, "w") as fh:
-        print >> fh, pedstr
+        for line in pedstr.split("\n"):
+            if not line.strip(): continue
+            print >> fh, line.strip()
     return t
 
 
-class Family(object):
+class TestFamily(object):
 
     __slots__ = ('ped', 'family', 'gt_types', '_gt_types', 'gt_depths',
             '_gt_depths', 'strict')
@@ -77,16 +98,22 @@ class Family(object):
             return eval(flt, env)
         return func
 
-f = Family("test/test.auto_rec.ped", "1")
-f.gt_types = [HET, HET, HOM_ALT]
-print f.auto_rec(strict=False)
-print f.auto_rec(strict=True)
-f.gt_depths = [9, 9, 9]
-print f.auto_rec(strict=True, min_depth=8)
-print f.auto_rec(strict=True, min_depth=18)
+#f = TestFamily("test/test.auto_rec.ped", "1")
+#f.gt_types = [HET, HET, HOM_ALT]
+#print f.auto_rec(strict=False)
+#print f.auto_rec(strict=True)
+#f.gt_depths = [9, 9, 9]
+#print f.auto_rec(strict=True, min_depth=8)
+#print f.auto_rec(strict=True, min_depth=18)
 
 
-f.gt_types = [HOM_ALT, HET, HOM_ALT]
-print f.auto_rec(strict=False)
-print f.auto_rec(strict=True)
+#f.gt_types = [HOM_ALT, HET, HOM_ALT]
+#print f.auto_rec(strict=False)
+#print f.auto_rec(strict=True)
 
+
+
+if __name__ == "__main__":
+    import sys
+    import doctest
+    sys.stderr.write(str(doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS | doctest.REPORT_ONLY_FIRST_FAILURE, verbose=0)) + "\n")
