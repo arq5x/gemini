@@ -342,6 +342,15 @@ class Family(object):
             return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
         un = reduce(op.and_, [s.gt_types == HOM_REF for s in self.unaffecteds])
+        if gt_ll:
+            un &= reduce(op.and_, [s.gt_phred_ll_homref <= gt_ll for s in self.unaffecteds])
+            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
+
+        un2 = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.unaffecteds])
+        if gt_ll:
+            un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds])
+        un |= un2
+
         depth = self._restrict_to_min_depth(min_depth)
         if strict:
             # if a parent is affected it's not de novo.
@@ -349,9 +358,6 @@ class Family(object):
                 for parent in (kid.mom, kid.dad):
                     if parent is not None and parent.affected:
                         return 'False'
-        if gt_ll:
-            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            un &= reduce(op.and_, [s.gt_phred_ll_homref <= gt_ll for s in self.unaffecteds])
         return af & un & depth
 
     def mendel_plausible_denovo(self, min_depth=0, gt_ll=False):

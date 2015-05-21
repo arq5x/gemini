@@ -20,6 +20,15 @@ False
 >>> fam.gt_types = [HOM_REF, HOM_REF, HET]
 >>> fam.de_novo()
 True
+>>> fam.gt_types = [HOM_ALT, HOM_REF, HET]
+>>> fam.de_novo()
+False
+>>> fam.gt_types = [HOM_ALT, HOM_ALT, HET]
+>>> fam.de_novo()
+True
+>>> fam.mendel_plausible_denovo()
+True
+
 
 """
 import os
@@ -86,7 +95,7 @@ class TestFamily(object):
                 viz.edge(s.dad.name, s.name)
             if s.mom is not None:
                 viz.edge(s.mom.name, s.name)
-        viz.render('test.gv', view=True)
+        viz.render('test.gv', view=False)
 
     @property
     def gt_types(self):
@@ -115,7 +124,9 @@ class TestFamily(object):
             if 'min_depth' in kwargs:
                 assert self._gt_depths is not None
             flt = getattr(self.family, gt)(**kwargs)
+            import sys
             env = {s.sample_id: i for i, s in enumerate(self.family.subjects)}
+            #print >>sys.stderr, flt
             env['gt_types'] = self.gt_types
             env['gt_depths'] = self.gt_depths
             return eval(flt, env)
