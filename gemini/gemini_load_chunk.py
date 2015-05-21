@@ -317,6 +317,7 @@ class GeminiLoader(object):
             pi_hat = var.nucl_diversity
         else:
             aaf = infotag.extract_aaf(var)
+            aaf = max(aaf)
 
         ############################################################
         # collect annotations from gemini's custom annotation files

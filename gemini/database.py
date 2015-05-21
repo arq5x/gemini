@@ -334,21 +334,8 @@ def _insert_variation_one_per_transaction(cursor, buffer):
     for variant in buffer:
         try:
             cursor.execute("BEGIN TRANSACTION")
-            cursor.execute('insert into variants values     (?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?,?,?,?,?,?,?,?, \
-                                                             ?,?,?)', variant)
+            qs = ",".join(["?"] * len(variant))
+            cursor.execute('insert into variants values (%s)' % qs, variant)
             cursor.execute("END TRANSACTION")
         # skip repeated keys until we get to the failed variant
         except sqlite3.IntegrityError, e:
@@ -365,21 +352,9 @@ def insert_variation(cursor, buffer):
     """
     try:
         cursor.execute("BEGIN TRANSACTION")
-        cursor.executemany('insert into variants values (?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?,?,?,?,?,?,?,?, \
-                                                         ?,?,?)', buffer)
+        qs = ",".join(["?"] * len(buffer[0]))
+
+        cursor.executemany('insert into variants values (%s)' % qs, buffer)
 
         cursor.execute("END TRANSACTION")
     except sqlite3.ProgrammingError:
