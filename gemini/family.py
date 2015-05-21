@@ -76,6 +76,7 @@ class Sample(object):
         #assert isinstance(sample_id, (long, int)), sample_id
         assert affected in (True, False, None)
         self.sample_id = sample_id
+        self.name = name or sample_id
         self.affected = affected
         self.mom = None
         self.dad = None

@@ -65,6 +65,29 @@ class TestFamily(object):
         self._gt_depths = None
         self.gt_depths = gt_depths
 
+    def dot(self, comment=None):
+        from graphviz import Digraph
+        viz = Digraph(comment=comment)
+        subjects = self.family.subjects
+        for i, s in enumerate(subjects):
+            attrs = dict(style="filled", fontcolor="white")
+            attrs["color"] = {True: 'red', False: 'green', None: 'gray'}[s.affected]
+            attrs["shape"] = {'male': 'square', 'female': 'circle', None: 'octagon'}[s.gender]
+            if self.gt_types:
+                attrs["fillcolor"] = ["white", "white:black", "gray", "black"][self.gt_types[i]]
+                if attrs["fillcolor"] == "black":
+                    attrs["fontcolor"] = "white"
+                elif attrs["fillcolor"] == "white":
+                    attrs["fontcolor"] = "black"
+
+            viz.node(s.name, s.name, **attrs)
+        for s in subjects:
+            if s.dad is not None:
+                viz.edge(s.dad.name, s.name)
+            if s.mom is not None:
+                viz.edge(s.mom.name, s.name)
+        viz.render('test.gv', view=True)
+
     @property
     def gt_types(self):
         return self._gt_types
@@ -98,10 +121,23 @@ class TestFamily(object):
             return eval(flt, env)
         return func
 
-#f = TestFamily("test/test.auto_rec.ped", "1")
-#f.gt_types = [HET, HET, HOM_ALT]
-#print f.auto_rec(strict=False)
-#print f.auto_rec(strict=True)
+f = TestFamily("test/test.auto_rec.ped", "1")
+f.gt_types = [HET, HET, HOM_ALT]
+f.family.subjects[0].gender = "male"
+f.family.subjects[1].gender = "female"
+f.family.subjects[2].gender = "male"
+print f.family.subjects
+print f.auto_rec(strict=False)
+print f.auto_rec(strict=True)
+gm = family.Sample("grandma", False, gender="female")
+f.family.subjects[1].mom = gm
+gp = family.Sample("grandpa", None, gender="male")
+f.family.subjects[1].dad = gp
+f.gt_types.extend([HOM_REF, HET])
+
+f.family.subjects.extend([gm, gp])
+
+print f.dot("autosomal recessive")
 #f.gt_depths = [9, 9, 9]
 #print f.auto_rec(strict=True, min_depth=8)
 #print f.auto_rec(strict=True, min_depth=18)
