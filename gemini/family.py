@@ -176,9 +176,12 @@ class Family(object):
         """
         def agen():
             for toks in (l.rstrip().split() for l in open(ped) if l[0] != "#"):
-                toks.append(None) # name
+                toks.append(toks[1]) # name
                 yield toks
         return klass._from_gen(agen())
+
+    def __len__(self):
+        return len(self.subjects)
 
     @classmethod
     def from_cursor(klass, cursor):
@@ -548,6 +551,8 @@ if __name__ == "__main__":
         import sqlite3
         db = sqlite3.connect('test/test.auto_rec.db')
         fams_ped = Family.from_ped('test/test.auto_rec.ped')
+        print fams_ped
+        1/0
         fams_db = Family.from_cursor(db)
         print "auto_rec:"
         for famid, fam in fams_ped.items():
