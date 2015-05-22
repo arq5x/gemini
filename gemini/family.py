@@ -69,7 +69,7 @@ class Sample(object):
     """
 
     __slots__ = ('sample_id', 'name', 'affected', 'gender', 'mom', 'dad',
-                 'family_id')
+                 'family_id', '_i')
 
     def __init__(self, sample_id, affected, gender=None, name=None,
                  family_id=None):
@@ -82,6 +82,8 @@ class Sample(object):
         self.dad = None
         self.gender = gender
         self.family_id = family_id
+        # _i is used to maintain the order in which they came in.
+        self._i = None
 
     def __getattr__(self, gt_field):
         assert gt_field in valid_gts, gt_field
@@ -193,7 +195,7 @@ class Family(object):
                     row = dict(zip(keys, row))
                 yield (row['family_id'], row['sample_id'], row['paternal_id'],
                        row['maternal_id'], row['sex'], str(row['phenotype']),
-                           row['name'])
+                       row['name'])
         return klass._from_gen(agen())
 
     @classmethod
@@ -201,16 +203,18 @@ class Family(object):
         fams = defaultdict(dict)
         pheno_lookup = {'1': False, '2': True}
         gender_lookup = {'1': 'male', '2': 'female'}
-        for fam_id, indv, pat_id, mat_id, sex, pheno, name in gen:
+        for i, (fam_id, indv, pat_id, mat_id, sex, pheno, name) in enumerate(gen):
+
             assert indv not in fams[fam_id]
-            fams[fam_id][name] = Sample(indv, pheno_lookup.get(pheno),
+            s = fams[fam_id][name] = Sample(indv, pheno_lookup.get(pheno),
                                         gender=gender_lookup.get(sex))
-            fams[fam_id][name].mom = mat_id
-            fams[fam_id][name].dad = pat_id
+            s.mom = mat_id
+            s.dad = pat_id
             # name in gemini is actually the id from the ped.
             # sample_id in gemini si the primary key
-            fams[fam_id][name].name = name
-            fams[fam_id][name].family_id = fam_id
+            s.name = name
+            s.family_id = fam_id
+            s._i = i
 
         ofams = {}
         for fam_id, fam_dict in fams.items():
@@ -221,7 +225,10 @@ class Family(object):
                 sample.dad = fam_dict.get(sample.dad)
                 sample.mom = fam_dict.get(sample.mom)
                 ofams[fam_id].append(sample)
+
             ofams[fam_id] = Family(ofams[fam_id], fam_id)
+            # maintain the order in which they came in.
+            ofams[fam_id].subjects.sort(key=op.attrgetter('_i'))
         return ofams
 
     def __repr__(self):

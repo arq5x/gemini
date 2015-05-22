@@ -3,23 +3,47 @@ Create a setup so we can easily define families. Input is a ped file to define
 the pedigree and a vector indicating the genotype.
 >>> fam = TestFamily(\"\"\"
 ... #family_id  sample_id   paternal_id maternal_id sex phenotype
-... 1   1_dad   0   0   -1  1
-... 1   1_mom   0   0   -1  1
-... 1   1_kid   1_dad   1_mom   -1  2\"\"\")
+... 1   dad   0   0   1  1
+... 1   mom   0   0   2  1
+... 1   kid   dad   mom   1  2
+... 1   kid2   dad   mom   1  1
+... 1   grandma 0   0     2  1
+... 1   grandpa 0   0     1  1\"\"\")
 
->>> fam.gt_types = [HET, HET, HOM_ALT]
->>> fam.gt_depths = [9, 9, 9]
+>>> fam.gt_types = [HET, HET, HOM_ALT, HET, HET, HET]
+>>> fam.gt_depths = [9] * 6
+>>> fam.dot()
 >>> fam.auto_rec()
 True
+
+# attach granparents to mom
+>>> fam.subjects[1].mom = fam.subjects[4]
+>>> fam.subjects[1].dad = fam.subjects[5]
+>>> fam.auto_rec()
+True
+>>> fam.dot()
+
+# if grandpa is affected it is no longer autosomal recessive
+>>> fam.subjects[5].affected = True
+>>> fam.auto_rec()
+False
+
+# reset.
+>>> fam.subjects[5].affected = False
+
 >>> fam.auto_rec(min_depth=10)
 False
 
 >>> fam.auto_dom()
 False
 
->>> fam.gt_types = [HOM_REF, HOM_REF, HET]
+# dad:un, mom:un, kid:aff, kid2:un, gma:un, gpa:un
+>>> fam.gt_types = [HOM_REF, HOM_REF, HET, HET, HET, HET]
 >>> fam.de_novo()
+
+
 True
+
 >>> fam.gt_types = [HOM_ALT, HOM_REF, HET]
 >>> fam.de_novo()
 False
@@ -36,7 +60,6 @@ import tempfile
 import atexit
 
 from gemini import family
-from gemini import gim
 
 HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
 
@@ -53,7 +76,7 @@ def tmp(pedstr, suf=".ped"):
 class TestFamily(object):
 
     __slots__ = ('ped', 'family', 'gt_types', '_gt_types', 'gt_depths',
-            '_gt_depths', 'strict')
+            '_gt_depths', 'strict', 'subjects')
 
     def __init__(self, ped, fam_id=None, gt_types=None, gt_depths=None):
         if isinstance(ped, basestring) and len(ped.split("\n")) > 1:
@@ -68,13 +91,14 @@ class TestFamily(object):
             self.family = self.family[fam_id]
         for s in self.family.subjects:
             if s.sample_id[0].isdigit(): s.sample_id = "s" + s.sample_id
+        self.subjects = self.family.subjects
 
         self._gt_types = None
         self.gt_types = gt_types
         self._gt_depths = None
         self.gt_depths = gt_depths
 
-    def dot(self, comment=None):
+    def dot(self, comment=None, path="test.gv", view=False):
         from graphviz import Digraph
         viz = Digraph(comment=comment)
         subjects = self.family.subjects
@@ -83,7 +107,7 @@ class TestFamily(object):
             attrs["color"] = {True: 'red', False: 'green', None: 'gray'}[s.affected]
             attrs["shape"] = {'male': 'square', 'female': 'circle', None: 'octagon'}[s.gender]
             if self.gt_types:
-                attrs["fillcolor"] = ["white", "white:black", "gray", "black"][self.gt_types[i]]
+                attrs["fillcolor"] = ["white", "gray", "blue", "black"][self.gt_types[i]]
                 if attrs["fillcolor"] == "black":
                     attrs["fontcolor"] = "white"
                 elif attrs["fillcolor"] == "white":
@@ -95,7 +119,7 @@ class TestFamily(object):
                 viz.edge(s.dad.name, s.name)
             if s.mom is not None:
                 viz.edge(s.mom.name, s.name)
-        viz.render('test.gv', view=False)
+        viz.render(path, view=view)
 
     @property
     def gt_types(self):
@@ -132,31 +156,32 @@ class TestFamily(object):
             return eval(flt, env)
         return func
 
-f = TestFamily("test/test.auto_rec.ped", "1")
-f.gt_types = [HET, HET, HOM_ALT]
-f.family.subjects[0].gender = "male"
-f.family.subjects[1].gender = "female"
-f.family.subjects[2].gender = "male"
-print f.family.subjects
-print f.auto_rec(strict=False)
-print f.auto_rec(strict=True)
-gm = family.Sample("grandma", False, gender="female")
-f.family.subjects[1].mom = gm
-gp = family.Sample("grandpa", None, gender="male")
-f.family.subjects[1].dad = gp
-f.gt_types.extend([HOM_REF, HET])
+if False:
+    f = TestFamily("test/test.auto_rec.ped", "1")
+    f.gt_types = [HET, HET, HOM_ALT]
+    f.family.subjects[0].gender = "male"
+    f.family.subjects[1].gender = "female"
+    f.family.subjects[2].gender = "male"
+    print f.family.subjects
+    print f.auto_rec(strict=False)
+    print f.auto_rec(strict=True)
+    gm = family.Sample("grandma", False, gender="female")
+    f.family.subjects[1].mom = gm
+    gp = family.Sample("grandpa", None, gender="male")
+    f.family.subjects[1].dad = gp
+    f.gt_types.extend([HOM_REF, HET])
 
-f.family.subjects.extend([gm, gp])
+    f.family.subjects.extend([gm, gp])
 
-print f.dot("autosomal recessive")
-#f.gt_depths = [9, 9, 9]
-#print f.auto_rec(strict=True, min_depth=8)
-#print f.auto_rec(strict=True, min_depth=18)
+    print f.dot("autosomal recessive")
+    #f.gt_depths = [9, 9, 9]
+    #print f.auto_rec(strict=True, min_depth=8)
+    #print f.auto_rec(strict=True, min_depth=18)
 
 
-#f.gt_types = [HOM_ALT, HET, HOM_ALT]
-#print f.auto_rec(strict=False)
-#print f.auto_rec(strict=True)
+    #f.gt_types = [HOM_ALT, HET, HOM_ALT]
+    #print f.auto_rec(strict=False)
+    #print f.auto_rec(strict=True)
 
 
 

@@ -661,7 +661,7 @@ def main():
             default=False)
 
     def comp_hets_fn(parser, args):
-        from .gimu import CompoundHet
+        from .gim import CompoundHet
         CompoundHet(args).run()
     parser_comp_hets.set_defaults(func=comp_hets_fn)
 
@@ -817,7 +817,7 @@ def main():
 
 
     def autosomal_recessive_fn(parser, args):
-        from .gimu import AutoRec
+        from .gim import AutoRec
         AutoRec(args).run()
     parser_auto_rec.set_defaults(func=autosomal_recessive_fn)
 
@@ -830,7 +830,7 @@ def main():
     add_inheritance_args(parser_auto_dom, gt_ll=True)
 
     def autosomal_dominant_fn(parser, args):
-        from .gimu import AutoDom
+        from .gim import AutoDom
         AutoDom(args).run()
     parser_auto_dom.set_defaults(func=autosomal_dominant_fn)
 
@@ -850,7 +850,7 @@ def main():
             default=False)
 
     def de_novo_fn(parser, args):
-        from .gimu import DeNovo
+        from .gim import DeNovo
         DeNovo(args).run()
     parser_de_novo.set_defaults(func=de_novo_fn)
 
@@ -863,7 +863,7 @@ def main():
     add_inheritance_args(parser_mendel, gt_ll=True)
 
     def mendel_fn(parser, args):
-        from .gimu import MendelViolation
+        from .gim import MendelViolation
         MendelViolation(args).run()
     parser_mendel.set_defaults(func=mendel_fn)
 
