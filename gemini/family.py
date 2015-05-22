@@ -157,14 +157,9 @@ class Family(object):
     >>> Family([mom, dad, kid, kid2], 'a').auto_rec()
     '(gt_types[2] == HOM_ALT) and ((gt_types[0] != HOM_ALT) and (gt_types[1] != HOM_ALT))'
 
-    >>> Family([mom, dad, kid, kid2], 'a').auto_rec(min_depth=10)
-    '((gt_types[2] == HOM_ALT) and ((gt_types[0] != HOM_ALT) and (gt_types[1] != HOM_ALT))) and ((gt_depths[2] >= 10) and ((gt_depths[0] >= 10) and (gt_depths[1] >= 10)))'
-
     >>> Family([mom, dad, kid, kid2], 'a').auto_rec(gt_ll=1, min_depth=10)
     '(((gt_types[2] == HOM_ALT) and (gt_phred_ll_homalt[2] <= 1)) and (((gt_types[0] != HOM_ALT) and (gt_types[1] != HOM_ALT)) and ((gt_phred_ll_homalt[0] > 1) and (gt_phred_ll_homalt[1] > 1)))) and ((gt_depths[2] >= 10) and ((gt_depths[0] >= 10) and (gt_depths[1] >= 10)))'
 
-    >>> Family([mom, dad, kid, kid2], 'a').auto_rec(min_depth=10)
-    '((gt_types[2] == HOM_ALT) and ((gt_types[0] != HOM_ALT) and (gt_types[1] != HOM_ALT))) and ((gt_depths[2] >= 10) and ((gt_depths[0] >= 10) and (gt_depths[1] >= 10)))'
     """
 
     def __init__(self, subjects, fam_id):
@@ -264,24 +259,23 @@ class Family(object):
         else:
             return None
 
-    def auto_dom(self, min_depth=0, gt_ll=False, strict=True):
+    def auto_dom(self, min_depth=0, gt_ll=False, strict=True, affected_only=True):
         """
         At least 1 affected child must have at least 1 affected/unknown parent.
-        If strict then at least 1 affected child must have at least 1 affected
+        If strict then all affected kids must have at least 1 affected parent.
         parent.
         """
         if len(self.affecteds) == 0:
             return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
-        if len(self.unaffecteds):
+        if len(self.unaffecteds) and affected_only:
             un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
         else:
             un = None
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            # TODO: translate this to other methods.
-            if len(self.unaffecteds):
+            if len(self.unaffecteds) and affected_only:
                 un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
 
         if strict:
@@ -301,12 +295,15 @@ class Family(object):
 
         return af & un & depth
 
-    def auto_rec(self, min_depth=0, gt_ll=False, strict=True):
+    def auto_rec(self, min_depth=0, gt_ll=False, strict=True, affected_only=True):
         """
         If strict, then if parents exist, they must be het for all affecteds
         """
         af = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.affecteds])
-        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds])
+        if affected_only:
+            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds])
+        else:
+            un = None
         if strict:
             # if parents exist, they must be het or affected for all affecteds
             # if both parents are not het then it's a de novo.
@@ -327,36 +324,35 @@ class Family(object):
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.affecteds])
-            un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
+            if affected_only:
+                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
         return af & un & depth
 
-    def de_novo(self, min_depth=0, gt_ll=False, strict=True):
+    def de_novo(self, min_depth=0, gt_ll=False, strict=True, affected_only=True):
         """
         all affected must be het.
         all unaffected must be homref.
         if strict, all affected kids must have unaffected parents.
         >>> f = Family([Sample("mom", False), Sample("dad", False),
         ...             Sample("kid", True)], "fam")
-        >>> f.de_novo()
-        '(gt_types[kid] == HET) and ((gt_types[mom] == HOM_REF) and (gt_types[dad] == HOM_REF))'
-
-        >>> f.de_novo(min_depth=10)
-        '((gt_types[kid] == HET) and ((gt_types[mom] == HOM_REF) and (gt_types[dad] == HOM_REF))) and ((gt_depths[kid] >= 10) and ((gt_depths[mom] >= 10) and (gt_depths[dad] >= 10)))'
-
         """
         if len(self.affecteds) == 0:
             return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
-        un = reduce(op.and_, [s.gt_types == HOM_REF for s in self.unaffecteds])
+        un = empty
+        if affected_only:
+            un = reduce(op.and_, [s.gt_types == HOM_REF for s in self.unaffecteds])
         if gt_ll:
-            un &= reduce(op.and_, [s.gt_phred_ll_homref <= gt_ll for s in self.unaffecteds])
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
+            if affected_only:
+                un &= reduce(op.and_, [s.gt_phred_ll_homref <= gt_ll for s in self.unaffecteds])
 
-        un2 = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.unaffecteds])
-        if gt_ll:
-            un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds])
-        un |= un2
+        if affected_only:
+            un2 = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.unaffecteds])
+            if gt_ll:
+                un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds])
+            un |= un2
 
         depth = self._restrict_to_min_depth(min_depth)
         if strict:
@@ -371,16 +367,6 @@ class Family(object):
         """
         kid == HET and dad, mom == HOM_REF or dad, mom == HOM_ALT
         only use kids with both parents present.
-        >>> f = Family([Sample("mom", False), Sample("dad", False),
-        ...             Sample("kid", True)], "fam")
-        >>> f.mendel_plausible_denovo()
-        'False'
-        >>> f.subjects[2].mom = f.subjects[0]
-        >>> f.subjects[2].dad = f.subjects[1]
-        >>> f.mendel_plausible_denovo()
-        '(((gt_types[kid] == HET) and (gt_types[mom] == HOM_REF)) and (gt_types[dad] == HOM_REF)) or (((gt_types[kid] == HET) and (gt_types[mom] == HOM_ALT)) and (gt_types[dad] == HOM_ALT))'
-        >>> f.mendel_plausible_denovo(gt_ll=1)
-        '((((gt_types[kid] == HET) and (gt_types[mom] == HOM_REF)) and (gt_types[dad] == HOM_REF)) and (((gt_phred_ll_het[kid] <= 1) and (gt_phred_ll_homref[mom] <= 1)) and (gt_phred_ll_homref[dad] <= 1))) or ((((gt_types[kid] == HET) and (gt_types[mom] == HOM_ALT)) and (gt_types[dad] == HOM_ALT)) and (((gt_phred_ll_het[kid] <= 1) and (gt_phred_ll_homalt[mom] <= 1)) and (gt_phred_ll_homalt[dad] <= 1)))'
         """
         subset = self.affecteds_with_parent
         if len(subset) == 0: return 'False'
@@ -511,14 +497,17 @@ class Family(object):
                 'loss of heterozygosity': self.mendel_LOH(min_depth, gt_ll)
                 }
 
-    def comp_het(self, min_depth=0, gt_ll=False, strict=False):
+    def comp_het(self, min_depth=0, gt_ll=False, strict=False,
+                 affected_only=True):
         """
         affecteds are het.
         unaffecteds are not hom_alt
         (later remove candidates if unaffected share same het pair)
         """
         af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
-        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
+
+        if affected_only:
+            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
 
         depth = self._restrict_to_min_depth(min_depth)
         if not strict:
@@ -526,7 +515,8 @@ class Family(object):
 
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
+            if affected_only:
+                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
         return af & un & depth
 

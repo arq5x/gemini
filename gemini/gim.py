@@ -62,6 +62,7 @@ class GeminiInheritanceModel(object):
         variant_ids = set()
         for i, family_id in enumerate(self.family_ids):
             gt_filter = self.family_masks[i]
+            # TODO: maybe we should just or these together and call filter once.
             variant_ids.update(filter(self.args.db, gt_filter, {}))
 
         return sorted(set(variant_ids))
@@ -126,12 +127,15 @@ class GeminiInheritanceModel(object):
         masks = [compiler.compile(m, m, 'eval') for m in masks]
 
         for gene, li in self.candidates():
+            li = list(li)
+            if gene is not None:
+                n_fams = len(frozenset(l['family_id'] for l in li))
+                if n_fams < self.args.min_kindreds: continue
 
             for row in li:
                 cols = dict((col, row[col]) for col in req_cols)
                 fams = [f for i, f in enumerate(self.families)
                         if masks[i] != 'False' and eval(masks[i], cols)]
-                if len(fams) < self.args.min_kindreds: continue
 
                 # an ordered dict.
                 pdict = row.print_fields

@@ -12,7 +12,7 @@ the pedigree and a vector indicating the genotype.
 
 >>> fam.gt_types = [HET, HET, HOM_ALT, HET, HET, HET]
 >>> fam.gt_depths = [9] * 6
->>> fam.dot()
+>>> _ = fam.dot()
 >>> fam.auto_rec()
 True
 
@@ -21,15 +21,25 @@ True
 >>> fam.subjects[1].dad = fam.subjects[5]
 >>> fam.auto_rec()
 True
->>> fam.dot()
+>>> _ = fam.dot()
 
 # if grandpa is affected it is no longer autosomal recessive
 >>> fam.subjects[5].affected = True
 >>> fam.auto_rec()
 False
 
+>>> _ = fam.dot()
+
 # reset.
 >>> fam.subjects[5].affected = False
+
+# set both kids to HOM_ALT (including the
+>>> fam.gt_types[3] = HOM_ALT
+>>> fam.auto_rec(affected_only=True)
+False
+>>> fam.auto_rec(affected_only=False)
+True
+
 
 >>> fam.auto_rec(min_depth=10)
 False
@@ -40,22 +50,26 @@ False
 # dad:un, mom:un, kid:aff, kid2:un, gma:un, gpa:un
 >>> fam.gt_types = [HOM_REF, HOM_REF, HET, HET, HET, HET]
 >>> fam.de_novo()
+False
 
-
+>>> fam.de_novo(affected_only=False)
 True
 
->>> fam.gt_types = [HOM_ALT, HOM_REF, HET]
+
+>>> fam.gt_types = [HOM_ALT, HOM_REF, HET, HET, HET, HET]
 >>> fam.de_novo()
 False
->>> fam.gt_types = [HOM_ALT, HOM_ALT, HET]
+>>> fam.gt_types = [HOM_ALT, HOM_ALT, HET, HET, HET, HET]
 >>> fam.de_novo()
-True
+False
+
 >>> fam.mendel_plausible_denovo()
 True
 
 
 """
 import os
+import sys
 import tempfile
 import atexit
 
@@ -76,7 +90,12 @@ def tmp(pedstr, suf=".ped"):
 class TestFamily(object):
 
     __slots__ = ('ped', 'family', 'gt_types', '_gt_types', 'gt_depths',
-            '_gt_depths', 'strict', 'subjects')
+                 '_gt_depths', 'strict', 'subjects')
+
+    def draw(self):
+        from IPython.display import Image, display
+        img = self.dot()
+        return display(Image(filename=img))
 
     def __init__(self, ped, fam_id=None, gt_types=None, gt_depths=None):
         if isinstance(ped, basestring) and len(ped.split("\n")) > 1:
@@ -119,7 +138,8 @@ class TestFamily(object):
                 viz.edge(s.dad.name, s.name)
             if s.mom is not None:
                 viz.edge(s.mom.name, s.name)
-        viz.render(path, view=view)
+        viz._format = "png"
+        return viz.render(path, view=view)
 
     @property
     def gt_types(self):
@@ -147,10 +167,11 @@ class TestFamily(object):
         def func(**kwargs):
             if 'min_depth' in kwargs:
                 assert self._gt_depths is not None
+            debug = kwargs.pop('debug', False)
             flt = getattr(self.family, gt)(**kwargs)
-            import sys
             env = {s.sample_id: i for i, s in enumerate(self.family.subjects)}
-            #print >>sys.stderr, flt
+            if debug:
+                print >>sys.stderr, flt
             env['gt_types'] = self.gt_types
             env['gt_depths'] = self.gt_depths
             return eval(flt, env)
