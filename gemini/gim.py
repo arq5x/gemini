@@ -4,6 +4,7 @@ from copy import copy
 import re
 import GeminiQuery
 import sql_utils
+from gemini_utils import OrderedDict
 import compiler
 from gemini_constants import *
 from .gemini_bcolz import filter
@@ -127,27 +128,36 @@ class GeminiInheritanceModel(object):
         masks = [compiler.compile(m, m, 'eval') for m in masks]
 
         for gene, li in self.candidates():
-            li = list(li)
-            if gene is not None:
-                n_fams = len(frozenset(l['family_id'] for l in li))
-                if n_fams < self.args.min_kindreds: continue
+
+            kindreds = set()
+            to_yield = []
 
             for row in li:
+                # comp_het sets a family_id that met the filter. so we use it
+                # for this check instead of checking all families.
+                cur_fam = row.print_fields.get('family_id')
+
                 cols = dict((col, row[col]) for col in req_cols)
-                fams = [f for i, f in enumerate(self.families)
+                fams_to_test = enumerate(self.families) if cur_fam is None \
+                                else [(i, f) for i, f in enumerate(self.families) if f.family_id == cur_fam]
+                fams = [f for i, f in fams_to_test
                         if masks[i] != 'False' and eval(masks[i], cols)]
 
-                # an ordered dict.
-                pdict = row.print_fields
-
+                pdict = row.print_fields.copy()
                 for fam in fams:
+                    kindreds.add(fam.family_id)
+                    # get a *shallow* copy of the ordered dict.
                     # populate with the fields required by the tools.
                     pdict["family_id"] = fam.family_id
                     pdict["family_members"] = ",".join("%s" % m for m in fam.subjects)
                     pdict["family_genotypes"] = ",".join([eval(str(s), cols) for s in fam.gts])
                     pdict["samples"] = ",".join([x.name or x.sample_id for x in fam.subjects if x.affected])
                     pdict["family_count"] = len(fams)
-                    yield pdict
+                to_yield.append(pdict)
+
+            if len(kindreds) >= self.args.min_kindreds:
+                for item in to_yield:
+                    yield item
 
     def run(self):
         for i, s in enumerate(self.report_candidates()):
@@ -304,7 +314,8 @@ class CompoundHet(GeminiInheritanceModel):
             for comp_het in samples_w_hetpair:
                 num_affected = 0
                 for fam in fams:
-                    num_affected += [1 for s in f.subjects if s.affected]
+                    # TODO: check where we calc this.
+                    num_affected += len([1 for s in fams[fam].subjects if s.affected])
 
                 # NOTE: testing for exact number here. what if 1 doesn't have it?
                 if num_affected == len(samples_w_hetpair[comp_het]):
@@ -312,38 +323,32 @@ class CompoundHet(GeminiInheritanceModel):
         else:
             candidates = samples_w_hetpair
 
-        # catalog the set of families that have a comp_het in this gene
-        family_count = collections.Counter()
-        for comp_het in candidates:
+        requested_fams = None if args.families is None else set(args.families.split(","))
+        for idx, comp_het in enumerate(candidates):
+            comp_het_counter[0] += 1
             for s in samples_w_hetpair[comp_het]:
                 family_id = subjects_dict[s].family_id
-                family_count[family_id] += 1
+                if requested_fams is not None and not family_id in requested_fams:
+                    continue
 
-        # were there enough families with a compound het in this gene?
-        # keys of (variant_id, gene) vals of [row, family_gt_label, family_gt_cols,
-        # family_id, comp_het_id]
-        if len(family_count) >= args.min_kindreds:
-            for idx, comp_het in enumerate(candidates):
-                comp_het_counter[0] += 1
-                for s in samples_w_hetpair[comp_het]:
-                    family_id = subjects_dict[s].family_id
-                    if args.families is not None and family_id not in args.families.split(','):
-                        continue
-
-                    ch_id = str(comp_het_counter[0])
-                    for i in (0, 1):
-
-                        pdict = comp_het[i].row.print_fields
-                        # set these to keep order in the ordered dict.
-                        pdict["family_id"] = None
-                        pdict["family_members"] = None
-                        pdict["family_genotypes"] = None
-                        pdict["samples"] = None
-                        pdict["family_count"] = None
-                        pdict["comp_het_id"] = "%s_%s" % (pdict['variant_id'], str(ch_id))
-                        yield comp_het[i].row['gene'], [comp_het[i].row]
+                ch_id = str(comp_het_counter[0])
+                cid = "%s_%d_%d" % (ch_id, comp_het[0].row['variant_id'],
+                                    comp_het[1].row['variant_id'])
+                for i in (0, 1):
+                    pdict = comp_het[i].row.print_fields.copy()
+                    # set these to keep order in the ordered dict.
+                    pdict["family_id"] = family_id
+                    pdict["family_members"] = None
+                    pdict["family_genotypes"] = None
+                    pdict["samples"] = None
+                    pdict["family_count"] = None
+                    pdict["comp_het_id"] = cid
+                    comp_het[i].row.print_fields = pdict
+                # TODO: check this yield. should be fine since it's grouping by gene...
+                yield comp_het[i].row['gene'], [comp_het[0].row, comp_het[1].row]
 
     def candidates(self):
+        args = self.args
         idx_to_sample = self.gq.idx_to_sample
 
         for grp, li in self.gen_candidates('gene'):
