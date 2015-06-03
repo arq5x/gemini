@@ -212,4 +212,3 @@ def run(parser, args):
     if os.path.exists(args.db):
         # run the roh caller
         get_homozygosity_runs(args)        
-

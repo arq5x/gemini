@@ -162,7 +162,7 @@ ExacInfo = collections.namedtuple("ExacInfo",
                                    aaf_OTH \
                                    aaf_SAS")
 
-def load_annos( args ):
+def load_annos(args):
     """
     Populate a dictionary of Tabixfile handles for
     each annotation file.  Other modules can then
@@ -172,7 +172,7 @@ def load_annos( args ):
     dbsnp_handle = annotations.annos['dbsnp']
     hits = dbsnp_handle.fetch(chrom, start, end)
     """
-    anno_files = get_anno_files( args )
+    anno_files = get_anno_files(args)
     for anno in anno_files:
         try:
             # .gz denotes Tabix files.
@@ -180,7 +180,7 @@ def load_annos( args ):
                 annos[anno] = pysam.Tabixfile(anno_files[anno])
             # .bw denotes BigWig files.
             elif anno_files[anno].endswith(".bw"):
-                annos[anno] = BigWigFile( open( anno_files[anno] ) )
+                annos[anno] = BigWigFile(open(anno_files[anno]))
 
         except IOError:
             sys.exit("Gemini cannot open this annotation file: %s. \n"
@@ -342,7 +342,7 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
             # Check for multiple alleles and warnings flag.
             if not warnings:
                 return
-            if len(alt) == 1:
+            if len(alt) == 1 or isinstance(alt, basestring):
                 return
 
             variant_text = 'variant'
@@ -371,7 +371,7 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
 
             # Warn for multiple alleles.
             if isinstance(h, basestring):
-                start = int(h.split('\t', 1)[1])
+                start = int(h.split('\t', 2)[1])
             else:
                 # Assume it's a Pysam entry.
                 start = h.pos

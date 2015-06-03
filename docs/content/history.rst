@@ -2,20 +2,30 @@
 Release History
 #############################
 
-0.16.0 (Future)
+(Future)
 =======================================
-1. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to prioritize confident variants.
-2. Update parsing for snpEff >= 4.0
-3. Add an `is_splicing` column.
-4. Support for multi-generational families.
+1. Leverage bcolz indexing in built-in inheritance pattern tools.
+2. Speed up and generalize database loading.
+3. Support for multi-generational families.
+4. Support for both SO and HGVS terms.
+5. Update parsing for snpEff >= 4.0
+6. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to prioritize confident variants.
+7. Add an `is_splicing` column.
+8. Phase genotypes by transmission.
+
+0.15.1
+======
+1. Fix regression in grabix. Thanks to Sven-Eric Shelhorn for reporting.
+2. Fix handling of samples with "-". Thanks to Uma Paila for reporting.
 
 0.15.0
 =======================================
-x. Use optional external index to speed genotype queries.
-x. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
-x. Faster queries due to lazy loading of genotype columns.
-x. Read gt\* columns from the database for better backward compatibility.
-x. Use optional external index to speed genotype queries.
+1. Use external index to speed genotype queries (this is created by default on load unless --no-bcolz is specified)
+2. Match on ref and alternate alleles (not just position) when annotating with VCF. Thanks Jeremy Goecks.
+3. Related to matching, we now load extra annotation, e.g. VEP as VCF and require ref and alt matching. Previously was done with bed overlap.
+4. Faster queries due to lazy loading of genotype columns.
+5. Read gt\* columns from the database for better backward compatibility.
+6. Code cleanup. Thanks to Christian Brueffer.
 
 0.14.0 
 =======================================

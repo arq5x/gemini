@@ -4,12 +4,15 @@ import os
 import sys
 import sqlite3
 from collections import defaultdict, namedtuple
+import atexit
 import json
 import subprocess
+import tempfile
 
 import numpy as np
 from scipy.stats import mode
 import pysam
+import cyvcf as vcf
 
 from gemini.annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
 from database import database_transaction
@@ -120,13 +123,11 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
         to_update = []
 
 def _update_variants(to_update, col_names, cursor):
-        update_qry = "UPDATE variants SET "
-
-        update_cols = ",".join(col_name + " = ?" for col_name in col_names)
-        update_qry += update_cols
-        update_qry += " WHERE variant_id = ?"
-        cursor.executemany(update_qry, to_update)
-
+    update_qry = "UPDATE variants SET "
+    update_cols = ",".join(col_name + " = ?" for col_name in col_names)
+    update_qry += update_cols
+    update_qry += " WHERE variant_id = ?"
+    cursor.executemany(update_qry, to_update)
 
 def annotate_variants_bool(args, conn, col_names):
     """
@@ -359,83 +360,62 @@ def annotate(parser, args):
             c.execute('''drop index if exists %s''' % (col_name + "idx"))
             c.execute('''create index %s on variants(%s)''' % (col_name + "idx", col_name))
 
+
 # ## Automate addition of extra fields to database
 
 def add_extras(gemini_db, chunk_dbs, region_only):
     """Annotate gemini database with extra columns from processed chunks, if available.
     """
-    extra_files = []
-    header_files = []
     for chunk in chunk_dbs:
-        extra_file, header_file = get_extra_files(chunk)
-        if os.path.exists(extra_file) and os.path.getsize(extra_file) > 0:
-            extra_files.append(extra_file)
-            assert os.path.exists(header_file)
-            header_files.append(header_file)
-    if header_files:
-        header, types = _merge_headers(header_files)
-        ops = ["first" for t in types]
-        extra_beds = [_json_to_bed(x, header) for x in extra_files]
-        final_bed = _merge_beds(extra_beds, gemini_db)
+        extra_file = get_extra_vcf(chunk)
+        if extra_file is False:
+            # there was not extra annotation so we just continue
+            continue
+        # these the the field names that we'll pull from the info field.
+        fields = [x.strip() for x in open(extra_file[:-3] + ".fields")]
+
+        ops = ["first" for t in fields]
         Args = namedtuple("Args", "db,anno_file,anno_type,col_operations,col_names,col_types,col_extracts,region_only")
-        args = Args(gemini_db, final_bed, "extract", ",".join(ops),
-                    ",".join(header), ",".join(types),
-                    ",".join([str(i + 4) for i in range(len(header))]),
+
+        # TODO: hard-coded "text" into the type...
+        args = Args(gemini_db, extra_file, "extract", ",".join(ops),
+                    ",".join(fields), ",".join(["text"] * len(fields)),
+                    ",".join(fields),
                     region_only)
         annotate(None, args)
-        for fname in extra_beds + [final_bed, final_bed + ".tbi"] + header_files + extra_files:
-            if os.path.exists(fname):
-                os.remove(fname)
+        os.unlink(extra_file[:-3] + ".fields")
 
-def _merge_beds(in_beds, final_db):
-    """Merge BED files into a final sorted output file.
-    """
-    if len(in_beds) == 1:
-        out_file = in_beds[0]
-    else:
-        out_file = "%s.bed" % os.path.splitext(final_db)[0]
-        cmd = "cat %s | sort -k1,1 -k2,2n > %s" % (" ".join(in_beds), out_file)
-        subprocess.check_call(cmd, shell=True)
-    subprocess.check_call(["bgzip", "-f", out_file])
-    bgzip_out = out_file + ".gz"
-    subprocess.check_call(["tabix", "-p", "bed", "-f", bgzip_out])
-    return bgzip_out
 
-def _json_to_bed(fname, header):
-    """Convert JSON output into a BED file in preparation for annotation.
-    """
-    out_file = "%s.bed" % os.path.splitext(fname)[0]
-    with open(fname) as in_handle:
-        with open(out_file, "w") as out_handle:
-            for line in in_handle:
-                cur_info = json.loads(line)
-                parts = [str(cur_info.get(h, "")) for h in ["chrom", "start", "end"] + header]
-                out_handle.write("\t".join(parts) + "\n")
-    return out_file
+def rm(path):
+    try:
+        os.unlink(path)
+    except:
+        pass
 
-def _merge_headers(header_files):
-    """Merge a set of header files into a single final header for annotating.
-    """
-    ignore = set(["chrom", "start", "end"])
-    ctype_order = ["text", "float", "integer", None]
-    out = {}
-    for h in header_files:
-        with open(h) as in_handle:
-            header = json.loads(in_handle.read())
-            for column, ctype in header.items():
-                if column not in ignore:
-                    cur_ctype = sorted([ctype, out.get(column)], key=lambda x: ctype_order.index(x))[0]
-                    out[column] = cur_ctype
-    headers = []
-    types = []
-    for header in sorted(out.keys()):
-        headers.append(header)
-        types.append(out[header])
-    return headers, types
 
-def get_extra_files(gemini_db):
-    """Retrieve extra file names associated with a gemini database, for flexible loading.
+def get_extra_vcf(gemini_db, tmpl=None):
+    """Retrieve extra file associated with a gemini database.
+    Most commonly, this will be with VEP annotations added.
+    Returns false if there are no vcfs associated with the database.
     """
-    extra_file = "%s-extra.json" % os.path.splitext(gemini_db)[0]
-    extraheader_file = "%s-extraheader.json" % os.path.splitext(gemini_db)[0]
-    return extra_file, extraheader_file
+    base = os.path.basename(gemini_db)
+    path = os.path.join(tempfile.gettempdir(), "extra.%s.vcf" % base)
+    mode = "r" if tmpl is None else "w"
+    if mode == "r":
+        if not os.path.exists(path):
+            return False
+        if not path.endswith(".gz"):
+            subprocess.check_call(["bgzip", "-f", path])
+            bgzip_out = path + ".gz"
+            subprocess.check_call(["tabix", "-p", "vcf", "-f", bgzip_out])
+            return bgzip_out
+        return path
+
+    fh = open(path, "w")
+    if mode == "w":
+        atexit.register(rm, fh.name)
+        atexit.register(rm, fh.name + ".gz")
+        atexit.register(rm, fh.name + ".gz.tbi")
+
+        return vcf.Writer(fh, tmpl)
+    return vcf.Reader(fh)

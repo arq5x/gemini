@@ -247,6 +247,7 @@ rm obs exp
 # 14. Test a query of the variants table with a where clause
 #     and a more complex genotype filter
 ####################################################################
+# NOTE: this test fails with --use-bcolz because of the the limit 5
 echo "    query.t14...\c"
 echo "chr1	1219381	1219382	C	G	SCNN1D	C/C	C/C
 chr1	1219476	1219477	T	G	SCNN1D	T/T	T/T

@@ -1,12 +1,11 @@
 import math
 from collections import Counter, defaultdict
 import numpy as np
-from scipy.stats import binom, norm, chi2
+from scipy.stats import binom, norm
 from pandas import DataFrame
 import sys
 import random
-from math import pow
-from itertools import ifilterfalse, islice
+from itertools import islice
 from scipy.misc import comb
 
 

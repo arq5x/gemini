@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 import sqlite3
-import os
 import sys
-import numpy as np
 from collections import defaultdict
-import itertools as it
 from compiler import compile
 
 from gemini_constants import *

@@ -6,7 +6,6 @@ import re
 from copy import copy
 
 import GeminiQuery
-import gemini_utils as util
 from gemini_constants import *
 from gemini_inheritance_model_utils import GeminiInheritanceModelFactory as Factory
 import gemini_subjects as subjects
@@ -248,4 +247,3 @@ class CompoundHet(Factory):
 def run(parser, args):
     if os.path.exists(args.db):
         CompoundHet(args, "comp_het").get_compound_hets()
-

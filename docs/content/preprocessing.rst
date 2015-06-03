@@ -12,7 +12,7 @@ Variants with multiple alternate alleles will not be handled correctly by gemini
 used to annotate the variants). As projects get more samples it is likely that a non-negligible 
 percentage of site will have multiple alternate alleles.
 
-In addition, variants that are not left-aligned and trimmedy can be incorrectly (or not)
+In addition, variants that are not left-aligned and trimmed can be incorrectly (or not)
 annotated.
 
 To reduce the number of false negatives, **we strongly recommend that gemini users split,
@@ -61,7 +61,7 @@ Before we can use GEMINI to explore genetic variation, we must first ``load`` ou
 VCF file into the GEMINI database framework.  We expect you to have first
 annotated the functional consequence of each variant in your VCF using either
 VEP or snpEff (Note that v3.0+ of snpEff is required to track the amino acid
-length of each impacted transcript). Logically,the loading step is done with
+length of each impacted transcript). Logically, the loading step is done with
 the ``gemini load`` command.  Below are two examples based on a VCF file that
 we creatively name my.vcf.  The first example assumes that the VCF has been
 pre-annotated with VEP and the second assumes snpEff.
@@ -97,12 +97,12 @@ loading but they can be filtered out during the loading step by passing the
 
 
 ================================
-Using multiple CPUS for loading
+Using multiple CPUs for loading
 ================================
 
 Now, the loading step is very computationally intensive and thus can be very slow
 with just a single core.  However, if you have more CPUs in your arsenal,
-you specify more cores.  This provides a roughly linear increase in speed as a
+you can specify more cores.  This provides a roughly linear increase in speed as a
 function of the number of cores. On our local machine, we are able to load a
 VCF file derived from the exomes of 60 samples in about 10 minutes.  With a
 single core, it takes a few hours.

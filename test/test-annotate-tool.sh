@@ -498,11 +498,12 @@ tabix -p bed anno.bed.gz
 # create a new column in the database using the new annotation
 echo "usage: gemini annotate [-h] [-f ANNO_FILE] [-c COL_NAMES]
                        [-a {boolean,count,extract}] [-e COL_EXTRACTS]
-                       [-t COL_TYPES] [-o COL_OPERATIONS]
+                       [-t COL_TYPES] [-o COL_OPERATIONS] [--region-only]
                        db
 gemini annotate: error: argument -a: invalid choice: 'distract' (choose from 'boolean', 'count', 'extract')" > exp
 
 gemini annotate -f anno.bed.gz -a distract -c anno23,anno24 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db 2> obs
+
 
 check obs exp annotate-tool.t16
 rm obs exp

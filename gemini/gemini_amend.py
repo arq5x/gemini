@@ -1,8 +1,6 @@
-import GeminiQuery
 from gemini_subjects import get_subjects
 from ped import load_ped_file, get_ped_fields
 from gemini_utils import quote_string
-import sqlite3
 from database import database_transaction
 
 def amend(parser, args):

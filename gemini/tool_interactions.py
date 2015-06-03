@@ -9,7 +9,6 @@
 import os
 import sys
 import sqlite3
-import numpy as np
 import compression as Z
 import cPickle
 from gemini.config import read_gemini_config
@@ -17,7 +16,6 @@ from pygraph.classes.graph import graph
 from pygraph.readwrite.dot import write
 from pygraph.algorithms.searching import breadth_first_search
 from pygraph.algorithms.minmax import shortest_path
-from pygraph.classes.exceptions import AdditionError
 from pygraph.algorithms.filters.radius import radius
 from pygraph.classes.digraph import digraph
 import gemini_utils as util

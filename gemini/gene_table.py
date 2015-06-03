@@ -1,4 +1,3 @@
-import sys
 import os
 import database
 from gemini.config import read_gemini_config
@@ -70,5 +69,3 @@ def update_cosmic_census_genes( cursor, args ):
         cosmic_census_genes.append((1,gene,chrom))
 
     database.update_gene_summary_w_cancer_census(cursor, cosmic_census_genes)
-         
-        

@@ -1,0 +1,35 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+bx-python=0.7.2=np18py27_1
+conda=3.5.5=py27_0
+cython=0.20.1=py27_0
+dateutil=2.1=py27_2
+ipython=2.1.0=py27_2
+jinja2=2.7.2=py27_0
+libsodium=0.4.5=0
+markupsafe=0.18=py27_0
+nose=1.3.3=py27_0
+numpy=1.8.1=py27_0
+openssl=1.0.1h=0
+pandas=0.14.0=np18py27_0
+pip=1.5.6=py27_0
+pycosat=0.6.1=py27_0
+pycrypto=2.6.1=py27_0
+pyparsing=2.0.1=py27_0
+pysam=0.8.0=py27_0
+python=2.7.8=0
+pytz=2014.4=py27_0
+pyyaml=3.11=py27_0
+pyzmq=14.3.0=py27_0
+readline=6.2=2
+requests=2.3.0=py27_0
+scipy=0.14.0=np18py27_0
+setuptools=3.6=py27_0
+six=1.7.3=py27_0
+sqlite=3.8.4.1=0
+system=5.8=1
+tk=8.5.15=0
+yaml=0.1.4=0
+zeromq=4.0.4=0
+zlib=1.2.7=0

@@ -4,11 +4,7 @@ For a detailed gene table and a summary gene table
 
 #!/usr/bin/env python
 
-import sys
-import os
-import itertools
 from collections import defaultdict
-from sets import Set
 
 
 filename = 'detailed_gene_table_v75'

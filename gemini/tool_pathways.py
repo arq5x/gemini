@@ -3,7 +3,6 @@
 import os
 import sys
 import sqlite3
-import numpy as np
 import compression as Z
 from collections import defaultdict
 from gemini.config import read_gemini_config

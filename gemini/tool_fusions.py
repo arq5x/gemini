@@ -1,11 +1,7 @@
 #!/usr/bin/env python
-import sqlite3
 import os
-import sys
-from collections import defaultdict
 
 import GeminiQuery
-import gemini_utils as util
 from gemini_constants import *
 import gemini_subjects as subjects
 
@@ -188,4 +184,3 @@ def get_fusions(args):
 def run(parser, args):
     if os.path.exists(args.db):
         get_fusions(args)
-        

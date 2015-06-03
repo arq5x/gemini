@@ -10,8 +10,8 @@ import json
 import abc
 import numpy as np
 from itertools import chain
-import itertools as it
 flatten = chain.from_iterable
+import itertools as it
 
 # gemini imports
 import gemini_utils as util
@@ -20,6 +20,9 @@ from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
+
+class GeminiError(Exception):
+    pass
 
 def RowFactory(cursor, row):
     return dict(it.izip((c[0] for c in cursor.description), row))
@@ -595,17 +598,20 @@ class GeminiQuery(object):
         if self.gt_filter:
             # here's how we use the fast
             if self.variant_id_getter:
-                print >>sys.stderr, "bcolz: using index"
+                if os.environ.get('GEMINI_DEBUG') == 'TRUE':
+                    print >>sys.stderr, "bcolz: using index"
+
                 user_dict = dict(HOM_REF=0, HET=1, UNKNOWN=2, HOM_ALT=3,
-                                sample_info=self.sample_info,
+                                 sample_info=self.sample_info,
                                  MISSING=None, UNAFFECTED=1, AFFECTED=2)
                 import time
                 t0 = time.time()
-                vids = self.variant_id_getter(self.db, None, self.gt_filter, user_dict)
+                vids = self.variant_id_getter(self.db, self.gt_filter, user_dict)
                 if vids is None:
                     print >>sys.stderr, "bcolz: can't parse this filter (falling back to gemini): %s" % self.gt_filter
                 else:
-                    print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
+                    if os.environ.get('GEMINI_DEBUG') == 'TRUE':
+                        print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
                     self.add_vids_to_query(vids)
 
         if self.gt_filter:
@@ -899,11 +905,11 @@ class GeminiQuery(object):
         For example, convert gt_types.1478PC0011 to gt_types[11]
         """
         if raw_col == "*":
-            return raw_col.lower()
+            return raw_col
         # e.g., "gts.NA12878"
         elif '.' in raw_col:
             (column, sample) = raw_col.split('.', 1)
-            corrected = column.lower() + "[" + str(self.sample_to_idx[sample]).lower() + "]"
+            corrected = "%s[%d]" % (column.lower(), self.sample_to_idx[sample])
         else:
             # e.g. "gts" - do nothing
             corrected = raw_col
@@ -970,6 +976,7 @@ class GeminiQuery(object):
         #    (gt_types).(*).(!=HOM_REF).(all)
         # and
         #    (   gt_types).(*).(!=HOM_REF).(all)
+        seen_count = False
         wildcard_tokens = re.split(r'(\(\s*gt\w+\s*\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
         for token_idx, token in enumerate(wildcard_tokens):
             # NOT a WILDCARD
@@ -987,6 +994,8 @@ class GeminiQuery(object):
                         corrected_gt_filter.append(corrected)
                     else:
                         t = _swap_genotype_for_number(t)
+                        if t.strip() in ("AND", "OR"):
+                            t = t.lower()
                         corrected_gt_filter.append(t)
             # IS a WILDCARD
             # e.g., "gt_types.(affected==1).(==HET)"
@@ -1021,24 +1030,37 @@ class GeminiQuery(object):
                 if wildcard_op in ["all", "any"]:
                     if self.variant_id_getter:
                         joiner = " and " if wildcard_op == "all" else " or "
-                        rule = ("%s" % joiner).join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = joiner.join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
                         rule = "(" + rule + ")"
                     else:
                         rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
                 elif wildcard_op == "none":
-                    rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
+                    if self.variant_id_getter:
+                        rule = " or ".join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = "~ ((" + rule + "))"
+                    else:
+                        rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
                 elif "count" in wildcard_op:
                     # break "count>=2" into ['', '>=2']
                     tokens = wildcard_op.split('count')
                     count_comp = tokens[len(tokens) - 1]
-                    rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
+                    if self.variant_id_getter:
+                        rule = "|count|".join("((%s[%s]%s))" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = "%s|count|%s" % (rule, count_comp.strip())
+                        seen_count = True
+                    else:
+                        rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
                 else:
                     sys.exit("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
 
                 corrected_gt_filter.append(rule)
             else:
                 if len(token) > 0:
-                    corrected_gt_filter.append(token.lower())
+                    if token.strip() in ("AND", "OR"):
+                        token = token.lower()
+                    corrected_gt_filter.append(token)
+        if seen_count and len(corrected_gt_filter) > 1 and self.variant_id_getter:
+            raise GeminiError("count operations can not be combined with other operations")
 
         return " ".join(corrected_gt_filter)
 
@@ -1235,7 +1257,6 @@ def select_formatter(args):
                                   % (args.format, SUPPORTED_FORMATS))
     else:
         return SUPPORTED_FORMATS[args.format](args)
-
 
 
 if __name__ == "__main__":

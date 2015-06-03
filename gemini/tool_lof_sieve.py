@@ -5,7 +5,6 @@ import re
 import sqlite3
 import gemini_utils as util
 from gemini_constants import *
-import numpy as np
 import compression as Z
 
 

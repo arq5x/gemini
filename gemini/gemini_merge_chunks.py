@@ -6,7 +6,6 @@ import sys
 import uuid
 
 import database as gemini_db
-import gemini_utils as util
 
 
 def append_variant_info(main_curr, chunk_db):

@@ -729,7 +729,7 @@ Integrating the knowledge of the known protein-protein interactions would be
 useful in explaining variation data. Meaning to say that a damaging variant
 in an interacting partner of a  potential protein may be equally interesting
 as the protein itself. We have used the HPRD binary interaction data to build
-a p-p network graph which can be explored by Gemini.
+a p-p network graph which can be explored by GEMINI.
 
 
 Examples:
