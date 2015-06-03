@@ -1,7 +1,7 @@
 from gemini_subjects import get_subjects
 from ped import load_ped_file, get_ped_fields
 from gemini_utils import quote_string
-from database import database_transaction
+from database import database_transaction, update_expanded_gt_table_family_indexes
 
 def amend(parser, args):
     if args.db is None:
@@ -23,6 +23,8 @@ def amend_sample(args):
                 set_str = ",".join([str(x) + "=" + str(y) for (x, y) in sample])
                 sql_query = "update samples set {0} where sample_id={1}"
                 c.execute(sql_query.format(set_str, v.sample_id))
+
+        update_expanded_gt_table_family_indexes(c)
 
 def add_columns(header, c):
     """
