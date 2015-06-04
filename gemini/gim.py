@@ -162,6 +162,7 @@ class GeminiInheritanceModel(object):
 
             if len(kindreds) >= self.args.min_kindreds:
                 for item in to_yield:
+                    item['family_count'] = len(kindreds)
                     yield item
 
     def run(self):
