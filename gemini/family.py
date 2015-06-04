@@ -266,6 +266,7 @@ class Family(object):
         parent.
         """
         if len(self.affecteds) == 0:
+            sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
             return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
         if len(self.unaffecteds) and only_affected:
@@ -299,9 +300,13 @@ class Family(object):
         """
         If strict, then if parents exist, they must be het for all affecteds
         """
+        if len(self.affecteds) == 0:
+            sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
+            return 'False'
         af = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.affecteds])
         if only_affected:
-            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds])
+            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in
+                                  self.unaffecteds], empty)
         else:
             un = None
         if strict:
@@ -338,6 +343,7 @@ class Family(object):
         ...             Sample("kid", True)], "fam")
         """
         if len(self.affecteds) == 0:
+            sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
             return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
         un = empty
