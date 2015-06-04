@@ -95,7 +95,7 @@ class Sample(object):
         s += (";affected" if self.affected else (";unaffected"
                   if self.affected is False else ";unknown"))
         if self.gender is not None:
-            s += ";sex=%s" % self.gender
+            s += ";%s" % self.gender
         return s + ")"
 
     def __str__(self):
