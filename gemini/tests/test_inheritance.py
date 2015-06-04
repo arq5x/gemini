@@ -35,9 +35,9 @@ False
 
 # set both kids to HOM_ALT (including the
 >>> fam.gt_types[3] = HOM_ALT
->>> fam.auto_rec(affected_only=True)
+>>> fam.auto_rec(only_affected=True)
 False
->>> fam.auto_rec(affected_only=False)
+>>> fam.auto_rec(only_affected=False)
 True
 
 
@@ -52,7 +52,7 @@ False
 >>> fam.de_novo()
 False
 
->>> fam.de_novo(affected_only=False)
+>>> fam.de_novo(only_affected=False)
 True
 
 
