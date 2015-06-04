@@ -259,7 +259,7 @@ class Family(object):
         else:
             return None
 
-    def auto_dom(self, min_depth=0, gt_ll=False, strict=True, affected_only=True):
+    def auto_dom(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
         """
         At least 1 affected child must have at least 1 affected/unknown parent.
         If strict then all affected kids must have at least 1 affected parent.
@@ -268,14 +268,14 @@ class Family(object):
         if len(self.affecteds) == 0:
             return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
-        if len(self.unaffecteds) and affected_only:
+        if len(self.unaffecteds) and only_affected:
             un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
         else:
             un = None
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            if len(self.unaffecteds) and affected_only:
+            if len(self.unaffecteds) and only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
 
         if strict:
@@ -295,12 +295,12 @@ class Family(object):
 
         return af & un & depth
 
-    def auto_rec(self, min_depth=0, gt_ll=False, strict=True, affected_only=True):
+    def auto_rec(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
         """
         If strict, then if parents exist, they must be het for all affecteds
         """
         af = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.affecteds])
-        if affected_only:
+        if only_affected:
             un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds])
         else:
             un = None
@@ -324,12 +324,12 @@ class Family(object):
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.affecteds])
-            if affected_only:
+            if only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
         return af & un & depth
 
-    def de_novo(self, min_depth=0, gt_ll=False, strict=True, affected_only=True):
+    def de_novo(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
         """
         all affected must be het.
         all unaffected must be homref.
@@ -341,14 +341,14 @@ class Family(object):
             return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
         un = empty
-        if affected_only:
+        if only_affected:
             un = reduce(op.and_, [s.gt_types == HOM_REF for s in self.unaffecteds])
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            if affected_only:
+            if only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_homref <= gt_ll for s in self.unaffecteds])
 
-        if affected_only:
+        if only_affected:
             un2 = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.unaffecteds])
             if gt_ll:
                 un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds])
@@ -498,7 +498,7 @@ class Family(object):
                 }
 
     def comp_het(self, min_depth=0, gt_ll=False, strict=False,
-                 affected_only=True):
+                 only_affected=True):
         """
         affecteds are het.
         unaffecteds are not hom_alt
@@ -506,8 +506,10 @@ class Family(object):
         """
         af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
 
-        if affected_only:
+        if only_affected:
             un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
+        else:
+            un = empty
 
         depth = self._restrict_to_min_depth(min_depth)
         if not strict:
@@ -515,7 +517,7 @@ class Family(object):
 
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            if affected_only:
+            if only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
         return af & un & depth
@@ -524,7 +526,6 @@ if __name__ == "__main__":
 
     HOM_REF, HET, UNKNOWN, HOM_ALT = "HOM_REF HET UNKNOWN HOM_ALT".split()
     import doctest
-    import sys
     sys.stderr.write(str(doctest.testmod(optionflags=
                      doctest.NORMALIZE_WHITESPACE
                      | doctest.ELLIPSIS

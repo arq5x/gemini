@@ -4,7 +4,6 @@ from copy import copy
 import re
 import GeminiQuery
 import sql_utils
-from gemini_utils import OrderedDict
 import compiler
 from gemini_constants import *
 from .gemini_bcolz import filter
@@ -77,13 +76,8 @@ class GeminiInheritanceModel(object):
         q = GeminiQuery.add_variant_ids_to_query(q, vids)
         self.gq.run(q, needs_genotypes=True)
 
-        def update(gr):
-            # gr is a gemini row
-            return gr
-
         for grp_key, grp in it.groupby(self.gq, group_key):
-            ogrp = (update(gr) for gr in grp)
-            yield grp_key, ogrp
+            yield grp_key, grp
 
     def all_candidates(self):
 
@@ -110,7 +104,8 @@ class GeminiInheritanceModel(object):
             # e.g. family.auto_rec(gt_ll, min_depth)
             family_filter = getattr(family,
                     self.model)(gt_ll=self.args.gt_phred_ll,
-                                min_depth=self.args.min_sample_depth)
+                                min_depth=self.args.min_sample_depth,
+                                only_affected=self.args.only_affected)
 
             self.family_masks.append(family_filter)
             self.family_ids.append(family.family_id)
@@ -132,6 +127,7 @@ class GeminiInheritanceModel(object):
             kindreds = set()
             to_yield = []
 
+            seen = set()
             for row in li:
                 # comp_het sets a family_id that met the filter. so we use it
                 # for this check instead of checking all families.
@@ -140,20 +136,29 @@ class GeminiInheritanceModel(object):
                 cols = dict((col, row[col]) for col in req_cols)
                 fams_to_test = enumerate(self.families) if cur_fam is None \
                                 else [(i, f) for i, f in enumerate(self.families) if f.family_id == cur_fam]
+
                 fams = [f for i, f in fams_to_test
                         if masks[i] != 'False' and eval(masks[i], cols)]
-
+                kindreds.update(f.family_id for f in fams)
                 pdict = row.print_fields.copy()
+
                 for fam in fams:
+                    pdict = row.print_fields.copy()
                     kindreds.add(fam.family_id)
                     # get a *shallow* copy of the ordered dict.
                     # populate with the fields required by the tools.
                     pdict["family_id"] = fam.family_id
                     pdict["family_members"] = ",".join("%s" % m for m in fam.subjects)
-                    pdict["family_genotypes"] = ",".join([eval(str(s), cols) for s in fam.gts])
-                    pdict["samples"] = ",".join([x.name or x.sample_id for x in fam.subjects if x.affected])
+                    pdict["family_genotypes"] = ",".join(eval(str(s), cols) for s in fam.gts)
+                    pdict["samples"] = ",".join(x.name or x.sample_id for x in fam.subjects if x.affected)
                     pdict["family_count"] = len(fams)
-                to_yield.append(pdict)
+
+                    s = str(pdict)
+                    if s in seen:
+                        continue
+                    seen.add(s)
+
+                    to_yield.append(pdict)
 
             if len(kindreds) >= self.args.min_kindreds:
                 for item in to_yield:
@@ -298,38 +303,25 @@ class CompoundHet(GeminiInheritanceModel):
         Refine candidate heterozygote pairs based on user's filters.
         """
         args = self.args
-        # eliminate comp_hets with unaffected individuals if
-        # only affected individuals are required.
         # once we are in here, we know that we have a single gene.
-        from .family import Family
-        self.gq._connect_to_database()
-        fams = Family.from_cursor(self.gq.c)
-        subjects_dict = {}
-        for f in fams:
-            for s in fams[f].subjects:
-                subjects_dict[s.name] = s
+        subjects_dict = self.subjects_dict
 
-        candidates = {}
-        if args.only_affected:
-            for comp_het in samples_w_hetpair:
-                num_affected = 0
-                for fam in fams:
-                    # TODO: check where we calc this.
-                    num_affected += len([1 for s in fams[fam].subjects if s.affected])
+        candidates = samples_w_hetpair
 
-                # NOTE: testing for exact number here. what if 1 doesn't have it?
-                if num_affected == len(samples_w_hetpair[comp_het]):
-                    candidates[comp_het] = samples_w_hetpair[comp_het]
-        else:
-            candidates = samples_w_hetpair
-
+        # TODO: we are filtering requested fams here before doing min-kindreds
+        # count later. is this as expected?
         requested_fams = None if args.families is None else set(args.families.split(","))
         for idx, comp_het in enumerate(candidates):
             comp_het_counter[0] += 1
+            #seen = set()
             for s in samples_w_hetpair[comp_het]:
                 family_id = subjects_dict[s].family_id
+                # NOTE: added this so each family only reported 1x.
+                #if family_id in seen:
+                #    continue
                 if requested_fams is not None and not family_id in requested_fams:
                     continue
+                #seen.add(family_id)
 
                 ch_id = str(comp_het_counter[0])
                 cid = "%s_%d_%d" % (ch_id, comp_het[0].row['variant_id'],
@@ -344,15 +336,25 @@ class CompoundHet(GeminiInheritanceModel):
                     pdict["family_count"] = None
                     pdict["comp_het_id"] = cid
                     comp_het[i].row.print_fields = pdict
-                # TODO: check this yield. should be fine since it's grouping by gene...
-                yield comp_het[i].row['gene'], [comp_het[0].row, comp_het[1].row]
+                    # TODO: check this yield.
+                    yield comp_het[i].row
 
     def candidates(self):
         args = self.args
         idx_to_sample = self.gq.idx_to_sample
 
+        from .family import Family
+        self.gq._connect_to_database()
+        fams = self.fams = Family.from_cursor(self.gq.c)
+
+        self.subjects_dict = {}
+        for f in fams:
+            for s in fams[f].subjects:
+                self.subjects_dict[s.name] = s
+
         for grp, li in self.gen_candidates('gene'):
             sample_hets = collections.defaultdict(lambda: collections.defaultdict(list))
+
             for row in li:
 
                 gt_types, gt_bases, gt_phases = row['gt_types'], row['gts'], row['gt_phases']
@@ -362,6 +364,10 @@ class CompoundHet(GeminiInheritanceModel):
                     if gt_type != HET:
                         continue
                     sample = idx_to_sample[idx]
+                    # need to keep unaffecteds so we no if someone has the same
+                    # pair.
+                    #if args.only_affected and not self.subjects_dict[sample].affected:
+                    #    continue
                     sample_site = copy(site)
                     sample_site.phased = gt_phases[idx]
 
@@ -374,10 +380,18 @@ class CompoundHet(GeminiInheritanceModel):
 
             # process the last gene seen
             samples_w_hetpair = self.find_valid_het_pairs(sample_hets)
-            for d in self.filter_candidates(samples_w_hetpair):
-                yield d
+            if args.only_affected:
+                sd = self.subjects_dict
+                # key is (site1, site2), value is list of samples
+                # if a single unaffected sample shares this het pair, we remove
+                # it from consideration.
+                samples_w_hetpair = dict((site, samples) for site, samples in
+                        samples_w_hetpair.items() if all(sd[s].affected for s in samples))
+
+            yield grp, self.filter_candidates(samples_w_hetpair)
 
 class Site(object):
+    __slots__ = ('row', 'phased', 'gt')
     def __init__(self, row):
         self.row = row
         self.phased = None
