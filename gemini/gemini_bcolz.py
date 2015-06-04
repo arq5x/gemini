@@ -69,7 +69,7 @@ def create(db, cols=None):
     if cols is None:
         cols = [x[0] for x in gt_cols_types if x[0] != 'gts']
         print >>sys.stderr, (
-                "indexing all columns execpt 'gts'; to index that column, "
+                "indexing all columns except 'gts'; to index that column, "
                 "run gemini bcolz_index %s --cols gts" % db)
 
     conn = sqlite3.connect(db)
@@ -145,7 +145,7 @@ class NoGTIndexException(Exception):
 
 # TODO: since we call this from query, we can improve speed by only loading
 # samples that appear in the query with an optional query=None arg to load.
-def load(db):
+def load(db, query=None):
 
     t0 = time.time()
     conn = sqlite3.connect(db)
@@ -156,15 +156,19 @@ def load(db):
     bcpath = get_bcolz_dir(db)
 
     carrays = {}
+    n = 0
     for gtc in gt_cols:
+        if not gtc in query: continue
         carrays[gtc] = []
         for s in samples:
+            if not s in query: continue
             path = "%s/%s/%s" % (bcpath, s, gtc)
             if os.path.exists(path):
                 carrays[gtc].append(bcolz.open(path, mode="r"))
+                n += 1
     if os.environ.get("GEMINI_DEBUG") == "TRUE":
-        print >>sys.stderr, "it took %.2f seconds to load arrays" \
-            % (time.time() - t0)
+        print >>sys.stderr, "it took %.2f seconds to load %d arrays" \
+            % (time.time() - t0, n)
     return carrays
 
 
@@ -177,11 +181,6 @@ def filter(db, query, user_dict):
        ("sum(" in query and not query.startswith("sum(") and query.count("sum(") == 1):
         return None
     user_dict['where'] = np.where
-
-    carrays = load(db)
-
-    if max(len(carrays[c]) for c in carrays) == 0:
-        raise NoGTIndexException
 
     if query.startswith("not "):
         # "~" is not to numexpr.
@@ -200,7 +199,7 @@ def filter(db, query, user_dict):
     cur = conn.cursor()
     samples = get_samples(cur)
     # convert gt_col[index] to gt_col__sample_name
-    patt = "(%s)\[(\d+)\]" % "|".join(carrays.keys())
+    patt = "(%s)\[(\d+)\]" % "|".join((g[0] for g in gt_cols_types))
 
     def fix_sample_name(s):
         return s.replace("-", "_").replace(" ", "_")
@@ -212,14 +211,18 @@ def filter(db, query, user_dict):
 
     query = re.sub(patt, subfn, query)
     if os.environ.get('GEMINI_DEBUG') == 'TRUE':
-        print >>sys.stderr, query
+        print >>sys.stderr, query[:250] + "..."
+
+    carrays = load(db, query=query)
+    if max(len(carrays[c]) for c in carrays) == 0:
+        raise NoGTIndexException
 
     # loop through and create a cache of "$gt__$sample"
     for gt_col in carrays:
-        # if not gt_col in query: continue
+        if not gt_col in query: continue
         for i, sample_array in enumerate(carrays[gt_col]):
             sample = fix_sample_name(samples[i])
-            # if not sample in query: continue
+            if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
     # had to special-case count. it won't quite be as efficient
