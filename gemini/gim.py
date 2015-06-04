@@ -62,6 +62,7 @@ class GeminiInheritanceModel(object):
         variant_ids = set()
         for i, family_id in enumerate(self.family_ids):
             gt_filter = self.family_masks[i]
+            if gt_filter == 'False': continue
             # TODO: maybe we should just or these together and call filter once.
             variant_ids.update(filter(self.args.db, gt_filter, {}))
 
@@ -73,11 +74,12 @@ class GeminiInheritanceModel(object):
 
         q = self.query
         vids = self.bcolz_candidates()
-        q = GeminiQuery.add_variant_ids_to_query(q, vids)
-        self.gq.run(q, needs_genotypes=True)
+        if len(vids) > 0:
+            q = GeminiQuery.add_variant_ids_to_query(q, vids)
+            self.gq.run(q, needs_genotypes=True)
 
-        for grp_key, grp in it.groupby(self.gq, group_key):
-            yield grp_key, grp
+            for grp_key, grp in it.groupby(self.gq, group_key):
+                yield grp_key, grp
 
     def all_candidates(self):
 
@@ -111,16 +113,19 @@ class GeminiInheritanceModel(object):
             self.family_ids.append(family.family_id)
 
     def report_candidates(self):
+        args = self.args
         req_cols = ['gt_types', 'gts']
-        if self.args.min_sample_depth and self.args.min_sample_depth > 0:
+        if args.min_sample_depth and self.args.min_sample_depth > 0:
             req_cols.append('gt_depths')
-        if self.args.gt_phred_ll:
+        if args.gt_phred_ll:
             req_cols.extend(['gt_phred_ll_homref', 'gt_phred_ll_het',
                              'gt_phred_ll_homalt'])
 
         masks = ['False' if m is None or m.strip('(').strip(')') == 'False'
                  else m for m in self.family_masks]
         masks = [compiler.compile(m, m, 'eval') for m in masks]
+
+        requested_fams = None if not args.families else set(args.families.split(","))
 
         for gene, li in self.candidates():
 
@@ -136,6 +141,10 @@ class GeminiInheritanceModel(object):
                 cols = dict((col, row[col]) for col in req_cols)
                 fams_to_test = enumerate(self.families) if cur_fam is None \
                                 else [(i, f) for i, f in enumerate(self.families) if f.family_id == cur_fam]
+                # limit to families requested by the user.
+                if requested_fams is not None:
+                    fams_to_test = ((i, f) for i, f in fams_to_test if f.family_id
+                            in requested_fams)
 
                 fams = [f for i, f in fams_to_test
                         if masks[i] != 'False' and eval(masks[i], cols)]
