@@ -4,6 +4,7 @@ See: https://github.com/arq5x/gemini/issues/388
 """
 from collections import defaultdict
 import operator as op
+import re
 import sys
 try:
     reduce
@@ -166,6 +167,10 @@ class Family(object):
         assert len(set(s.sample_id for s in subjects)) == len(subjects), subjects
         self.subjects = subjects
         self.family_id = fam_id
+        # mostly for testing. this gets set when reading from db.
+        if all(s._i is None for s in self.subjects):
+            for i, s in enumerate(self.subjects):
+                s._i = i
 
     @classmethod
     def from_ped(klass, ped):
@@ -180,6 +185,67 @@ class Family(object):
 
     def __len__(self):
         return len(self.subjects)
+
+    def famphase(self, gt_types, gt_phases, gt_bases,
+                 _splitter=re.compile("\||/")):
+        """
+        >>> f = Family([Sample("mom", False), Sample("dad", False),
+        ...             Sample("kid", True)], "fam")
+        >>> f.subjects[2].mom = f.subjects[0]
+        >>> f.subjects[2].dad = f.subjects[1]
+        >>> f.famphase([HOM_REF, HOM_ALT, HET],
+        ...            [False, False, False],
+        ...            ["A/A", "A/C", "C/A"])
+        ([False, False, True], ['A/A', 'A/C', 'A|C'])
+
+        >>> f.famphase([HOM_REF, HOM_REF, HET],
+        ...            [False, False, False],
+        ...            ["A/A", "A/C", "C/A"])
+        ([False, False, False], ['A/A', 'A/C', 'C/A'])
+
+        >>> f.famphase([HOM_REF, HET, HET],
+        ...            [False, False, False],
+        ...            ["A/A", "A/C", "C/A"])
+        ([False, False, True], ['A/A', 'A/C', 'A|C'])
+
+        >>> f.famphase([HET, HET, HET],
+        ...            [False, False, False],
+        ...            ["A/C", "A/C", "A/C"])
+        ([False, False, False], ['A/C', 'A/C', 'A/C'])
+        """
+        # NOTE: this modifies in-place
+        # subjects are in same order as gt_types and _i is the index.
+        assert len(self.subjects) == len(gt_types) == len(gt_bases)
+
+        for s in (subj for subj in self.subjects if gt_types[subj._i] == HET):
+            # here we have a phaseable (HET) person ..
+            if s.mom is None or s.dad is None: continue
+            # ... with a mom and dad
+            ## cant be same.
+            if gt_types[s.mom._i] == gt_types[s.dad._i]: continue
+            ## cant have unknown
+            if UNKNOWN in (gt_types[s.mom._i], gt_types[s.dad._i]): continue
+
+            # should be able to phase here!
+            gt_phases[s._i] = True
+
+            if gt_types[s.mom._i] in (HOM_REF, HOM_ALT):
+                assert gt_types[s.mom._i] in (HOM_REF, HOM_ALT)
+                mom_allele = _splitter.split(gt_bases[s.mom._i])[0]
+                dad_alleles = _splitter.split(gt_bases[s.dad._i])
+                dad_allele = next(d for d in dad_alleles if d != mom_allele)
+
+                gt_bases[s._i] = "%s|%s" % (mom_allele, dad_allele)
+            else:
+                assert gt_types[s.dad._i] in (HOM_REF, HOM_ALT)
+
+                dad_allele = _splitter.split(gt_bases[s.dad._i])[0]
+                mom_alleles = _splitter.split(gt_bases[s.mom._i])
+                mom_allele = next(m for m in mom_alleles if m != dad_allele)
+
+                gt_bases[s._i] = "%s|%s" % (mom_allele, dad_allele)
+
+        return gt_phases, gt_bases
 
     @classmethod
     def from_cursor(klass, cursor):
