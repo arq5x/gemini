@@ -140,6 +140,9 @@ def create(db, cols=None):
         raise
 
 
+class NoGTIndexException(Exception):
+    pass
+
 # TODO: since we call this from query, we can improve speed by only loading
 # samples that appear in the query with an optional query=None arg to load.
 def load(db):
@@ -175,8 +178,11 @@ def filter(db, query, user_dict):
         return None
     user_dict['where'] = np.where
 
-
     carrays = load(db)
+
+    if max(len(carrays[c]) for c in carrays) == 0:
+        raise NoGTIndexException
+
     if query.startswith("not "):
         # "~" is not to numexpr.
         query = "~" + query[4:]

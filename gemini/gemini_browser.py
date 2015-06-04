@@ -40,7 +40,7 @@ _static_folder = os.path.join(os.path.dirname(__file__), static_folder)
 def stats_region(chrom):
     # Note: chrom is give as an argument
 
-    # we then extract start and end using HTML GET    
+    # we then extract start and end using HTML GET
     start = request.GET.get('start', '').strip()
     end = request.GET.get('end', '').strip()
 
@@ -75,11 +75,11 @@ def index():
 @app.route('/query_json', method='GET')
 def query_json():
     query = request.GET.get('query', '').strip()
-    
+
     gq = GeminiQuery.GeminiQuery(database)
     gq._set_gemini_browser(True)
     gq.run(query)
-    
+
     return {'gemini_results': [dict(row) for row in gq]}
 
 
@@ -92,7 +92,7 @@ def query():
         use_header = request.GET.get('use_header')
         igv_links = request.GET.get('igv_links')
         return query, gt_filter, use_header, igv_links
-    
+
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
 

@@ -6,7 +6,7 @@ import GeminiQuery
 import sql_utils
 import compiler
 from gemini_constants import *
-from .gemini_bcolz import filter
+from .gemini_bcolz import filter, NoGTIndexException
 import itertools as it
 import operator as op
 
@@ -60,13 +60,16 @@ class GeminiInheritanceModel(object):
         Get all the variant ids that meet the genotype filter for any fam.
         """
         variant_ids = set()
-        for i, family_id in enumerate(self.family_ids):
-            gt_filter = self.family_masks[i]
-            if gt_filter == 'False': continue
-            # TODO: maybe we should just or these together and call filter once.
-            variant_ids.update(filter(self.args.db, gt_filter, {}))
+        try:
+            for i, family_id in enumerate(self.family_ids):
+                gt_filter = self.family_masks[i]
+                if gt_filter == 'False': continue
+                # TODO: maybe we should just or these together and call filter once.
+                variant_ids.update(filter(self.args.db, gt_filter, {}))
 
-        return sorted(set(variant_ids))
+            return sorted(set(variant_ids))
+        except NoGTIndexException:
+            return None
 
     def gen_candidates(self, group_key):
         if isinstance(group_key, basestring):
@@ -74,12 +77,18 @@ class GeminiInheritanceModel(object):
 
         q = self.query
         vids = self.bcolz_candidates()
-        if len(vids) > 0:
-            q = GeminiQuery.add_variant_ids_to_query(q, vids)
+        if vids is None:
             self.gq.run(q, needs_genotypes=True)
 
-            for grp_key, grp in it.groupby(self.gq, group_key):
-                yield grp_key, grp
+        elif len(vids) > 0:
+            q = GeminiQuery.add_variant_ids_to_query(q, vids)
+            self.gq.run(q, needs_genotypes=True)
+        else:
+            # no variants met the criteria
+            raise StopIteration
+
+        for grp_key, grp in it.groupby(self.gq, group_key):
+            yield grp_key, grp
 
     def all_candidates(self):
 
