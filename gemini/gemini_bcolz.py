@@ -161,7 +161,10 @@ def load(db, query=None):
         if not gtc in query: continue
         carrays[gtc] = []
         for s in samples:
-            if not s in query: continue
+            if not s in query:
+                # need to add anyway as place-holder
+                carrays[gtc].append(None)
+                continue
             path = "%s/%s/%s" % (bcpath, s, gtc)
             if os.path.exists(path):
                 carrays[gtc].append(bcolz.open(path, mode="r"))
