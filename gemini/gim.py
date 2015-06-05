@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import collections
+import sys
 from copy import copy
 import re
 import GeminiQuery
@@ -63,9 +64,13 @@ class GeminiInheritanceModel(object):
         try:
             for i, family_id in enumerate(self.family_ids):
                 gt_filter = self.family_masks[i]
-                if gt_filter == 'False': continue
-                # TODO: maybe we should just or these together and call filter once.
-                variant_ids.update(filter(self.args.db, gt_filter, {}))
+                if isinstance(gt_filter, dict):
+                    for k, flt in gt_filter.items():
+                        variant_ids.update(filter(self.args.db, flt, {}))
+                else:
+                    if gt_filter == 'False': continue
+                    # TODO: maybe we should just or these together and call filter once.
+                    variant_ids.update(filter(self.args.db, gt_filter, {}))
 
             return sorted(set(variant_ids))
         except NoGTIndexException:
@@ -111,12 +116,15 @@ class GeminiInheritanceModel(object):
 
         self.family_ids = []
         self.family_masks = []
+        kwargs = {'only_affected': getattr(self.args, "only_affected", False)}
+        if self.model == "mendel_violations":
+            kwargs = {}
         for family in families:
             # e.g. family.auto_rec(gt_ll, min_depth)
             family_filter = getattr(family,
                     self.model)(gt_ll=self.args.gt_phred_ll,
                                 min_depth=self.args.min_sample_depth,
-                                only_affected=getattr(self.args, "only_affected", False))
+                                **kwargs)
 
             self.family_masks.append(family_filter)
             self.family_ids.append(family.family_id)
@@ -130,9 +138,26 @@ class GeminiInheritanceModel(object):
             req_cols.extend(['gt_phred_ll_homref', 'gt_phred_ll_het',
                              'gt_phred_ll_homalt'])
 
-        masks = ['False' if m is None or m.strip('(').strip(')') == 'False'
-                 else m for m in self.family_masks]
-        masks = [compiler.compile(m, m, 'eval') for m in masks]
+        is_mendel = False
+
+        if isinstance(self.family_masks[0], dict):
+            assert self.model == "mendel_violations"
+            is_mendel = True
+            masks = []
+            # mdict contains filter for 'de novo', 'LOH', etc.
+            for mdict in self.family_masks:
+                m = {}
+                for k, mask in mdict.items():
+                    m[k] = 'False' if mask is None or mask.strip("(").strip(")") == 'False' else mask
+                    if m[k] != 'False':
+                        m[k] = compiler.compile(m[k], m[k], 'eval')
+
+                masks.append(m)
+        else:
+            # 1 mask per family
+            masks = ['False' if m is None or m.strip('(').strip(')') == 'False'
+                     else m for m in self.family_masks]
+            masks = [compiler.compile(m, m, 'eval') if m != 'False' else 'False' for m in masks]
 
         requested_fams = None if not args.families else set(args.families.split(","))
 
@@ -155,8 +180,22 @@ class GeminiInheritanceModel(object):
                     fams_to_test = ((i, f) for i, f in fams_to_test if f.family_id
                             in requested_fams)
 
-                fams = [f for i, f in fams_to_test
-                        if masks[i] != 'False' and eval(masks[i], cols)]
+                if is_mendel:
+                    fams, models = [], []
+                    for i, f in fams_to_test:
+                        mask_dict = masks[i]
+                        for inh_model, mask in mask_dict.items():
+                            if masks[i] != 'False' and eval(mask, cols):
+                                if f in fams:
+                                    models[-1] += ";" + inh_model
+                                else:
+                                    fams.append(f)
+                                    models.append(inh_model)
+                    print >>sys.stderr, fams
+                    print >>sys.stderr, models
+                else:
+                    fams = [f for i, f in fams_to_test
+                            if masks[i] != 'False' and eval(masks[i], cols)]
                 kindreds.update(f.family_id for f in fams)
                 pdict = row.print_fields.copy()
 

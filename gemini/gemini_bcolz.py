@@ -217,7 +217,9 @@ def filter(db, query, user_dict):
         print >>sys.stderr, query[:250] + "..."
 
     carrays = load(db, query=query)
-    if max(len(carrays[c]) for c in carrays) == 0:
+    if len(carrays) == 0 or max(len(carrays[c]) for c in carrays) == 0 or \
+       any(not any(carrays[c]) for c in carrays):
+       # need this 2nd check above because of the place-holders in load()
         raise NoGTIndexException
 
     # loop through and create a cache of "$gt__$sample"

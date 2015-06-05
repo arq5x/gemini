@@ -866,8 +866,8 @@ def main():
     add_inheritance_args(parser_mendel, gt_ll=True)
 
     def mendel_fn(parser, args):
-        from .gim import MendelViolation
-        MendelViolation(args).run()
+        from .gim import MendelViolations
+        MendelViolations(args).run()
     parser_mendel.set_defaults(func=mendel_fn)
 
 
