@@ -378,7 +378,10 @@ class CompoundHet(GeminiInheritanceModel):
 
                 gt_types, gt_bases, gt_phases = row['gt_types'], row['gts'], row['gt_phases']
                 if args.phase_by_transmission:
-                    gt_types, gt_bases, gt_phases = fams.famphase(gt_types, gt_phases, gt_bases)
+                    for famid, one_fam in fams.items():
+                        # can phase each sample separately as they know their
+                        # index into each gt array.
+                        gt_phases, gt_bases = one_fam.famphase(gt_types, gt_phases, gt_bases, length_check=False)
 
                 site = Site(row)
                 # track each sample that is heteroyzgous at this site.

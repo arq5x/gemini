@@ -187,6 +187,7 @@ class Family(object):
         return len(self.subjects)
 
     def famphase(self, gt_types, gt_phases, gt_bases,
+                 length_check=True,
                  _splitter=re.compile("\||/")):
         """
         >>> f = Family([Sample("mom", False), Sample("dad", False),
@@ -215,7 +216,10 @@ class Family(object):
         """
         # NOTE: this modifies in-place
         # subjects are in same order as gt_types and _i is the index.
-        assert len(self.subjects) == len(gt_types) == len(gt_bases)
+        if length_check:
+            assert len(self.subjects) == len(gt_types) == len(gt_bases)
+        assert isinstance(gt_bases[0], basestring)
+        assert isinstance(gt_types[0], int) or int(gt_types[0]) == gt_types[0]
 
         for s in (subj for subj in self.subjects if gt_types[subj._i] == HET):
             # here we have a phaseable (HET) person ..
