@@ -657,8 +657,11 @@ def main():
             dest='ignore_phasing',
             action='store_true',
             help='Ignore phasing when screening for compound hets. \
-                  Candidates are inherently _putative_.',
+                  Candidates are inherently _putative_. (see --phase-by-transmission)',
             default=False)
+    parser_comp_hets.add_argument("--phase-by-transmission",
+            action="store_true",
+            help="phase kids by their parents where possible. This is recommended")
 
     def comp_hets_fn(parser, args):
         from .gim import CompoundHet

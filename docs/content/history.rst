@@ -14,7 +14,7 @@ Release History
 1. Leverage bcolz indexing in built-in inheritance pattern tools.
 2. Support for multi-generational families.
 3. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to prioritize confident variants.
-4. Phase genotypes by transmission.
+4. Phase genotypes by transmission for `comp_hets` tool.
 5. further performance improvements for bcolz queries
 
 0.15.0
