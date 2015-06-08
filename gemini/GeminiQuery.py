@@ -838,7 +838,9 @@ class GeminiQuery(object):
         try:
             self.c.execute(self.query)
         except sqlite3.OperationalError as e:
-            print "SQLite error: {0}".format(e)
+            msg = "SQLite error: {0}\n".format(e)
+            print msg
+            sys.stderr.write(msg)
             sys.exit("The query issued (%s) has a syntax error." % self.query)
 
     def _apply_query(self):
