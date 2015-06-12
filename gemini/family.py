@@ -323,8 +323,8 @@ class Family(object):
 
     def _restrict_to_min_depth(self, min_depth):
         if min_depth is not None and min_depth > 0:
-            af = reduce(op.and_, [s.gt_depths >= min_depth for s in self.affecteds])
-            un = reduce(op.and_, [s.gt_depths >= min_depth for s in self.unaffecteds])
+            af = reduce(op.and_, [s.gt_depths >= min_depth for s in self.affecteds], empty)
+            un = reduce(op.and_, [s.gt_depths >= min_depth for s in self.unaffecteds], empty)
             return af & un
         else:
             return None
