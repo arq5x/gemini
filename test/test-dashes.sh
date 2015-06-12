@@ -39,12 +39,14 @@ echo "end	variant_id	gt_types.Na-12877	family_id	family_members	family_genotypes
 548246	13	1	CEPH1463	Na-12889(dad;unknown),Na-12890(mom;unknown),Na-12877(child;unknown)	T/T,T/T,T/TA	Na-12877	1	plausible de novo	0.925
 589086	14	3	CEPH1463	Na-12889(dad;unknown),Na-12890(mom;unknown),Na-12877(child;unknown)	G/G,GAGAA/GAGAA,G/G	Na-12877	1	uniparental disomy	0.940" > exp
 check obs exp
+rm obs exp
 
 
 echo "test-dashes.t03"
 gemini query -q "select chrom,start,end,gt_types.Na-12877 from variants" test.dashes.db --gt-filter "gt_types.Na-12877 == HOM_REF" > obs
 echo "chr1	137122	137123	0" > exp
 check obs exp
+rm obs exp
 
 gemini bcolz_index test.dashes.db
 
@@ -52,13 +54,16 @@ echo "test-dashes.t04"
 gemini query -q "select chrom,start,end,gt_types.Na-12877 from variants" test.dashes.db --gt-filter "gt_types.Na-12877 == HOM_REF" --use-bcolz > obs
 echo "chr1	137122	137123	0" > exp
 check obs exp
+rm obs exp
 
 echo "test-dashes.t05"
 gemini comp_hets --column "chrom,start,gt_types.Na-12877" test.dashes.db > obs
-echo "chrom	start	variant_id	gt_types.Na-12877	family_id	family_members	family_genotypes	samples	family_count	comp_het_id" > exp
+touch exp
 check obs exp
+rm obs exp
 
 
 echo "test-dashes.t06"
 gemini autosomal_recessive --column "gt_types.Na-12877" test.dashes.db > obs
-echo "gene	variant_id	gt_types.Na-12877	family_id	family_members	family_genotypes	samples	family_count" > exp
+touch exp
+check obs exp

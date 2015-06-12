@@ -161,7 +161,7 @@ def load(db, query=None):
         if not gtc in query: continue
         carrays[gtc] = []
         for s in samples:
-            if not s in query:
+            if not s in query and not fix_sample_name(s) in query:
                 # need to add anyway as place-holder
                 carrays[gtc].append(None)
                 continue
@@ -174,6 +174,8 @@ def load(db, query=None):
             % (time.time() - t0, n)
     return carrays
 
+def fix_sample_name(s):
+    return s.replace("-", "_").replace(" ", "_")
 
 def filter(db, query, user_dict):
     # these should be translated to a bunch or or/and statements within gemini
@@ -204,8 +206,6 @@ def filter(db, query, user_dict):
     # convert gt_col[index] to gt_col__sample_name
     patt = "(%s)\[(\d+)\]" % "|".join((g[0] for g in gt_cols_types))
 
-    def fix_sample_name(s):
-        return s.replace("-", "_").replace(" ", "_")
 
     def subfn(x):
         """Turn gt_types[1] into gt_types__sample"""
@@ -215,8 +215,8 @@ def filter(db, query, user_dict):
     query = re.sub(patt, subfn, query)
     if os.environ.get('GEMINI_DEBUG') == 'TRUE':
         print >>sys.stderr, query[:250] + "..."
-
     carrays = load(db, query=query)
+
     if len(carrays) == 0 or max(len(carrays[c]) for c in carrays) == 0 or \
        any(not any(carrays[c]) for c in carrays):
        # need this 2nd check above because of the place-holders in load()
@@ -241,10 +241,12 @@ def filter(db, query, user_dict):
         res = ne.evaluate('res%s' % icmp)
     else:
         res = bcolz.eval(query, user_dict=user_dict)
-    if not res:
+
+    try:
+        if res.shape[0] == 1 and len(res.shape) > 1:
+            res = res[0]
+    except AttributeError:
         return []
-    if res.shape[0] == 1 and len(res.shape) > 1:
-        res = res[0]
     variant_ids, = np.where(res)
     #variant_ids = np.array(list(bcolz.eval(query, user_dict=user_dict,
     #    vm="numexpr").wheretrue()))
