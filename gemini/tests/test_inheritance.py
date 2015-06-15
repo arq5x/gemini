@@ -125,12 +125,18 @@ class TestFamily(object):
             attrs = dict(style="filled", fontcolor="white")
             attrs["color"] = {True: 'red', False: 'green', None: 'gray'}[s.affected]
             attrs["shape"] = {'male': 'square', 'female': 'circle', None: 'octagon'}[s.gender]
+
             if self.gt_types:
                 attrs["fillcolor"] = ["white", "gray", "blue", "black"][self.gt_types[i]]
                 if attrs["fillcolor"] == "black":
                     attrs["fontcolor"] = "white"
                 elif attrs["fillcolor"] == "white":
                     attrs["fontcolor"] = "black"
+
+            if s.affected is None:
+                if attrs['fillcolor'] == 'gray':
+                    attrs['color'] = "black"
+                attrs['style'] = "filled,dashed"
 
             viz.node(s.name, s.name, **attrs)
         for s in subjects:

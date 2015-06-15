@@ -272,7 +272,7 @@ class Family(object):
 
             assert indv not in fams[fam_id]
             s = fams[fam_id][name] = Sample(indv, pheno_lookup.get(pheno),
-                                        gender=gender_lookup.get(sex))
+                                            gender=gender_lookup.get(sex))
             s.mom = mat_id
             s.dad = pat_id
             # name in gemini is actually the id from the ped.
@@ -418,16 +418,17 @@ class Family(object):
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
         un = empty
         if only_affected:
-            un = reduce(op.and_, [s.gt_types == HOM_REF for s in self.unaffecteds])
+            un = reduce(op.and_, [s.gt_types == HOM_REF for s in self.unaffecteds], empty)
         if gt_ll:
-            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
+            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds], empty)
             if only_affected:
-                un &= reduce(op.and_, [s.gt_phred_ll_homref <= gt_ll for s in self.unaffecteds])
+                un &= reduce(op.and_, [s.gt_phred_ll_homref <= gt_ll for s in self.unaffecteds], empty)
 
         if only_affected:
-            un2 = reduce(op.and_, [s.gt_types == HOM_ALT for s in self.unaffecteds])
+            un2 = reduce(op.and_, [s.gt_types == HOM_ALT for s in
+                self.unaffecteds], empty)
             if gt_ll:
-                un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds])
+                un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds], empty)
             un |= un2
 
         depth = self._restrict_to_min_depth(min_depth)
