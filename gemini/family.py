@@ -334,6 +334,7 @@ class Family(object):
         At least 1 affected child must have at least 1 affected/unknown parent.
         If strict then all affected kids must have at least 1 affected parent.
         parent.
+        Parents of affected can't have unknown phenotype (for at least 1 kid)
         """
         if len(self.affecteds) == 0:
             sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
@@ -350,6 +351,8 @@ class Family(object):
                 un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
 
         if strict:
+            # parents can't have unkown phenotype.
+            kid_with_known_parents = False
             # all affected kids must have at least 1 affected parent (or no parents)
             kid_with_parents = False
             for kid in self.affecteds:
@@ -360,6 +363,13 @@ class Family(object):
                 kid_with_parents = True
                 if not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
                     return 'False'
+                # parents can't have unknown phenotype.
+                if (kid.mom and kid.dad):
+                    if kid.mom.affected is not None and kid.dad.affected is not None:
+                        kid_with_known_parents = True
+            if not kid_with_known_parents:
+                return 'False'
+
             if not kid_with_parents:
                 sys.stderr.write("WARNING: family %s had no usable samples for"
                                  " autosomal dominant test\n" % self.family_id)
