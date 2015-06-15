@@ -441,6 +441,14 @@ class Family(object):
                 un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds], empty)
             un |= un2
 
+        # at least 1 affected kid must have unaffected parents
+        un_parents = False
+        for kid in self.affecteds:
+            if kid.mom and kid.mom.affected is False and kid.dad and kid.dad.affected is False:
+                un_parents = True
+        if not un_parents:
+            return "False"
+
         depth = self._restrict_to_min_depth(min_depth)
         if strict:
             # if a parent is affected it's not de novo.

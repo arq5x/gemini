@@ -68,6 +68,8 @@ True
 
 
 """
+from __future__ import print_function
+
 import os
 import sys
 import tempfile
@@ -83,7 +85,7 @@ def tmp(pedstr, suf=".ped"):
     with open(t, "w") as fh:
         for line in pedstr.split("\n"):
             if not line.strip(): continue
-            print >> fh, line.strip()
+            print(line.strip(), file=fh)
     return t
 
 
@@ -92,9 +94,11 @@ class TestFamily(object):
     __slots__ = ('ped', 'family', 'gt_types', '_gt_types', 'gt_depths',
                  '_gt_depths', 'strict', 'subjects')
 
-    def draw(self):
+    def draw(self, tests=('auto_rec', 'auto_dom')):
         from IPython.display import Image, display
-        img = self.dot()
+        if isinstance(tests, basestring):
+            tests = (tests,)
+        img = self.dot(tests=tests)
         return display(Image(filename=img))
 
     def __init__(self, ped, fam_id=None, gt_types=None, gt_depths=None):
@@ -117,33 +121,41 @@ class TestFamily(object):
         self._gt_depths = None
         self.gt_depths = gt_depths
 
-    def dot(self, comment=None, path="test.gv", view=False):
+    def dot(self, comment=None, path="test.gv", view=False, tests=('auto_rec', 'auto_dom')):
         from graphviz import Digraph
         viz = Digraph(comment=comment)
         subjects = self.family.subjects
+        lookup = ["HOM_REF", "HET", "UNKOWN", "HOM_ALT"]
         for i, s in enumerate(subjects):
+
             attrs = dict(style="filled", fontcolor="white")
-            attrs["color"] = {True: 'red', False: 'green', None: 'gray'}[s.affected]
+            attrs["fillcolor"] = {True: 'black', False: 'white', None: 'gray'}[s.affected]
             attrs["shape"] = {'male': 'square', 'female': 'circle', None: 'octagon'}[s.gender]
 
-            if self.gt_types:
-                attrs["fillcolor"] = ["white", "gray", "blue", "black"][self.gt_types[i]]
-                if attrs["fillcolor"] == "black":
-                    attrs["fontcolor"] = "white"
-                elif attrs["fillcolor"] == "white":
-                    attrs["fontcolor"] = "black"
+            if attrs["fillcolor"] == "black":
+                attrs["fontcolor"] = "white"
+            elif attrs["fillcolor"] == "white":
+                attrs["fontcolor"] = "black"
 
-            if s.affected is None:
-                if attrs['fillcolor'] == 'gray':
-                    attrs['color'] = "black"
-                attrs['style'] = "filled,dashed"
-
-            viz.node(s.name, s.name, **attrs)
+            gt = lookup[self.gt_types[i]]
+            label = s.name
+            viz.node(s.name, label + "\n" + gt, **attrs)
         for s in subjects:
             if s.dad is not None:
                 viz.edge(s.dad.name, s.name)
             if s.mom is not None:
                 viz.edge(s.mom.name, s.name)
+        for test in tests:
+            res = {}
+            res['default'] = getattr(self, test)()
+            res['strict=False'] = getattr(self, test)(strict=False)
+            res['only_affected=False'] = getattr(self, test)(only_affected=False)
+            res['both False'] = getattr(self, test)(only_affected=False, strict=False)
+            print("\n" + test)
+            print("-" * len(test))
+            for k in ("default", "strict=False", "only_affected=False", "both False"):
+                print("%-20s\t%s" % (k, res[k]))
+
         viz._format = "png"
         return viz.render(path, view=view)
 
@@ -177,7 +189,7 @@ class TestFamily(object):
             flt = getattr(self.family, gt)(**kwargs)
             env = {s.sample_id: i for i, s in enumerate(self.family.subjects)}
             if debug:
-                print >>sys.stderr, flt
+                print(flt, file=sys.stderr)
             env['gt_types'] = self.gt_types
             env['gt_depths'] = self.gt_depths
             return eval(flt, env)
@@ -189,9 +201,9 @@ if False:
     f.family.subjects[0].gender = "male"
     f.family.subjects[1].gender = "female"
     f.family.subjects[2].gender = "male"
-    print f.family.subjects
-    print f.auto_rec(strict=False)
-    print f.auto_rec(strict=True)
+    print(f.family.subjects)
+    print(f.auto_rec(strict=False))
+    print(f.auto_rec(strict=True))
     gm = family.Sample("grandma", False, gender="female")
     f.family.subjects[1].mom = gm
     gp = family.Sample("grandpa", None, gender="male")
@@ -200,7 +212,7 @@ if False:
 
     f.family.subjects.extend([gm, gp])
 
-    print f.dot("autosomal recessive")
+    print(f.dot("autosomal recessive"))
     #f.gt_depths = [9, 9, 9]
     #print f.auto_rec(strict=True, min_depth=8)
     #print f.auto_rec(strict=True, min_depth=18)
