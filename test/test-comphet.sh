@@ -14,6 +14,7 @@ echo "    comp_het.t1...\c"
 # NOTE the families all have id=0 in the db, so they all show up.
 gemini comp_hets \
     --column "chrom,start,end,ref,alt,gene,impact" \
+	--allow-unaffected \
     test.comp_het_default.db > obs
 echo "chrom	start	end	ref	alt	gene	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
 chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor	1	0	child_1(child_1;unknown),child_2(child_2;unknown),dad_2(dad_2;unknown),mom_2(mom_2;unknown),dad_1(dad_1;unknown),mom_1(mom_1;unknown),child_3(child_3;unknown),dad_3(dad_3;unknown),mom_3(mom_3;unknown),child_4(child_4;unknown),dad_4(dad_4;unknown),mom_4(mom_4;unknown)	TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|T,TTCT|T,TTCT|TTCT		1	1_1_2
@@ -33,6 +34,7 @@ chr1	17729	17730	WASH7P	C	A	splice_acceptor	7	4	child_4(child_4;affected;male),d
 
 gemini comp_hets --ignore-phasing \
     --column "chrom,start,end,gene,ref,alt,impact" \
+	--allow-unaffected \
     --filter "impact_severity = 'HIGH'" \
      test.comp_het.db > obs
 check obs exp
@@ -44,7 +46,6 @@ rm obs exp
 echo "    comp_het.t3...\c"
 touch exp
 gemini comp_hets --ignore-phasing \
-    --only-affected \
     --column "chrom,start,end,gene,ref,alt,impact" \
     --filter "impact_severity = 'HIGH'" \
      test.comp_het.db > obs
@@ -62,6 +63,7 @@ chr1	17729	17730	WASH7P	A	2	3	child_3(child_3;affected;male),dad_3(dad_3;unaffec
 gemini comp_hets \
     --ignore-phasing \
     --columns "chrom, start, end" \
+	--allow-unaffected \
     --families 3 \
     test.comp_het_default.2.db > obs
 check obs exp
@@ -76,7 +78,6 @@ gemini comp_hets \
     --ignore-phasing \
     --columns "chrom, start, end" \
     --families 3 \
-    --only-affected \
     test.comp_het_default.2.db > obs
 check obs exp
 rm obs exp
@@ -91,6 +92,7 @@ chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),d
 gemini comp_hets \
     --ignore-phasing \
     --min-kindreds 1 \
+	--allow-unaffected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.4.db > obs
 check obs exp
@@ -105,6 +107,7 @@ chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	1	child_1(child_1;affected;male
 chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	C|A,C|C,C|C	child_1	1	1_1_2" > exp
 gemini comp_hets \
     --ignore-phasing \
+	--allow-unaffected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.4.db > obs
 check obs exp
@@ -118,6 +121,7 @@ touch exp
 gemini comp_hets \
     --ignore-phasing \
     --min-kindreds 2 \
+	--allow-unaffected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.4.db > obs
 check obs exp
@@ -135,6 +139,7 @@ chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	2	child_2(child_2;affected;male),d
 gemini comp_hets \
     --ignore-phasing \
     --min-kindreds 2 \
+	--allow-unaffected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.5.db > obs
 check obs exp
@@ -152,7 +157,6 @@ chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	2	child_2(child_2;affected;male),d
 gemini comp_hets \
     --ignore-phasing \
     --min-kindreds 2 \
-    --only-affected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.5.db > obs
 check obs exp
@@ -166,7 +170,6 @@ touch exp
 gemini comp_hets \
     --ignore-phasing \
     --min-kindreds 2 \
-    --only-affected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.6.db > obs
 check obs exp
@@ -185,7 +188,6 @@ chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),d
 gemini comp_hets \
     --ignore-phasing \
     --min-kindreds 2 \
-    --only-affected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.7.db > obs
 check obs exp
@@ -200,7 +202,6 @@ touch exp
 gemini comp_hets \
     --ignore-phasing \
     --min-kindreds 3 \
-    --only-affected \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.7.db > obs
 check obs exp

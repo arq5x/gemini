@@ -25,6 +25,7 @@ gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     test.de_novo.db > obs
 check obs exp
+exit
 rm obs exp
 
 
@@ -35,6 +36,7 @@ echo "    de_novo.t2...\c"
 echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 WDR37	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	1" > exp
 gemini de_novo  \
+	--allow-unaffected \
     --columns "gene, ref, alt, impact, impact_severity" \
     --filter "impact_severity = 'HIGH'" \
     test.de_novo.db > obs
@@ -48,6 +50,7 @@ echo "    de_novo.t3...\c"
 echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	1" > exp
 gemini de_novo  \
+	--allow-unaffected \
     --columns "gene, ref, alt, impact, impact_severity" \
     --filter "impact_severity = 'MED'" \
     -d 40 \
@@ -70,6 +73,7 @@ SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_k
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 2 \
+	--allow-unaffected \
     test.de_novo.db > obs
 check obs exp
 rm obs exp
@@ -87,6 +91,7 @@ SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_k
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 2 \
+	--allow-unaffected \
     --filter "impact_severity != 'LOW'" \
     test.de_novo.db > obs
 check obs exp
@@ -103,6 +108,7 @@ SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_k
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 3 \
+	--allow-unaffected \
     --filter "impact_severity != 'LOW'" \
     test.de_novo.db > obs
 check obs exp
@@ -122,6 +128,7 @@ WDR37	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(c
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
+	--allow-unaffected \
     --filter "impact_severity != 'LOW'" \
     test.de_novo.db > obs
 check obs exp
@@ -142,6 +149,7 @@ SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_k
 SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
+	--allow-unaffected \
     test.de_novo.affected.and.unaffected.db > obs
 check obs exp
 rm obs exp
@@ -159,7 +167,6 @@ SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_k
 SYCE1	T	C	non_syn_coding	MED	5	5	3_dad(dad;unaffected),3_mom(mom;unaffected),3_kid(child;affected)	T/T,T/T,T/C	3_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
-    --only-affected \
     test.de_novo.affected.and.unaffected.db > obs
 check obs exp
 rm obs exp
@@ -177,7 +184,6 @@ SYCE1	T	C	non_syn_coding	MED	5	5	1_dad(dad;unaffected),1_mom(mom;unaffected),1_k
 SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	2" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
-    --only-affected \
     --families 1,2 \
     test.de_novo.affected.and.unaffected.db > obs
 check obs exp
@@ -193,7 +199,6 @@ SPRN	G	A	intron	LOW	4	4	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;
 SYCE1	T	C	non_syn_coding	MED	5	5	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/T,T/T,T/C	2_kid	1" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
-    --only-affected \
     --families 2 \
     test.de_novo.affected.and.unaffected.db > obs
 check obs exp

@@ -32,7 +32,12 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
     parser.add_argument("--lenient",
             default=False,
             action="store_true",
-            help="loosen the restrictions on family structure")
+            help="Loosen the restrictions on family structure")
+
+    parser.add_argument('--allow-unaffected',
+            action='store_true',
+            help='Report candidates that also impact samples labeled as unaffected.',
+            default=False)
 
     # this is for comp_het, eventually, we could add depth support to that tool.
     if depth:
@@ -653,12 +658,6 @@ def main():
             help='Identify compound heterozygotes')
     add_inheritance_args(parser_comp_hets, gt_ll=True)
 
-    parser_comp_hets.add_argument('--only-affected',
-            dest='only_affected',
-            action='store_true',
-            help='Report those compound heterozygotes that solely impact samples \
-                  labeled as affected.',
-            default=False)
     parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
@@ -850,13 +849,6 @@ def main():
             help='Identify candidate de novo mutations')
 
     add_inheritance_args(parser_de_novo, min_kindreds=None, gt_ll=True)
-
-    parser_de_novo.add_argument('--only-affected',
-            dest='only_affected',
-            action='store_true',
-            help='Report solely those de novos that impact a sample \
-                  labeled as affected.',
-            default=False)
 
     def de_novo_fn(parser, args):
         from .gim import DeNovo

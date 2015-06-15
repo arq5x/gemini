@@ -16,6 +16,7 @@ Release History
 3. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to filter variants.
 4. Phase genotypes by transmission for `comp_hets` tool.
 5. further performance improvements for bcolz queries
+6. --affected-only has been made the default and it's opposing replacement named --allow-unaffected to revert.
 
 0.15.0
 =======================================

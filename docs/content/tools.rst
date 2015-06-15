@@ -66,17 +66,6 @@ This indicates that samples child_3 and child_4 have a candidate compound hetero
 By default, this tool reports all columns in the ``variants`` table. One may
 choose to report only a subset of the columns using the ``--columns`` option as seen above.
 
---------------------
-``--only-affected``
---------------------
-By default, candidate compound heterozygous variants are reported for all
-individuals in the database.  One can restrict the analysis to variants in
-only individuals with an affected phenotype using the ``--only-affected`` option.
-
-.. code-block:: bash
-
-	$ gemini comp_hets --only-affected my.db
-
 -------------------------
 ``--min-kindreds 1``
 -------------------------

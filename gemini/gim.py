@@ -116,7 +116,7 @@ class GeminiInheritanceModel(object):
 
         self.family_ids = []
         self.family_masks = []
-        kwargs = {'only_affected': getattr(self.args, "only_affected", False)}
+        kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False)}
         if self.model == "mendel_violations":
             kwargs = {}
         for family in families:
