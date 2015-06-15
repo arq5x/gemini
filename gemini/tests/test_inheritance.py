@@ -13,6 +13,21 @@ the pedigree and a vector indicating the genotype.
 >>> fam.gt_types = [HET, HET, HOM_ALT, HET, HET, HET]
 >>> fam.gt_depths = [9] * 6
 >>> _ = fam.dot()
+<BLANKLINE>
+auto_rec
+--------
+default                     True
+strict=False                True
+only_affected=False         True
+both False                  True
+<BLANKLINE>
+auto_dom
+--------
+default                     False
+strict=False                False
+only_affected=False         False
+both False                  False
+
 >>> fam.auto_rec()
 True
 
@@ -21,14 +36,14 @@ True
 >>> fam.subjects[1].dad = fam.subjects[5]
 >>> fam.auto_rec()
 True
->>> _ = fam.dot()
+>>> _ = fam.dot(tests=[])
 
 # if grandpa is affected it is no longer autosomal recessive
 >>> fam.subjects[5].affected = True
 >>> fam.auto_rec()
 False
 
->>> _ = fam.dot()
+>>> _ = fam.dot(tests=[])
 
 # reset.
 >>> fam.subjects[5].affected = False
@@ -102,16 +117,21 @@ class TestFamily(object):
         return display(Image(filename=img))
 
     def __init__(self, ped, fam_id=None, gt_types=None, gt_depths=None):
-        if isinstance(ped, basestring) and len(ped.split("\n")) > 1:
-            self.ped = tmp(ped)
+        # can send in a family.
+        if isinstance(ped, family.Family):
+            self.family = ped
         else:
-            self.ped = ped
-        self.family = family.Family.from_ped(self.ped) # always want 1 family
-        if fam_id is None:
-            assert len(self.family) == 1
-            self.family = self.family.values()[0]
-        else:
-            self.family = self.family[fam_id]
+            if isinstance(ped, basestring) and len(ped.split("\n")) > 1:
+                self.ped = tmp(ped)
+            else:
+                self.ped = ped
+            self.family = family.Family.from_ped(self.ped) # always want 1 family
+
+            if fam_id is None:
+                assert len(self.family) == 1
+                self.family = self.family.values()[0]
+            else:
+                self.family = self.family[fam_id]
         for s in self.family.subjects:
             if s.sample_id[0].isdigit(): s.sample_id = "s" + s.sample_id
         self.subjects = self.family.subjects

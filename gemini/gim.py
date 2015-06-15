@@ -124,6 +124,7 @@ class GeminiInheritanceModel(object):
             family_filter = getattr(family,
                     self.model)(gt_ll=self.args.gt_phred_ll,
                                 min_depth=self.args.min_sample_depth,
+                                strict=not self.args.lenient,
                                 **kwargs)
 
             self.family_masks.append(family_filter)

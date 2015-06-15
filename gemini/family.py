@@ -190,6 +190,7 @@ class Family(object):
                  length_check=True,
                  _splitter=re.compile("\||/")):
         """
+        >>> HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
         >>> f = Family([Sample("mom", False), Sample("dad", False),
         ...             Sample("kid", True)], "fam")
         >>> f.subjects[2].mom = f.subjects[0]
@@ -216,6 +217,7 @@ class Family(object):
         """
         # NOTE: this modifies in-place
         # subjects are in same order as gt_types and _i is the index.
+        HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
         if length_check:
             assert len(self.subjects) == len(gt_types) == len(gt_bases)
         assert isinstance(gt_bases[0], basestring)
@@ -350,29 +352,30 @@ class Family(object):
             if len(self.unaffecteds) and only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
 
-        if strict:
-            # parents can't have unkown phenotype.
-            kid_with_known_parents = False
-            # all affected kids must have at least 1 affected parent (or no parents)
-            kid_with_parents = False
-            for kid in self.affecteds:
-                # if they have no parents, don't require it
-                if kid.mom is None and kid.dad is None:
-                    continue
-                # mom or dad must be affected.
-                kid_with_parents = True
-                if not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
-                    return 'False'
-                # parents can't have unknown phenotype.
-                if (kid.mom and kid.dad):
-                    if kid.mom.affected is not None and kid.dad.affected is not None:
-                        kid_with_known_parents = True
-            if not kid_with_known_parents:
+        # need at least 1 kid with parent who has the mutation
+        # parents can't have unkown phenotype.
+        kid_with_known_parents = False
+        # all affected kids must have at least 1 affected parent (or no parents)
+        kid_with_parents = False
+        for kid in self.affecteds:
+            # if they have no parents, don't require it
+            if kid.mom is None and kid.dad is None:
+                continue
+            # mom or dad must be affected.
+            kid_with_parents = True
+            if not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
                 return 'False'
+            # parents can't have unknown phenotype.
+            if (kid.mom and kid.dad):
+                if kid.mom.affected is not None and kid.dad.affected is not None:
+                    kid_with_known_parents = True
 
-            if not kid_with_parents:
-                sys.stderr.write("WARNING: family %s had no usable samples for"
-                                 " autosomal dominant test\n" % self.family_id)
+        if strict and not kid_with_known_parents:
+            return 'False'
+
+        if not kid_with_parents:
+            sys.stderr.write("WARNING: family %s had no usable samples for"
+                             " autosomal dominant test\n" % self.family_id)
 
         return af & un & depth
 
@@ -421,6 +424,28 @@ class Family(object):
         if strict, all affected kids must have unaffected parents.
         >>> f = Family([Sample("mom", False), Sample("dad", False),
         ...             Sample("kid", True)], "fam")
+        >>> f.gt_types = [HOM_ALT, HOM_ALT, HET]
+        >>> f.subjects[2].mom = f.subjects[0]
+        >>> f.subjects[2].dad = f.subjects[1]
+
+        #>>> f.de_novo()
+        #'False'
+
+        >>> f2 = Family([Sample("mom", False), Sample("dad", False),
+        ...              Sample("kid", True), Sample("kid2", False)], "fam")
+        >>> f2.subjects[2].mom = f.subjects[0]
+        >>> f2.subjects[2].dad = f.subjects[1]
+        >>> f2.subjects[3].mom = f.subjects[0]
+        >>> f2.subjects[3].dad = f.subjects[1]
+
+        >>> f2.gt_types = [HOM_REF, HOM_REF, HET, HET]
+
+        #>>> f2.de_novo()
+        #'False'
+
+        #>>> f2.de_novo(only_affected=False, strict=False)
+        #'True'
+
         """
         if len(self.affecteds) == 0:
             sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
@@ -436,7 +461,7 @@ class Family(object):
 
         if only_affected:
             un2 = reduce(op.and_, [s.gt_types == HOM_ALT for s in
-                self.unaffecteds], empty)
+                         self.unaffecteds], empty)
             if gt_ll:
                 un2 &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.unaffecteds], empty)
             un |= un2
@@ -446,6 +471,14 @@ class Family(object):
         for kid in self.affecteds:
             if kid.mom and kid.mom.affected is False and kid.dad and kid.dad.affected is False:
                 un_parents = True
+            # can't have a parent with the variant
+            for parent in (kid.mom, kid.dad):
+                if parent is None: continue
+                un &= (parent.gt_types == HOM_REF) | (parent.gt_types == HOM_ALT)
+            if kid.mom and kid.dad:
+                # otherwise, they could be HOM_REF, HOM_ALT and a het kid is not
+                # de_novo
+                un &= (kid.mom.gt_types == kid.dad.gt_types)
         if not un_parents:
             return "False"
 
@@ -619,8 +652,8 @@ class Family(object):
 
 if __name__ == "__main__":
 
-    HOM_REF, HET, UNKNOWN, HOM_ALT = "HOM_REF HET UNKNOWN HOM_ALT".split()
     import doctest
+    HOM_REF, HET, UNKNOWN, HOM_ALT = "HOM_REF HET UNKNOWN HOM_ALT".split()
     sys.stderr.write(str(doctest.testmod(optionflags=
                      doctest.NORMALIZE_WHITESPACE
                      | doctest.ELLIPSIS

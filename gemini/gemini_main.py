@@ -28,6 +28,12 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
             dest='families',
             help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
             default=None)
+
+    parser.add_argument("--lenient",
+            default=False,
+            action="store_true",
+            help="loosen the restrictions on family structure")
+
     # this is for comp_het, eventually, we could add depth support to that tool.
     if depth:
         parser.add_argument('-d',
