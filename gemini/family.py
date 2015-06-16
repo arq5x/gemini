@@ -338,6 +338,7 @@ class Family(object):
         parent.
         Parents of affected can't have unknown phenotype (for at least 1 kid)
         """
+
         if len(self.affecteds) == 0:
             sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
             return 'False'
@@ -367,7 +368,7 @@ class Family(object):
                 return 'False'
             # parents can't have unknown phenotype.
             if (kid.mom and kid.dad):
-                if kid.mom.affected is not None and kid.dad.affected is not None:
+                if (kid.mom.affected is not None) and (kid.dad.affected is not None):
                     kid_with_known_parents = True
 
         if strict and not kid_with_known_parents:
@@ -376,7 +377,6 @@ class Family(object):
         if not kid_with_parents:
             sys.stderr.write("WARNING: family %s had no usable samples for"
                              " autosomal dominant test\n" % self.family_id)
-
         return af & un & depth
 
     def auto_rec(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
@@ -648,7 +648,11 @@ class Family(object):
             if only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
-        return af & un & depth
+        res = af & un & depth
+        if res is empty:
+            return 'False'
+
+        return res
 
 if __name__ == "__main__":
 

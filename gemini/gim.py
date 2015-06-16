@@ -156,8 +156,8 @@ class GeminiInheritanceModel(object):
                 masks.append(m)
         else:
             # 1 mask per family
-            masks = ['False' if m is None or m.strip('(').strip(')') == 'False'
-                     else m for m in self.family_masks]
+            masks = ['False' if m is None or m.strip('(').strip(')') in
+                     ('empty', 'False') else m for m in self.family_masks]
             masks = [compiler.compile(m, m, 'eval') if m != 'False' else 'False' for m in masks]
 
         requested_fams = None if not args.families else set(args.families.split(","))
@@ -192,8 +192,6 @@ class GeminiInheritanceModel(object):
                                 else:
                                     fams.append(f)
                                     models.append(inh_model)
-                    print >>sys.stderr, fams
-                    print >>sys.stderr, models
                 else:
                     fams = [f for i, f in fams_to_test
                             if masks[i] != 'False' and eval(masks[i], cols)]
@@ -394,6 +392,7 @@ class CompoundHet(GeminiInheritanceModel):
                     pdict["samples"] = None
                     pdict["family_count"] = None
                     pdict["comp_het_id"] = cid
+
                     comp_het[i].row.print_fields = pdict
                     # TODO: check this yield.
                     yield comp_het[i].row
@@ -417,11 +416,10 @@ class CompoundHet(GeminiInheritanceModel):
             for row in li:
 
                 gt_types, gt_bases, gt_phases = row['gt_types'], row['gts'], row['gt_phases']
-                if args.phase_by_transmission:
-                    for famid, one_fam in fams.items():
-                        # can phase each sample separately as they know their
-                        # index into each gt array.
-                        gt_phases, gt_bases = one_fam.famphase(gt_types, gt_phases, gt_bases, length_check=False)
+                for famid, one_fam in fams.items():
+                    # can phase each sample separately as they know their
+                    # index into each gt array.
+                    gt_phases, gt_bases = one_fam.famphase(gt_types, gt_phases, gt_bases, length_check=False)
 
                 site = Site(row)
                 # track each sample that is heteroyzgous at this site.
@@ -445,7 +443,7 @@ class CompoundHet(GeminiInheritanceModel):
 
             # process the last gene seen
             samples_w_hetpair = self.find_valid_het_pairs(sample_hets)
-            if args.only_affected:
+            if not args.allow_unaffected:
                 sd = self.subjects_dict
                 # key is (site1, site2), value is list of samples
                 # if a single unaffected sample shares this het pair, we remove
