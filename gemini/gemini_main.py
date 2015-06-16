@@ -5,7 +5,8 @@ import tempfile
 import argparse
 import gemini.version
 
-def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
+def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
+        allow_unaffected=True):
     """Common arguments added to various sub-parsers"""
     parser.add_argument('db',
             metavar='db',
@@ -34,10 +35,11 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
             action="store_true",
             help="Loosen the restrictions on family structure")
 
-    parser.add_argument('--allow-unaffected',
-            action='store_true',
-            help='Report candidates that also impact samples labeled as unaffected.',
-            default=False)
+    if allow_unaffected:
+        parser.add_argument('--allow-unaffected',
+                action='store_true',
+                help='Report candidates that also impact samples labeled as unaffected.',
+                default=False)
 
     # this is for comp_het, eventually, we could add depth support to that tool.
     if depth:
@@ -858,7 +860,11 @@ def main():
     #########################################
     parser_mendel = subparsers.add_parser('mendel_errors',
             help='Identify candidate violations of Mendelian inheritance')
-    add_inheritance_args(parser_mendel, gt_ll=True)
+    add_inheritance_args(parser_mendel, gt_ll=True, allow_unaffected=False)
+    parser_mendel.add_argument('--only-affected',
+        action='store_true',
+        help='only consider candidates from affected samples.',
+                default=False)
 
     def mendel_fn(parser, args):
         from .gim import MendelViolations

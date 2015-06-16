@@ -8,6 +8,7 @@ import sql_utils
 import compiler
 from gemini_constants import *
 from .gemini_bcolz import filter, NoGTIndexException
+from .mendelianerror import mendelian_error
 import itertools as it
 import operator as op
 
@@ -119,7 +120,7 @@ class GeminiInheritanceModel(object):
         kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False),
                   'strict': not self.args.lenient}
         if self.model == "mendel_violations":
-            kwargs = {}
+            kwargs = {'only_affected': self.args.only_affected}
         for family in families:
             # e.g. family.auto_rec(gt_ll, min_depth)
             family_filter = getattr(family,
@@ -135,7 +136,8 @@ class GeminiInheritanceModel(object):
         req_cols = ['gt_types', 'gts']
         if args.min_sample_depth and self.args.min_sample_depth > 0:
             req_cols.append('gt_depths')
-        if args.gt_phred_ll:
+        if args.gt_phred_ll or self.model == "mendel_violations":
+
             req_cols.extend(['gt_phred_ll_homref', 'gt_phred_ll_het',
                              'gt_phred_ll_homalt'])
 
@@ -181,8 +183,8 @@ class GeminiInheritanceModel(object):
                     fams_to_test = ((i, f) for i, f in fams_to_test if f.family_id
                             in requested_fams)
 
+                fams, models = [], []
                 if is_mendel:
-                    fams, models = [], []
                     for i, f in fams_to_test:
                         mask_dict = masks[i]
                         for inh_model, mask in mask_dict.items():
@@ -208,6 +210,20 @@ class GeminiInheritanceModel(object):
                     pdict["family_genotypes"] = ",".join(eval(str(s), cols) for s in fam.gts)
                     pdict["samples"] = ",".join(x.name or x.sample_id for x in fam.subjects if x.affected)
                     pdict["family_count"] = len(fams)
+                    if is_mendel:
+                        pdict["violation"] = ";".join(models)
+                        # TODO: check args, may need fam.subjects_with_parent
+                        pdict['samples'] = fam.affecteds_with_parent if args.only_affected else fam.samples_with_parent
+                        vs = []
+                        for s in pdict['samples']:
+                            # mom, dad, kid
+                            mdk = str(s.mom.genotype_lls + s.dad.genotype_lls + s.genotype_lls)
+                            # get all 3 at once so we just do 1 eval.
+                            vals = eval(mdk, cols)
+                            vs.append(mendelian_error(vals[:3], vals[3:6], vals[6:], pls=True))
+
+                        pdict["violation_prob"] = ",".join("%.5f" % v for v in vs)
+                        pdict['samples'] = ",".join(s.name or str(s.sample_id) for s in pdict['samples'])
 
                     s = str(pdict)
                     if s in seen:

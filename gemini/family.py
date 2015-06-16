@@ -86,6 +86,12 @@ class Sample(object):
         # _i is used to maintain the order in which they came in.
         self._i = None
 
+    @property
+    def genotype_lls(self):
+        return [self.gt_phred_ll_homref,
+                self.gt_phred_ll_het,
+                self.gt_phred_ll_homalt]
+
     def __getattr__(self, gt_field):
         assert gt_field in valid_gts, gt_field
         return Filter(self.sample_id, gt_field)
@@ -134,6 +140,9 @@ class Filter(object):
         return ostr("%s[%s] != %s" % (self.gt_field, self.sample0, o))
 
     def __str__(self):
+        return ostr("%s[%s]" % (self.gt_field, self.sample0))
+
+    def __repr__(self):
         return ostr("%s[%s]" % (self.gt_field, self.sample0))
 
     def __and__(self, other):
@@ -311,6 +320,10 @@ class Family(object):
         return [s for s in self.affecteds if not None in (s.mom, s.dad)]
 
     @property
+    def samples_with_parent(self):
+        return [s for s in self.subjects if not None in (s.mom, s.dad)]
+
+    @property
     def unaffecteds(self):
         return [s for s in self.subjects if s.affected is False]
 
@@ -323,10 +336,12 @@ class Family(object):
         assert gt_field in valid_gts, gt_field
         return [getattr(s, gt_field) for s in self.subjects]
 
-    def _restrict_to_min_depth(self, min_depth):
+    def _restrict_to_min_depth(self, min_depth, unknowns=False):
         if min_depth is not None and min_depth > 0:
             af = reduce(op.and_, [s.gt_depths >= min_depth for s in self.affecteds], empty)
             un = reduce(op.and_, [s.gt_depths >= min_depth for s in self.unaffecteds], empty)
+            if unknowns:
+                return af & un & reduce(op.and_, [s.gt_depths >= min_depth for s in self.unknown], empty)
             return af & un
         else:
             return None
@@ -492,14 +507,18 @@ class Family(object):
                         return 'False'
         return af & un & depth
 
-    def mendel_plausible_denovo(self, min_depth=0, gt_ll=False):
+    def mendel_plausible_denovo(self, min_depth=0, gt_ll=False, only_affected=False):
         """
         kid == HET and dad, mom == HOM_REF or dad, mom == HOM_ALT
         only use kids with both parents present.
         """
-        subset = self.affecteds_with_parent
+        if only_affected:
+            subset = self.affecteds_with_parent
+        else:
+            subset = self.samples_with_parent
         if len(subset) == 0: return 'False'
-        depth = self._restrict_to_min_depth(min_depth)
+
+        depth = self._restrict_to_min_depth(min_depth, unknowns=not only_affected)
         # join exprs by or. so just look for any kid that meets these within a family.
         exprs = []
         for s in subset:
@@ -515,12 +534,16 @@ class Family(object):
             exprs.append(expr)
         return reduce(op.or_, exprs) & depth
 
-    def mendel_implausible_denovo(self, min_depth=0, gt_ll=False):
+    def mendel_implausible_denovo(self, min_depth=0, gt_ll=False, only_affected=False):
         # everyone is homozygote. kid is opposit of parents.
         # only use kids with both parents present.
-        subset = self.affecteds_with_parent
+        if only_affected:
+            subset = self.affecteds_with_parent
+        else:
+            subset = self.samples_with_parent
         if len(subset) == 0: return 'False'
-        depth = self._restrict_to_min_depth(min_depth)
+
+        depth = self._restrict_to_min_depth(min_depth, unknowns=not only_affected)
         exprs = []
         for s in subset:
             # kid hom_alt, parents hom_ref
@@ -535,12 +558,17 @@ class Family(object):
             exprs.append(expr)
         return reduce(op.or_, exprs) & depth
 
-    def mendel_uniparental_disomy(self, min_depth=0, gt_ll=False):
+    def mendel_uniparental_disomy(self, min_depth=0, gt_ll=False,
+                                  only_affected=False):
         # parents are opposite homs, kid matches one of them (but should be
         # het).
-        subset = self.affecteds_with_parent
+        if only_affected:
+            subset = self.affecteds_with_parent
+        else:
+            subset = self.samples_with_parent
         if len(subset) == 0: return 'False'
-        depth = self._restrict_to_min_depth(min_depth)
+        depth = self._restrict_to_min_depth(min_depth, unknowns=not only_affected)
+
         # join exprs with or
         exprs = []
         for s in subset:
@@ -567,12 +595,15 @@ class Family(object):
 
         return reduce(op.or_, exprs) & depth
 
-    def mendel_LOH(self, min_depth=0, gt_ll=False):
+    def mendel_LOH(self, min_depth=0, gt_ll=False, only_affected=False):
         # kid and one parent are opposite homozygotes other parent is het.
-        subset = self.affecteds_with_parent
+        if only_affected:
+            subset = self.affecteds_with_parent
+        else:
+            subset = self.samples_with_parent
         if len(subset) == 0: return 'False'
-        depth = self._restrict_to_min_depth(min_depth)
 
+        depth = self._restrict_to_min_depth(min_depth, unknowns=not only_affected)
         exprs = []  # joined with or
         for s in subset:
             # kid hom_alt, mom hom_ref, dad het.
@@ -601,7 +632,7 @@ class Family(object):
 
         return reduce(op.or_, exprs) & depth
 
-    def mendel_violations(self, min_depth=0, gt_ll=False):
+    def mendel_violations(self, min_depth=0, gt_ll=False, only_affected=False):
         """
         >>> f = Family([Sample("mom", False), Sample("dad", False),
         ...             Sample("kid", True)], "fam")
@@ -620,10 +651,17 @@ class Family(object):
         implausible de novo
         (((gt_types[kid] == HOM_ALT) and (gt_types[mom] == HOM_REF)) and (gt_types[dad] == HOM_REF)) or (((gt_types[kid] == HOM_REF) and (gt_types[mom] == HOM_ALT)) and (gt_types[dad] == HOM_ALT))
         """
-        return {'plausible de novo': self.mendel_plausible_denovo(min_depth, gt_ll),
-                'implausible de novo': self.mendel_implausible_denovo(min_depth, gt_ll),
-                'uniparental disomy': self.mendel_uniparental_disomy(min_depth, gt_ll),
-                'loss of heterozygosity': self.mendel_LOH(min_depth, gt_ll)
+        return {'plausible de novo': self.mendel_plausible_denovo(min_depth,
+                                                                  gt_ll,
+                                                                  only_affected),
+                'implausible de novo': self.mendel_implausible_denovo(min_depth,
+                                                                      gt_ll,
+                                                                      only_affected),
+                'uniparental disomy': self.mendel_uniparental_disomy(min_depth,
+                                                                     gt_ll,
+                                                                     only_affected),
+                'loss of heterozygosity': self.mendel_LOH(min_depth, gt_ll,
+                                                          only_affected)
                 }
 
     def comp_het(self, min_depth=0, gt_ll=False, strict=False,
