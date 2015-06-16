@@ -116,7 +116,8 @@ class GeminiInheritanceModel(object):
 
         self.family_ids = []
         self.family_masks = []
-        kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False)}
+        kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False),
+                  'strict': not self.args.lenient}
         if self.model == "mendel_violations":
             kwargs = {}
         for family in families:
@@ -124,7 +125,6 @@ class GeminiInheritanceModel(object):
             family_filter = getattr(family,
                     self.model)(gt_ll=self.args.gt_phred_ll,
                                 min_depth=self.args.min_sample_depth,
-                                strict=not self.args.lenient,
                                 **kwargs)
 
             self.family_masks.append(family_filter)

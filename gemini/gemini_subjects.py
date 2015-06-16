@@ -4,6 +4,7 @@ import sys
 from collections import defaultdict
 from compiler import compile
 
+from .family import Family
 from gemini_constants import *
 import GeminiQuery
 
@@ -105,21 +106,7 @@ def get_families(db, selected_families=None):
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    query = "SELECT * FROM samples \
-             WHERE family_id is not NULL \
-             ORDER BY family_id"
-    c.execute(query)
-
-    # create a mapping of family_id to the list of
-    # individuals that are members of the family.
-    families_dict = {}
-    for row in c:
-        subject = Subject(row)
-        family_id = subject.family_id
-        if family_id in families_dict:
-            families_dict[family_id].append(subject)
-        else:
-            families_dict[family_id] = [subject]
+    families_dict = Family.from_cursor(c)
 
     # if the user has specified a set of selected families
     # to which the analysis should be restricted, then
@@ -131,12 +118,8 @@ def get_families(db, selected_families=None):
 
     families = []
     for fam in families_dict:
-        if selected_families is None:
-            family = Family(families_dict[fam])
-            families.append(family)
-        elif fam in selected_families:
-            family = Family(families_dict[fam])
-            families.append(family)
+        if selected_families is None or fam in selected_families:
+            families.append(families_dict[fam])
     return families
 
 def get_family_dict(args):

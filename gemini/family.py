@@ -479,6 +479,7 @@ class Family(object):
                 # otherwise, they could be HOM_REF, HOM_ALT and a het kid is not
                 # de_novo
                 un &= (kid.mom.gt_types == kid.dad.gt_types)
+
         if not un_parents:
             return "False"
 

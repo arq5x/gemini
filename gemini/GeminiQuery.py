@@ -1263,7 +1263,8 @@ def add_variant_ids_to_query(query, vids):
     >>> add_variant_ids_to_query("select gene, chrom, start, end from variants", vids)
     'select gene, chrom, start, end from variants where  variant_id IN (1,2,3)'
     """
-    assert len(vids) > 0
+    if len(vids) == 0:
+        return vids
     extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
 
     # order by, then limit.
