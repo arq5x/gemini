@@ -17,6 +17,7 @@ Release History
 4. Phase genotypes by transmission for `comp_hets` tool.
 5. further performance improvements for bcolz queries
 6. --affected-only has been made the default and it's opposing replacement named --allow-unaffected to revert.
+7. fix reporting error for inheritance tools (family_id was mis-specified in output).
 
 0.15.0
 =======================================
