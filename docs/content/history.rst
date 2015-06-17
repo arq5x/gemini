@@ -9,7 +9,7 @@ Release History
 #. Update parsing for snpEff >= 4.0
 #. Add an `is_splicing` column.
 
-0.16.0 (dev in progress)
+0.16.0
 =======================================
 1. Leverage bcolz indexing in built-in inheritance pattern tools.
 2. Support for multi-generational families.

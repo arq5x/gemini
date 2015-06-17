@@ -65,7 +65,7 @@ One can restrict the analysis to variants in specific familes with the
 By default, each tool will report all variants regardless of their putative
 functional impact. In order to apply additional constraints on the variants
 returned, one can use the ``--filter`` option. Using SQL syntax, conditions
-applied with the ``--filter option become WHERE clauses in the query issued to
+applied with the ``--filter`` options become WHERE clauses in the query issued to
 the GEMINI database.
 
 ---------------------
@@ -83,6 +83,13 @@ depth (default: 0) for each sample. We can do that with this flag.
 
 By default, candidates that also appear in unaffected samples are not reported
 if this flag is specified, such variants will be reported.
+
+-------------
+``--lenient``
+-------------
+
+Loosen the restrictions on family structure. This will allow, for example,
+finding compound_hets in unaffected samples.
 
 ---------------------
 ``--gt-pl-max``
@@ -114,6 +121,16 @@ As of version 0.16.0 the comp_het tool will perform family-based phasing
 by default in order to provide better candidates even in the absence of
 unphased genotypes. Any candidate that could be one element of a comp_het
 will also be phaseable as long as the parents and their genotypes are known.
+
+---------------------
+Genotype Requirements
+---------------------
+
+- affecteds must be het 
+- unaffecteds can not be hom alt.
+- sites are phased by transmission
+- candidate pairs are removed if unaffected shares same pair.
+
 
 .. note::
 
@@ -196,6 +213,16 @@ We can query for mendelian errors in trios including:
 - de-novo mutations
 - uniparental disomy
 
+---------------------
+Genotype Requirements
+---------------------
+
+- (LOH) kind and one parent are opposite homozygotes; other parent is HET
+- (uniparental disomy) parents are opposite homozygotes; kid is homozygote;
+- (plausible de novo) kid is het. parents are same homozygotes
+- (implausible de novo) kid is homozygoes. parents are same homozygotes and opposite to kid.
+
+
 This tool will report the probability of a mendelian error in the final column 
 that is derived from the genotype likelihoods if they are available.
 
@@ -257,6 +284,22 @@ Arguments are similar to the other tools:
     when loading your VCF into gemini via:
 
     ``gemini load -v my.vcf -p my.ped my.db``
+
+---------------------
+Genotype Requirements
+---------------------
+
+- all affecteds must be het
+- all unaffected must be homref or homalt
+- at least 1 affected kid must have unaffected parents
+
+++++++
+strict
+++++++
+
+- if an affected has affected parents, it's not de_novo
+- all affected kids must have unaffected (or no) parents
+- warning if none of the affected samples have parents.
 
 
 `Example PED file format for GEMINI`
@@ -377,6 +420,21 @@ as a comma-separated list
     recessive candidates for all samples marked as "affected".
 
 ---------------------
+Genotype Requirements
+---------------------
+
+- all affecteds must be hom_alt
+- no unaffected can be hom_alt (can be unknown)
+
+++++++
+strict
+++++++
+
+- if parents exist they must be unaffected and het for all affected kids
+- if there are no affecteds that have a parent, a warning is issued.
+
+
+---------------------
 ``default behavior``
 ---------------------
 
@@ -484,6 +542,23 @@ To limit to confidently called genotypes:
        tool will report nothing for that family.  If parents are unknown, the tool
        will report variants where an affected individual is heterozygous and
        all unaffected individuals are homozygous for the reference allele.
+
+---------------------
+Genotype Requirements
+---------------------
+
+- all affecteds must be het
+- no unaffected can be het or homalt (can be unknown)
+- de_novo mutations are not auto_dom (at least not in the first generation)
+
+++++++
+strict
+++++++
+
+- parents of affected cant have unknown phenotype.
+- all affected kids must have at least 1 affected parent
+- if no affected has a parent, a warning is issued.
+
 
 ---------------------
 ``default behavior``
@@ -1322,9 +1397,9 @@ command line parameters.
         Identified and set 4 somatic mutations
 
 
----------------------
+----------------------------
 ``--min-depth [None]``
----------------------
+----------------------------
 The minimum required combined depth for tumor and normal samples.
 
 ---------------------
@@ -1332,41 +1407,41 @@ The minimum required combined depth for tumor and normal samples.
 ---------------------
 The minimum required variant quality score.
 
----------------------
+-----------------------------------
 ``--min-somatic-score [None]``
----------------------
+-----------------------------------
 The minimum required somatic score (SSC). This score is produced by various
 somatic variant detection algorithms including SpeedSeq, SomaticSniper,
 and VarScan 2.
 
----------------------
+-----------------------------------
 ``--max-norm-alt-freq [None]``
----------------------
+-----------------------------------
 The maximum frequency of the alternate allele allowed in the normal sample.
 
----------------------
+-----------------------------------
 ``--max-norm-alt-count [None]``
----------------------
+-----------------------------------
 The maximum count of the alternate allele allowed in the normal sample.
 
----------------------
+----------------------------
 ``--min-norm-depth [None]``
----------------------
+----------------------------
 The minimum depth required in the normal sample.
 
----------------------
+-----------------------------------
 ``--min-tumor-alt-freq [None]``
----------------------
+-----------------------------------
 The minimum frequency of the alternate allele required in the tumor sample.
 
----------------------
+-----------------------------------
 ``--min-tumor-alt-count [None]``
----------------------
+-----------------------------------
 The minimum count of the alternate allele required in the tumor sample.
 
----------------------
+----------------------------
 ``--min-tumor-depth [None]``
----------------------
+----------------------------
 The minimum depth required in the tumor sample.
 
 ---------------------
@@ -1441,15 +1516,15 @@ These may be further filtered using tunable command line parameters.
 ---------------------
 The minimum required variant quality score.
 
----------------------
+--------------------------
 ``--evidence_type STRING``
----------------------
+--------------------------
 The required supporting evidence types for the variant from
 LUMPY ("PE", "SR", or "PE,SR").
 
----------------------
+----------------------
 ``--in_cosmic_census``
----------------------
+----------------------
 Require at least one of the affected genes to be in the
 COSMIC cancer gene census.
 
