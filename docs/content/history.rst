@@ -19,6 +19,11 @@ Release History
 6. --affected-only has been made the default and it's opposing replacement named --allow-unaffected to revert.
 7. fix reporting error for inheritance tools (family_id was mis-specified in output).
 
+0.15.1
+======
+1. Fix regression in grabix. Thanks to Sven-Eric Shelhorn for reporting.
+2. Fix handling of samples with "-". Thanks to Uma Paila for reporting.
+
 0.15.0
 =======================================
 1. Use external index to speed genotype queries (this is created by default on load unless --no-bcolz is specified)

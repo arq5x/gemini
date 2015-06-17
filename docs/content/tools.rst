@@ -937,13 +937,13 @@ Here are some example uses
 .. code-block:: bash
 
     # put a DP column in the db:
-    gemini annotate -f anno.vcf.gz -o list -e DP -t int my.db
+    gemini annotate -f anno.vcf.gz -o list -e DP -t integer my.db
 
     # ... and name it 'depth'
-    gemini annotate -f anno.vcf.gz -o list -e DP -c depth -t int my.db
+    gemini annotate -f anno.vcf.gz -o list -e DP -c depth -t integer my.db
 
     # use multiple columns
-    gemini annotate -f anno.vcf.gz -o list,mean -e DP,Qmeter -c depth,qmeter -t int my.db
+    gemini annotate -f anno.vcf.gz -o list,mean -e DP,Qmeter -c depth,qmeter -t integer my.db
 
 Missing values are allowed since we expect that in some cases an annotation VCF will not
 have all INFO fields specified for all variants.
