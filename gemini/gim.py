@@ -138,8 +138,10 @@ class GeminiInheritanceModel(object):
             req_cols.append('gt_depths')
         if args.gt_phred_ll or self.model == "mendel_violations":
 
-            req_cols.extend(['gt_phred_ll_homref', 'gt_phred_ll_het',
-                             'gt_phred_ll_homalt'])
+            for col in ['gt_phred_ll_homref', 'gt_phred_ll_het',
+                        'gt_phred_ll_homalt']:
+                if col in self.gt_cols:
+                    req_cols.append(col)
 
         is_mendel = False
 
@@ -215,14 +217,16 @@ class GeminiInheritanceModel(object):
                         # TODO: check args, may need fam.subjects_with_parent
                         pdict['samples'] = fam.affecteds_with_parent if args.only_affected else fam.samples_with_parent
                         vs = []
-                        for s in pdict['samples']:
-                            # mom, dad, kid
-                            mdk = str(s.mom.genotype_lls + s.dad.genotype_lls + s.genotype_lls)
-                            # get all 3 at once so we just do 1 eval.
-                            vals = eval(mdk, cols)
-                            vs.append(mendelian_error(vals[:3], vals[3:6], vals[6:], pls=True))
 
-                        pdict["violation_prob"] = ",".join("%.5f" % v for v in vs)
+                        if all(c in self.gt_cols for c in ('gt_phred_ll_homref', 'gt_phred_ll_het', 'gt_phred_ll_homalt')):
+                            for s in pdict['samples']:
+                                # mom, dad, kid
+                                mdk = str(s.mom.genotype_lls + s.dad.genotype_lls + s.genotype_lls)
+                                # get all 3 at once so we just do 1 eval.
+                                vals = eval(mdk, cols)
+                                vs.append(mendelian_error(vals[:3], vals[3:6], vals[6:], pls=True))
+
+                            pdict["violation_prob"] = ",".join("%.5f" % v for v in vs)
                         pdict['samples'] = ",".join(s.name or str(s.sample_id) for s in pdict['samples'])
 
                     s = str(pdict)
