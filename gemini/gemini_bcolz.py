@@ -69,7 +69,7 @@ def create(db, cols=None):
     if cols is None:
         cols = [x[0] for x in gt_cols_types if x[0] != 'gts']
         print >>sys.stderr, (
-                "indexing all columns execpt 'gts'; to index that column, "
+                "indexing all columns except 'gts'; to index that column, "
                 "run gemini bcolz_index %s --cols gts" % db)
 
     conn = sqlite3.connect(db)
@@ -140,9 +140,12 @@ def create(db, cols=None):
         raise
 
 
+class NoGTIndexException(Exception):
+    pass
+
 # TODO: since we call this from query, we can improve speed by only loading
 # samples that appear in the query with an optional query=None arg to load.
-def load(db):
+def load(db, query=None):
 
     t0 = time.time()
     conn = sqlite3.connect(db)
@@ -153,27 +156,37 @@ def load(db):
     bcpath = get_bcolz_dir(db)
 
     carrays = {}
+    n = 0
     for gtc in gt_cols:
+        if not gtc in query: continue
         carrays[gtc] = []
         for s in samples:
+            if not s in query and not fix_sample_name(s) in query:
+                # need to add anyway as place-holder
+                carrays[gtc].append(None)
+                continue
             path = "%s/%s/%s" % (bcpath, s, gtc)
             if os.path.exists(path):
                 carrays[gtc].append(bcolz.open(path, mode="r"))
+                n += 1
     if os.environ.get("GEMINI_DEBUG") == "TRUE":
-        print >>sys.stderr, "it took %.2f seconds to load arrays" \
-            % (time.time() - t0)
+        print >>sys.stderr, "it took %.2f seconds to load %d arrays" \
+            % (time.time() - t0, n)
     return carrays
 
+def fix_sample_name(s):
+    return s.replace("-", "_").replace(" ", "_")
 
 def filter(db, query, user_dict):
     # these should be translated to a bunch or or/and statements within gemini
     # so they are supported, but must be translated before getting here.
+    if query == "False":
+        return []
     if "any(" in query or "all(" in query or \
        ("sum(" in query and not query.startswith("sum(") and query.count("sum(") == 1):
         return None
     user_dict['where'] = np.where
 
-    carrays = load(db)
     if query.startswith("not "):
         # "~" is not to numexpr.
         query = "~" + query[4:]
@@ -191,10 +204,8 @@ def filter(db, query, user_dict):
     cur = conn.cursor()
     samples = get_samples(cur)
     # convert gt_col[index] to gt_col__sample_name
-    patt = "(%s)\[(\d+)\]" % "|".join(carrays.keys())
+    patt = "(%s)\[(\d+)\]" % "|".join((g[0] for g in gt_cols_types))
 
-    def fix_sample_name(s):
-        return s.replace("-", "_").replace(" ", "_")
 
     def subfn(x):
         """Turn gt_types[1] into gt_types__sample"""
@@ -203,14 +214,20 @@ def filter(db, query, user_dict):
 
     query = re.sub(patt, subfn, query)
     if os.environ.get('GEMINI_DEBUG') == 'TRUE':
-        print >>sys.stderr, query
+        print >>sys.stderr, query[:250] + "..."
+    carrays = load(db, query=query)
+
+    if len(carrays) == 0 or max(len(carrays[c]) for c in carrays) == 0 or \
+       any(not any(carrays[c]) for c in carrays):
+       # need this 2nd check above because of the place-holders in load()
+        raise NoGTIndexException
 
     # loop through and create a cache of "$gt__$sample"
     for gt_col in carrays:
-        # if not gt_col in query: continue
+        if not gt_col in query: continue
         for i, sample_array in enumerate(carrays[gt_col]):
             sample = fix_sample_name(samples[i])
-            # if not sample in query: continue
+            if not sample in query: continue
             user_dict["%s__%s" % (gt_col, sample)] = sample_array
 
     # had to special-case count. it won't quite be as efficient
@@ -225,8 +242,11 @@ def filter(db, query, user_dict):
     else:
         res = bcolz.eval(query, user_dict=user_dict)
 
-    if res.shape[0] == 1 and len(res.shape) > 1:
-        res = res[0]
+    try:
+        if res.shape[0] == 1 and len(res.shape) > 1:
+            res = res[0]
+    except AttributeError:
+        return []
     variant_ids, = np.where(res)
     #variant_ids = np.array(list(bcolz.eval(query, user_dict=user_dict,
     #    vm="numexpr").wheretrue()))
@@ -247,7 +267,7 @@ if __name__ == "__main__":
     else:
         q = "gt_types.1094PC0012 == HET and gt_types.1719PC0016 == HET and gts.1094PC0012 == 'A/C'"
 
-    print query(db, carrays, q, user_dict=dict(HET=1, HOM_REF=0, HOM_ALT=3,
+    print filter(db, carrays, q, user_dict=dict(HET=1, HOM_REF=0, HOM_ALT=3,
         UNKNOWN=2))
     print "compare to:", ("""gemini query -q "select variant_id, gts.1719PC0016 from variants" """
                           """ --gt-filter "%s" %s""" % (q, db))

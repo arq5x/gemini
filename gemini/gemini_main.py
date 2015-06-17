@@ -5,7 +5,8 @@ import tempfile
 import argparse
 import gemini.version
 
-def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
+def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
+        allow_unaffected=True):
     """Common arguments added to various sub-parsers"""
     parser.add_argument('db',
             metavar='db',
@@ -28,6 +29,18 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False):
             dest='families',
             help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
             default=None)
+
+    parser.add_argument("--lenient",
+            default=False,
+            action="store_true",
+            help="Loosen the restrictions on family structure")
+
+    if allow_unaffected:
+        parser.add_argument('--allow-unaffected',
+                action='store_true',
+                help='Report candidates that also impact samples labeled as unaffected.',
+                default=False)
+
     # this is for comp_het, eventually, we could add depth support to that tool.
     if depth:
         parser.add_argument('-d',
@@ -645,14 +658,8 @@ def main():
     #########################################
     parser_comp_hets = subparsers.add_parser('comp_hets',
             help='Identify compound heterozygotes')
-    add_inheritance_args(parser_comp_hets, depth=False)
+    add_inheritance_args(parser_comp_hets, gt_ll=True)
 
-    parser_comp_hets.add_argument('--only-affected',
-            dest='only_affected',
-            action='store_true',
-            help='Report those compound heterozygotes that solely impact samples \
-                  labeled as affected.',
-            default=False)
     parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
@@ -661,8 +668,8 @@ def main():
             default=False)
 
     def comp_hets_fn(parser, args):
-        import tool_compound_hets
-        tool_compound_hets.run(parser, args)
+        from .gim import CompoundHet
+        CompoundHet(args).run()
     parser_comp_hets.set_defaults(func=comp_hets_fn)
 
     #########################################
@@ -817,8 +824,8 @@ def main():
 
 
     def autosomal_recessive_fn(parser, args):
-        import tool_autosomal_recessive
-        tool_autosomal_recessive.run(parser, args)
+        from .gim import AutoRec
+        AutoRec(args).run()
     parser_auto_rec.set_defaults(func=autosomal_recessive_fn)
 
     #########################################
@@ -830,8 +837,8 @@ def main():
     add_inheritance_args(parser_auto_dom, gt_ll=True)
 
     def autosomal_dominant_fn(parser, args):
-        import tool_autosomal_dominant
-        tool_autosomal_dominant.run(parser, args)
+        from .gim import AutoDom
+        AutoDom(args).run()
     parser_auto_dom.set_defaults(func=autosomal_dominant_fn)
 
     #########################################
@@ -842,16 +849,9 @@ def main():
 
     add_inheritance_args(parser_de_novo, min_kindreds=None, gt_ll=True)
 
-    parser_de_novo.add_argument('--only-affected',
-            dest='only_affected',
-            action='store_true',
-            help='Report solely those de novos that impact a sample \
-                  labeled as affected.',
-            default=False)
-
     def de_novo_fn(parser, args):
-        import tool_de_novo_mutations
-        tool_de_novo_mutations.run(parser, args)
+        from .gim import DeNovo
+        DeNovo(args).run()
     parser_de_novo.set_defaults(func=de_novo_fn)
 
 
@@ -860,11 +860,15 @@ def main():
     #########################################
     parser_mendel = subparsers.add_parser('mendel_errors',
             help='Identify candidate violations of Mendelian inheritance')
-    add_inheritance_args(parser_mendel, gt_ll=True)
+    add_inheritance_args(parser_mendel, gt_ll=True, allow_unaffected=False)
+    parser_mendel.add_argument('--only-affected',
+        action='store_true',
+        help='only consider candidates from affected samples.',
+                default=False)
 
     def mendel_fn(parser, args):
-        import tool_mendel_errors
-        tool_mendel_errors.run(parser, args)
+        from .gim import MendelViolations
+        MendelViolations(args).run()
     parser_mendel.set_defaults(func=mendel_fn)
 
 

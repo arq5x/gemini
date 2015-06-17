@@ -195,6 +195,7 @@ class TPEDRowFormat(RowFormat):
         NEED_COLUMNS = ["chrom", "rs_ids", "start", "ref", "alt", "gts", "type", "variant_id"]
         return ensure_columns(query, NEED_COLUMNS)
 
+
     def predicate(self, row, _splitter=re.compile("\||/")):
         geno = [_splitter.split(x) for x in row['gts']]
         geno = list(flatten(geno))
@@ -627,19 +628,9 @@ class GeminiQuery(object):
         #extra = " variant_id IN (%s)" % ",".join(map(str, vids))
         # faster way to convert to string.
         # http://stackoverflow.com/a/13861407
-        extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
-        if " where " in self.query.lower():
-            extra = " and " + extra
-        else:
-            extra = " where " + extra
-        # don't adjust the query if we
-        if len(self.query) + len(extra) + 8 < 1000000:
-            match = re.search(" (limit \d+)\s*", self.query,
-                              flags=re.I | re.DOTALL | re.MULTILINE)
-            if match:
-                self.query = self.query.replace(match.group(), " ") + extra + " " + match.group()
-            else:
-                self.query += extra
+        q = add_variant_ids_to_query(self.query, vids)
+        if q:
+            self.query = q
             self.gt_filter = None
 
     @property
@@ -847,7 +838,9 @@ class GeminiQuery(object):
         try:
             self.c.execute(self.query)
         except sqlite3.OperationalError as e:
-            print "SQLite error: {0}".format(e)
+            msg = "SQLite error: {0}\n".format(e)
+            print msg
+            sys.stderr.write(msg)
             sys.exit("The query issued (%s) has a syntax error." % self.query)
 
     def _apply_query(self):
@@ -1251,12 +1244,49 @@ def select_formatter(args):
     if hasattr(args, 'carrier_summary') and args.carrier_summary:
         return SUPPORTED_FORMATS["carrier_summary"](args)
 
-    if not args.format in SUPPORTED_FORMATS:
+    if args.format not in SUPPORTED_FORMATS:
         raise NotImplementedError("Conversion to %s not supported. Valid "
                                   "formats are %s."
                                   % (args.format, SUPPORTED_FORMATS))
     else:
         return SUPPORTED_FORMATS[args.format](args)
+
+def add_variant_ids_to_query(query, vids):
+    """
+    >>> vids = range(1, 4)
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants limit 10", vids)
+    'select gene, chrom, start, end from variants where  variant_id IN (1,2,3)  limit 10'
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants where gene = 'asdf' limit 10", vids)
+    "select gene, chrom, start, end from variants where gene = 'asdf' and  variant_id IN (1,2,3)  limit 10"
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants where gene = 'asdf' order by gene limit 10", vids)
+    "select gene, chrom, start, end from variants where gene = 'asdf' and  variant_id IN (1,2,3) order by gene limit 10"
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants", vids)
+    'select gene, chrom, start, end from variants where  variant_id IN (1,2,3)'
+    """
+    if len(vids) == 0:
+        return vids
+    extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
+
+    # order by, then limit.
+    limit_idx = query.lower().index(" limit ") if " limit " in query.lower() else None
+    if limit_idx:
+        query, qlimit = query[:limit_idx].strip(), query[limit_idx:].strip()
+        assert qlimit.lower().startswith("limit ")
+    else:
+        qlimit = ""
+
+    order_idx = query.lower().index(" order by ") if " order by " in query.lower() else None
+    if order_idx:
+        query, qorder = query[:order_idx].strip(), query[order_idx:].strip()
+        assert qorder.lower().startswith("order by ")
+    else:
+        qorder = ""
+
+    if " where " in query.lower():
+        extra = " and " + extra
+    else:
+        extra = " where " + extra
+    return " ".join([x.strip() for x in (query, extra, qorder, qlimit)]).strip()
 
 
 if __name__ == "__main__":

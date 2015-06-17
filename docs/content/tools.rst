@@ -15,6 +15,90 @@ Requested `--columns` will come first followed by a standard set of columns:
 
 Other tools such as `mendel_errors` additional columns at the end.
 
+.. warning::
+
+    As of version 0.16.0, the inheritance tools (autsomal_dominant,
+    autosomal_recessive, comp_het, mendel_errors, de_novo) are now
+    more strict by default.
+
+    A --lenient flag allows, e.g. allows some samples to be of unknown
+    phenotype or to not have both parents of known phenotype.
+
+    The --allow-unaffected flag will result in reporting variants where
+    unaffected samples share the same variants. The default will only
+    report variants that are unique to affected samples.
+
+
+==================================
+``common_args``: common arguments
+==================================
+
+The inheritance tools share a common set of arguments. We will
+describe them here and refer to them in the corresponding sections:
+
+---------------------
+``--columns``
+---------------------
+
+This flag is followed by a comma-delimited list of columns the user is
+requestin in the output.
+
+-------------------------
+``--min-kindreds 1``
+-------------------------
+This is the number of families required to have a variant in the same gene
+in order for it to be reported. For example, we may only be interested in
+candidates where at least 4 families have a variant in that gene.
+
+--------------------
+``--families``
+--------------------
+By default, candidate variants are reported for all families in the database.
+One can restrict the analysis to variants in specific familes with the 
+``--families`` option.  Families should be provided as a comma-separated list
+
+
+---------------------
+``--filter``
+---------------------
+
+By default, each tool will report all variants regardless of their putative
+functional impact. In order to apply additional constraints on the variants
+returned, one can use the ``--filter`` option. Using SQL syntax, conditions
+applied with the ``--filter`` options become WHERE clauses in the query issued to
+the GEMINI database.
+
+---------------------
+``-d [0]`` (depth)
+---------------------
+
+Unfortunately, spurious inherited variants can often appear due to
+insufficient sequence coverage
+One simple way to filter such artifacts is to enforce a minimum sequence
+depth (default: 0) for each sample. We can do that with this flag.
+
+----------------------
+``--allow-unaffected``
+----------------------
+
+By default, candidates that also appear in unaffected samples are not reported
+if this flag is specified, such variants will be reported.
+
+-------------
+``--lenient``
+-------------
+
+Loosen the restrictions on family structure. This will allow, for example,
+finding compound_hets in unaffected samples.
+
+---------------------
+``--gt-pl-max``
+---------------------
+
+In order to eliminate less confident genotypes, it is possible to enforce a maximum PL value
+for each sample. On this scale, lower values indicate more confidence that the called genotype
+is correct. 10 is a reasonable value:
+
 ===========================================================================
 ``comp_hets``: Identifying potential compound heterozygotes
 ===========================================================================
@@ -33,11 +117,26 @@ to use this tool, we require that all variants are phased.  Once this has been
 done, the `comp_hets` tool will provide a report of candidate compound
 heterozygotes for each sample/gene.
 
+As of version 0.16.0 the comp_het tool will perform family-based phasing
+by default in order to provide better candidates even in the absence of
+unphased genotypes. Any candidate that could be one element of a comp_het
+will also be phaseable as long as the parents and their genotypes are known.
+
+---------------------
+Genotype Requirements
+---------------------
+
+- affecteds must be het 
+- unaffecteds can not be hom alt.
+- sites are phased by transmission
+- candidate pairs are removed if unaffected shares same pair.
+
+
 .. note::
 
-    By default, the ``comp_hets`` tool requires phased genotypes.  If you want
-    to ignore phasing in search of _putative_ compound heterozygotes, please
-    see the ``--ignore-phasing`` option below.
+    If you want to ignore phasing in search of _putative_ compound
+    heterozygotes, please see the ``--ignore-phasing`` option below.
+    This is not recommended now that phasing is done by transmission.
 
 Example usage with a subset of columns:
 
@@ -59,60 +158,28 @@ Example usage with a subset of columns:
 
 This indicates that samples child_3 and child_4 have a candidate compound heterozygotes in WASH.
 
----------------------
-``--columns``
----------------------
-
-By default, this tool reports all columns in the ``variants`` table. One may
-choose to report only a subset of the columns using the ``--columns`` option as seen above.
-
---------------------
-``--only-affected``
---------------------
-By default, candidate compound heterozygous variants are reported for all
-individuals in the database.  One can restrict the analysis to variants in
-only individuals with an affected phenotype using the ``--only-affected`` option.
-
-.. code-block:: bash
-
-	$ gemini comp_hets --only-affected my.db
-
--------------------------
-``--min-kindreds 1``
--------------------------
-By default, the ``comp_hets`` tool will report every candidate heterozygote pair
-that impacts at least one of the families in the database.  However, one
-can restrict the reported genes to those where the compound heterozygote
-was observed in more than one family.
-
-For example, the following command would further restrict candidate genes to those genes with a compound heterozygote in at least two families:
+the following command would further restrict candidate genes to those genes with a compound heterozygote in at least two families:
 
 .. code-block:: bash
 
     $ gemini comp_hets -d 50 \
           --columns "chrom, start, end, ref, alt" \
           --filter "impact_severity = 'HIGH'" \
+          --allow-unaffected \
           --min-kindreds 2 \
           my.db
 
 Now, this does not require that the family members are necessarily restricted to solely
-those that are affected.  To impose this restriction, combine ``--min-kindreds`` with
-``--only-affected``.
+those that are affected. To impose this restriction, we remove the ``--allow-unaffected``
+flag
 
     $ gemini comp_hets -d 50 \
           --columns "chrom, start, end, ref, alt" \
           --filter "impact_severity = 'HIGH'" \
           --min-kindreds 2 \
-          --only-affected \
           my.db
 
---------------------
-``--families``
---------------------
-By default, candidate compound heterozygous variants are reported for families
-in the database.  One can restrict the analysis to variants in
-specific familes with the ``--families`` option.  Families should be provided
-as a comma-separated list
+We may also specify the families of interest:
 
 .. code-block:: bash
 
@@ -123,36 +190,10 @@ as a comma-separated list
 ---------------------
 ``--ignore-phasing``
 ---------------------
-If your genotypes aren't phased, we can't be certain that two heterozygotes
-are on opposite alleles.  However, we can still identify pairs of heterozygotes
-that are *candidates* for compound heterozygotes. Just use the
+If your genotypes aren't phased this tool will phase them if parents are available
+we can't be certain that two heterozygotes. If you wish to ignore the existing
+phasing or the inferred phasing, use the
 ``--ignore-phasing`` option.
-
-
----------------------
-``--filter``
----------------------
-
-By default, this tool will report all variants regardless of their putative
-functional impact.  In order to apply additional constraints on the variants
-returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
-applied with the ``--filter option become WHERE clauses in the query issued to
-the GEMINI database.  For example, if we wanted to restrict candidate variants
-to solely those with a HIGH predicted functional consequence, we could use the
-following:
-
-.. code-block:: bash
-
-    $ gemini gemini comp_hets \
-        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-        --filter "impact_severity = 'HIGH'"
-        my.db \
-        | head -11
-    gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-    WASH7P	chr1	17362	17366	TTCT	T	splice_acceptor	HIGH	1	3	dad_3(dad;unaffected),mom_3(mom;unaffected),child_3(child;affected)	TTCT|T,TTCT|TTCT,TTCT|T	child_3	2	1
-    WASH7P	chr1	17729	17730	C	A	splice_acceptor	HIGH	2	3	dad_3(dad;unaffected),mom_3(mom;unaffected),child_3(child;affected)	C|A,C|A,A|C	child_3	2	1
-    WASH7P	chr1	17362	17366	TTCT	T	splice_acceptor	HIGH	1	4	dad_4(dad;unaffected),mom_4(mom;unaffected),child_4(child;affected)	TTCT|T,TTCT|TTCT,TTCT|T	child_4	2	1
-    WASH7P	chr1	17729	17730	C	A	splice_acceptor	HIGH	2	4	dad_4(dad;unaffected),mom_4(mom;unaffected),child_4(child;affected)	C|A,C|A,A|C	child_4	2	1
 
 
 ===========================================================================
@@ -171,6 +212,16 @@ We can query for mendelian errors in trios including:
 - implausible de-novo mutations
 - de-novo mutations
 - uniparental disomy
+
+---------------------
+Genotype Requirements
+---------------------
+
+- (LOH) kind and one parent are opposite homozygotes; other parent is HET
+- (uniparental disomy) parents are opposite homozygotes; kid is homozygote;
+- (plausible de novo) kid is het. parents are same homozygotes
+- (implausible de novo) kid is homozygoes. parents are same homozygotes and opposite to kid.
+
 
 This tool will report the probability of a mendelian error in the final column 
 that is derived from the genotype likelihoods if they are available.
@@ -202,19 +253,27 @@ Arguments are similar to the other tools:
 
 .. code-block:: bash
     
-    --columns STRING      A list of columns that you would like returned. Def. =
+    positional arguments:
+      db                    The name of the database to be queried.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --columns STRING      A list of columns that you would like returned. Def. =
                             "*"
-    --filter STRING       Restrictions to apply to variants (SQL syntax)
-    --min-kindreds MIN_KINDREDS
-                          The min. number of kindreds that must have a candidate
-                          variant in a gene.
-    --families FAMILIES   Restrict analysis to a specific set of 1 or more
-                          (comma) separated) families
-    -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth (genotype DP) req'd
-                          for each sample (def. = 0)
-    --gt-pl-max GT_PHRED_LL
-                        The maximum phred-scaled genotype likelihod (PL)
-                        allowed for each sample.
+      --filter STRING       Restrictions to apply to variants (SQL syntax)
+      --min-kindreds MIN_KINDREDS
+                            The min. number of kindreds that must have a candidate
+                            variant in a gene.
+      --families FAMILIES   Restrict analysis to a specific set of 1 or more
+                            (comma) separated) families
+      --lenient             Loosen the restrictions on family structure
+      -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth (genotype DP) req'd
+                            for each sample (def. = 0)
+      --gt-pl-max GT_PHRED_LL
+                            The maximum phred-scaled genotype likelihod (PL)
+                            allowed for each sample.
+      --allow-unaffected    consider candidates that also appear in unaffected samples.
+
 
 ===========================================================================
 ``de_novo``: Identifying potential de novo mutations.
@@ -225,6 +284,22 @@ Arguments are similar to the other tools:
     when loading your VCF into gemini via:
 
     ``gemini load -v my.vcf -p my.ped my.db``
+
+---------------------
+Genotype Requirements
+---------------------
+
+- all affecteds must be het
+- all unaffected must be homref or homalt
+- at least 1 affected kid must have unaffected parents
+
+++++++
+strict
+++++++
+
+- if an affected has affected parents, it's not de_novo
+- all affected kids must have unaffected (or no) parents
+- warning if none of the affected samples have parents.
 
 
 `Example PED file format for GEMINI`
@@ -250,23 +325,10 @@ Assuming you have defined the familial relationships between samples when loadin
 your VCF into GEMINI, one can leverage a built-in tool for identifying de novo
 (a.k.a spontaneous) mutations that arise in offspring.
 
----------------------
-``default behavior``
----------------------
 
-By default, the ``de novo`` tool will report, for each
-family in the database, all columns in the variants table for mutations that
-are not found in the parents yet are observed as heterozygotes in the offspring.
-We strongly recommend to pull the desired subset of columns with `--columns`
-
----------------------
-``--columns``
----------------------
-
-By default, this tool reports all columns in the ``variants`` table. One may
-choose to report only a subset of the columns using the ``--columns`` option.  For
-example, to report just the ``chrom, start, end, ref``, and ``alt`` columns, one
-would use the following. See usage examples throughout these docs.
+-------
+example
+-------
 
 .. code-block:: bash
 
@@ -286,17 +348,6 @@ would use the following. See usage examples throughout these docs.
     The output will always start with the the requested columns followed by
     the 5 columns enumerated at the start of this document.
 
----------------------
-``-d [0]``
----------------------
-
-Unfortunately, inherited variants can often appear to be de novo mutations simply because
-insufficient sequence coverage was available for one of the parents to detect that the
-parent(s) is also a heterozygote (and thus the variant was actually inherited, not
-spontaneous).  One simple way to filter such artifacts is to enforce a minimum sequence
-depth (default: 0) for each sample.  For example, if we require that at least 50 sequence
-alignments were present for mom, dad and child, two of the above variants will be eliminated
-as candidates:
 
 .. code-block:: bash
 
@@ -307,14 +358,11 @@ as candidates:
 
 
 ---------------------
-``--filter``
+``example``
 ---------------------
 
-By default, this tool will report all variants regardless of their putative
-functional impact.  In order to apply additional constraints on the variants
-returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
-applied with the ``--filter option become WHERE clauses in the query issued to
-the GEMINI database.  For example, if we wanted to restrict candidate variants
+
+if we wanted to restrict candidate variants
 to solely those with a HIGH predicted functional consequence, we could use the
 following:
 
@@ -328,14 +376,10 @@ following:
     chr10	1142207	1142208	T	C	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/T,T/T,T/C	1_kid	1
 
 -------------------------
-``--min-kindreds [None]``
+``example``
 -------------------------
-By default, the ``de_novo`` tool will report every candidate mutation variant
-that impacts at least one of the families in the database.  However, one
-can restrict the reported genes to those where de novo variants
-were observed in more than one family (thus further substantiating the potential role of the gene in the etiology of the phenotype).
 
-For example, the following command would further restrict candidate genes to those genes with a de novo variant in at least two families:
+the following command would further restrict candidate genes to those genes with a de novo variant in at least two families:
 
 .. code-block:: bash
 
@@ -346,20 +390,9 @@ For example, the following command would further restrict candidate genes to tho
           test.de_novo.db
 
 
---------------------
-``--only-affected``
---------------------
-By default, candidate de novo mutations are reported for all
-individuals in the database.  One can restrict the analysis to variants in
-only individuals with an affected phenotype using the ``--only-affected`` option.
-
-.. code-block:: bash
-
-    $ gemini de_novo --only-affected my.db
-
 
 --------------------
-``--families``
+``example``
 --------------------
 By default, candidate de novo variants are reported for families
 in the database.  One can restrict the analysis to variants in
@@ -385,6 +418,21 @@ as a comma-separated list
     However, in the absence of established parent/child relationships in the PED
     file, GEMINI will issue a WARNING, yet will attempt to identify autosomal
     recessive candidates for all samples marked as "affected".
+
+---------------------
+Genotype Requirements
+---------------------
+
+- all affecteds must be hom_alt
+- no unaffected can be hom_alt (can be unknown)
+
+++++++
+strict
+++++++
+
+- if parents exist they must be unaffected and het for all affected kids
+- if there are no affecteds that have a parent, a warning is issued.
+
 
 ---------------------
 ``default behavior``
@@ -429,23 +477,9 @@ are not):
     The output will always start with the requested columns and end with the 5 extra columns
     enumerated at the start of this document.
 
----------------------
-``--columns``
----------------------
 
-Choose a subset of columns as in the examples listed here.
-
-----------------------
-``--min-kindreds [1]``
-----------------------
-By default, the ``autosomal_recessive`` tool will report every gene variant
-that impacts at least one of the families in the database.  However, one
-can restrict the reported genes to those where autosomal recessive variants
-were observed in more than one family (thus further substantiating the potential role of the gene in the etiology of the phenotype).
-
-For example, to restricted the report to genes with variants (doesn't have
+To restrict the report to genes with variants (doesn't have
 to be the _same_ variant) observed in at least two kindreds, use the following:
-
 
 .. code-block:: bash
 
@@ -459,30 +493,7 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/C,T/C,C/C	1_kid	2
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/C,T/C,C/C	2_kid	2
 
---------------------
-``--families``
---------------------
-By default, candidate autosomal recessive variants are reported for families
-in the database.  One can restrict the analysis to variants in
-specific familes with the ``--families`` option.  Families should be provided
-as a comma-separated list
-
-.. code-block:: bash
-
-    $ gemini autosomal_recessive --families 1 my.db
-    $ gemini autosomal_recessive --families 1,7 my.db
-
-
----------------------
-``--filter``
----------------------
-
-By default, this tool will report all variants regardless of their putative
-functional impact.  In order to apply additional constraints on the variants
-returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
-applied with the ``--filter option become WHERE clauses in the query issued to
-the GEMINI database.  For example, if we wanted to restrict candidate variants
-to solely those with a HIGH predicted functional consequence, we could use the
+to report only those with a HIGH predicted functional consequence, we could use the
 following:
 
 .. code-block:: bash
@@ -496,31 +507,8 @@ following:
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(dad;unaffected),1_mom(mom;unaffected),1_kid(child;affected)	T/C,T/C,C/C	1_kid	2
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	2_dad(dad;unaffected),2_mom(mom;unaffected),2_kid(child;affected)	T/C,T/C,C/C	2_kid	2
 
----------------------
-``-d [0]``
----------------------
 
-In order to eliminate less confident genotypes, it is possible to enforce a minimum sequence
-depth (default: 0) for each sample:
-
-.. code-block:: bash
-
-    $ gemini autosomal_recessive \
-        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-        --filter "impact_severity = 'HIGH'" \
-        --min-kindreds 1 \
-        -d 40 \
-        test.auto_rec.db
-    gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-
-
----------------------
-``--gt-pl-max``
----------------------
-
-In order to eliminate less confident genotypes, it is possible to enforce a maximum PL value
-for each sample. On this scale, lower values indicate more confidence that the called genotype
-is correct. 10 is a reasonable value:
+To limit to confidently called genotypes:
 
 .. code-block:: bash
 
@@ -537,6 +525,8 @@ is correct. 10 is a reasonable value:
 ===========================================================================
 
 .. warning::
+    0. version 0.16.0 changes the behavior of this tool to be more strict.
+    To regain more lenient behavior, specify --lenient and --allow-unaffected.
 
     1. By default, this tool requires that you identify familial relationships
     via a PED file when loading your VCF into GEMINI.  For example:
@@ -545,7 +535,8 @@ is correct. 10 is a reasonable value:
 
     2. However, if neither parent is known to be affected, this tool will report any
        variant where one and only of the parents is heterozygous and the affected
-       child is also heterozygous.  If one and only one of the parents is affected,
+       child is also heterozygous if --lenient flag is used.  If one and only one
+       of the parents is affected,
        the tool will report variants where both the affected child and the affected
        parent are heterozygous.  If both parents are known to be affected, the
        tool will report nothing for that family.  If parents are unknown, the tool
@@ -553,14 +544,25 @@ is correct. 10 is a reasonable value:
        all unaffected individuals are homozygous for the reference allele.
 
 ---------------------
-``default behavior``
+Genotype Requirements
 ---------------------
 
-Assuming you have defined the familial relationships between samples when loading
-your VCF into GEMINI, one can leverage a built-in tool for identifying variants
-that meet an autosomal dominant inheritance pattern. The reported variants
-will be restricted to those variants having the potential to impact the
-function of affecting protein coding transcripts.
+- all affecteds must be het
+- no unaffected can be het or homalt (can be unknown)
+- de_novo mutations are not auto_dom (at least not in the first generation)
+
+++++++
+strict
+++++++
+
+- parents of affected cant have unknown phenotype.
+- all affected kids must have at least 1 affected parent
+- if no affected has a parent, a warning is issued.
+
+
+---------------------
+``default behavior``
+---------------------
 
 For the following examples, let's assume we have a PED file for 3 different
 families as follows (the kids are affected in each family, but the parents
@@ -592,28 +594,6 @@ are not):
     chr10	1142207	1142208	WDR37	1	1	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	T/T,T/C,T/C	2_mom,2_kid	2
     chr10	1142207	1142208	WDR37	1	1	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	T/C,T/T,T/C	3_dad,3_kid	2
 
----------------------
-``--columns``
----------------------
-
-By default, this tool reports all columns in the ``variants`` table. One may
-choose to report only a subset of the columns using the ``--columns`` option.
-
-.. note::
-
-    The output will always start with the requested columns and end with the 
-    5 columns enumerated at the start of this document.
-
-----------------------
-``--min-kindreds [1]``
-----------------------
-By default, the ``autosomal_dominant`` tool will report every gene variant
-that impacts at least one of the families in the database.  However, one
-can restrict the reported genes to those where autosomal dominant variants
-were observed in more than one family (thus further substantiating the potential role of the gene in the etiology of the phenotype).
-
-For example, to restricted the report to genes with variants (doesn't have
-to be the _same_ variant) observed in at least two kindreds, use the following:
 
 
 .. code-block:: bash
@@ -630,55 +610,6 @@ to be the _same_ variant) observed in at least two kindreds, use the following:
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	T/T,T/C,T/C	2_mom,2_kid	2
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	T/C,T/T,T/C	3_dad,3_kid	2
 
---------------------
-``--families``
---------------------
-By default, candidate autosomal dominant variants are reported for families
-in the database.  One can restrict the analysis to variants in
-specific familes with the ``--families`` option.  Families should be provided
-as a comma-separated list
-
-.. code-block:: bash
-
-    $ gemini autosomal_dominant --families 1 my.db
-    $ gemini autosomal_dominant --families 1,7 my.db
-
-
----------------------
-``--filter``
----------------------
-
-By default, this tool will report all variants regardless of their putative
-functional impact.  In order to apply additional constraints on the variants
-returned, one can use the ``--filter`` option.  Using SQL syntax, conditions
-applied with the ``--filter option become WHERE clauses in the query issued to
-the GEMINI database.  For example, if we wanted to restrict candidate variants
-to solely those with a HIGH predicted functional consequence, we could use the
-following:
-
-.. code-block:: bash
-
-    $ gemini autosomal_dominant \
-        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-        --filter "impact_severity = 'HIGH'" \
-        --min-kindreds 2 \
-        my.db
-
----------------------
-``-d [0]``
----------------------
-
-In order to eliminate less confident genotypes, it is possible to enforce a minimum sequence
-depth (default: 0) for each sample (in this case, no variants would meet this criteria):
-
-.. code-block:: bash
-
-    $ gemini autosomal_dominant \
-        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-        --filter "impact_severity = 'HIGH'" \
-        --min-kindreds 1 \
-        -d 40 \
-        my.db
 
 ===========================================================================
 ``pathways``: Map genes and variants to KEGG pathways.
@@ -1006,13 +937,13 @@ Here are some example uses
 .. code-block:: bash
 
     # put a DP column in the db:
-    gemini annotate -f anno.vcf.gz -o list -e DP -t int my.db
+    gemini annotate -f anno.vcf.gz -o list -e DP -t integer my.db
 
     # ... and name it 'depth'
-    gemini annotate -f anno.vcf.gz -o list -e DP -c depth -t int my.db
+    gemini annotate -f anno.vcf.gz -o list -e DP -c depth -t integer my.db
 
     # use multiple columns
-    gemini annotate -f anno.vcf.gz -o list,mean -e DP,Qmeter -c depth,qmeter -t int my.db
+    gemini annotate -f anno.vcf.gz -o list,mean -e DP,Qmeter -c depth,qmeter -t integer my.db
 
 Missing values are allowed since we expect that in some cases an annotation VCF will not
 have all INFO fields specified for all variants.
@@ -1466,9 +1397,9 @@ command line parameters.
         Identified and set 4 somatic mutations
 
 
----------------------
+----------------------------
 ``--min-depth [None]``
----------------------
+----------------------------
 The minimum required combined depth for tumor and normal samples.
 
 ---------------------
@@ -1476,41 +1407,41 @@ The minimum required combined depth for tumor and normal samples.
 ---------------------
 The minimum required variant quality score.
 
----------------------
+-----------------------------------
 ``--min-somatic-score [None]``
----------------------
+-----------------------------------
 The minimum required somatic score (SSC). This score is produced by various
 somatic variant detection algorithms including SpeedSeq, SomaticSniper,
 and VarScan 2.
 
----------------------
+-----------------------------------
 ``--max-norm-alt-freq [None]``
----------------------
+-----------------------------------
 The maximum frequency of the alternate allele allowed in the normal sample.
 
----------------------
+-----------------------------------
 ``--max-norm-alt-count [None]``
----------------------
+-----------------------------------
 The maximum count of the alternate allele allowed in the normal sample.
 
----------------------
+----------------------------
 ``--min-norm-depth [None]``
----------------------
+----------------------------
 The minimum depth required in the normal sample.
 
----------------------
+-----------------------------------
 ``--min-tumor-alt-freq [None]``
----------------------
+-----------------------------------
 The minimum frequency of the alternate allele required in the tumor sample.
 
----------------------
+-----------------------------------
 ``--min-tumor-alt-count [None]``
----------------------
+-----------------------------------
 The minimum count of the alternate allele required in the tumor sample.
 
----------------------
+----------------------------
 ``--min-tumor-depth [None]``
----------------------
+----------------------------
 The minimum depth required in the tumor sample.
 
 ---------------------
@@ -1585,15 +1516,15 @@ These may be further filtered using tunable command line parameters.
 ---------------------
 The minimum required variant quality score.
 
----------------------
+--------------------------
 ``--evidence_type STRING``
----------------------
+--------------------------
 The required supporting evidence types for the variant from
 LUMPY ("PE", "SR", or "PE,SR").
 
----------------------
+----------------------
 ``--in_cosmic_census``
----------------------
+----------------------
 Require at least one of the affected genes to be in the
 COSMIC cancer gene census.
 
