@@ -208,3 +208,13 @@ gemini comp_hets \
     test.comp_het_default.7.db > obs
 check obs exp
 rm obs exp
+
+echo "    comp_het.t14"
+echo "chrom	start	end	ref	alt	gene	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
+chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_5
+chr1	17729	17730	C	A	WASH7P	splice_acceptor	5	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	A|C,C/C,C/A	child_4	1	1_3_5" > exp
+gemini comp_hets \
+	--column "chrom,start,end,ref,alt,gene,impact" \
+	test.comp_het.unphase.db > obs
+check obs exp
+rm obs exp
