@@ -47,7 +47,7 @@ rm obs exp
 # 5. Test gemini region (--columns and --filter and --json)
 #######################################################################################
 echo "    region.t05...\c"
-echo "{\"chrom\": \"chr16\", \"start\": 72057281, \"end\": 72057282, \"ref\": \"A\", \"alt\": \"G\", \"gene\": \"DHODH\"}" > exp
+echo "{\"end\": 72057282, \"ref\": \"A\", \"start\": 72057281, \"alt\": \"G\", \"gene\": \"DHODH\", \"chrom\": \"chr16\"}" > exp
 
 gemini region --format json --gene DHODH --columns "chrom, start, end, ref, alt, gene" --filter "alt='G'" test.region.db > obs
 check obs exp

@@ -17,6 +17,7 @@ import itertools as it
 import gemini_utils as util
 from gemini_constants import *
 from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
+from .pdict import PDict
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
@@ -44,7 +45,7 @@ class RowFormat:
     def format(self, row):
         """ return a string representation of a GeminiRow object
         """
-        return '\t'.join([str(row.print_fields[c]) for c in row.print_fields])
+        return str(row.print_fields)
 
     @abc.abstractmethod
     def format_query(self, query):
@@ -74,7 +75,7 @@ class DefaultRowFormat(RowFormat):
 
     def format(self, row):
         r = row.print_fields
-        return '\t'.join(str(r[c]) if not isinstance(r[c], np.ndarray) else ",".join(str(s) for s in r[c]) for c in r)
+        return '\t'.join(str(v) if not isinstance(v, np.ndarray) else ",".join(map(str, v)) for v in r._vals)
 
     def format_query(self, query):
         return query
@@ -266,7 +267,8 @@ class JSONRowFormat(RowFormat):
     def format(self, row):
         """Emit a JSON representation of a given row
         """
-        return json.dumps(row.print_fields)
+        from .pdict import to_json
+        return json.dumps(row.print_fields, default=to_json)
 
     def format_query(self, query):
         return query
@@ -383,7 +385,7 @@ class SampleDetailRowFormat(RowFormat):
 
 class GeminiRow(object):
     __slots__ = ('cache', 'genotype_dict', 'row', 'formatter', 'query',
-                'print_fields')
+                 'print_fields')
 
     def __init__(self, row, query, formatter=DefaultRowFormat(None), print_fields=None):
         # row can be a dict() from the database or another GeminiRow (from the
@@ -712,13 +714,15 @@ class GeminiQuery(object):
                 except TypeError:
                     continue
 
-            fields = OrderedDict()
+            fields = PDict()
 
             for idx, col in enumerate(self.report_cols):
                 if col == "*":
                     continue
                 if not col[:2] in ("gt", "GT"):
-                    fields[col] = row[col]
+                    # need to use add in case of duplicated fields (from
+                    # variants and variant_impacts)
+                    fields.add(col, row[col])
                 else:
                     # reuse the original column name user requested
                     # e.g. replace gts[1085] with gts.NA20814
@@ -735,11 +739,12 @@ class GeminiQuery(object):
                         val = row[source][idx]
 
                         if type(val) in (np.int8, np.int32, np.bool_):
-                            fields[orig_col] = int(val)
+                            fields.add(orig_col, int(val))
+
                         elif type(val) in (np.float32,):
-                            fields[orig_col] = float(val)
+                            fields.add(orig_col, float(val))
                         else:
-                            fields[orig_col] = val
+                            fields.add(orig_col, val)
                     else:
                         # asked for "gts" or "gt_types", e.g.
                         if row[col] is not None:
