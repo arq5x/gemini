@@ -1,4 +1,4 @@
-gemini load -v test/test.auto_rec.vcf tt.db --no-genotypes && rm tt.db
+gemini load -v test.auto_rec.vcf tt.db --no-genotypes && rm tt.db
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.PLs.vcf  test.PLs.db --no-bcolz
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.mendel.vcf -p test.mendel.ped  test.mendel.db --no-bcolz
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.multiple-alts.decomp.snpeff.vcf -t snpEff test.mad.db --no-bcolz
