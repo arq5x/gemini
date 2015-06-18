@@ -1,5 +1,11 @@
 *.py[cod]
 
+test/exp*
+test/obs*
+test/*.gbi
+test/failed.tests.txt
+docs/_build
+
 # C extensions
 *.so
 

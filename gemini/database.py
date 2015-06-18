@@ -91,229 +91,229 @@ def create_tables(cursor):
     """
     Create our master DB tables
     """
-    cursor.execute('''create table if not exists variants  (    \
-                    chrom text,                                 \
-                    start integer,                              \
-                    end integer,                                \
-                    vcf_id text,                                \
-                    variant_id integer,                         \
-                    anno_id integer,                            \
-                    ref text,                                   \
-                    alt text,                                   \
-                    qual float,                                 \
-                    filter text,                                \
-                    type text,                                  \
-                    sub_type text,                              \
-                    gts blob,                                   \
-                    gt_types blob,                              \
-                    gt_phases blob,                             \
-                    gt_depths blob,                             \
-                    gt_ref_depths blob,                         \
-                    gt_alt_depths blob,                         \
-                    gt_quals blob,                              \
-                    gt_copy_numbers blob,                       \
-                    gt_phred_ll_homref blob,                    \
-                    gt_phred_ll_het blob,                       \
-                    gt_phred_ll_homalt blob,                    \
-                    call_rate float,                            \
-                    in_dbsnp bool,                              \
-                    rs_ids text default NULL,                   \
-                    sv_cipos_start_left integer,                \
-                    sv_cipos_end_left integer,                  \
-                    sv_cipos_start_right integer,               \
-                    sv_cipos_end_right integer,                 \
-                    sv_length integer,                          \
-                    sv_is_precise bool,                         \
-                    sv_tool text,                               \
-                    sv_evidence_type text,                      \
-                    sv_event_id text,                           \
-                    sv_mate_id text,                            \
-                    sv_strand text,                             \
-                    in_omim bool,                               \
-                    clinvar_sig text default NULL,              \
-                    clinvar_disease_name text default NULL,     \
-                    clinvar_dbsource text default NULL,         \
-                    clinvar_dbsource_id text default NULL,      \
-                    clinvar_origin text default NULL,           \
-                    clinvar_dsdb text default NULL,             \
-                    clinvar_dsdbid text default NULL,           \
-                    clinvar_disease_acc text default NULL,      \
-                    clinvar_in_locus_spec_db bool,              \
-                    clinvar_on_diag_assay bool,                 \
-                    clinvar_causal_allele text,                 \
-                    pfam_domain text,                           \
-                    cyto_band text default NULL,                \
-                    rmsk text default NULL,                     \
-                    in_cpg_island bool,                         \
-                    in_segdup bool,                             \
-                    is_conserved bool,                          \
-                    gerp_bp_score float,                        \
-                    gerp_element_pval float,                    \
-                    num_hom_ref integer,                        \
-                    num_het integer,                            \
-                    num_hom_alt integer,                        \
-                    num_unknown integer,                        \
-                    aaf real,                                   \
-                    hwe decimal(2,7),                           \
-                    inbreeding_coeff decimal(2,7),              \
-                    pi decimal(2,7),                            \
-                    recomb_rate decimal(2,7),                   \
-                    gene text,                                  \
-                    transcript text,                            \
-                    is_exonic bool,                             \
-                    is_coding bool,                             \
-                    is_lof bool,                                \
-                    exon text,                                  \
-                    codon_change text,                          \
-                    aa_change text,                             \
-                    aa_length text,                             \
-                    biotype text,                               \
-                    impact text default NULL,                   \
-                    impact_so text default NULL,                \
-                    impact_severity text,                       \
-                    polyphen_pred text,                         \
-                    polyphen_score float,                       \
-                    sift_pred text,                             \
-                    sift_score float,                           \
-                    anc_allele text,                            \
-                    rms_bq float,                               \
-                    cigar text,                                 \
-                    depth integer default NULL,                 \
-                    strand_bias float default NULL,             \
-                    rms_map_qual float default NULL,            \
-                    in_hom_run integer default NULL,            \
-                    num_mapq_zero integer default NULL,         \
-                    num_alleles integer default NULL,           \
-                    num_reads_w_dels float default NULL,        \
-                    haplotype_score float default NULL,         \
-                    qual_depth float default NULL,              \
-                    allele_count integer default NULL,          \
-                    allele_bal float default NULL,              \
-                    in_hm2 bool,                                \
-                    in_hm3 bool,                                \
-                    is_somatic bool,                            \
-                    somatic_score float,                        \
-                    in_esp bool,                                \
-                    aaf_esp_ea decimal(2,7),                    \
-                    aaf_esp_aa decimal(2,7),                    \
-                    aaf_esp_all decimal(2,7),                   \
-                    exome_chip bool,                            \
-                    in_1kg bool,                                \
-                    aaf_1kg_amr decimal(2,7),                   \
-                    aaf_1kg_eas decimal(2,7),                   \
-                    aaf_1kg_sas decimal(2,7),                   \
-                    aaf_1kg_afr decimal(2,7),                   \
-                    aaf_1kg_eur decimal(2,7),                   \
-                    aaf_1kg_all decimal(2,7),                   \
-                    grc text default NULL,                      \
-                    gms_illumina float,                         \
-                    gms_solid float,                            \
-                    gms_iontorrent float,                       \
-                    in_cse bool,                                \
-                    encode_tfbs text,                           \
-                    encode_dnaseI_cell_count integer,           \
-                    encode_dnaseI_cell_list text,               \
-                    encode_consensus_gm12878 text,              \
-                    encode_consensus_h1hesc text,               \
-                    encode_consensus_helas3 text,               \
-                    encode_consensus_hepg2 text,                \
-                    encode_consensus_huvec text,                \
-                    encode_consensus_k562 text,                 \
-                    vista_enhancers text,                       \
-                    cosmic_ids text,                            \
-                    info blob,                                  \
-                    cadd_raw float,                             \
-                    cadd_scaled float,                          \
-                    fitcons float,                              \
-                    in_exac bool,                               \
-                    aaf_exac_all decimal(2,7),                  \
-                    aaf_adj_exac_all decimal(2,7),              \
-                    aaf_adj_exac_afr decimal(2,7),                  \
-                    aaf_adj_exac_amr decimal(2,7),                  \
-                    aaf_adj_exac_eas decimal(2,7),                  \
-                    aaf_adj_exac_fin decimal(2,7),                  \
-                    aaf_adj_exac_nfe decimal(2,7),                  \
-                    aaf_adj_exac_oth decimal(2,7),                  \
-                    aaf_adj_exac_sas decimal(2,7),                  \
+    cursor.execute('''create table if not exists variants (
+                    chrom text,
+                    start integer,
+                    end integer,
+                    vcf_id text,
+                    variant_id integer,
+                    anno_id integer,
+                    ref text,
+                    alt text,
+                    qual float,
+                    filter text,
+                    type text,
+                    sub_type text,
+                    gts blob,
+                    gt_types blob,
+                    gt_phases blob,
+                    gt_depths blob,
+                    gt_ref_depths blob,
+                    gt_alt_depths blob,
+                    gt_quals blob,
+                    gt_copy_numbers blob,
+                    gt_phred_ll_homref blob,
+                    gt_phred_ll_het blob,
+                    gt_phred_ll_homalt blob,
+                    call_rate float,
+                    in_dbsnp bool,
+                    rs_ids text default NULL,
+                    sv_cipos_start_left integer,
+                    sv_cipos_end_left integer,
+                    sv_cipos_start_right integer,
+                    sv_cipos_end_right integer,
+                    sv_length integer,
+                    sv_is_precise bool,
+                    sv_tool text,
+                    sv_evidence_type text,
+                    sv_event_id text,
+                    sv_mate_id text,
+                    sv_strand text,
+                    in_omim bool,
+                    clinvar_sig text default NULL,
+                    clinvar_disease_name text default NULL,
+                    clinvar_dbsource text default NULL,
+                    clinvar_dbsource_id text default NULL,
+                    clinvar_origin text default NULL,
+                    clinvar_dsdb text default NULL,
+                    clinvar_dsdbid text default NULL,
+                    clinvar_disease_acc text default NULL,
+                    clinvar_in_locus_spec_db bool,
+                    clinvar_on_diag_assay bool,
+                    clinvar_causal_allele text,
+                    pfam_domain text,
+                    cyto_band text default NULL,
+                    rmsk text default NULL,
+                    in_cpg_island bool,
+                    in_segdup bool,
+                    is_conserved bool,
+                    gerp_bp_score float,
+                    gerp_element_pval float,
+                    num_hom_ref integer,
+                    num_het integer,
+                    num_hom_alt integer,
+                    num_unknown integer,
+                    aaf real,
+                    hwe decimal(2,7),
+                    inbreeding_coeff decimal(2,7),
+                    pi decimal(2,7),
+                    recomb_rate decimal(2,7),
+                    gene text,
+                    transcript text,
+                    is_exonic bool,
+                    is_coding bool,
+                    is_lof bool,
+                    exon text,
+                    codon_change text,
+                    aa_change text,
+                    aa_length text,
+                    biotype text,
+                    impact text default NULL,
+                    impact_so text default NULL,
+                    impact_severity text,
+                    polyphen_pred text,
+                    polyphen_score float,
+                    sift_pred text,
+                    sift_score float,
+                    anc_allele text,
+                    rms_bq float,
+                    cigar text,
+                    depth integer default NULL,
+                    strand_bias float default NULL,
+                    rms_map_qual float default NULL,
+                    in_hom_run integer default NULL,
+                    num_mapq_zero integer default NULL,
+                    num_alleles integer default NULL,
+                    num_reads_w_dels float default NULL,
+                    haplotype_score float default NULL,
+                    qual_depth float default NULL,
+                    allele_count integer default NULL,
+                    allele_bal float default NULL,
+                    in_hm2 bool,
+                    in_hm3 bool,
+                    is_somatic bool,
+                    somatic_score float,
+                    in_esp bool,
+                    aaf_esp_ea decimal(2,7),
+                    aaf_esp_aa decimal(2,7),
+                    aaf_esp_all decimal(2,7),
+                    exome_chip bool,
+                    in_1kg bool,
+                    aaf_1kg_amr decimal(2,7),
+                    aaf_1kg_eas decimal(2,7),
+                    aaf_1kg_sas decimal(2,7),
+                    aaf_1kg_afr decimal(2,7),
+                    aaf_1kg_eur decimal(2,7),
+                    aaf_1kg_all decimal(2,7),
+                    grc text default NULL,
+                    gms_illumina float,
+                    gms_solid float,
+                    gms_iontorrent float,
+                    in_cse bool,
+                    encode_tfbs text,
+                    encode_dnaseI_cell_count integer,
+                    encode_dnaseI_cell_list text,
+                    encode_consensus_gm12878 text,
+                    encode_consensus_h1hesc text,
+                    encode_consensus_helas3 text,
+                    encode_consensus_hepg2 text,
+                    encode_consensus_huvec text,
+                    encode_consensus_k562 text,
+                    vista_enhancers text,
+                    cosmic_ids text,
+                    info blob,
+                    cadd_raw float,
+                    cadd_scaled float,
+                    fitcons float,
+                    in_exac bool,
+                    aaf_exac_all decimal(2,7),
+                    aaf_adj_exac_all decimal(2,7),
+                    aaf_adj_exac_afr decimal(2,7),
+                    aaf_adj_exac_amr decimal(2,7),
+                    aaf_adj_exac_eas decimal(2,7),
+                    aaf_adj_exac_fin decimal(2,7),
+                    aaf_adj_exac_nfe decimal(2,7),
+                    aaf_adj_exac_oth decimal(2,7),
+                    aaf_adj_exac_sas decimal(2,7),
                     PRIMARY KEY(variant_id ASC))''')
 
-    cursor.execute('''create table if not exists variant_impacts  (   \
-                    variant_id integer,                               \
-                    anno_id integer,                                  \
-                    gene text,                                        \
-                    transcript text,                                  \
-                    is_exonic bool,                                   \
-                    is_coding bool,                                   \
-                    is_lof bool,                                      \
-                    exon text,                                        \
-                    codon_change text,                                \
-                    aa_change text,                                   \
-                    aa_length text,                                   \
-                    biotype text,                                     \
-                    impact text,                                      \
-                    impact_so text,                                   \
-                    impact_severity text,                             \
-                    polyphen_pred text,                               \
-                    polyphen_score float,                             \
-                    sift_pred text,                                   \
-                    sift_score float,                                 \
+    cursor.execute('''create table if not exists variant_impacts  (
+                    variant_id integer,
+                    anno_id integer,
+                    gene text,
+                    transcript text,
+                    is_exonic bool,
+                    is_coding bool,
+                    is_lof bool,
+                    exon text,
+                    codon_change text,
+                    aa_change text,
+                    aa_length text,
+                    biotype text,
+                    impact text,
+                    impact_so text,
+                    impact_severity text,
+                    polyphen_pred text,
+                    polyphen_score float,
+                    sift_pred text,
+                    sift_score float,
                     PRIMARY KEY(variant_id ASC, anno_id ASC))''')
 
-    cursor.execute('''create table if not exists sample_genotypes (  \
-                    sample_id integer,                               \
-                    gt_types BLOB,                                   \
+    cursor.execute('''create table if not exists sample_genotypes (
+                    sample_id integer,
+                    gt_types BLOB,
                     PRIMARY KEY(sample_id ASC))''')
 
-    cursor.execute('''create table if not exists sample_genotype_counts ( \
-                     sample_id integer,                                   \
-                     num_hom_ref integer,                                 \
-                     num_het integer,                                     \
-                     num_hom_alt integer,                                 \
-                     num_unknown integer,                                 \
+    cursor.execute('''create table if not exists sample_genotype_counts (
+                     sample_id integer,
+                     num_hom_ref integer,
+                     num_het integer,
+                     num_hom_alt integer,
+                     num_unknown integer,
                      PRIMARY KEY(sample_id ASC))''')
 
-    cursor.execute('''create table if not exists resources ( \
-                     name text,                              \
+    cursor.execute('''create table if not exists resources (
+                     name text,
                      resource text)''')
 
     cursor.execute('''create table if not exists version (version text)''')
 
-    cursor.execute('''create table if not exists gene_detailed (       \
-                   uid integer,                                        \
-                   chrom text,                                         \
-                   gene text,                                          \
-                   is_hgnc bool,                                       \
-                   ensembl_gene_id text,                               \
-                   transcript text,                                    \
-                   biotype text,                                       \
-                   transcript_status text,                             \
-                   ccds_id text,                                       \
-                   hgnc_id text,                                       \
-                   entrez_id text,                                     \
-                   cds_length text,                                    \
-                   protein_length text,                                \
-                   transcript_start text,                              \
-                   transcript_end text,                                \
-                   strand text,                                        \
-                   synonym text,                                       \
-                   rvis_pct float,                                     \
-                   mam_phenotype_id text,                              \
+    cursor.execute('''create table if not exists gene_detailed (
+                   uid integer,
+                   chrom text,
+                   gene text,
+                   is_hgnc bool,
+                   ensembl_gene_id text,
+                   transcript text,
+                   biotype text,
+                   transcript_status text,
+                   ccds_id text,
+                   hgnc_id text,
+                   entrez_id text,
+                   cds_length text,
+                   protein_length text,
+                   transcript_start text,
+                   transcript_end text,
+                   strand text,
+                   synonym text,
+                   rvis_pct float,
+                   mam_phenotype_id text,
                    PRIMARY KEY(uid ASC))''')
 
-    cursor.execute('''create table if not exists gene_summary (     \
-                    uid integer,                                    \
-                    chrom text,                                     \
-                    gene text,                                      \
-                    is_hgnc bool,                                   \
-                    ensembl_gene_id text,                           \
-                    hgnc_id text,                                   \
-                    transcript_min_start text,                      \
-                    transcript_max_end text,                        \
-                    strand text,                                    \
-                    synonym text,                                   \
-                    rvis_pct float,                                 \
-                    mam_phenotype_id text,                          \
-                    in_cosmic_census bool,                          \
+    cursor.execute('''create table if not exists gene_summary (
+                    uid integer,
+                    chrom text,
+                    gene text,
+                    is_hgnc bool,
+                    ensembl_gene_id text,
+                    hgnc_id text,
+                    transcript_min_start text,
+                    transcript_max_end text,
+                    strand text,
+                    synonym text,
+                    rvis_pct float,
+                    mam_phenotype_id text,
+                    in_cosmic_census bool,
                     PRIMARY KEY(uid ASC))''')
 
     cursor.execute('''create table if not exists vcf_header (vcf_header text)''')

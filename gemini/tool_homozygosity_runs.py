@@ -1,6 +1,6 @@
 import os
 import sys
-from collections import defaultdict 
+from collections import defaultdict
 from gemini_constants import *
 import GeminiQuery
 
@@ -15,7 +15,7 @@ def _prune_run(run):
     """
     Prune the current run of genotypes.
 
-    Remove genotypes from the left of the first 
+    Remove genotypes from the left of the first
     non-homozygous genotype, since, owing to the
     same logic behind run length encoding, those
     genotypes cannot be part of a longer run than
@@ -41,7 +41,7 @@ def _prune_run(run):
         first_unk_idx = None
 
     if first_het_idx is not None and first_unk_idx is not None:
-        idx_of_first_disruption = min(run.index('H'), run.index('U')) 
+        idx_of_first_disruption = min(run.index('H'), run.index('U'))
     elif first_het_idx is not None:
         idx_of_first_disruption = first_het_idx
     elif first_unk_idx is not None:
@@ -84,7 +84,7 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
                 het_count -= hets_removed
                 unk_count -= unks_removed
 
-            # sweep through the active sites until we encounter 
+            # sweep through the active sites until we encounter
             # too many HETS or UNKNOWN genotypes.
             while het_count <= args.max_hets and unk_count <= args.max_unknowns:
                 if site != 'H' and site != 'U':
@@ -103,17 +103,17 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
 
             # skip the current run unless it contains enough sites.
             if hom_count >= args.min_snps:
-                
+
                 run_start = min(c for c in curr_run if c not in ['H', 'U'])
                 run_end = max(c for c in curr_run if c not in ['H', 'U'])
                 run_length = run_end - run_start
-                
+
                 # report the run if it is long enough.
                 if run_length >= args.min_size:
                     density_per_kb = float(len(curr_run) * 1000) / float(run_length)
-                    print "\t".join(str(s) for s in [chrom, 
-                        run_start, run_end, sample, 
-                        hom_count, round(density_per_kb, 4), 
+                    print "\t".join(str(s) for s in [chrom,
+                        run_start, run_end, sample,
+                        hom_count, round(density_per_kb, 4),
                         run_length])
             else:
                 curr_run = []
@@ -126,7 +126,7 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
 def get_homozygosity_runs(args):
 
     gq = GeminiQuery.GeminiQuery(args.db)
-    
+
     # get a mapping of sample ids to sample indices
     idx2smp = gq.index2sample
     smp2idx = gq.sample2index
@@ -161,10 +161,10 @@ def get_homozygosity_runs(args):
     gq.run(query, needs_genotypes=True)
 
     print "\t".join(['chrom',
-        'start', 'end', 'sample', 
+        'start', 'end', 'sample',
         'num_of_snps','density_per_kb',
-        'run_length_in_bp'])  
-    
+        'run_length_in_bp'])
+
     variants_seen = 0
     samples = defaultdict(list)
     prev_chrom = None
@@ -211,4 +211,4 @@ def run(parser, args):
 
     if os.path.exists(args.db):
         # run the roh caller
-        get_homozygosity_runs(args)        
+        get_homozygosity_runs(args)

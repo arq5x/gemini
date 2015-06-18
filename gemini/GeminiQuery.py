@@ -17,6 +17,7 @@ import itertools as it
 import gemini_utils as util
 from gemini_constants import *
 from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
+from .pdict import PDict
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
 from gemini_subjects import get_subjects
@@ -44,7 +45,7 @@ class RowFormat:
     def format(self, row):
         """ return a string representation of a GeminiRow object
         """
-        return '\t'.join([str(row.print_fields[c]) for c in row.print_fields])
+        return str(row.print_fields)
 
     @abc.abstractmethod
     def format_query(self, query):
@@ -74,7 +75,7 @@ class DefaultRowFormat(RowFormat):
 
     def format(self, row):
         r = row.print_fields
-        return '\t'.join(str(r[c]) if not isinstance(r[c], np.ndarray) else ",".join(str(s) for s in r[c]) for c in r)
+        return '\t'.join(str(v) if not isinstance(v, np.ndarray) else ",".join(map(str, v)) for v in r._vals)
 
     def format_query(self, query):
         return query
@@ -195,6 +196,7 @@ class TPEDRowFormat(RowFormat):
         NEED_COLUMNS = ["chrom", "rs_ids", "start", "ref", "alt", "gts", "type", "variant_id"]
         return ensure_columns(query, NEED_COLUMNS)
 
+
     def predicate(self, row, _splitter=re.compile("\||/")):
         geno = [_splitter.split(x) for x in row['gts']]
         geno = list(flatten(geno))
@@ -265,7 +267,8 @@ class JSONRowFormat(RowFormat):
     def format(self, row):
         """Emit a JSON representation of a given row
         """
-        return json.dumps(row.print_fields)
+        from .pdict import to_json
+        return json.dumps(row.print_fields, default=to_json)
 
     def format_query(self, query):
         return query
@@ -382,7 +385,7 @@ class SampleDetailRowFormat(RowFormat):
 
 class GeminiRow(object):
     __slots__ = ('cache', 'genotype_dict', 'row', 'formatter', 'query',
-                'print_fields')
+                 'print_fields')
 
     def __init__(self, row, query, formatter=DefaultRowFormat(None), print_fields=None):
         # row can be a dict() from the database or another GeminiRow (from the
@@ -402,6 +405,7 @@ class GeminiRow(object):
 
     def __getitem__(self, key):
         # we cache what we can.
+        key = str(key)
         if key in ('het_samples', 'hom_alt_samples', 'unknown_samples',
                 'variant_samples', 'hom_ref_samples'):
             if self.genotype_dict == {}:
@@ -627,19 +631,9 @@ class GeminiQuery(object):
         #extra = " variant_id IN (%s)" % ",".join(map(str, vids))
         # faster way to convert to string.
         # http://stackoverflow.com/a/13861407
-        extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
-        if " where " in self.query.lower():
-            extra = " and " + extra
-        else:
-            extra = " where " + extra
-        # don't adjust the query if we
-        if len(self.query) + len(extra) + 8 < 1000000:
-            match = re.search(" (limit \d+)\s*", self.query,
-                              flags=re.I | re.DOTALL | re.MULTILINE)
-            if match:
-                self.query = self.query.replace(match.group(), " ") + extra + " " + match.group()
-            else:
-                self.query += extra
+        q = add_variant_ids_to_query(self.query, vids)
+        if q:
+            self.query = q
             self.gt_filter = None
 
     @property
@@ -720,13 +714,15 @@ class GeminiQuery(object):
                 except TypeError:
                     continue
 
-            fields = OrderedDict()
+            fields = PDict()
 
             for idx, col in enumerate(self.report_cols):
                 if col == "*":
                     continue
                 if not col[:2] in ("gt", "GT"):
-                    fields[col] = row[col]
+                    # need to use add in case of duplicated fields (from
+                    # variants and variant_impacts)
+                    fields.add(col, row[col])
                 else:
                     # reuse the original column name user requested
                     # e.g. replace gts[1085] with gts.NA20814
@@ -743,11 +739,12 @@ class GeminiQuery(object):
                         val = row[source][idx]
 
                         if type(val) in (np.int8, np.int32, np.bool_):
-                            fields[orig_col] = int(val)
+                            fields.add(orig_col, int(val))
+
                         elif type(val) in (np.float32,):
-                            fields[orig_col] = float(val)
+                            fields.add(orig_col, float(val))
                         else:
-                            fields[orig_col] = val
+                            fields.add(orig_col, val)
                     else:
                         # asked for "gts" or "gt_types", e.g.
                         if row[col] is not None:
@@ -804,7 +801,8 @@ class GeminiQuery(object):
             self.conn = sqlite3.connect(self.db)
             self.conn.isolation_level = None
             # allow us to refer to columns by name
-            self.conn.row_factory = RowFactory
+            #self.conn.row_factory = RowFactory
+            self.conn.row_factory = sqlite3.Row
             self.c = self.conn.cursor()
 
 
@@ -847,7 +845,9 @@ class GeminiQuery(object):
         try:
             self.c.execute(self.query)
         except sqlite3.OperationalError as e:
-            print "SQLite error: {0}".format(e)
+            msg = "SQLite error: {0}\n".format(e)
+            print msg
+            sys.stderr.write(msg)
             sys.exit("The query issued (%s) has a syntax error." % self.query)
 
     def _apply_query(self):
@@ -1251,12 +1251,49 @@ def select_formatter(args):
     if hasattr(args, 'carrier_summary') and args.carrier_summary:
         return SUPPORTED_FORMATS["carrier_summary"](args)
 
-    if not args.format in SUPPORTED_FORMATS:
+    if args.format not in SUPPORTED_FORMATS:
         raise NotImplementedError("Conversion to %s not supported. Valid "
                                   "formats are %s."
                                   % (args.format, SUPPORTED_FORMATS))
     else:
         return SUPPORTED_FORMATS[args.format](args)
+
+def add_variant_ids_to_query(query, vids):
+    """
+    >>> vids = range(1, 4)
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants limit 10", vids)
+    'select gene, chrom, start, end from variants where  variant_id IN (1,2,3)  limit 10'
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants where gene = 'asdf' limit 10", vids)
+    "select gene, chrom, start, end from variants where gene = 'asdf' and  variant_id IN (1,2,3)  limit 10"
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants where gene = 'asdf' order by gene limit 10", vids)
+    "select gene, chrom, start, end from variants where gene = 'asdf' and  variant_id IN (1,2,3) order by gene limit 10"
+    >>> add_variant_ids_to_query("select gene, chrom, start, end from variants", vids)
+    'select gene, chrom, start, end from variants where  variant_id IN (1,2,3)'
+    """
+    if len(vids) == 0:
+        return vids
+    extra = " variant_id IN (%s)" % ",".join(np.char.mod("%i", vids))
+
+    # order by, then limit.
+    limit_idx = query.lower().index(" limit ") if " limit " in query.lower() else None
+    if limit_idx:
+        query, qlimit = query[:limit_idx].strip(), query[limit_idx:].strip()
+        assert qlimit.lower().startswith("limit ")
+    else:
+        qlimit = ""
+
+    order_idx = query.lower().index(" order by ") if " order by " in query.lower() else None
+    if order_idx:
+        query, qorder = query[:order_idx].strip(), query[order_idx:].strip()
+        assert qorder.lower().startswith("order by ")
+    else:
+        qorder = ""
+
+    if " where " in query.lower():
+        extra = " and " + extra
+    else:
+        extra = " where " + extra
+    return " ".join([x.strip() for x in (query, extra, qorder, qlimit)]).strip()
 
 
 if __name__ == "__main__":
