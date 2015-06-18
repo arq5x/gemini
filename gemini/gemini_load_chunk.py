@@ -399,6 +399,32 @@ class GeminiLoader(object):
 
         if self.args.anno_type is not None:
             impacts = func_impact.interpret_impact(self.args, var, self._effect_fields)
+            il = [i for i in impacts if i.effect_severity]
+            # in case we don't have sever impact, we still try to get the impact
+            # to annote the main variants table.
+            if len(il) == 0 and len(impacts) > 0:
+                il = impacts[:1]
+            if len(il) > 0:
+                im = il[0]
+
+                transcript = im.transcript
+                exon, gene = im.exon, im.gene
+                effect_severity = im.effect_severity
+                codon_change = im.codon_change
+                biotype = im.biotype
+                is_coding = im.is_coding
+                aa_change, aa_length, consequence = im.aa_change, im.aa_length, im.consequence
+                sift_score = im.sift_score
+
+                polyphen_pred = im.polyphen_pred
+                polyphen_score = im.polyphen_score
+                sift_pred = im.sift_pred
+                sift_score = im.sift_score
+                anno_id = im.anno_id
+                is_exonic = im.is_exonic
+                is_coding = im.is_coding
+                is_lof = im.is_lof
+
             severe_impacts = \
                 severe_impact.interpret_severe_impact(self.args, var, self._effect_fields)
             if severe_impacts:
@@ -421,6 +447,7 @@ class GeminiLoader(object):
                 is_coding = severe_impacts.is_coding
                 is_lof = severe_impacts.is_lof
                 consequence_so = severe_impacts.so
+
 
         # construct the filter string
         filter = None

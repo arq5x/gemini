@@ -18,6 +18,8 @@ Release History
 5. further performance improvements for bcolz queries
 6. --affected-only has been made the default and it's opposing replacement named --allow-unaffected to revert.
 7. fix reporting error for inheritance tools (family_id was mis-specified in output).
+8. annotate the variants table with impact even if there is not severe impact. Thanks to @mjsduncan for reporting.
+9. reduce memory requirements when loading. Thanks to @mjsduncan for reporting.
 
 0.15.1
 ======

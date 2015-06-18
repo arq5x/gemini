@@ -200,7 +200,6 @@ class GeminiInheritanceModel(object):
                     fams = [f for i, f in fams_to_test
                             if masks[i] != 'False' and eval(masks[i], cols)]
                 kindreds.update(f.family_id for f in fams)
-                pdict = row.print_fields.copy()
 
                 for fam in fams:
                     pdict = row.print_fields.copy()
