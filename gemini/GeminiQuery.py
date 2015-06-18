@@ -403,6 +403,7 @@ class GeminiRow(object):
 
     def __getitem__(self, key):
         # we cache what we can.
+        key = str(key)
         if key in ('het_samples', 'hom_alt_samples', 'unknown_samples',
                 'variant_samples', 'hom_ref_samples'):
             if self.genotype_dict == {}:
@@ -795,7 +796,8 @@ class GeminiQuery(object):
             self.conn = sqlite3.connect(self.db)
             self.conn.isolation_level = None
             # allow us to refer to columns by name
-            self.conn.row_factory = RowFactory
+            #self.conn.row_factory = RowFactory
+            self.conn.row_factory = sqlite3.Row
             self.c = self.conn.cursor()
 
 
