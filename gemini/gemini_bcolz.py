@@ -106,14 +106,16 @@ def create(db, cols=None):
                 tmps[gtc].append([])
 
         t0 = time.time()
-        step = 200000
+        # scale step by number of samples to limit memory use.
+        step = max(100, 2000000 / len(samples))
+        sys.stderr.write("step-size: %i\n" % step)
         del gtc
 
         empty = [-1] * len(samples)
         for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
             for j, gt_col in enumerate(gt_cols):
                 vals = decomp(row[j])
-                if vals is None: # empty gt_phred_ll
+                if vals is None:  # empty gt_phred_ll
                     vals = empty
                 for isamp, sample in enumerate(samples):
                     tmps[gt_col][isamp].append(vals[isamp])
