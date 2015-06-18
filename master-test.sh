@@ -126,6 +126,11 @@ bash test-esp.sh
 
 bash test-dashes.sh
 
+# backwards compat with no PL/GL columns
+bash test-no-gls.sh
+
+bash test-multi-col.sh
+
 # cleanup
 rm ./*.db
 rm ./file.dot

@@ -6,6 +6,15 @@
     :width: 400pt
     :align: center
 
+============================
+Changes to Inheritance Tools
+============================
+
+As of version 0.16.0, the inheritance tools are more stringent by default and have a strong
+mendelian bent. By default, samples with unknown phenotype will not affect the tools, and 
+strict requirements are place on family structure. See the the :doc:`docs <content/tools>` for
+more info.
+
 =============================
 Much faster genotype queries
 =============================
@@ -32,7 +41,7 @@ version 0.14.0 or earlier**. Details of the implementation and caveats can be fo
 ==========================
 New GEMINI Workflow
 ==========================
-At long last, version 0.12.2 of GEMINI supports multi-allelic variants thanks to great work from Brent Pedersen. In order to provide this support, GEMINI now requires that your input VCF file undergo additional preprocessing such that multi-allelic variants are decomposed and normalized using the `vt <http://genome.sph.umich.edu/wiki/Vt>`_ toolset from
+As version 0.12.2 of GEMINI it is required that your input VCF file undergo additional preprocessing such that multi-allelic variants are decomposed and normalized using the `vt <http://genome.sph.umich.edu/wiki/Vt>`_ toolset from
 the `Abecasis lab <http://genome.sph.umich.edu/wiki/Main_Page>`_. Note that we have also decomposed and normalized all of the VCF-based annotation files (e.g., ExAC, dbSNP, ClinVar, etc.) so that variants and alleles are properly annotated and we minimize false negative and false positive annotations. For a great discussion of why this is necessary, please read `this blog post <http://www.cureffi.org/2014/04/24/converting-genetic-variants-to-their-minimal-representation/>`_ from Eric Minikel in Daniel MacArthur's lab.  
 
 Essentially, VCF preprocessing for GEMINI now boils down to the following steps.
@@ -136,5 +145,3 @@ Table of contents
    content/history
    content/faq
    content/other
-   content/bugs
-   content/licensing

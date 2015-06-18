@@ -345,7 +345,7 @@ def cleanup_temp_db_files(chunk_dbs):
 def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
-                       " {no_genotypes} {no_load_genotypes} {no_genotypes}"
+                       " {no_load_genotypes} {no_genotypes}"
                        " {skip_gerp_bp} {skip_gene_tables} {skip_cadd}"
                        " {passonly} {skip_info_string} {test_mode} {tempdir}"
                        " -o {start} {chunk_dir}{vcf}.chunk{chunk_num}.db")

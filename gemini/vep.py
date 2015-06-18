@@ -91,12 +91,12 @@ class EffectDetails(object):
 
     def __str__(self):
 
-        return "\t".join([self.consequence, self.effect_severity, str(self.codon_change),
-                          str(self.aa_change), str(self.aa_length), str(self.biotype),
-                          str(self.ensembl_gene), str(self.gene), str(self.transcript),
-                          str(self.exon), str(self.is_exonic), str(self.anno_id), str(self.polyphen_pred),
-                          str(self.polyphen_score), str(self.sift_pred), str(self.sift_score),
-                          str(self.is_coding), str(self.is_lof), str(self.so)])
+        return "\t".join(map(str, [self.consequence, self.effect_severity, (self.codon_change),
+                          (self.aa_change), (self.aa_length), (self.biotype),
+                          (self.ensembl_gene), (self.gene), (self.transcript),
+                          (self.exon), (self.is_exonic), (self.anno_id), (self.polyphen_pred),
+                          (self.polyphen_score), (self.sift_pred), (self.sift_score),
+                          (self.is_coding), (self.is_lof), (self.so)]))
 
     def __repr__(self):
         return self.__str__()

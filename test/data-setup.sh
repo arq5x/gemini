@@ -1,3 +1,4 @@
+gemini load -v test.auto_rec.vcf tt.db --no-genotypes && rm tt.db
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.PLs.vcf  test.PLs.db --no-bcolz
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.mendel.vcf -p test.mendel.ped  test.mendel.db --no-bcolz
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.multiple-alts.decomp.snpeff.vcf -t snpEff test.mad.db --no-bcolz
@@ -50,3 +51,6 @@ gemini load -p test.fusions.ped -v test.fusions.vcf  --skip-gerp-bp --skip-cadd 
 gemini load --skip-gene-tables --test-mode -v test.exac.vcf --skip-gerp-bp --skip-cadd test.exac.db --no-bcolz
 gemini load -t VEP -v test.esp.zero.vcf test.esp.db --skip-gerp-bp --skip-gene-tables --test-mode --no-bcolz
 gemini load --skip-gene-tables --test-mode -v test.dashes.vcf --skip-gerp-bp --skip-cadd -t snpEff test.dashes.db -p test.dashes.ped
+
+# test-phasing
+gemini load --skip-gene-tables --test-mode -v test.comp_het.unphase.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.ped test.comp_het.unphase.db --no-bcolz
