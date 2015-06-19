@@ -4,22 +4,23 @@ Release History
 
 (Future)
 =======================================
-#. Speed up and generalize database loading.
+#. Speed up and generalize database loading for multiple genome builds and species.
 #. Support for both SO and HGVS terms.
 #. Update parsing for snpEff >= 4.0
 #. Add an `is_splicing` column.
 
 0.16.0
 =======================================
-1. Leverage bcolz indexing in built-in inheritance pattern tools.
-2. Support for multi-generational families.
-3. Leverage genotype likelihoods in tools other than `mendel_errors` as a means to filter variants.
-4. Phase genotypes by transmission for `comp_hets` tool.
-5. further performance improvements for bcolz queries
-6. --affected-only has been made the default and it's opposing replacement named --allow-unaffected to revert.
-7. fix reporting error for inheritance tools (family_id was mis-specified in output).
-8. annotate the variants table with impact even if there is not severe impact. Thanks to @mjsduncan for reporting.
-9. reduce memory requirements when loading. Thanks to @mjsduncan for reporting.
+1. The built-in inheritance model tools (``auto_rec``, etc.) have been modified to be more restrictive in order to remove false positive candidates. The strictness can be reduced by using the ``--lenient`` option.
+2. Leverage bcolz indexing for the built-in inheritance model tools to dramatically improve speed.
+3. Support for multi-generational pedigrees for the built in inheritance model tools.
+4. Leverage genotype likelihoods in tools other than ``mendel_errors`` as a means to filter variants.
+5. Automatically phase genotypes by transmission on the fly for the `comp_hets` tool.
+6. Further performance improvements for bcolz queries
+7. The ``--affected-only`` option has been made the default and it's opposing replacement named ``--allow-unaffected`` to revert.
+8. Fixed a reporting error for the inheritance tools (i.e., family_id was mis-specified in output).
+9. Annotate the variants table with impact even if there is not severe impact. Thanks to @mjsduncan for reporting.
+10. Reduce memory requirements when loading. Thanks to @mjsduncan for reporting.
 
 0.15.1
 ======

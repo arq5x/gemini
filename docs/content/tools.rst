@@ -117,19 +117,21 @@ to use this tool, we require that all variants are phased.  Once this has been
 done, the `comp_hets` tool will provide a report of candidate compound
 heterozygotes for each sample/gene.
 
-As of version 0.16.0 the comp_het tool will perform family-based phasing
-by default in order to provide better candidates even in the absence of
-unphased genotypes. Any candidate that could be one element of a comp_het
-will also be phaseable as long as the parents and their genotypes are known.
+.. note::
+
+  As of version 0.16.0 the ``comp_het`` tool will perform family-based phasing
+  by default in order to provide better candidates even in the absence of
+  unphased genotypes. Any candidate that could be one element of a comp_het
+  will also be phaseable as long as the parents and their genotypes are known.
 
 ---------------------
 Genotype Requirements
 ---------------------
 
-- affecteds must be het 
-- unaffecteds can not be hom alt.
-- sites are phased by transmission
-- candidate pairs are removed if unaffected shares same pair.
+- All affected individuals must be heterozygous at both sites. 
+- No unaffected can be heterozygous at both sites.
+- No unaffected can be homozygous alterate at either site.
+- Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
 
 
 .. note::
@@ -172,6 +174,8 @@ the following command would further restrict candidate genes to those genes with
 Now, this does not require that the family members are necessarily restricted to solely
 those that are affected. To impose this restriction, we remove the ``--allow-unaffected``
 flag
+
+.. code-block:: bash
 
     $ gemini comp_hets -d 50 \
           --columns "chrom, start, end, ref, alt" \
