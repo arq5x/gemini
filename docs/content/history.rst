@@ -4,16 +4,18 @@ Release History
 
 (Future)
 =======================================
-#. Speed up and generalize database loading for multiple genome builds and species.
 #. Support for both SO and HGVS terms.
 #. Update parsing for snpEff >= 4.0
+#. Speed up and generalize database loading for multiple genome builds and species.
 #. Add an `is_splicing` column.
 
 0.16.0
 =======================================
-1. The built-in inheritance model tools (``auto_rec``, etc.) have been modified to be more restrictive in order to remove false positive candidates. The strictness can be reduced by using the ``--lenient`` option.
+1. The built-in inheritance model tools (``auto_rec``, etc.) have been modified to be more
+   restrictive in order to remove false positive candidates. The strictness can be reduced by using the ``--lenient`` option.
 2. Leverage bcolz indexing for the built-in inheritance model tools to dramatically improve speed.
-3. Support for multi-generational pedigrees for the built in inheritance model tools.
+3. Support for multi-generational pedigrees for the built in inheritance model tools. (thanks to Jessica, Andrew,
+   and jmcelwee for extensive discussion https://github.com/arq5x/gemini/issues/388)
 4. Leverage genotype likelihoods in tools other than ``mendel_errors`` as a means to filter variants.
 5. Automatically phase genotypes by transmission on the fly for the `comp_hets` tool.
 6. Further performance improvements for bcolz queries

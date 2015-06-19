@@ -28,6 +28,11 @@ Other tools such as `mendel_errors` additional columns at the end.
     unaffected samples share the same variants. The default will only
     report variants that are unique to affected samples.
 
+    The design decisions for this change are described here:
+    https://github.com/arq5x/gemini/issues/388
+    a visual representation is here:
+    https://github.com/arq5x/gemini/blob/master/inheritance.ipynb
+
 
 ==================================
 ``common_args``: common arguments
@@ -124,6 +129,7 @@ heterozygotes for each sample/gene.
   unphased genotypes. Any candidate that could be one element of a comp_het
   will also be phaseable as long as the parents and their genotypes are known.
 
+
 ---------------------
 Genotype Requirements
 ---------------------
@@ -132,6 +138,8 @@ Genotype Requirements
 - No unaffected can be heterozygous at both sites.
 - No unaffected can be homozygous alterate at either site.
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
+
+if `--lenient` is used then unknowns can be HET.
 
 
 .. note::
@@ -226,6 +234,8 @@ Genotype Requirements
 - (plausible de novo) kid is het. parents are same homozygotes
 - (implausible de novo) kid is homozygoes. parents are same homozygotes and opposite to kid.
 
+If allow `--only-affected` is used, then the tools will only consider samples that have parents
+**and** are affected. The default is to consider any sample with parents.
 
 This tool will report the probability of a mendelian error in the final column 
 that is derived from the genotype likelihoods if they are available.
@@ -270,7 +280,6 @@ Arguments are similar to the other tools:
                             variant in a gene.
       --families FAMILIES   Restrict analysis to a specific set of 1 or more
                             (comma) separated) families
-      --lenient             Loosen the restrictions on family structure
       -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth (genotype DP) req'd
                             for each sample (def. = 0)
       --gt-pl-max GT_PHRED_LL
@@ -294,16 +303,16 @@ Genotype Requirements
 ---------------------
 
 - all affecteds must be het
-- all unaffected must be homref or homalt
+- [affected] all unaffected must be homref or homalt
 - at least 1 affected kid must have unaffected parents
+- [strict] if an affected has affected parents, it's not de_novo
+- [strict] all affected kids must have unaffected (or no) parents
+- [strict] warning if none of the affected samples have parents.
 
-++++++
-strict
-++++++
+The last 3 items, prefixed with [strict] can be turned off with `--lenient`
 
-- if an affected has affected parents, it's not de_novo
-- all affected kids must have unaffected (or no) parents
-- warning if none of the affected samples have parents.
+If `--allow-unaffected` is specified, then the item prefixed [affected] is not
+required.
 
 
 `Example PED file format for GEMINI`
@@ -428,14 +437,13 @@ Genotype Requirements
 ---------------------
 
 - all affecteds must be hom_alt
-- no unaffected can be hom_alt (can be unknown)
+- [affected] no unaffected can be hom_alt (can be unknown)
+- [strict] if parents exist they must be unaffected and het for all affected kids
+- [strict] if there are no affecteds that have a parent, a warning is issued.
 
-++++++
-strict
-++++++
+if `--lenient` is specified, the 2 points prefixed with "[strict]" are not required.
 
-- if parents exist they must be unaffected and het for all affected kids
-- if there are no affecteds that have a parent, a warning is issued.
+if `--allow-unaffected` is specified, the point prefix with "[affected]" is not required.
 
 
 ---------------------
@@ -552,16 +560,16 @@ Genotype Requirements
 ---------------------
 
 - all affecteds must be het
-- no unaffected can be het or homalt (can be unknown)
+- [affected] no unaffected can be het or homalt (can be unknown)
 - de_novo mutations are not auto_dom (at least not in the first generation)
+- [strict] parents of affected cant have unknown phenotype.
+- [strict] all affected kids must have at least 1 affected parent
+- [strict] if no affected has a parent, a warning is issued.
 
-++++++
-strict
-++++++
 
-- parents of affected cant have unknown phenotype.
-- all affected kids must have at least 1 affected parent
-- if no affected has a parent, a warning is issued.
+If `--lenient` is specified, the items prefixed with "[strict]" are not required.
+
+If `--allow-unaffected` is specified, the item prefix with "[affected]" is not required.
 
 
 ---------------------
