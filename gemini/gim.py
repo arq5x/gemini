@@ -218,6 +218,7 @@ class GeminiInheritanceModel(object):
                         vs = []
 
                         if all(c in self.gt_cols for c in ('gt_phred_ll_homref', 'gt_phred_ll_het', 'gt_phred_ll_homalt')):
+                            pdict["violation_prob"] = ""
                             for s in pdict['samples']:
                                 # mom, dad, kid
                                 mdk = str(s.mom.genotype_lls + s.dad.genotype_lls + s.genotype_lls)
@@ -225,7 +226,7 @@ class GeminiInheritanceModel(object):
                                 vals = eval(mdk, cols)
                                 vs.append(mendelian_error(vals[:3], vals[3:6], vals[6:], pls=True))
 
-                            pdict["violation_prob"] = ",".join("%.5f" % v for v in vs)
+                            pdict["violation_prob"] = ",".join("%.5f" % v for v in vs if v is not None)
                         pdict['samples'] = ",".join(s.name or str(s.sample_id) for s in pdict['samples'])
 
                     s = str(pdict)
