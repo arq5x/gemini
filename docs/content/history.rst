@@ -9,6 +9,17 @@ Release History
 #. Speed up and generalize database loading for multiple genome builds and species.
 #. Add an `is_splicing` column.
 
+0.16.2 (forthcoming)
+=======================================
+#. Hone rules for unphased and partially-phased compound hets.
+
+0.16.1
+=======================================
+1. Fix regression in loading when AAF is None
+2. Fix handing in mendelian error tool where all genotype likelihoods are low (thanks Bianca)
+3. Don't phase de-novo's (caused error in comp_het tool). (thanks Bianca)
+4. Fix regression in loading VEP with multicore (thanks Andrew)
+
 0.16.0
 =======================================
 1. The built-in inheritance model tools (``auto_rec``, etc.) have been modified to be more
