@@ -383,7 +383,9 @@ def add_extras(gemini_db, chunk_dbs, region_only):
                     ",".join(fields),
                     region_only)
         annotate(None, args)
-        os.unlink(extra_file[:-3] + ".fields")
+        rm(extra_file[:-3] + ".fields")
+        rm(extra_file)
+        rm(extra_file + ".tbi")
 
 
 def rm(path):
@@ -402,7 +404,7 @@ def get_extra_vcf(gemini_db, tmpl=None):
     path = os.path.join(tempfile.gettempdir(), "extra.%s.vcf" % base)
     mode = "r" if tmpl is None else "w"
     if mode == "r":
-        if not os.path.exists(path):
+        if not os.path.exists(path) and not os.path.exists(path + ".gz"):
             return False
         if not path.endswith(".gz"):
             subprocess.check_call(["bgzip", "-f", path])
@@ -413,9 +415,10 @@ def get_extra_vcf(gemini_db, tmpl=None):
 
     fh = open(path, "w")
     if mode == "w":
-        atexit.register(rm, fh.name)
-        atexit.register(rm, fh.name + ".gz")
-        atexit.register(rm, fh.name + ".gz.tbi")
+        # can't do this here because we load in a separate process.
+        #atexit.register(rm, fh.name)
+        #atexit.register(rm, fh.name + ".gz")
+        #atexit.register(rm, fh.name + ".gz.tbi")
 
         return vcf.Writer(fh, tmpl)
     return vcf.Reader(fh)

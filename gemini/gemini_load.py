@@ -237,6 +237,8 @@ def load_chunks_multicore(grabix_file, args):
         start, stop = chunk
         print "Loading chunk " + str(chunk_num) + "."
         gemini_load = gemini_pipe_load_cmd().format(**locals())
+        if os.environ.get('GEMINI_DEBUG') == "TRUE":
+            print >>sys.stderr, gemini_load
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True))
 
