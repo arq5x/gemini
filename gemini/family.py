@@ -223,7 +223,23 @@ class Family(object):
         ...            [False, False, False],
         ...            ["A/C", "A/C", "A/C"])
         ([False, False, False], ['A/C', 'A/C', 'A/C'])
+
+        >>> f.famphase([HOM_REF, HET, HET],
+        ...            [False, False, False],
+        ...            ["AA/A", "AA/C", "C/AA"])
+        ([False, False, True],  ['AA/A', 'AA/C', 'AA|C'])
+
+        >>> f.famphase([HOM_REF, HET, HET],
+        ...            [False, False, False],
+        ...            ['G/G', 'AA/C', 'A/C'])
+        ([False, False, False],  ['G/G', 'AA/C', 'A/C'])
+
+        >>> f.famphase([HOM_REF, HET, HET],
+        ...            [False, False, False],
+        ...            ['G/G', 'A/C', 'A/C'])
+        ([False, False, False],  ['G/G', 'A/C', 'A/C'])
         """
+
         # NOTE: this modifies in-place
         # subjects are in same order as gt_types and _i is the index.
         HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
@@ -241,24 +257,45 @@ class Family(object):
             ## cant have unknown
             if UNKNOWN in (gt_types[s.mom._i], gt_types[s.dad._i]): continue
 
-            # should be able to phase here!
-            gt_phases[s._i] = True
+            kid_bases = set(_splitter.split(gt_bases[s._i]))
+            mom_bases = _splitter.split(gt_bases[s.mom._i])
+            dad_bases = _splitter.split(gt_bases[s.dad._i])
 
+            parent_bases = set(mom_bases + dad_bases)
+            # can't phase kid with de-novo
+
+            if kid_bases - parent_bases:
+                print >>sys.stderr, "skipping due to de_novo"
+                continue
+
+            # no alleles from dad
+            if len(kid_bases - set(dad_bases)) == len(kid_bases):
+                print >>sys.stderr, "skipping due no alleles from dad"
+                continue
+
+            if len(kid_bases - set(mom_bases)) == len(kid_bases):
+                print >>sys.stderr, "skipping due no alleles from mom"
+                continue
+
+            # should be able to phase here
             if gt_types[s.mom._i] in (HOM_REF, HOM_ALT):
                 assert gt_types[s.mom._i] in (HOM_REF, HOM_ALT)
-                mom_allele = _splitter.split(gt_bases[s.mom._i])[0]
-                dad_alleles = _splitter.split(gt_bases[s.dad._i])
+                mom_allele = mom_bases[0]
+                dad_alleles = dad_bases
                 dad_allele = next(d for d in dad_alleles if d != mom_allele)
+
 
                 gt_bases[s._i] = "%s|%s" % (mom_allele, dad_allele)
             else:
                 assert gt_types[s.dad._i] in (HOM_REF, HOM_ALT)
 
-                dad_allele = _splitter.split(gt_bases[s.dad._i])[0]
-                mom_alleles = _splitter.split(gt_bases[s.mom._i])
+                dad_allele = dad_bases[0]
+                mom_alleles = mom_bases
                 mom_allele = next(m for m in mom_alleles if m != dad_allele)
 
                 gt_bases[s._i] = "%s|%s" % (mom_allele, dad_allele)
+
+            gt_phases[s._i] = True
 
         return gt_phases, gt_bases
 
@@ -663,6 +700,14 @@ class Family(object):
                 'loss of heterozygosity': self.mendel_LOH(min_depth, gt_ll,
                                                           only_affected)
                 }
+
+    def comp_het_pair(self, gt_types1, gt_bases1, gt_types2, gt_bases2):
+        """
+        TODO:
+        https://mail.google.com/mail/u/0/#inbox/14e22b8e359c9cb2
+        """
+        pass
+
 
     def comp_het(self, min_depth=0, gt_ll=False, strict=False,
                  only_affected=True):
