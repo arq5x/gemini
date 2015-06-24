@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import collections
 import sys
 from copy import copy
 import re
+import collections
+from collections import Counter
 import GeminiQuery
 import sql_utils
 import compiler
@@ -236,7 +237,15 @@ class GeminiInheritanceModel(object):
 
                     to_yield.append(pdict)
 
-            if len(kindreds) >= self.args.min_kindreds:
+            if 0 < len(kindreds) >= self.args.min_kindreds:
+                if 'comp_het_id' in to_yield[0]:
+                    counts = Counter((item['comp_het_id'], item['family_id']) for item in to_yield)
+                    # remove singletons.
+                    to_yield = [item for item in to_yield if counts[(item['comp_het_id'], item['family_id'])] > 1]
+                    # re-check min_kindreds
+                    if len(set(item['family_id'] for item in to_yield)) < self.args.min_kindreds:
+                        continue
+
                 for item in to_yield:
                     item['family_count'] = len(kindreds)
                     yield item
@@ -336,13 +345,14 @@ class CompoundHet(GeminiInheritanceModel):
                         # it's composite alleles.  e.g. A|G -> ['A', 'G']
                         alleles_site1 = []
                         alleles_site2 = []
-                        if not args.ignore_phasing:
-                            alleles_site1 = site1.gt.split('|')
-                            alleles_site2 = site2.gt.split('|')
-                        else:
+                        # NOTE: removed this due to family-based phasing
+                        #if not args.ignore_phasing:
+                        #   alleles_site1 = site1.gt.split('|')
+                        #   alleles_site2 = site2.gt.split('|')
+                        #lse:
                             # split on phased (|) or unphased (/) genotypes
-                            alleles_site1 = splitter.split(site1.gt)
-                            alleles_site2 = splitter.split(site2.gt)
+                        alleles_site1 = splitter.split(site1.gt)
+                        alleles_site2 = splitter.split(site2.gt)
 
                         # it is only a true compound heterozygote IFF
                         # the alternates are on opposite haplotypes.
@@ -358,9 +368,12 @@ class CompoundHet(GeminiInheritanceModel):
                                                  " alleles are not yet supported. The sites are:"
                                                  " %s and %s.\n" % (sample, site1, site2))
                                 continue
-
-                            alt_hap_1 = alleles_site1.index(site1.row['alt'])
-                            alt_hap_2 = alleles_site2.index(site2.row['alt'])
+                            try:
+                                alt_hap_1 = alleles_site1.index(site1.row['alt'])
+                                alt_hap_2 = alleles_site2.index(site2.row['alt'])
+                            except ValueError:
+                                # had a genotype like, e.g. "./G"
+                                continue
 
                         # Keep as a candidate if
                         #   1. phasing is considered AND the alt alleles are on
@@ -369,7 +382,7 @@ class CompoundHet(GeminiInheritanceModel):
                         # TODO: Phase based on parental genotypes.
                         if (not args.ignore_phasing and alt_hap_1 != alt_hap_2) \
                             or args.ignore_phasing:
-                            samples_w_hetpair[(site1,site2)].append(sample)
+                            samples_w_hetpair[(site1, site2)].append(sample)
 
         return samples_w_hetpair
 
@@ -390,15 +403,12 @@ class CompoundHet(GeminiInheritanceModel):
         requested_fams = None if args.families is None else set(args.families.split(","))
         for idx, comp_het in enumerate(candidates):
             comp_het_counter[0] += 1
-            #seen = set()
+
             for s in samples_w_hetpair[comp_het]:
                 family_id = subjects_dict[s].family_id
-                # NOTE: added this so each family only reported 1x.
-                #if family_id in seen:
-                #    continue
+
                 if requested_fams is not None and not family_id in requested_fams:
                     continue
-                #seen.add(family_id)
 
                 ch_id = str(comp_het_counter[0])
                 cid = "%s_%d_%d" % (ch_id, comp_het[0].row['variant_id'],
@@ -447,10 +457,13 @@ class CompoundHet(GeminiInheritanceModel):
                     if gt_type != HET:
                         continue
                     sample = idx_to_sample[idx]
-                    # need to keep unaffecteds so we no if someone has the same
-                    # pair.
-                    #if args.only_affected and not self.subjects_dict[sample].affected:
+                    # need to keep unaffecteds so we know if someone has the same
+                    # if args.only_affected and not self.subjects_dict[sample].affected:
                     #    continue
+
+                    # e.g. .|G, we can't use this for comp_het
+                    if "." in gt_bases[idx]: continue
+
                     sample_site = copy(site)
                     sample_site.phased = gt_phases[idx]
 

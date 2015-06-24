@@ -9,6 +9,10 @@ Release History
 #. Speed up and generalize database loading for multiple genome builds and species.
 #. Add an `is_splicing` column.
 
+0.16.2 (forthcoming)
+=======================================
+#. Hone rules for unphased and partially-phased compound hets.
+
 0.16.1
 =======================================
 1. Fix regression in loading when AAF is None
