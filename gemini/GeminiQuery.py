@@ -291,6 +291,8 @@ class VCFRowFormat(RowFormat):
 
            TODO: handle multiple alleles
         """
+        istr = self.gq._info_dict_to_string
+
         # core VCF fields
         vcf_rec = [row.row['chrom'], row.row['start'] + 1]
         if row.row['vcf_id'] is None:
@@ -302,7 +304,7 @@ class VCFRowFormat(RowFormat):
             vcf_rec.append('PASS')
         else:
             vcf_rec.append(row.row['filter'])
-        vcf_rec += [row.row['info'], 'GT']
+        vcf_rec += [istr(row['info']), 'GT']
 
         # construct genotypes
         gts = list(row['gts'])
