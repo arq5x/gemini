@@ -127,7 +127,7 @@ class GeminiLoader(object):
         self.skipped = 0
 
         # we save the vcf in this chunk for extra annotations.
-        self.extra_vcf_writer = ga.get_extra_vcf(self.args.db, self.vcf_reader)
+        self.extra_vcf_writer = ga.get_extra_vcf(self.args.db, self.vcf_reader, tempdir=self.args.tempdir)
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:

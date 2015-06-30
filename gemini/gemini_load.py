@@ -73,20 +73,20 @@ def load_singlecore(args):
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
 
-    gemini_annotate.add_extras(args.db, [args.db], region_only=False)
+    gemini_annotate.add_extras(args.db, [args.db], region_only=False, tempdir=args.tempdir)
 
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)
     chunks = load_chunks_multicore(grabix_file, args)
     merge_chunks_multicore(chunks, args)
-    gemini_annotate.add_extras(args.db, chunks, region_only=False)
+    gemini_annotate.add_extras(args.db, chunks, region_only=False, tempdir=args.tempdir)
 
 def load_ipython(args):
     grabix_file = bgzip(args.vcf)
     with cluster_view(*get_ipython_args(args)) as view:
         chunks = load_chunks_ipython(grabix_file, args, view)
         merge_chunks_ipython(chunks, args, view)
-    gemini_annotate.add_extras(args.db, chunks, region_only=False)
+    gemini_annotate.add_extras(args.db, chunks, region_only=False, tempdir=args.tempdir)
 
 def merge_chunks(chunks, db, kwargs):
     cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"))

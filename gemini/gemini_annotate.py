@@ -363,11 +363,11 @@ def annotate(parser, args):
 
 # ## Automate addition of extra fields to database
 
-def add_extras(gemini_db, chunk_dbs, region_only):
+def add_extras(gemini_db, chunk_dbs, region_only, tempdir=None):
     """Annotate gemini database with extra columns from processed chunks, if available.
     """
     for chunk in chunk_dbs:
-        extra_file = get_extra_vcf(chunk)
+        extra_file = get_extra_vcf(chunk, tempdir=tempdir)
         if extra_file is False:
             # there was not extra annotation so we just continue
             continue
@@ -395,13 +395,13 @@ def rm(path):
         pass
 
 
-def get_extra_vcf(gemini_db, tmpl=None):
+def get_extra_vcf(gemini_db, tmpl=None, tempdir=None):
     """Retrieve extra file associated with a gemini database.
     Most commonly, this will be with VEP annotations added.
     Returns false if there are no vcfs associated with the database.
     """
     base = os.path.basename(gemini_db)
-    path = os.path.join(tempfile.gettempdir(), "extra.%s.vcf" % base)
+    path = os.path.join(tempdir or tempfile.gettempdir(), "extra.%s.vcf" % base)
     mode = "r" if tmpl is None else "w"
     if mode == "r":
         if not os.path.exists(path) and not os.path.exists(path + ".gz"):
