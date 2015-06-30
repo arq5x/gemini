@@ -701,41 +701,88 @@ class Family(object):
                                                           only_affected)
                 }
 
-    def comp_het_pair(self, gt_types1, gt_bases1, gt_types2, gt_bases2):
+    def comp_het_pair(self, gt_types1, gt_bases1, gt_phases1,
+                      gt_types2, gt_bases2, gt_phases2,
+                      allow_unaffected=False):
         """
-        TODO:
-        https://mail.google.com/mail/u/0/#inbox/14e22b8e359c9cb2
+        Each of the sites here must have passed the comp_het() filter.
+        This further checks that a give pair is comp_het.
+
+        file:///usr/local/src/gemini/docs/_build/html/content/tools.html#genotype-requirements
         """
-        pass
+        self.famphase(self, gt_types1, gt_phases1, gt_bases1,
+                      length_check=False)
+        self.famphase(self, gt_types2, gt_phases2, gt_bases2,
+                      length_check=False)
 
+        for un in self.unaffecteds:
+            if gt_types2[un._i] == HOM_ALT or gt_types2[un._i] == HOM_ALT:
+                return False
 
-    def comp_het(self, min_depth=0, gt_ll=False, strict=False,
+        ret = {'affected_phased': [], 'unaffected_phased': [],
+               'unaffected_unphased': [], 'affected_unphased': [],
+               'affected_skipped': []}
+
+        for aff in self.affecteds:
+            if gt_types1[aff._i] != HET or gt_types2[aff._i] != HET:
+                ret['affected_skipped'].append(aff)
+                # Remove candidates where an affected from the same family does
+                # NOT share the same het pair.
+                ret['candidate'] = False
+                continue
+
+            aff_phased = gt_phases1[aff._i] and gt_phases2[aff._i]
+            # on same chrom.
+            if aff_phased and gt_bases1[aff._i] == gt_bases2[aff._i]:
+                ret['affected_skipped'].append(aff)
+                # Remove candidates where an affected from the same family does
+                # NOT share the same het pair.
+                ret['candidate'] = False
+                continue
+
+            if not 'candidate' in ret: ret['candidate'] = True
+            if aff_phased:
+                ret['affected_phased'].append(aff)
+            else:
+                ret['affected_unphased'].append(aff)
+
+        del aff
+        for un in self.unaffecteds:
+            if gt_types1[un._i] != HET or gt_types2[un._i] != HET:
+                continue
+
+            is_phased = gt_phases1[un._i] and gt_phases2[un._i]
+            # unaffected has the candidate pair on the same chromosome
+            if is_phased and gt_bases1[un._i] == gt_bases2[un._i]:
+                continue
+
+            if is_phased:
+                # found an unaffected with the same het-pair.
+                ret['unaffected_phased'].append(un)
+                if not allow_unaffected:
+                    ret['candidate'] = False
+            else:
+                ret['unaffected_unphased'].append(un)
+
+        return ret
+
+    def comp_het(self, min_depth=0, gt_ll=False,
                  only_affected=True):
-        """
-        affecteds are het.
-        unaffecteds are not hom_alt
-        (later remove candidates if unaffected share same het pair)
-        """
+        # all affecteds must be het at both sites
         af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
-
-        if only_affected:
-            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
-        else:
-            un = empty
+        # no unaffected can be homozygous alt at either site.
+        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
 
         depth = self._restrict_to_min_depth(min_depth)
-        if not strict:
-            af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
+        #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
 
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            if only_affected:
-                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
+            un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
         res = af & un & depth
         if res is empty:
             return 'False'
-
         return res
 
 if __name__ == "__main__":
