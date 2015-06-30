@@ -701,8 +701,10 @@ class Family(object):
                                                           only_affected)
                 }
 
-    def comp_het_pair(self, gt_types1, gt_bases1, gt_phases1,
-                      gt_types2, gt_bases2, gt_phases2,
+    def comp_het_pair(self, gt_types1, gt_bases1,
+                      gt_types2, gt_bases2,
+                      gt_phases1=None,
+                      gt_phases2=None,
                       allow_unaffected=False):
         """
         Each of the sites here must have passed the comp_het() filter.
@@ -710,9 +712,14 @@ class Family(object):
 
         file:///usr/local/src/gemini/docs/_build/html/content/tools.html#genotype-requirements
         """
-        self.famphase(self, gt_types1, gt_phases1, gt_bases1,
+        if gt_phases1 is None:
+            gt_phases1 = ["|" in b for b in gt_bases1]
+        if gt_phases2 is None:
+            gt_phases2 = ["|" in b for b in gt_bases2]
+
+        self.famphase(gt_types1, gt_phases1, gt_bases1,
                       length_check=False)
-        self.famphase(self, gt_types2, gt_phases2, gt_bases2,
+        self.famphase(gt_types2, gt_phases2, gt_bases2,
                       length_check=False)
 
         for un in self.unaffecteds:

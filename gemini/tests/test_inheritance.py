@@ -82,6 +82,76 @@ False
 True
 
 
+>>> cfam = TestFamily(\"\"\"
+... #family_id  sample_id   paternal_id maternal_id sex phenotype
+... 1   dad   0   0   1  1
+... 1   mom   0   0   2  1
+... 1   akid   dad   mom   1  2
+... 1   ukid   dad   mom   1  1
+... 1   bkid   dad  mom   1  2\"\"\")
+
+>>> gt_types1 = [HOM_REF, HET, HET, HOM_REF, HET]
+>>> gt_bases1 = ["A/A", "A/T", "A/T", "A/A", "A/T"]
+
+>>> gt_types2 = [HET, HOM_REF, HET, HOM_REF, HET]
+>>> gt_bases2 = ["G/C", "G/G", "G/C", "G/G", "G/C"]
+>>> cfam.gt_types = gt_types1
+
+>>> cfam.comp_het()
+True
+
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2)
+
+# note that stuff got phased in-place:
+>>> gt_bases1, gt_bases2
+(['A/A', 'A/T', 'T|A', 'A/A', 'T|A'], ['G/C', 'G/G', 'G|C', 'G/G', 'G|C'])
+
+>>> result['candidate']
+True
+
+>>> result['affected_phased']
+[Sample(akid;affected;male), Sample(bkid;affected;male)]
+
+>>> sorted(result.keys())
+['affected_phased', 'affected_skipped', 'affected_unphased', 'candidate', 'unaffected_phased', 'unaffected_unphased']
+
+>>> assert result['affected_skipped'] == result['affected_unphased'] == result['unaffected_unphased'] == []
+
+
+# now change a parent (unphaseable) to have same het pair.
+>>> gt_types1 = [HET, HOM_REF, HET, HOM_REF, HET]
+>>> gt_bases1 = ["A/T", "A/A", "A/T", "A/A", "A/T"]
+
+>>> gt_types2 = [HET, HOM_REF, HET, HOM_REF, HET]
+>>> gt_bases2 = ["G/C", "G/G", "G/C", "G/G", "G/C"]
+
+>>> cfam.gt_types = gt_types1
+>>> cfam.comp_het()
+True
+
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2)
+>>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
+([Sample(dad;unaffected;male)], [], True)
+
+# phase dad so he has same het pair (won't be a candidate):
+>>> gt_bases1[0], gt_bases2[0] = "A|T", "G|C"
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2)
+>>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
+([], [Sample(dad;unaffected;male)], False)
+
+# can get this as a candidate with allow_unaffected:
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2, allow_unaffected=True)
+>>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
+([], [Sample(dad;unaffected;male)], True)
+
+
+# remove as a candidate if even one of the affecteds doesn't share the het
+# pair:
+>>> gt_bases1[-1], gt_types1[-1] = "A/A", HOM_REF
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2, allow_unaffected=True)
+>>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
+([], [Sample(dad;unaffected;male)], False)
+
 """
 from __future__ import print_function
 
@@ -202,11 +272,13 @@ class TestFamily(object):
 
     def __getattr__(self, gt):
         assert self._gt_types
-        def func(**kwargs):
+        def func(*args, **kwargs):
             if 'min_depth' in kwargs:
                 assert self._gt_depths is not None
             debug = kwargs.pop('debug', False)
-            flt = getattr(self.family, gt)(**kwargs)
+            flt = getattr(self.family, gt)(*args, **kwargs)
+            if gt == "comp_het_pair":
+                return flt
             env = {s.sample_id: i for i, s in enumerate(self.family.subjects)}
             if debug:
                 print(flt, file=sys.stderr)
@@ -214,6 +286,7 @@ class TestFamily(object):
             env['gt_depths'] = self.gt_depths
             return eval(flt, env)
         return func
+
 
 if False:
     f = TestFamily("test/test.auto_rec.ped", "1")
