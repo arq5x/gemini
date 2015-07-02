@@ -540,31 +540,22 @@ To limit to confidently called genotypes:
     0. version 0.16.0 changes the behavior of this tool to be more strict.
     To regain more lenient behavior, specify --lenient and --allow-unaffected.
 
-    1. By default, this tool requires that you identify familial relationships
+    By default, this tool requires that you identify familial relationships
     via a PED file when loading your VCF into GEMINI.  For example:
 
     ``gemini load -v my.vcf -p my.ped my.db``
-
-    2. However, if neither parent is known to be affected, this tool will report any
-       variant where one and only of the parents is heterozygous and the affected
-       child is also heterozygous if --lenient flag is used.  If one and only one
-       of the parents is affected,
-       the tool will report variants where both the affected child and the affected
-       parent are heterozygous.  If both parents are known to be affected, the
-       tool will report nothing for that family.  If parents are unknown, the tool
-       will report variants where an affected individual is heterozygous and
-       all unaffected individuals are homozygous for the reference allele.
 
 ---------------------
 Genotype Requirements
 ---------------------
 
-- all affecteds must be het
-- [affected] no unaffected can be het or homalt (can be unknown)
+- All affecteds must be het
+- [affected] No unaffected can be het or homalt (can be unknown)
 - de_novo mutations are not auto_dom (at least not in the first generation)
-- [strict] parents of affected cant have unknown phenotype.
-- [strict] all affected kids must have at least 1 affected parent
-- [strict] if no affected has a parent, a warning is issued.
+- At least 1 affected must have 1 affected parent.
+- [strict] All affecteds must have parents with known phenotype.
+- [strict] All affected kids must have at least 1 affected parent
+- [strict] If no affected has a parent, a warning is issued.
 
 
 If `--lenient` is specified, the items prefixed with "[strict]" are not required.
