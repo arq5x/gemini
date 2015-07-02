@@ -6,18 +6,22 @@
     :width: 400pt
     :align: center
 
+
 ============================
+Latest news
+============================
+----------------------------
 Changes to Inheritance Tools
-============================
+----------------------------
 
-As of version 0.16.0, the inheritance tools are more stringent by default and have a strong
-mendelian bent. By default, samples with unknown phenotype will not affect the tools, and 
-strict requirements are place on family structure. See the the :doc:`docs <content/tools>` for
-more info.
+As of version 0.16.0, the built-in Mendelian inheritance tools are more stringent by default (they can be relaxed with the ``--lenient``) option. By default, samples with unknown phenotype will not affect the tools, and 
+strict requirements are placed on family structure. See the the :doc:`docs <content/tools>` for
+more info. In addition, the inheritance tools now support multi-generational pedigrees.
 
-=============================
+
+----------------------------
 Much faster genotype queries
-=============================
+----------------------------
 As of version 0.15.0, GEMINI creates auxilliary index files
 using the `bcolz` library. This allows queries that filter
 on sample genotype information via the ``--gt-filter`` option
@@ -37,10 +41,9 @@ version 0.14.0 or earlier**. Details of the implementation and caveats can be fo
         foo.db
 
 
-
-==========================
+----------------------------
 New GEMINI Workflow
-==========================
+----------------------------
 As version 0.12.2 of GEMINI it is required that your input VCF file undergo additional preprocessing such that multi-allelic variants are decomposed and normalized using the `vt <http://genome.sph.umich.edu/wiki/Vt>`_ toolset from
 the `Abecasis lab <http://genome.sph.umich.edu/wiki/Main_Page>`_. Note that we have also decomposed and normalized all of the VCF-based annotation files (e.g., ExAC, dbSNP, ClinVar, etc.) so that variants and alleles are properly annotated and we minimize false negative and false positive annotations. For a great discussion of why this is necessary, please read `this blog post <http://www.cureffi.org/2014/04/24/converting-genetic-variants-to-their-minimal-representation/>`_ from Eric Minikel in Daniel MacArthur's lab.  
 
