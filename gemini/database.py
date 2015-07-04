@@ -39,7 +39,7 @@ def index_variation(cursor):
     cursor.execute('''create index var_cadd_scaled_idx on variants(cadd_scaled)''')
     cursor.execute('''create index var_fitcons_idx on variants(fitcons)''')
     cursor.execute('''create index var_sv_event_idx on variants(sv_event_id)''')
-
+    cursor.execute('''create index chrom_varid_idx on variants(chrom,variant_id)''')
 
 def index_variation_impacts(cursor):
     cursor.execute('''create index varimp_exonic_idx on \
