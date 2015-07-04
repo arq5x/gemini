@@ -152,7 +152,35 @@ True
 >>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
 ([], [Sample(dad;unaffected;male)], False)
 
+# unaffected kid has same het pair as affected.
+>>> cfam = TestFamily(\"\"\"
+... #family_id  sample_id   paternal_id maternal_id sex phenotype
+... 1   dad   0   0   1  1
+... 1   mom   0   0   2  1
+... 1   akid   dad   mom   1  2
+... 1   bkid   dad  mom   1  1\"\"\")
+
+>>> gt_types1 = [HOM_REF, HET, HET, HET]
+>>> gt_bases1 = ["A/A", "A/T", "A/T", "A/T"]
+
+>>> gt_types2 = [HET, HOM_REF, HET, HET]
+>>> gt_bases2 = ["G/C", "G/G", "G/C", "G/C"]
+>>> cfam.gt_types = gt_types1
+
+>>> cfam.comp_het()
+True
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2)
+>>> result['candidate']
+False
+
+# unaffected kid is ok, parent is hom_alt (this get's filtered in the first pass
+# without even considering the pair).
+>>> gt_bases1[-1], gt_types1[-1] = "A/A", HOM_REF
+>>> gt_bases1[0], gt_types1[0] = "T/T", HOM_ALT
+>>> cfam.comp_het()
+False
 """
+
 from __future__ import print_function
 
 import os
