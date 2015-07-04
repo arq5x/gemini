@@ -41,8 +41,24 @@ def _get_variant_range(args, chrom):
 def check_sex(args):
     """
     Test to see if the number and type of genotype calls on the
-    X and Y chromosomes make sense given the sex of the
-    individual that is stated in the samples table (PED)
+    X chromosome make sense given the sex of the
+    individual that is stated in the samples table (PED).
+
+    Example:
+
+    sample  sex     X_homref  X_het  X_homalt  het_homref_ratio
+    SMS173  male    7265      1975   8010      0.271851342051
+    SMS254  male    5440      1316   3846      0.241911764706
+    SMS255  female  6275      3188   5423      0.508047808765
+    SMS253  male    5536      1355   3582      0.244761560694
+    SMS243  male    6181      1506   4479      0.243649894839
+    SMS242  male    6365      1437   4200      0.225765907306
+    SMS193  male    6667      1864   5829      0.279586020699
+    SMS238  male    6263      1638   4891      0.261536005109
+    SMS239  female  6755      3669   7618      0.543153219837
+    SMS244  female  6489      2953   5140      0.45507782401
+    SMS230  male    7209      1784   7146      0.247468442225
+    SMS231  female  7306      4659   9332      0.637695045168
     """
 
     # what are the reported sexes of each sample?
