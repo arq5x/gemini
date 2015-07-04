@@ -8,6 +8,7 @@ import gemini_subjects as subjects
 import gemini_bcolz as bc
 
 def _get_sample_sex(args):
+    "Return a map of sample name to reported sex"
     gq = GeminiQuery.GeminiQuery(args.db)
     query = """SELECT name, sex
                FROM   samples
