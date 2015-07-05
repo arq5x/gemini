@@ -1110,7 +1110,12 @@ def main():
             dest='mode',
             metavar="STRING",
             default='sex',
-            help='What type of QC should be run?')
+            help='What type of QC should be run? [sex]')
+    parser_qc.add_argument('--chrom',
+            dest='chrom',
+            metavar="STRING",
+            default='chrX',
+            help='Which chromosome should the sex test be applied to? [chrX]')
     def qc_fn(parser, args):
         from tool_qc import run
         run(parser, args)
