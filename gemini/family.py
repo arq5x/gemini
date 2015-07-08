@@ -701,16 +701,23 @@ class Family(object):
                                                           only_affected)
                 }
 
+    def comp_het_pair_pattern(self, gt_types1, gt_bases1,
+                              gt_types2, gt_bases2,
+                              gt_phases1, gt_phases2):
+        # TODO
+
     def comp_het_pair(self, gt_types1, gt_bases1,
                       gt_types2, gt_bases2,
                       gt_phases1=None,
                       gt_phases2=None,
-                      allow_unaffected=False):
+                      allow_unaffected=False,
+                      pattern_only=False):
         """
         Each of the sites here must have passed the comp_het() filter.
         This further checks that a give pair is comp_het.
 
         file:///usr/local/src/gemini/docs/_build/html/content/tools.html#genotype-requirements
+        if pattern_only is False, affected/unaffected status is ignored.
         """
         if gt_phases1 is None:
             gt_phases1 = ["|" in b for b in gt_bases1]
@@ -721,6 +728,11 @@ class Family(object):
                       length_check=False)
         self.famphase(gt_types2, gt_phases2, gt_bases2,
                       length_check=False)
+
+        if pattern_only:
+            return self.comp_het_pair_pattern(gt_types1, gt_bases2,
+                                      gt_types2, gt_bases2,
+                                      gt_phases1, gt_phases2)
 
         for un in self.unaffecteds:
             if gt_types2[un._i] == HOM_ALT or gt_types2[un._i] == HOM_ALT:
@@ -774,18 +786,25 @@ class Family(object):
         return ret
 
     def comp_het(self, min_depth=0, gt_ll=False,
-                 only_affected=True):
-        # all affecteds must be het at both sites
-        af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
-        # no unaffected can be homozygous alt at either site.
-        un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
+                 only_affected=True,
+                 pattern_only=False):
 
-        depth = self._restrict_to_min_depth(min_depth)
-        #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
+        if pattern_only:
+            af = empty
+            for kid in self.samples_with_parent:
+                af |= (kid.gt_types == HET) & (kid.mom.gt_types != HOM_ALT) & (kid.dad.gt_types != HOM_ALT)
+        else:
+            # all affecteds must be het at both sites
+            af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
+            # no unaffected can be homozygous alt at either site.
+            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
 
-        if gt_ll:
-            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
+            depth = self._restrict_to_min_depth(min_depth)
+            #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
+
+            if gt_ll:
+                af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
+                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
         res = af & un & depth
         if res is empty:
