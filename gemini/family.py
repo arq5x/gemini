@@ -2,6 +2,7 @@
 Create filters for given inheritance models.
 See: https://github.com/arq5x/gemini/issues/388
 """
+from __future__ import print_function
 from collections import defaultdict
 import operator as op
 import re
@@ -265,16 +266,16 @@ class Family(object):
             # can't phase kid with de-novo
 
             if kid_bases - parent_bases:
-                print >>sys.stderr, "skipping due to de_novo"
+                sys.stderr.write("skipping due to de_novo\n")
                 continue
 
             # no alleles from dad
             if len(kid_bases - set(dad_bases)) == len(kid_bases):
-                print >>sys.stderr, "skipping due no alleles from dad"
+                sys.stderr.write("skipping due no alleles from dad\n")
                 continue
 
             if len(kid_bases - set(mom_bases)) == len(kid_bases):
-                print >>sys.stderr, "skipping due no alleles from mom"
+                sys.stderr.write("skipping due no alleles from mom\n")
                 continue
 
             # should be able to phase here
@@ -385,7 +386,6 @@ class Family(object):
 
     def auto_dom(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
         """
-        At least 1 affected child must have at least 1 affected/unknown parent.
         If strict then all affected kids must have at least 1 affected parent.
         parent.
         Parents of affected can't have unknown phenotype (for at least 1 kid)
@@ -393,7 +393,8 @@ class Family(object):
 
         if len(self.affecteds) == 0:
             sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
-            return 'False'
+            if strict:
+                return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
         if len(self.unaffecteds) and only_affected:
             un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
@@ -404,7 +405,6 @@ class Family(object):
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
             if len(self.unaffecteds) and only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
-
         # need at least 1 kid with parent who has the mutation
         # parents can't have unkown phenotype.
         kid_with_known_parents = False
@@ -416,7 +416,7 @@ class Family(object):
                 continue
             # mom or dad must be affected.
             kid_with_parents = True
-            if not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
+            if strict and not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
                 return 'False'
             # parents can't have unknown phenotype.
             if (kid.mom and kid.dad):
@@ -677,8 +677,8 @@ class Family(object):
         >>> f.subjects[2].dad = f.subjects[1]
         >>> r = f.mendel_violations()
         >>> for k in r:
-        ...     print k
-        ...     print r[k]
+        ...     print(k)
+        ...     print(r[k])
         uniparental disomy
         (((((gt_types[kid] == HOM_REF) and (gt_types[mom] == HOM_REF)) and (gt_types[dad] == HOM_ALT)) or (((gt_types[kid] == HOM_REF) and (gt_types[dad] == HOM_REF)) and (gt_types[mom] == HOM_ALT))) or (((gt_types[kid] == HOM_ALT) and (gt_types[mom] == HOM_REF)) and (gt_types[dad] == HOM_ALT))) or (((gt_types[kid] == HOM_ALT) and (gt_types[dad] == HOM_REF)) and (gt_types[mom] == HOM_ALT))
         plausible de novo
@@ -705,6 +705,7 @@ class Family(object):
                               gt_types2, gt_bases2,
                               gt_phases1, gt_phases2):
         # TODO
+        pass
 
     def comp_het_pair(self, gt_types1, gt_bases1,
                       gt_types2, gt_bases2,
@@ -731,8 +732,8 @@ class Family(object):
 
         if pattern_only:
             return self.comp_het_pair_pattern(gt_types1, gt_bases2,
-                                      gt_types2, gt_bases2,
-                                      gt_phases1, gt_phases2)
+                                              gt_types2, gt_bases2,
+                                              gt_phases1, gt_phases2)
 
         for un in self.unaffecteds:
             if gt_types2[un._i] == HOM_ALT or gt_types2[un._i] == HOM_ALT:
@@ -830,31 +831,18 @@ if __name__ == "__main__":
 
         me = fam.mendel_violations()
         for k in me:
-            print k
-            print me[k]
-            print
+            print(k)
+            print(me[k])
+            print()
 
 
-        print "auto recessive:"
-        print fam.auto_rec(min_depth=10), "\n"
+        print(fam.auto_rec(min_depth=10), "\n")
 
-        print "auto dom:"
-        print fam.auto_dom()
-        print fam.auto_dom(min_depth=10)
+        print("auto dom:")
+        print(fam.auto_dom())
+        print(fam.auto_dom(min_depth=10))
 
         import sqlite3
         db = sqlite3.connect('test/test.auto_rec.db')
         fams_ped = Family.from_ped('test/test.auto_rec.ped')
-        print fams_ped
-        1/0
-        fams_db = Family.from_cursor(db)
-        print "auto_rec:"
-        for famid, fam in fams_ped.items():
-            print famid
-            print fam.auto_rec()
-
-        print "de novo:"
-        for famid, fam in fams_ped.items():
-            print fam.de_novo()
-            break
-
+        print(fams_ped)

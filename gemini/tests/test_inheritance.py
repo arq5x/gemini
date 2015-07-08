@@ -179,6 +179,20 @@ False
 >>> gt_bases1[0], gt_types1[0] = "T/T", HOM_ALT
 >>> cfam.comp_het()
 False
+
+
+>>> dfam = TestFamily(\"\"\"
+... #family_id    individual_id    paternal_id    maternal_id    sex    phenotype
+... 1    DS134791    DS134793    DS134792    1    2
+... 1    DS134792    0    0    2    0
+... 1    DS134793    0    0    1    0\"\"\")
+>>> dfam.gt_types = [HET, HOM_REF, HET]
+>>> dfam.auto_dom()
+False
+
+>>> dfam.auto_dom(strict=False)
+True
+
 """
 
 from __future__ import print_function
