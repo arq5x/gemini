@@ -738,11 +738,44 @@ class Family(object):
                                gt_types1, gt_nums1,
                                gt_types2, gt_nums2,
                                gt_phases1, gt_phases2):
+        """
+        + kid has to be phased het at both sites.
+        + kid has to have alts on different chroms.
+        + neither parent can be hom_alt at either site.
+        + if either parent is phased at both sites and matches the kid, exclude.
+        + if either parent is het at both sites, priority is reduced
+        """
 
-        comp_hets = []
         # already phased before sending here.
+        ret = {'candidates': [], 'priority': 4}
         for kid in self.samples_with_parent:
+            if gt_nums1[kid._i] == gt_nums2[kid._i]: continue
             if not (gt_types1[kid._i] == HET and gt_types2[kid._i] == HET): continue
+            if not (gt_phases1[kid._i] and gt_phases2[kid._i]): continue
+            if gt_types1[kid.mom._i] == HOM_ALT or gt_types2[kid.dad._i] == HOM_ALT: continue
+            mom, dad = kid.mom, kid.dad
+
+            dad_phased = gt_phases1[dad._i] and gt_phases2[dad._i]
+            mom_phased = gt_phases1[mom._i] and gt_phases2[mom._i]
+
+            if dad_phased and (gt_nums1[dad._i] == gt_nums1[kid._i]) and (gt_nums2[dad._i] == gt_nums2[kid._i]):
+                continue
+            if mom_phased and (gt_nums1[mom._i] == gt_nums1[kid._i]) and (gt_nums2[mom._i] == gt_nums2[kid._i]):
+                continue
+
+            if dad_phased and mom_phased and gt_types1[dad._i] != gt_types2[dad._i] and gt_types1[mom._i] != gt_types2[mom._i]:
+                priority = 1
+            else:
+                priority = 2
+                for parent in (kid.mom, kid.dad):
+                    # unphased het
+                    if gt_types2[parent._i] == gt_types1[parent._i] == HET:
+                        priority += 1
+
+            ret['candidates'].append(kid)
+            ret['priority'] = min(ret['priority'], priority)
+        ret['candidate'] = len(ret['candidates']) > 0
+        return ret
 
 
     def comp_het_pair(self, gt_types1, gt_bases1,
@@ -797,8 +830,9 @@ class Family(object):
 
         ret = {'affected_phased': [], 'unaffected_phased': [],
                'unaffected_unphased': [], 'affected_unphased': [],
-               'affected_skipped': []}
+               'affected_skipped': [], 'candidates': []}
 
+        aff = None
         for aff in self.affecteds:
             if gt_types1[aff._i] != HET or gt_types2[aff._i] != HET:
                 ret['affected_skipped'].append(aff)
@@ -821,6 +855,7 @@ class Family(object):
                 ret['affected_phased'].append(aff)
             else:
                 ret['affected_unphased'].append(aff)
+            ret['candidates'].append(aff)
 
         del aff
         for un in self.unaffecteds:
@@ -839,6 +874,18 @@ class Family(object):
                     ret['candidate'] = False
             else:
                 ret['unaffected_unphased'].append(un)
+        if not 'candidate' in ret:
+            ret['candidate'] = False
+            ret['priority'] = None
+        elif ret['candidate']:
+
+            if len(ret['affected_phased']):
+                if len(ret['unaffected_unphased']) == 0:
+                    ret['priority'] = 1
+                else:
+                    ret['priority'] = 2
+            else:
+                ret['priority'] = 3
         return ret
 
     def comp_het(self, min_depth=0, gt_ll=False,

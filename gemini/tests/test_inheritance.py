@@ -115,7 +115,8 @@ True
 [Sample(akid;affected;male), Sample(bkid;affected;male)]
 
 >>> sorted(result.keys())
-['affected_phased', 'affected_skipped', 'affected_unphased', 'candidate', 'unaffected_phased', 'unaffected_unphased']
+['affected_phased', 'affected_skipped', 'affected_unphased', 'candidate', 'candidates', 'priority', 'unaffected_phased', 'unaffected_unphased']
+
 
 >>> assert result['affected_skipped'] == result['affected_unphased'] == result['unaffected_unphased'] == []
 
@@ -193,7 +194,49 @@ False
 >>> cfam.comp_het()
 False
 
+###################################################3
+# comp_het: pattern only
+###################################################3
 
+>>> cfam = TestFamily(\"\"\"
+... #family_id  sample_id   paternal_id maternal_id sex phenotype
+... 1   dad   0   0   1  -9
+... 1   mom   0   0   2  -9
+... 1   akid   dad   mom   1  -9
+... 1   bkid   dad  mom   1  -9\"\"\")
+
+>>> gt_types1 = [HOM_REF, HET, HET, HOM_REF]
+>>> gt_bases1 = ["A/A", "A/T", "A/T", "A/A"]
+
+>>> gt_types2 = [HET, HOM_REF, HET, HOM_REF]
+>>> gt_bases2 = ["A/C", "A/A", "A/C", "A/A"]
+
+>>> cfam.gt_types = gt_types1
+
+>>> cfam.comp_het_pair(gt_types1, gt_bases1,
+...                    gt_types2, gt_bases2)['candidate']
+False
+
+>>> cfam.comp_het_pair(gt_types1, gt_bases1,
+...                    gt_types2, gt_bases2, pattern_only=True)
+{'priority': 2, 'candidates': [Sample(akid;unknown;male)], 'candidate': True}
+
+
+# get a higher priority with phased parents.
+>>> gt_types1 = [HOM_REF, HET, HET, HOM_REF]
+>>> gt_bases1 = ["A|A", "A|T", "A|T", "A|A"]
+
+>>> gt_types2 = [HET, HOM_REF, HET, HOM_REF]
+>>> gt_bases2 = ["A|C", "A|A", "A|C", "A|A"]
+>>> cfam.comp_het_pair(gt_types1, gt_bases1,
+...                    gt_types2, gt_bases2, pattern_only=True)
+{'priority': 1, 'candidates': [Sample(akid;unknown;male)], 'candidate': True}
+
+
+
+####################################################3
+# auto_dom penetrance
+####################################################3
 >>> dfam = TestFamily(\"\"\"
 ... #family_id    individual_id    paternal_id    maternal_id    sex    phenotype
 ... 1    DS134791    DS134793    DS134792    1    2
