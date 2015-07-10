@@ -12,6 +12,7 @@ Release History
 0.16.2 (forthcoming)
 =======================================
 #. Hone rules for unphased and partially-phased compound hets.
+#. Remove `--lenient` argument for comp_hets and add `--pattern-only` to find compound_hets regardless of affection status.
 
 0.16.1
 =======================================
