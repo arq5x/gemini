@@ -167,12 +167,12 @@ R-R   H-H      H-H       both        NA         phaseable, but alts are on the s
 Pattern Only
 ------------
 
-- Kid must be phased at both sites.
+- Kid must be HET at both sites.
 - Kid must have alts on different chromosomes.
 - Neither parent can be HOM_ALT at either site.
 - If either parent is phased at both sites and matches the kid, it's excluded.
 - If either parent is HET at both sites, priority is reduced.
-- When the above criteria are met, and both parents are phased, the priority is 1.
+- When the above criteria are met, and both parents and kid are phased or parents are HET at different sites, the priority is 1.
 - If both parents are not phased, the priority is 2.
 - For every parent that's a het at both sites, the priority is incremented by 1.
 - The priority in a family is the minimum found among all kids.

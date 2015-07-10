@@ -751,19 +751,24 @@ class Family(object):
         for kid in self.samples_with_parent:
             if gt_nums1[kid._i] == gt_nums2[kid._i]: continue
             if not (gt_types1[kid._i] == HET and gt_types2[kid._i] == HET): continue
-            if not (gt_phases1[kid._i] and gt_phases2[kid._i]): continue
+            #if not (gt_phases1[kid._i] and gt_phases2[kid._i]): continue
             if gt_types1[kid.mom._i] == HOM_ALT or gt_types2[kid.dad._i] == HOM_ALT: continue
             mom, dad = kid.mom, kid.dad
 
+            kid_phased = gt_phases1[kid._i] and gt_phases2[kid._i]
             dad_phased = gt_phases1[dad._i] and gt_phases2[dad._i]
             mom_phased = gt_phases1[mom._i] and gt_phases2[mom._i]
 
-            if dad_phased and (gt_nums1[dad._i] == gt_nums1[kid._i]) and (gt_nums2[dad._i] == gt_nums2[kid._i]):
+            if kid_phased and dad_phased and (gt_nums1[dad._i] == gt_nums1[kid._i]) and (gt_nums2[dad._i] == gt_nums2[kid._i]):
                 continue
-            if mom_phased and (gt_nums1[mom._i] == gt_nums1[kid._i]) and (gt_nums2[mom._i] == gt_nums2[kid._i]):
+            if kid_phased and mom_phased and (gt_nums1[mom._i] == gt_nums1[kid._i]) and (gt_nums2[mom._i] == gt_nums2[kid._i]):
                 continue
 
-            if dad_phased and mom_phased and gt_types1[dad._i] != gt_types2[dad._i] and gt_types1[mom._i] != gt_types2[mom._i]:
+            if kid_phased and dad_phased and mom_phased and gt_types1[dad._i] != gt_types2[dad._i] and gt_types1[mom._i] != gt_types2[mom._i]:
+                priority = 1
+
+            elif kid_phased and gt_types1[dad._i] != gt_types1[mom._i] and gt_types2[dad._i] != gt_types2[mom._i]:
+                # parents are unphased hets at different sites.
                 priority = 1
             else:
                 priority = 2

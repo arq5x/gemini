@@ -219,7 +219,7 @@ False
 
 >>> cfam.comp_het_pair(gt_types1, gt_bases1,
 ...                    gt_types2, gt_bases2, pattern_only=True)
-{'priority': 2, 'candidates': [Sample(akid;unknown;male)], 'candidate': True}
+{'priority': 1, 'candidates': [Sample(akid;unknown;male)], 'candidate': True}
 
 
 # get a higher priority with phased parents.
