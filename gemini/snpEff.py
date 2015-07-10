@@ -48,17 +48,19 @@ class EffectDetails(object):
         if self.effect_name not in ("DOWNSTREAM", "UPSTREAM"):
             self.codon_change = self.codon
         else:
-            self.codon_change =  None
-        
+            self.codon_change = None
+
         # rules for being exonic.
         # 1. must be protein_coding
         # 2. the impact must be in a list of impacts
         #    that are known to be exonic.
-        if self.biotype == "protein_coding" and \
-                self.effect_name in exonic_impacts:
-            self.is_exonic = 1
-        else:
-            self.is_exonic = 0
+        self.is_exonic = 0
+        if self.biotype == "protein_coding":
+            if self.effect_name in exonic_impacts:
+                self.is_exonic = 1
+            elif "+" in self.effect_name and any(e in exonic_impacts for e in
+                                                 self.effect_name.split("+")):
+                self.is_exonic = 1
 
         # rules for being coding.
         # 1. must be protein_coding
@@ -159,7 +161,7 @@ effect_names = ["CDS",
                 "NON_SYNONYMOUS_START",
                 "NONE",
                 "CHROMOSOME_LARGE_DELETION"]
-                
+
 effect_so = defaultdict()
 effect_so = {'CDS': 'coding_sequence_variant',
              'CODON_CHANGE': 'coding_sequence_variant',

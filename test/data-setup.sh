@@ -1,6 +1,7 @@
 gemini load -v test.auto_rec.vcf tt.db --no-genotypes && rm tt.db
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.PLs.vcf  test.PLs.db --no-bcolz
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.mendel.vcf -p test.mendel.ped  test.mendel.db --no-bcolz
+gemini load --skip-gene-tables --test-mode -v test.eff.vcf test.eff.db -t snpEff --no-bcolz
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.multiple-alts.decomp.snpeff.vcf -t snpEff test.mad.db --no-bcolz
 gemini load --skip-gene-tables --test-mode -v test.cosmic.vcf --skip-gerp-bp --skip-cadd test.cosmic.db --no-bcolz
 gemini load --skip-gene-tables --test-mode -v test.roh.vcf --skip-gerp-bp --skip-cadd -t snpEff test.roh.vcf.db --no-bcolz
