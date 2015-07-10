@@ -94,7 +94,8 @@ True
 >>> gt_bases1 = ["A/A", "A/T", "A/T", "A/A", "A/T"]
 
 >>> gt_types2 = [HET, HOM_REF, HET, HOM_REF, HET]
->>> gt_bases2 = ["G/C", "G/G", "G/C", "G/G", "G/C"]
+>>> gt_bases2 = ["A/C", "A/A", "A/C", "A/A", "A/C"]
+
 >>> cfam.gt_types = gt_types1
 
 >>> cfam.comp_het()
@@ -103,8 +104,9 @@ True
 >>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2)
 
 # note that stuff got phased in-place:
->>> gt_bases1, gt_bases2
-(['A/A', 'A/T', 'T|A', 'A/A', 'T|A'], ['G/C', 'G/G', 'G|C', 'G/G', 'G|C'])
+#>>> gt_bases1, gt_bases2
+#(['A/A', 'A/T', 'T|A', 'A/A', 'T|A'], ['G/C', 'G/G', 'G|C', 'G/G', 'G|C'])
+
 
 >>> result['candidate']
 True
@@ -118,7 +120,21 @@ True
 >>> assert result['affected_skipped'] == result['affected_unphased'] == result['unaffected_unphased'] == []
 
 
-# now change a parent (unphaseable) to have same het pair.
+# remove as a candidate if even one of the affecteds doesn't share the het
+# pair:
+>>> gt_bases1[-1], gt_types1[-1] = "A/A", HOM_REF
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2, allow_unaffected=True)
+>>> result['candidate']
+False
+
+# restore.
+>>> gt_bases1[-1], gt_types1[-1] = "A/T", HET
+>>> cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2, allow_unaffected=True)['candidate']
+True
+
+
+# a parent (unphaseable) has the same het pair so we know they will be phased to
+# the same chrom in the affected kid.
 >>> gt_types1 = [HET, HOM_REF, HET, HOM_REF, HET]
 >>> gt_bases1 = ["A/T", "A/A", "A/T", "A/A", "A/T"]
 
@@ -129,28 +145,25 @@ True
 >>> cfam.comp_het()
 True
 
->>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2)
+
+>>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2, allow_unaffected=True)
+>>> gt_bases1, gt_bases2
+(['A/T', 'A/A', 'A|T', 'A/A', 'A|T'], ['G/C', 'G/G', 'G|C', 'G/G', 'G|C'])
+
+# NOTE how the variants are on the same chromosome (T, then C). so it's not a candidate.
+>>> result['candidate']
+False
+
 >>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
-([Sample(dad;unaffected;male)], [], True)
+([Sample(dad;unaffected;male)], [], False)
 
 # phase dad so he has same het pair (won't be a candidate):
 >>> gt_bases1[0], gt_bases2[0] = "A|T", "G|C"
 >>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2)
 >>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
-([], [Sample(dad;unaffected;male)], False)
-
-# can get this as a candidate with allow_unaffected:
->>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2, allow_unaffected=True)
->>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
-([], [Sample(dad;unaffected;male)], True)
+([], [], False)
 
 
-# remove as a candidate if even one of the affecteds doesn't share the het
-# pair:
->>> gt_bases1[-1], gt_types1[-1] = "A/A", HOM_REF
->>> result = cfam.comp_het_pair(gt_types1, gt_bases1, gt_types2, gt_bases2, allow_unaffected=True)
->>> result['unaffected_unphased'], result['unaffected_phased'], result['candidate']
-([], [Sample(dad;unaffected;male)], False)
 
 # unaffected kid has same het pair as affected.
 >>> cfam = TestFamily(\"\"\"

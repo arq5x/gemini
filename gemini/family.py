@@ -3,7 +3,7 @@ Create filters for given inheritance models.
 See: https://github.com/arq5x/gemini/issues/388
 """
 from __future__ import print_function
-from collections import defaultdict
+from collections import defaultdict, Counter
 import operator as op
 import re
 import sys
@@ -701,18 +701,59 @@ class Family(object):
                                                           only_affected)
                 }
 
-    def comp_het_pair_pattern(self, gt_types1, gt_bases1,
-                              gt_types2, gt_bases2,
-                              gt_phases1, gt_phases2):
-        # TODO
-        pass
+    def _get_ref_alt(self, gt_types, gt_bases,
+                     _splitter=re.compile("\||/")):
+        """
+        Guess the ref and alt. Mostly for convenience for comp_het functions,
+        as we should know these anyway.
+        """
+        ref, alt = None, None
+        for i, gt in enumerate(gt_types):
+            if gt == HOM_REF:
+                ref = _splitter.split(gt_bases[i])[0]
+            elif gt == HOM_ALT:
+                alt = _splitter.split(gt_bases[i])[0]
+            elif "/" in gt_bases[i]:
+                _ref, _alt = gt_bases[i].split("/")
+                if ref is None:
+                    ref = _ref
+                if alt is None and _ref != _alt:
+                    alt = _alt
+        # fall back to allele frequency
+        if ref is None or alt is None or ref == alt:
+            c = Counter()
+            for b in gt_bases:
+                c.update(_splitter.split(b))
+            if ref is None:
+                ref = c.most_common(1)[0][0]
+                if ref == alt:
+                    ref = c.most_common(2)[1][0]
+            if alt is None:
+                alt = c.most_common(2)[1][0]
+                if ref == alt:
+                    alt = c.most_common(1)[0][0]
+        return ref, alt
+
+    def _comp_het_pair_pattern(self,
+                               gt_types1, gt_nums1,
+                               gt_types2, gt_nums2,
+                               gt_phases1, gt_phases2):
+
+        comp_hets = []
+        # already phased before sending here.
+        for kid in self.samples_with_parent:
+            if not (gt_types1[kid._i] == HET and gt_types2[kid._i] == HET): continue
+
 
     def comp_het_pair(self, gt_types1, gt_bases1,
                       gt_types2, gt_bases2,
                       gt_phases1=None,
                       gt_phases2=None,
+                      ref1=None, alt1=None,
+                      ref2=None, alt2=None,
                       allow_unaffected=False,
-                      pattern_only=False):
+                      pattern_only=False,
+                      _splitter=re.compile("\||/")):
         """
         Each of the sites here must have passed the comp_het() filter.
         This further checks that a give pair is comp_het.
@@ -725,15 +766,30 @@ class Family(object):
         if gt_phases2 is None:
             gt_phases2 = ["|" in b for b in gt_bases2]
 
+        if ref1 is None and alt1 is None:
+            ref1, alt1 = self._get_ref_alt(gt_types1, gt_bases1)
+
+        if ref2 is None and alt2 is None:
+            ref2, alt2 = self._get_ref_alt(gt_types2, gt_bases2)
+
         self.famphase(gt_types1, gt_phases1, gt_bases1,
                       length_check=False)
         self.famphase(gt_types2, gt_phases2, gt_bases2,
                       length_check=False)
 
+        gt_bases1 = [_splitter.split(b) for b in gt_bases1]
+        gt_bases2 = [_splitter.split(b) for b in gt_bases2]
+
+        # get in (0, 1) format instead of (A, T)
+        ra = [ref1, alt1]
+        gt_nums1 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases1]
+        ra = [ref2, alt2]
+        gt_nums2 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases2]
+
         if pattern_only:
-            return self.comp_het_pair_pattern(gt_types1, gt_bases2,
-                                              gt_types2, gt_bases2,
-                                              gt_phases1, gt_phases2)
+            return self._comp_het_pair_pattern(gt_types1, gt_nums1,
+                                               gt_types2, gt_nums2,
+                                               gt_phases1, gt_phases2)
 
         for un in self.unaffecteds:
             if gt_types2[un._i] == HOM_ALT or gt_types2[un._i] == HOM_ALT:
@@ -753,7 +809,7 @@ class Family(object):
 
             aff_phased = gt_phases1[aff._i] and gt_phases2[aff._i]
             # on same chrom.
-            if aff_phased and gt_bases1[aff._i] == gt_bases2[aff._i]:
+            if aff_phased and gt_nums1[aff._i] == gt_nums2[aff._i]:
                 ret['affected_skipped'].append(aff)
                 # Remove candidates where an affected from the same family does
                 # NOT share the same het pair.
@@ -773,7 +829,7 @@ class Family(object):
 
             is_phased = gt_phases1[un._i] and gt_phases2[un._i]
             # unaffected has the candidate pair on the same chromosome
-            if is_phased and gt_bases1[un._i] == gt_bases2[un._i]:
+            if is_phased and gt_nums1[un._i] == gt_nums2[un._i]:
                 continue
 
             if is_phased:
@@ -783,7 +839,6 @@ class Family(object):
                     ret['candidate'] = False
             else:
                 ret['unaffected_unphased'].append(un)
-
         return ret
 
     def comp_het(self, min_depth=0, gt_ll=False,
