@@ -6,7 +6,7 @@ import argparse
 import gemini.version
 
 def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
-        allow_unaffected=True):
+        allow_unaffected=True, lenient=True):
     """Common arguments added to various sub-parsers"""
     parser.add_argument('db',
             metavar='db',
@@ -30,10 +30,11 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
             help='Restrict analysis to a specific set of 1 or more (comma) separated) families',
             default=None)
 
-    parser.add_argument("--lenient",
-            default=False,
-            action="store_true",
-            help="Loosen the restrictions on family structure")
+    if lenient:
+        parser.add_argument("--lenient",
+                default=False,
+                action="store_true",
+                help="Loosen the restrictions on family structure")
 
     if allow_unaffected:
         parser.add_argument('--allow-unaffected',
@@ -658,13 +659,18 @@ def main():
     #########################################
     parser_comp_hets = subparsers.add_parser('comp_hets',
             help='Identify compound heterozygotes')
-    add_inheritance_args(parser_comp_hets, gt_ll=True)
+    add_inheritance_args(parser_comp_hets, gt_ll=True, lenient=False)
 
     parser_comp_hets.add_argument('--ignore-phasing',
             dest='ignore_phasing',
             action='store_true',
             help='Ignore phasing when screening for compound hets. \
                   Candidates are inherently _putative_.',
+            default=False)
+
+    parser_comp_hets.add_argument('--pattern-only',
+            action='store_true',
+            help='find compound hets by inheritance pattern, without regard to affection',
             default=False)
 
     def comp_hets_fn(parser, args):

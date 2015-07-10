@@ -118,10 +118,14 @@ class GeminiInheritanceModel(object):
 
         self.family_ids = []
         self.family_masks = []
-        kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False),
-                  'strict': not self.args.lenient}
+        kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False)}
         if self.model == "mendel_violations":
             kwargs = {'only_affected': self.args.only_affected}
+        if self.model != "comp_het":
+            kwargs['strict'] = not self.args.lenient
+        else:
+            kwargs['pattern_only'] = self.args.pattern_only
+
         for family in families:
             # e.g. family.auto_rec(gt_ll, min_depth)
             family_filter = getattr(family,
