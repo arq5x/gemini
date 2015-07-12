@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import sqlite3
 import os
+import subprocess
+import sqlite3
 
 import pybedtools as pbt
 
@@ -68,12 +69,13 @@ def make_windows(c, args, temp_file):
             print "\t".join(each[0:])
         else:
             print "\t".join(each[0:3])+"\t"+str(round(float(each[3]),4))
-        
+
     # cleanup
     os.remove(temp_file)
 
 
 def windower(parser, args):
+    check_dependencies("windower", [["bedtools", "--version"]])
 
     if os.path.exists(args.db):
         conn = sqlite3.connect(args.db)
@@ -84,3 +86,14 @@ def windower(parser, args):
         pid = os.getpid()
         temp_file = ".".join(['.temp', str(pid)])
         make_windows(c, args, temp_file)
+
+def check_dependencies(tool, deps):
+    """Ensure required tools for installation are present.
+    """
+    for cmd in deps:
+        try:
+            retcode = subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except OSError:
+            retcode = 127
+        if retcode == 127:
+            raise OSError("gemini %s requires %s. Please install and add to your PATH." % (tool, cmd[0]))
