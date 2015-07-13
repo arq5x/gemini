@@ -661,13 +661,6 @@ def main():
             help='Identify compound heterozygotes')
     add_inheritance_args(parser_comp_hets, gt_ll=True, lenient=False)
 
-    parser_comp_hets.add_argument('--ignore-phasing',
-            dest='ignore_phasing',
-            action='store_true',
-            help='Ignore phasing when screening for compound hets. \
-                  Candidates are inherently _putative_.',
-            default=False)
-
     parser_comp_hets.add_argument('--pattern-only',
             action='store_true',
             help='find compound hets by inheritance pattern, without regard to affection',

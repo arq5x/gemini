@@ -2,8 +2,7 @@
 import sys
 from copy import copy
 import re
-import collections
-from collections import Counter
+from collections import Counter, defaultdict
 import GeminiQuery
 import sql_utils
 import compiler
@@ -181,14 +180,15 @@ class GeminiInheritanceModel(object):
                 # comp_het sets a family_id that met the filter. so we use it
                 # for this check instead of checking all families.
                 cur_fam = row.print_fields.get('family_id')
+                for col in self.added:
+                    del row.print_fields[col]
 
                 cols = dict((col, row[col]) for col in req_cols)
                 fams_to_test = enumerate(self.families) if cur_fam is None \
                                 else [(i, f) for i, f in enumerate(self.families) if f.family_id == cur_fam]
                 # limit to families requested by the user.
                 if requested_fams is not None:
-                    fams_to_test = ((i, f) for i, f in fams_to_test if f.family_id
-                            in requested_fams)
+                    fams_to_test = ((i, f) for i, f in fams_to_test if f.family_id in requested_fams)
 
                 fams, models = [], []
                 if is_mendel:
@@ -322,180 +322,97 @@ class CompoundHet(GeminiInheritanceModel):
         # we need to add the variant's chrom, start and gene if
         # not already there.
         self.added = []
-        for col in ("gene", "start", "alt", "variant_id"):
+        for col in ("gene", "start", "ref", "alt", "variant_id"):
             if custom_columns.find(col) < 0:
                 custom_columns += "," + col
                 if col != "variant_id":
                     self.added.append(col)
         return custom_columns
 
-    def find_valid_het_pairs(self, sample_hets):
-        """
-        Identify candidate heterozygote pairs.
-        """
-        args = self.args
-        samples_w_hetpair = collections.defaultdict(list)
-        splitter = re.compile("\||/")
-        for sample in sample_hets:
-            for gene in sample_hets[sample]:
-
-                # we only care about combinations, not permutations
-                # (e.g. only need site1,site2, not site1,site2 _and site2,site1)
-                # thus we can do this in a ~ linear pass instead of a ~ N^2 pass
-                for idx, site1 in enumerate(sample_hets[sample][gene]):
-                    for site2 in sample_hets[sample][gene][idx + 1:]:
-
-                        # expand the genotypes for this sample at each site into
-                        # it's composite alleles.  e.g. A|G -> ['A', 'G']
-                        alleles_site1 = []
-                        alleles_site2 = []
-                        # NOTE: removed this due to family-based phasing
-                        #if not args.ignore_phasing:
-                        #   alleles_site1 = site1.gt.split('|')
-                        #   alleles_site2 = site2.gt.split('|')
-                        #lse:
-                            # split on phased (|) or unphased (/) genotypes
-                        alleles_site1 = splitter.split(site1.gt)
-                        alleles_site2 = splitter.split(site2.gt)
-
-                        # it is only a true compound heterozygote IFF
-                        # the alternates are on opposite haplotypes.
-                        if not args.ignore_phasing:
-                            # return the haplotype on which the alternate allele
-                            # was observed for this sample at each candidate het.
-                            # site. e.g., if ALT=G and alleles_site1=['A', 'G']
-                            # then alt_hap_1 = 1.  if ALT=A, then alt_hap_1 = 0
-                            if "," in str(site1.row['alt']) or \
-                               "," in str(site2.row['alt']):
-                                sys.stderr.write("WARNING: Skipping candidate for sample"
-                                                 " %s b/c variants with mult. alt."
-                                                 " alleles are not yet supported. The sites are:"
-                                                 " %s and %s.\n" % (sample, site1, site2))
-                                continue
-                            try:
-                                alt_hap_1 = alleles_site1.index(site1.row['alt'])
-                                alt_hap_2 = alleles_site2.index(site2.row['alt'])
-                            except ValueError:
-                                # had a genotype like, e.g. "./G"
-                                continue
-
-                        # Keep as a candidate if
-                        #   1. phasing is considered AND the alt alleles are on
-                        #      different haplotypes
-                        #   2. the user doesn't care about phasing.
-                        # TODO: Phase based on parental genotypes.
-                        if (not args.ignore_phasing and alt_hap_1 != alt_hap_2) \
-                            or args.ignore_phasing:
-                            samples_w_hetpair[(site1, site2)].append(sample)
-
-        return samples_w_hetpair
-
-
-    def filter_candidates(self, samples_w_hetpair,
+    def filter_candidates(self, candidates,
                           comp_het_counter=[0]):
         """
         Refine candidate heterozygote pairs based on user's filters.
         """
         args = self.args
         # once we are in here, we know that we have a single gene.
-        subjects_dict = self.subjects_dict
 
-        candidates = samples_w_hetpair
-
-        # TODO: we are filtering requested fams here before doing min-kindreds
-        # count later. is this as expected?
         requested_fams = None if args.families is None else set(args.families.split(","))
         for idx, comp_het in enumerate(candidates):
             comp_het_counter[0] += 1
 
-            for s in samples_w_hetpair[comp_het]:
-                family_id = subjects_dict[s].family_id
+            for fam_ch in candidates[comp_het]:
+                # when to use affected_unphased?
+                for subject in fam_ch['affected_phased'] + fam_ch['affected_unphased']:
+                    family_id = subject.family_id
 
-                if requested_fams is not None and not family_id in requested_fams:
-                    continue
+                    if requested_fams is not None and not family_id in requested_fams:
+                        continue
 
-                ch_id = str(comp_het_counter[0])
-                cid = "%s_%d_%d" % (ch_id, comp_het[0].row['variant_id'],
-                                    comp_het[1].row['variant_id'])
-                for i in (0, 1):
-                    pdict = comp_het[i].row.print_fields.copy()
-                    # set these to keep order in the ordered dict.
-                    pdict["family_id"] = family_id
-                    pdict["family_members"] = None
-                    pdict["family_genotypes"] = None
-                    pdict["samples"] = None
-                    pdict["family_count"] = None
-                    pdict["comp_het_id"] = cid
+                    ch_id = str(comp_het_counter[0])
+                    cid = "%s_%d_%d" % (ch_id, comp_het[0].row['variant_id'],
+                                        comp_het[1].row['variant_id'])
+                    for i in (0, 1):
+                        pdict = comp_het[i].row.print_fields.copy()
+                        # set these to keep order in the ordered dict.
+                        pdict["family_id"] = family_id
+                        pdict["family_members"] = None
+                        pdict["family_genotypes"] = None
+                        pdict["samples"] = None
+                        pdict["family_count"] = None
+                        pdict["comp_het_id"] = cid
+                        pdict['priority'] = fam_ch['priority']
 
-                    comp_het[i].row.print_fields = pdict
-                    # TODO: check this yield.
-                    yield comp_het[i].row
+                        comp_het[i].row.print_fields = pdict
+                        # TODO: check this yield.
+                        yield comp_het[i].row
 
     def candidates(self):
         args = self.args
-        idx_to_sample = self.gq.idx_to_sample
 
         from .family import Family
         self.gq._connect_to_database()
         fams = self.fams = Family.from_cursor(self.gq.c)
-
-        self.subjects_dict = {}
-        for f in fams:
-            for s in fams[f].subjects:
-                self.subjects_dict[s.name] = s
+        samples_w_hetpair = defaultdict(list)
 
         for grp, li in self.gen_candidates('gene'):
-            sample_hets = collections.defaultdict(lambda: collections.defaultdict(list))
 
+            sites = []
             for row in li:
 
                 gt_types, gt_bases, gt_phases = row['gt_types'], row['gts'], row['gt_phases']
-                for famid, one_fam in fams.items():
-                    # can phase each sample separately as they know their
-                    # index into each gt array.
-                    gt_phases, gt_bases = one_fam.famphase(gt_types, gt_phases, gt_bases, length_check=False)
-
                 site = Site(row)
-                # track each sample that is heteroyzgous at this site.
-                for idx, gt_type in enumerate(gt_types):
-                    if gt_type != HET:
-                        continue
-                    sample = idx_to_sample[idx]
-                    # need to keep unaffecteds so we know if someone has the same
-                    # if args.only_affected and not self.subjects_dict[sample].affected:
-                    #    continue
+                site.gt_phases, site.gt_bases, site.gt_types = gt_phases, gt_bases, gt_types
+                sites.append(site)
 
-                    # e.g. .|G, we can't use this for comp_het
-                    if "." in gt_bases[idx]: continue
+            for i, site1 in enumerate(sites[:-1], start=1):
+                for site2 in sites[i:]:
 
-                    sample_site = copy(site)
-                    sample_site.phased = gt_phases[idx]
+                    for family_id, fam in fams.items():
 
-                    if not sample_site.phased and not args.ignore_phasing:
-                        continue
+                        ch = fam.comp_het_pair(site1.gt_types, site1.gt_bases,
+                                               site2.gt_types, site2.gt_bases,
+                                               site1.gt_phases, site2.gt_phases,
+                                               ref1=site1.row['ref'],
+                                               alt1=site1.row['alt'],
+                                               ref2=site2.row['ref'],
+                                               alt2=site2.row['alt'],
+                                               allow_unaffected=args.allow_unaffected,
+                                               pattern_only=args.pattern_only)
 
-                    sample_site.gt = gt_bases[idx]
-                    # add the site to the list of candidates for this sample/gene
-                    sample_hets[sample][site.row['gene']].append(sample_site)
+                        if not ch['candidate']: continue
 
-            # process the last gene seen
-            samples_w_hetpair = self.find_valid_het_pairs(sample_hets)
-            if not args.allow_unaffected:
-                sd = self.subjects_dict
-                # key is (site1, site2), value is list of samples
-                # if a single unaffected sample shares this het pair, we remove
-                # it from consideration.
-                samples_w_hetpair = dict((site, samples) for site, samples in
-                        samples_w_hetpair.items() if all(sd[s].affected for s in samples))
+                        samples_w_hetpair[(site1, site2)].append(ch)
 
             yield grp, self.filter_candidates(samples_w_hetpair)
 
 class Site(object):
-    __slots__ = ('row', 'phased', 'gt')
+    __slots__ = ('row', 'gt_phases', 'gt_bases', 'gt_types')
     def __init__(self, row):
         self.row = row
-        self.phased = None
-        self.gt = None
+        self.gt_phases = None
+        self.gt_bases = None
+        self.gt_types = None
 
     def __eq__(self, other):
         return self.row['chrom'] == other.row['chrom'] and \
