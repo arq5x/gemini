@@ -90,30 +90,13 @@ rm obs exp
 # 6. Test --min-kindreds
 ###############################################################################
 echo "    comp_het.t6...\c"
-echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	TTCT|T,TTCT|TTCT,TTCT|TTCT	child_1	1	1_1_2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	C|A,C|C,C|C	child_1	1	1_1_2" > exp
+touch exp
 gemini comp_hets \
 	--allow-unaffected \
     --min-kindreds 1 \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.4.db > obs
 check obs exp
-rm obs exp
-
-###############################################################################
-# 7. Test without --min-kindreds, but default should be 1
-###############################################################################
-echo "    comp_het.t7...\c"
-echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	TTCT|T,TTCT|TTCT,TTCT|TTCT	child_1	1	1_1_2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	C|A,C|C,C|C	child_1	1	1_1_2" > exp
-gemini comp_hets \
-	--allow-unaffected \
-    --columns "chrom,start,end,gene,ref,alt,impact" \
-    test.comp_het_default.4.db > obs
-check obs exp
-exit
 rm obs exp
 
 ###############################################################################
@@ -130,39 +113,6 @@ check obs exp
 rm obs exp
 
 ###############################################################################
-# 9. Positive Test with --min-kindreds 2
-###############################################################################
-echo "    comp_het.t9...\c"
-echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	TTCT|T,TTCT|TTCT,TTCT|TTCT	child_1	2	1_1_2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	C|A,C|C,C|C	child_1	2	1_1_2
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	2	child_2(child_2;affected;male),dad_2(dad_2;unaffected;male),mom_2(mom_2;unaffected;female)	TTCT|T,TTCT|TTCT,TTCT|TTCT	child_2	2	1_1_2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	2	child_2(child_2;affected;male),dad_2(dad_2;unaffected;male),mom_2(mom_2;unaffected;female)	C|A,C|C,C|C	child_2	2	1_1_2" > exp
-gemini comp_hets \
-    --min-kindreds 2 \
-	--allow-unaffected \
-    --columns "chrom,start,end,gene,ref,alt,impact" \
-    test.comp_het_default.5.db > obs
-check obs exp
-rm obs exp
-
-###############################################################################
-# 9. Positive Test with --min-kindreds 2 and --only-affected
-###############################################################################
-echo "    comp_het.t10...\c"
-echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	TTCT|T,TTCT|TTCT,TTCT|TTCT	child_1	2	1_1_2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	C|A,C|C,C|C	child_1	2	1_1_2
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	2	child_2(child_2;affected;male),dad_2(dad_2;unaffected;male),mom_2(mom_2;unaffected;female)	TTCT|T,TTCT|TTCT,TTCT|TTCT	child_2	2	1_1_2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	2	child_2(child_2;affected;male),dad_2(dad_2;unaffected;male),mom_2(mom_2;unaffected;female)	C|A,C|C,C|C	child_2	2	1_1_2" > exp
-gemini comp_hets \
-    --min-kindreds 2 \
-    --columns "chrom,start,end,gene,ref,alt,impact" \
-    test.comp_het_default.5.db > obs
-check obs exp
-rm obs exp
-
-###############################################################################
 # 11. Negative Test with --min-kindreds 2 and --only-affected
 ###############################################################################
 echo "    comp_het.t11...\c"
@@ -171,23 +121,6 @@ gemini comp_hets \
     --min-kindreds 2 \
     --columns "chrom,start,end,gene,ref,alt,impact" \
     test.comp_het_default.6.db > obs
-check obs exp
-rm obs exp
-
-###############################################################################
-# 12. Positive Test with --min-kindreds 2 and --only-affected. 
-#     Two different comp_hets in same gene
-###############################################################################
-echo "    comp_het.t12...\c"
-echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	2	child_2(child_2;affected;male),dad_2(dad_2;unaffected;male),mom_2(mom_2;unaffected;female)	C|A,C|C,C|C	child_2	2	1_2_4
-chr1	27729	27730	WASH7P	C	A	splice_acceptor	4	2	child_2(child_2;affected;male),dad_2(dad_2;unaffected;male),mom_2(mom_2;unaffected;female)	C|A,C|C,C|C	child_2	2	1_2_4
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	1	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	TTCT|T,TTCT|TTCT,TTCT|TTCT	child_1	2	2_1_2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	2	1	child_1(child_1;affected;male),dad_1(dad_1;unaffected;male),mom_1(mom_1;unaffected;female)	C|A,C|C,C|C	child_1	2	2_1_2" > exp
-gemini comp_hets \
-    --min-kindreds 2 \
-    --columns "chrom,start,end,gene,ref,alt,impact" \
-    test.comp_het_default.7.db > obs
 check obs exp
 rm obs exp
 
@@ -205,11 +138,12 @@ check obs exp
 rm obs exp
 
 echo "    comp_het.t14"
-echo "chrom	start	end	ref	alt	gene	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_5
-chr1	17729	17730	C	A	WASH7P	splice_acceptor	5	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	A|C,C/C,C/A	child_4	1	1_3_5" > exp
+echo "chrom	start	end	ref	alt	gene	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
+chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_5	1
+chr1	17729	17730	C	A	WASH7P	splice_acceptor	5	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	A|C,C/C,C/A	child_4	1	1_3_5	1" > exp
 gemini comp_hets \
 	--column "chrom,start,end,ref,alt,gene,impact" \
 	test.comp_het.unphase.db > obs
 check obs exp
+exit
 rm obs exp
