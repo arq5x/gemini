@@ -54,3 +54,6 @@ gemini load --skip-gene-tables --test-mode -v test.dashes.vcf --skip-gerp-bp --s
 
 # test-phasing
 gemini load --skip-gene-tables --test-mode -v test.comp_het.unphase.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.ped test.comp_het.unphase.db --no-bcolz
+
+gemini load -v from_inheritance.vcf -p from_inheritance.ped from_inheritance.db --test-mode --skip-gene-tables --no-bcolz
+echo "UPDATE  variants set is_exonic = 1;" | sqlite3 from_inheritance.db

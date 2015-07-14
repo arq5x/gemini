@@ -3,10 +3,12 @@ Create filters for given inheritance models.
 See: https://github.com/arq5x/gemini/issues/388
 """
 from __future__ import print_function
+import sys
+
 from collections import defaultdict, Counter
+import itertools as it
 import operator as op
 import re
-import sys
 try:
     reduce
 except NameError:
@@ -70,7 +72,7 @@ class Sample(object):
     '(gt_phred_ll_homref[0] < 2) or (gt_phred_ll_homalt[1] > 2)'
     """
 
-    __slots__ = ('sample_id', 'name', 'affected', 'gender', 'mom', 'dad',
+    __slots__ = ('sample_id', 'name', 'affected', 'sex', 'gender', 'mom', 'dad',
                  'family_id', '_i')
 
     def __init__(self, sample_id, affected, gender=None, name=None,
@@ -82,7 +84,7 @@ class Sample(object):
         self.affected = affected
         self.mom = None
         self.dad = None
-        self.gender = gender
+        self.sex = self.gender = gender
         self.family_id = family_id
         # _i is used to maintain the order in which they came in.
         self._i = None
@@ -299,6 +301,16 @@ class Family(object):
             gt_phases[s._i] = True
 
         return gt_phases, gt_bases
+
+    def to_ped(self, fh=sys.stdout, header=True):
+        if header:
+            fh.write("#family_id sample_id paternal_id maternal_id sex phenotype\n")
+        for s in self.subjects:
+            paternal_id = (s.dad and s.dad.name) or "-9"
+            maternal_id = (s.mom and s.mom.name) or "-9"
+            phenotype = {True: '2', False: '1'}.get(s.affected, "-9")
+            fh.write(" ".join((str(self.family_id), s.name, paternal_id, maternal_id, s.sex or '-9', phenotype)))
+            fh.write("\n")
 
     @classmethod
     def from_cursor(klass, cursor):
@@ -796,7 +808,6 @@ class Family(object):
         Each of the sites here must have passed the comp_het() filter.
         This further checks that a give pair is comp_het.
 
-        file:///usr/local/src/gemini/docs/_build/html/content/tools.html#genotype-requirements
         if pattern_only is False, affected/unaffected status is ignored.
         """
         if gt_phases1 is None:
@@ -898,7 +909,7 @@ class Family(object):
                  pattern_only=False):
 
         if pattern_only:
-            af = empty
+            af, un = empty, empty
             for kid in self.samples_with_parent:
                 af |= (kid.gt_types == HET) & (kid.mom.gt_types != HOM_ALT) & (kid.dad.gt_types != HOM_ALT)
         else:
@@ -907,13 +918,13 @@ class Family(object):
             # no unaffected can be homozygous alt at either site.
             un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
 
-            depth = self._restrict_to_min_depth(min_depth)
             #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
 
             if gt_ll:
                 af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
                 un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
+        depth = self._restrict_to_min_depth(min_depth)
         res = af & un & depth
         if res is empty:
             return 'False'
@@ -942,6 +953,8 @@ if __name__ == "__main__":
             print(me[k])
             print()
 
+
+        HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
 
         print(fam.auto_rec(min_depth=10), "\n")
 

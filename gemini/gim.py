@@ -343,7 +343,7 @@ class CompoundHet(GeminiInheritanceModel):
 
             for fam_ch in candidates[comp_het]:
                 # when to use affected_unphased?
-                for subject in fam_ch['affected_phased'] + fam_ch['affected_unphased']:
+                for subject in (fam_ch['candidates'] if args.pattern_only else fam_ch['affected_phased'] + fam_ch['affected_unphased']):
                     family_id = subject.family_id
 
                     if requested_fams is not None and not family_id in requested_fams:

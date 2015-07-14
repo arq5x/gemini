@@ -115,7 +115,7 @@ rm obs exp
 ###############################################################################
 # 11. Negative Test with --min-kindreds 2 and --only-affected
 ###############################################################################
-echo "    comp_het.t11...\c"
+echo "    comp_het.t9...\c"
 touch exp
 gemini comp_hets \
     --min-kindreds 2 \
@@ -128,7 +128,7 @@ rm obs exp
 # 13. Negative Test with --min-kindreds 3 and --only-affected. 
 #     Two different comp_hets in same gene
 ###############################################################################
-echo "    comp_het.t13...\c"
+echo "    comp_het.t10...\c"
 touch exp
 gemini comp_hets \
     --min-kindreds 3 \
@@ -137,7 +137,7 @@ gemini comp_hets \
 check obs exp
 rm obs exp
 
-echo "    comp_het.t14"
+echo "    comp_het.t11"
 echo "chrom	start	end	ref	alt	gene	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
 chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_5	1
 chr1	17729	17730	C	A	WASH7P	splice_acceptor	5	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	A|C,C/C,C/A	child_4	1	1_3_5	1" > exp
@@ -145,5 +145,17 @@ gemini comp_hets \
 	--column "chrom,start,end,ref,alt,gene,impact" \
 	test.comp_het.unphase.db > obs
 check obs exp
-exit
 rm obs exp
+
+echo "comp_het.t12"
+touch exp
+gemini comp_hets --columns "chrom, start, end, ref, alt" from_inheritance.db > obs
+check obs exp
+
+echo "comp_het.t14"
+echo "chrom	start	end	ref	alt	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
+chr1	100001	100002	A	G	1	1	dad(dad;unknown),mom(mom;unknown),akid(akid;unknown),bkid(bkid;unknown)	A/A,A/G,G|A,A/A		1	1_1_2	1
+chr1	100002	100003	A	G	2	1	dad(dad;unknown),mom(mom;unknown),akid(akid;unknown),bkid(bkid;unknown)	A/G,A/A,A|G,A/A		1	1_1_2	1" > exp
+gemini comp_hets --columns "chrom, start, end, ref, alt" --pattern-only from_inheritance.db > obs
+check obs exp
+

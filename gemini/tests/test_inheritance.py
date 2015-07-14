@@ -232,7 +232,12 @@ False
 ...                    gt_types2, gt_bases2, pattern_only=True)
 {'priority': 1, 'candidates': [Sample(akid;unknown;male)], 'candidate': True}
 
-
+>>> fh = open('test/from_inheritance.vcf', 'w')
+>>> cfam.to_vcf(fh)
+>>> cfam.gt_types = gt_types2
+>>> cfam.to_vcf(fh, header=False)
+>>> fh.close()
+>>> cfam.family.to_ped(open("test/from_inheritance.ped", "w"))
 
 ####################################################3
 # auto_dom penetrance
@@ -259,6 +264,7 @@ import tempfile
 import atexit
 
 from gemini import family
+import itertools as it
 
 HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
 
@@ -385,8 +391,52 @@ class TestFamily(object):
             return eval(flt, env)
         return func
 
+    def to_vcf(self, fh, var_dict=None, header=True, _POS=[100001]):
+        if header:
+            fh.write("##fileformat=VCFv4.1\n")
+            fh.write("#CHROM    POS     ID      REF     ALT     QUAL    FILTER INFO     FORMAT  ")
+            fh.write("\t".join(s.name for s in self.subjects) + "\n")
+        if var_dict is None:
+            var_dict = {}
 
-if False:
+        for k in ("ID", "QUAL", "INFO"):
+            if k not in var_dict:
+                var_dict[k] = "."
+        var_dict["FILTER"] = "PASS"
+        var_dict["FORMAT"] = "GT"
+        if not "CHROM" in var_dict:
+            var_dict["CHROM"] = "1"
+        if not "POS" in var_dict:
+            var_dict["POS"] = _POS[0]
+            _POS[0] += 1
+
+        if not "REF" in var_dict:
+            var_dict["REF"] = "A"
+        if not "ALT" in var_dict:
+            var_dict["ALT"] = "G"
+
+        # convert from number back to repr
+        x = ["0/0", "0/1", ".", "1/1"]
+        formats = [x[t] for t in self.gt_types]
+
+        if self.gt_depths:
+            var_dict["FORMAT"] += ":DP"
+            for i, d in enumerate(self.gt_depths):
+                formats[i] += (":%d" % d)
+
+        """
+        if self.gt_phred_ll_homref:
+            var_dict["FORMAT"] += ":PL"
+            for i, (hom, het, alt) in enumerate(it.izip(self.gt_phred_ll_homref,
+                                                self.gt_phred_ll_het,
+                                                self.gt_phred_ll_homalt)):
+                formats[i] += (":%s,%s,%s" % (hom, het, alt))
+        """
+        fh.write("{CHROM}\t{POS}\t{ID}\t{REF}\t{ALT}\t{QUAL}\t{FILTER}\t{INFO}\t{FORMAT}\t".format(**var_dict))
+        fh.write("\t".join(formats) + "\n")
+
+
+if True:
     f = TestFamily("test/test.auto_rec.ped", "1")
     f.gt_types = [HET, HET, HOM_ALT]
     f.family.subjects[0].gender = "male"
@@ -400,7 +450,6 @@ if False:
     gp = family.Sample("grandpa", None, gender="male")
     f.family.subjects[1].dad = gp
     f.gt_types.extend([HOM_REF, HET])
-
     f.family.subjects.extend([gm, gp])
 
     print(f.dot("autosomal recessive"))
@@ -412,6 +461,8 @@ if False:
     #f.gt_types = [HOM_ALT, HET, HOM_ALT]
     #print f.auto_rec(strict=False)
     #print f.auto_rec(strict=True)
+    f.to_vcf(open('a.vcf', 'w'))
+    f.family.to_ped(open('a.ped', 'w'))
 
 
 
