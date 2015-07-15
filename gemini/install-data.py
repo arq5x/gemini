@@ -68,7 +68,8 @@ anno_versions = {
     "detailed_gene_table_v75": 2,
     "summary_gene_table_v75": 2,
     "cosmic-v68-GRCh37.tidy.vcf.gz": 3,
-    "ESP6500SI.all.snps_indels.tidy.v2.vcf.gz": 2
+    "ESP6500SI.all.snps_indels.tidy.v2.vcf.gz": 2,
+    'ExAC.r0.3.sites.vep.tidy.vcf.gz': 2,
     }
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):

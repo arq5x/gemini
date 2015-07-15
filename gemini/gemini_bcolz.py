@@ -37,7 +37,10 @@ from gemini_utils import get_gt_cols
 decomp = compression.unpack_genotype_blob
 
 def get_samples(cur):
-    return [x[0] for x in cur.execute("select name from samples")]
+    samples = list(cur.execute("select sample_id, name from samples order by sample_id"))
+    for i, (sid, name) in enumerate(samples):
+        assert i == sid - 1, (i, sid)
+    return [x[1] for x in samples]
 
 def get_n_variants(cur):
     return next(cur.execute("select count(*) from variants"))[0]

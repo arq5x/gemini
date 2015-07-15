@@ -181,10 +181,10 @@ core dependencies:
 
     1. Python 2.7.x
     2. `grabix <https://github.com/arq5x/grabix>`_
-    3. `samtools <http://sourceforge.net/projects/samtools/files/>`_
-    4. `tabix <http://sourceforge.net/projects/samtools/files/>`_
-    5. `bedtools <https://code.google.com/p/bedtools/>`_
-    6. `pybedtools <http://pythonhosted.org/pybedtools/main.html#installing-pybedtools>`_
+    3. `tabix <http://sourceforge.net/projects/samtools/files/>`_ (only by annotate tool)
+    4. `bedtools <https://code.google.com/p/bedtools/>`_ (only by windower tool)
+    5. `pybedtools <http://pythonhosted.org/pybedtools/main.html#installing-pybedtools>`_
+       (only by windower tool)
 
 Manual installation
 =====================

@@ -39,7 +39,7 @@ def index_variation(cursor):
     cursor.execute('''create index var_cadd_scaled_idx on variants(cadd_scaled)''')
     cursor.execute('''create index var_fitcons_idx on variants(fitcons)''')
     cursor.execute('''create index var_sv_event_idx on variants(sv_event_id)''')
-
+    cursor.execute('''create index chrom_varid_idx on variants(chrom,variant_id)''')
 
 def index_variation_impacts(cursor):
     cursor.execute('''create index varimp_exonic_idx on \
@@ -350,16 +350,17 @@ def insert_variation(cursor, buffer):
     """
     Populate the variants table with each variant in the buffer.
     """
-    try:
-        cursor.execute("BEGIN TRANSACTION")
-        qs = ",".join(["?"] * len(buffer[0]))
+    if len(buffer) > 0:
+        try:
+            cursor.execute("BEGIN TRANSACTION")
+            qs = ",".join(["?"] * len(buffer[0]))
 
-        cursor.executemany('insert into variants values (%s)' % qs, buffer)
+            cursor.executemany('insert into variants values (%s)' % qs, buffer)
 
-        cursor.execute("END TRANSACTION")
-    except sqlite3.ProgrammingError:
-        cursor.execute("END TRANSACTION")
-        _insert_variation_one_per_transaction(cursor, buffer)
+            cursor.execute("END TRANSACTION")
+        except sqlite3.ProgrammingError:
+            cursor.execute("END TRANSACTION")
+            _insert_variation_one_per_transaction(cursor, buffer)
 
 
 def insert_variation_impacts(cursor, buffer):
