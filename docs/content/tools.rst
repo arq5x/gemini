@@ -15,6 +15,9 @@ Requested `--columns` will come first followed by a standard set of columns:
 
 Other tools such as `mendel_errors` additional columns at the end.
 
+When queries are limited to variants in genes, the output will be in 
+`gene`, `chrom` order as opposed to the usual `gene`, `position` order.
+
 .. warning::
 
     As of version 0.16.0, the inheritance tools (autsomal_dominant,
