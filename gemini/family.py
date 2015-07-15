@@ -900,6 +900,11 @@ class Family(object):
                     ret['priority'] = 1
                 else:
                     ret['priority'] = 2
+                    # if any unaffected has 2 hets, it becomes priority 3
+                    for un in ret['unaffected_unphased']:
+                        if HET == gt_types1[un._i] == gt_types2[un._i]:
+                            ret['priority'] = 3
+                            break
             else:
                 ret['priority'] = 3
         return ret
