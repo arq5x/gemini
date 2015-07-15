@@ -151,7 +151,7 @@ Genotype Requirements
 - Remove candidates where an affected from the same family does NOT share the same het pair.
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
 
-Candidate Trios Under these rules:
+we prioritize with these rules:
 
 ===   ===      ====      =========   ========   ================================================
 mom   dad      kid       phaseable   priority   notes
@@ -163,9 +163,19 @@ A-R   H-H      H-H       both        NA         exclude hom-alts from un-affecte
 R-R   H-H      H-H       both        NA         phaseable, but alts are on the same chroms.
 ===   ===      ====      =========   ========   ================================================
 
+.. note::
+
+   candidates of priority > 1 are very unlikely (< 1%) to be real
+   (see: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3734130/); we report them
+   for completeness, but strongly recommend using priority 1 only.
+
+
 ------------
 Pattern Only
 ------------
+
+To find compound heterozygotes by inheritance pattern only, without regard to affections, the
+following rules are used (with --pattern-only):
 
 - Kid must be HET at both sites.
 - Kid must have alts on different chromosomes.
