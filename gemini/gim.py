@@ -22,6 +22,7 @@ class GeminiInheritanceModel(object):
 
         self.args = args
         self.gq = GeminiQuery.GeminiQuery(args.db, include_gt_cols=True)
+        self.added = []
 
         self.gt_cols = self.gq.gt_cols
 
@@ -120,9 +121,9 @@ class GeminiInheritanceModel(object):
         kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False)}
         if self.model == "mendel_violations":
             kwargs = {'only_affected': self.args.only_affected}
-        if self.model != "comp_het":
+        if self.model != "comp_het" and self.model != "mendel_violations":
             kwargs['strict'] = not self.args.lenient
-        else:
+        elif self.model == "comp_het":
             kwargs['pattern_only'] = self.args.pattern_only
 
         for family in families:

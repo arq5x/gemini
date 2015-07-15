@@ -402,19 +402,18 @@ class Family(object):
         parent.
         Parents of affected can't have unknown phenotype (for at least 1 kid)
         """
-
         if len(self.affecteds) == 0:
             sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
             if strict:
                 return 'False'
-        af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
+        af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds], empty)
         if len(self.unaffecteds) and only_affected:
             un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
         else:
             un = None
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
-            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
+            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds], empty)
             if len(self.unaffecteds) and only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
         # need at least 1 kid with parent who has the mutation
@@ -434,6 +433,9 @@ class Family(object):
             if (kid.mom and kid.dad):
                 if (kid.mom.affected is not None) and (kid.dad.affected is not None):
                     kid_with_known_parents = True
+                # if he has a mom and dad that arent unknown, at least one of them must be affected
+                if not None in (kid.mom.affected, kid.dad.affected):
+                    if not kid.mom.affected or kid.dad.affected: return 'False'
 
         if strict and not kid_with_known_parents:
             return 'False'
@@ -895,18 +897,9 @@ class Family(object):
             ret['priority'] = None
         elif ret['candidate']:
 
-            if len(ret['affected_phased']):
-                if len(ret['unaffected_unphased']) == 0:
-                    ret['priority'] = 1
-                else:
-                    ret['priority'] = 2
-                    # if any unaffected has 2 hets, it becomes priority 3
-                    for un in ret['unaffected_unphased']:
-                        if HET == gt_types1[un._i] == gt_types2[un._i]:
-                            ret['priority'] = 3
-                            break
-            else:
-                ret['priority'] = 3
+            ret['priority'] = 2
+            if len(ret['affected_phased']) and len(ret['unaffected_unphased']) == 0:
+                ret['priority'] = 1
         return ret
 
     def comp_het(self, min_depth=0, gt_ll=False,
@@ -968,6 +961,6 @@ if __name__ == "__main__":
         print(fam.auto_dom(min_depth=10))
 
         import sqlite3
-        db = sqlite3.connect('test/test.auto_rec.db')
-        fams_ped = Family.from_ped('test/test.auto_rec.ped')
+        db = sqlite3.connect('test.auto_rec.db')
+        fams_ped = Family.from_ped('test.auto_rec.ped')
         print(fams_ped)

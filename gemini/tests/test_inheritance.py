@@ -435,8 +435,7 @@ class TestFamily(object):
         fh.write("{CHROM}\t{POS}\t{ID}\t{REF}\t{ALT}\t{QUAL}\t{FILTER}\t{INFO}\t{FORMAT}\t".format(**var_dict))
         fh.write("\t".join(formats) + "\n")
 
-
-if True:
+def main():
     f = TestFamily("test/test.auto_rec.ped", "1")
     f.gt_types = [HET, HET, HOM_ALT]
     f.family.subjects[0].gender = "male"
@@ -466,7 +465,9 @@ if True:
 
 
 
-if __name__ == "__main__":
     import sys
     import doctest
     sys.stderr.write(str(doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS | doctest.REPORT_ONLY_FIRST_FAILURE, verbose=0)) + "\n")
+
+if __name__ == "__main__":
+    main()

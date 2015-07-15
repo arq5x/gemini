@@ -133,7 +133,9 @@ bash test-no-gls.sh
 
 bash test-multi-col.sh
 
+python test-comphet.py
 # cleanup
 rm ./*.db
 rm ./file.dot
+
 

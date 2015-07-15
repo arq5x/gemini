@@ -262,8 +262,11 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t13...\c"
 echo "WARNING: no affecteds in family 1
+WARNING: family 1 had no usable samples for autosomal dominant test
 WARNING: no affecteds in family 3
-WARNING: no affecteds in family 2" > exp
+WARNING: family 3 had no usable samples for autosomal dominant test
+WARNING: no affecteds in family 2
+WARNING: family 2 had no usable samples for autosomal dominant test" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -277,8 +280,11 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t14...\c"
 echo "WARNING: no affecteds in family 1
+WARNING: family 1 had no usable samples for autosomal dominant test
 WARNING: no affecteds in family 3
-WARNING: no affecteds in family 2" > exp
+WARNING: family 3 had no usable samples for autosomal dominant test
+WARNING: no affecteds in family 2
+WARNING: family 2 had no usable samples for autosomal dominant test" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 2 \
@@ -292,8 +298,11 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t15...\c"
 echo "WARNING: no affecteds in family 1
+WARNING: family 1 had no usable samples for autosomal dominant test
 WARNING: no affecteds in family 3
-WARNING: no affecteds in family 2" > exp
+WARNING: family 3 had no usable samples for autosomal dominant test
+WARNING: no affecteds in family 2
+WARNING: family 2 had no usable samples for autosomal dominant test" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 3 \

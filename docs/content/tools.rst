@@ -136,8 +136,9 @@ heterozygotes for each sample/gene.
   --lenient option. 
   
   In 0.16.2, a --pattern-only flag was added to find compound hets by inheritance
-  pattern without regard to affection status. A priority code was also added. See
-  docs below for further information.
+  pattern without regard to affection status. A priority code was also added where
+  variants with priority 1 are much more informative. See docs below for further
+  information.
 
 ---------------------
 Genotype Requirements
@@ -161,14 +162,14 @@ mom   dad      kid       phaseable   priority   notes
 ===   ===      ====      =========   ========   ================================================
 R-H   H-R      H-H       both        1          both sites phaseable and alts on opposite chroms
 R-H   H-H      H-H       one         2          should be a rare occurrence
-H-H   H-H      H-H       NO          3          should be a rare occurrence
+H-H   H-H      H-H       NO          2          should be a rare occurrence
 A-R   H-H      H-H       both        NA         exclude hom-alts from un-affecteds
 R-R   H-H      H-H       both        NA         phaseable, but alts are on the same chroms.
 ===   ===      ====      =========   ========   ================================================
 
 .. note::
 
-   candidates of priority > 1 are very unlikely (< 1%) to be real
+   candidates of priority != 1 are very unlikely (< 1%) to be real
    (see: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3734130/); we report them
    for completeness, but strongly recommend using priority 1 only.
 
