@@ -30,7 +30,7 @@ def get_anno_files( args ):
      'esp': os.path.join(anno_dirname,
                          'ESP6500SI.all.snps_indels.tidy.v2.vcf.gz'),
      '1000g': os.path.join(anno_dirname,
-                           'ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.tidy.vcf.gz'),
+                           'ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz'),
      'recomb': os.path.join(anno_dirname,
                             'genetic_map_HapMapII_GRCh37.gz'),
      'gms': os.path.join(anno_dirname,

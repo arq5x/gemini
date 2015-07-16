@@ -13,6 +13,8 @@ Release History
 =======================================
 #. Hone rules for unphased and partially-phased compound hets.
 #. Remove `--lenient` argument for comp_hets and add `--pattern-only` to find compound_hets regardless of affection status.
+#. Re (vt) decompose data files for dbsnp and ExAC (thanks Julien and Xiaolin for reporting).
+#. `--lenient` argument to `auto_dom` tool allows unknown parents.
 
 0.16.1
 =======================================
