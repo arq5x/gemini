@@ -15,6 +15,9 @@ Requested `--columns` will come first followed by a standard set of columns:
 
 Other tools such as `mendel_errors` additional columns at the end.
 
+When queries are limited to variants in genes, the output will be in 
+`gene`, `chrom` order as opposed to the usual `gene`, `position` order.
+
 .. note::
 
     As of version 0.16.0, the inheritance tools (autsomal_dominant,
@@ -120,12 +123,12 @@ at the _same_ site in the gene, compound heterozygotes occur when
 the individual's phenotype is caused by two heterozygous recessive alleles at
 _different_ sites in a particular gene.
 
-So basically, we are looking for two (typically loss-of-function (LoF))
+We are looking for two (typically loss-of-function (LoF))
 heterozygous variants impacting the same gene at different loci.  The
 complicating factor is that this is _recessive_ and as such, we must also
 require that the consequential alleles at each heterozygous site were
-inherited on different chromosomes (one from each parent).  As such, in order
-to use this tool, we require that all variants are phased.  Once this has been
+inherited on different chromosomes (one from each parent). 
+Where possible, `comp_hets` will phase by transmission. Once this has been
 done, the `comp_hets` tool will provide a report of candidate compound
 heterozygotes for each sample/gene.
 
@@ -136,6 +139,13 @@ heterozygotes for each sample/gene.
   unphased genotypes. Any candidate that could be one element of a comp_het
   will also be phaseable as long as the parents and their genotypes are known.
 
+  As of version 0.16.1, the --ignore-phasing option is removed and there is no
+  --lenient option. 
+  
+  In 0.16.2, a --pattern-only flag was added to find compound hets by inheritance
+  pattern without regard to affection status. A priority code was also added where
+  variants with priority 1 are much more informative. See docs below for further
+  information.
 
 ---------------------
 Genotype Requirements
@@ -144,24 +154,58 @@ Genotype Requirements
 - All affected individuals must be heterozygous at both sites.
 - No unaffected can be heterozygous at both sites.
 - No unaffected can be homozygous alterate at either site.
+- No phased-unaffected can be heterozygous at both sites.
+
+  a. `--allow-unaffected` keeps sites where a phased unaffected shares the het-pair
+
+  b. unphased, unaffected that share the het pair are counted and reported for each candidate pair.
+
+- Remove candidates where an affected from the same family does NOT share the same het pair.
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
 
-if `--lenient` is used then unknowns can be HET.
+we prioritize with these rules:
 
+===   ===      ====      =========   ========   ================================================
+mom   dad      kid       phaseable   priority   notes
+===   ===      ====      =========   ========   ================================================
+R-H   H-R      H-H       both        1          both sites phaseable and alts on opposite chroms
+R-H   H-H      H-H       one         2          should be a rare occurrence
+H-H   H-H      H-H       NO          2          should be a rare occurrence
+A-R   H-H      H-H       both        NA         exclude hom-alts from un-affecteds
+R-R   H-H      H-H       both        NA         phaseable, but alts are on the same chroms.
+===   ===      ====      =========   ========   ================================================
 
 .. note::
 
-    If you want to ignore phasing in search of _putative_ compound
-    heterozygotes, please see the ``--ignore-phasing`` option below.
-    This is not recommended now that phasing is done by transmission.
+   candidates of priority != 1 are very unlikely (< 1%) to be real
+   (see: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3734130/); we report them
+   for completeness, but strongly recommend using priority 1 only.
 
-Example usage with a subset of columns:
+
+------------
+Pattern Only
+------------
+
+To find compound heterozygotes by inheritance pattern only, without regard to affections, the
+following rules are used (with --pattern-only):
+
+- Kid must be HET at both sites.
+- Kid must have alts on different chromosomes.
+- Neither parent can be HOM_ALT at either site.
+- If either parent is phased at both sites and matches the kid, it's excluded.
+- If either parent is HET at both sites, priority is reduced.
+- When the above criteria are met, and both parents and kid are phased or parents are HET at different sites, the priority is 1.
+- If both parents are not phased, the priority is 2.
+- For every parent that's a het at both sites, the priority is incremented by 1.
+- The priority in a family is the minimum found among all kids.
 
 .. note::
 
     Each pair of consecutive lines in the output represent the two variants
     for a compound heterozygote in a give sample.  The third column,
     `comp_het_id`, tracks the distinct compound heterozygote variant pairs.
+
+Example usage with a subset of columns:
 
 .. code-block:: bash
 
@@ -204,16 +248,6 @@ We may also specify the families of interest:
 
     $ gemini comp_hets --families 1 my.db
     $ gemini comp_hets --families 1,7 my.db
-
-
----------------------
-``--ignore-phasing``
----------------------
-If your genotypes aren't phased this tool will phase them if parents are available
-we can't be certain that two heterozygotes. If you wish to ignore the existing
-phasing or the inferred phasing, use the
-``--ignore-phasing`` option.
-
 
 ===========================================================================
 ``mendelian_error``: Identify non-mendelian transmission.

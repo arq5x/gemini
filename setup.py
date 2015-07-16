@@ -18,6 +18,7 @@ setup(
         requires=['python (>=2.5, <3.0)'],
         packages=['gemini',
                   'gemini.scripts',
+                  'gemini.tests',
                   'gemini.data'],
         author="Aaron Quinlan and Uma Paila",
         description='A database framework for exploring genetic variation',

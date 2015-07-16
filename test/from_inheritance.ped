@@ -1,0 +1,5 @@
+#family_id sample_id paternal_id maternal_id sex phenotype
+1 dad -9 -9 male -9
+1 mom -9 -9 female -9
+1 akid dad mom male -9
+1 bkid dad mom male -9

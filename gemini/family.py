@@ -2,10 +2,13 @@
 Create filters for given inheritance models.
 See: https://github.com/arq5x/gemini/issues/388
 """
-from collections import defaultdict
+from __future__ import print_function
+import sys
+
+from collections import defaultdict, Counter
+import itertools as it
 import operator as op
 import re
-import sys
 try:
     reduce
 except NameError:
@@ -69,7 +72,7 @@ class Sample(object):
     '(gt_phred_ll_homref[0] < 2) or (gt_phred_ll_homalt[1] > 2)'
     """
 
-    __slots__ = ('sample_id', 'name', 'affected', 'gender', 'mom', 'dad',
+    __slots__ = ('sample_id', 'name', 'affected', 'sex', 'gender', 'mom', 'dad',
                  'family_id', '_i')
 
     def __init__(self, sample_id, affected, gender=None, name=None,
@@ -81,7 +84,7 @@ class Sample(object):
         self.affected = affected
         self.mom = None
         self.dad = None
-        self.gender = gender
+        self.sex = self.gender = gender
         self.family_id = family_id
         # _i is used to maintain the order in which they came in.
         self._i = None
@@ -265,16 +268,16 @@ class Family(object):
             # can't phase kid with de-novo
 
             if kid_bases - parent_bases:
-                print >>sys.stderr, "skipping due to de_novo"
+                sys.stderr.write("skipping due to de_novo\n")
                 continue
 
             # no alleles from dad
             if len(kid_bases - set(dad_bases)) == len(kid_bases):
-                print >>sys.stderr, "skipping due no alleles from dad"
+                sys.stderr.write("skipping due no alleles from dad\n")
                 continue
 
             if len(kid_bases - set(mom_bases)) == len(kid_bases):
-                print >>sys.stderr, "skipping due no alleles from mom"
+                sys.stderr.write("skipping due no alleles from mom\n")
                 continue
 
             # should be able to phase here
@@ -298,6 +301,16 @@ class Family(object):
             gt_phases[s._i] = True
 
         return gt_phases, gt_bases
+
+    def to_ped(self, fh=sys.stdout, header=True):
+        if header:
+            fh.write("#family_id sample_id paternal_id maternal_id sex phenotype\n")
+        for s in self.subjects:
+            paternal_id = (s.dad and s.dad.name) or "-9"
+            maternal_id = (s.mom and s.mom.name) or "-9"
+            phenotype = {True: '2', False: '1'}.get(s.affected, "-9")
+            fh.write(" ".join((str(self.family_id), s.name, paternal_id, maternal_id, s.sex or '-9', phenotype)))
+            fh.write("\n")
 
     @classmethod
     def from_cursor(klass, cursor):
@@ -385,26 +398,24 @@ class Family(object):
 
     def auto_dom(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
         """
-        At least 1 affected child must have at least 1 affected/unknown parent.
         If strict then all affected kids must have at least 1 affected parent.
         parent.
         Parents of affected can't have unknown phenotype (for at least 1 kid)
         """
-
         if len(self.affecteds) == 0:
             sys.stderr.write("WARNING: no affecteds in family %s\n" % self.family_id)
-            return 'False'
-        af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds])
+            if strict:
+                return 'False'
+        af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds], empty)
         if len(self.unaffecteds) and only_affected:
             un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
         else:
             un = None
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
-            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
+            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds], empty)
             if len(self.unaffecteds) and only_affected:
                 un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
-
         # need at least 1 kid with parent who has the mutation
         # parents can't have unkown phenotype.
         kid_with_known_parents = False
@@ -416,12 +427,15 @@ class Family(object):
                 continue
             # mom or dad must be affected.
             kid_with_parents = True
-            if not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
+            if strict and not any(p is not None and p.affected for p in (kid.mom, kid.dad)):
                 return 'False'
             # parents can't have unknown phenotype.
             if (kid.mom and kid.dad):
                 if (kid.mom.affected is not None) and (kid.dad.affected is not None):
                     kid_with_known_parents = True
+                # if he has a mom and dad that arent unknown, at least one of them must be affected
+                if not None in (kid.mom.affected, kid.dad.affected):
+                    if not kid.mom.affected or kid.dad.affected: return 'False'
 
         if strict and not kid_with_known_parents:
             return 'False'
@@ -677,8 +691,8 @@ class Family(object):
         >>> f.subjects[2].dad = f.subjects[1]
         >>> r = f.mendel_violations()
         >>> for k in r:
-        ...     print k
-        ...     print r[k]
+        ...     print(k)
+        ...     print(r[k])
         uniparental disomy
         (((((gt_types[kid] == HOM_REF) and (gt_types[mom] == HOM_REF)) and (gt_types[dad] == HOM_ALT)) or (((gt_types[kid] == HOM_REF) and (gt_types[dad] == HOM_REF)) and (gt_types[mom] == HOM_ALT))) or (((gt_types[kid] == HOM_ALT) and (gt_types[mom] == HOM_REF)) and (gt_types[dad] == HOM_ALT))) or (((gt_types[kid] == HOM_ALT) and (gt_types[dad] == HOM_REF)) and (gt_types[mom] == HOM_ALT))
         plausible de novo
@@ -701,41 +715,217 @@ class Family(object):
                                                           only_affected)
                 }
 
-    def comp_het_pair(self, gt_types1, gt_bases1, gt_types2, gt_bases2):
+    def _get_ref_alt(self, gt_types, gt_bases,
+                     _splitter=re.compile("\||/")):
         """
-        TODO:
-        https://mail.google.com/mail/u/0/#inbox/14e22b8e359c9cb2
+        Guess the ref and alt. Mostly for convenience for comp_het functions,
+        as we should know these anyway.
         """
-        pass
+        ref, alt = None, None
+        for i, gt in enumerate(gt_types):
+            if gt == HOM_REF:
+                ref = _splitter.split(gt_bases[i])[0]
+            elif gt == HOM_ALT:
+                alt = _splitter.split(gt_bases[i])[0]
+            elif "/" in gt_bases[i]:
+                _ref, _alt = gt_bases[i].split("/")
+                if ref is None:
+                    ref = _ref
+                if alt is None and _ref != _alt:
+                    alt = _alt
+        # fall back to allele frequency
+        if ref is None or alt is None or ref == alt:
+            c = Counter()
+            for b in gt_bases:
+                c.update(_splitter.split(b))
+            if ref is None:
+                ref = c.most_common(1)[0][0]
+                if ref == alt:
+                    ref = c.most_common(2)[1][0]
+            if alt is None:
+                alt = c.most_common(2)[1][0]
+                if ref == alt:
+                    alt = c.most_common(1)[0][0]
+        return ref, alt
+
+    def _comp_het_pair_pattern(self,
+                               gt_types1, gt_nums1,
+                               gt_types2, gt_nums2,
+                               gt_phases1, gt_phases2):
+        """
+        + kid has to be phased het at both sites.
+        + kid has to have alts on different chroms.
+        + neither parent can be hom_alt at either site.
+        + if either parent is phased at both sites and matches the kid, exclude.
+        + if either parent is het at both sites, priority is reduced
+        """
+
+        # already phased before sending here.
+        ret = {'candidates': [], 'priority': 4}
+        for kid in self.samples_with_parent:
+            if gt_nums1[kid._i] == gt_nums2[kid._i]: continue
+            if not (gt_types1[kid._i] == HET and gt_types2[kid._i] == HET): continue
+            #if not (gt_phases1[kid._i] and gt_phases2[kid._i]): continue
+            if gt_types1[kid.mom._i] == HOM_ALT or gt_types2[kid.dad._i] == HOM_ALT: continue
+            mom, dad = kid.mom, kid.dad
+
+            kid_phased = gt_phases1[kid._i] and gt_phases2[kid._i]
+            dad_phased = gt_phases1[dad._i] and gt_phases2[dad._i]
+            mom_phased = gt_phases1[mom._i] and gt_phases2[mom._i]
+
+            if kid_phased and dad_phased and (gt_nums1[dad._i] == gt_nums1[kid._i]) and (gt_nums2[dad._i] == gt_nums2[kid._i]):
+                continue
+            if kid_phased and mom_phased and (gt_nums1[mom._i] == gt_nums1[kid._i]) and (gt_nums2[mom._i] == gt_nums2[kid._i]):
+                continue
+
+            if kid_phased and dad_phased and mom_phased and gt_types1[dad._i] != gt_types2[dad._i] and gt_types1[mom._i] != gt_types2[mom._i]:
+                priority = 1
+
+            elif kid_phased and gt_types1[dad._i] != gt_types1[mom._i] and gt_types2[dad._i] != gt_types2[mom._i]:
+                # parents are unphased hets at different sites.
+                priority = 1
+            else:
+                priority = 2
+                for parent in (kid.mom, kid.dad):
+                    # unphased het
+                    if gt_types2[parent._i] == gt_types1[parent._i] == HET:
+                        priority += 1
+
+            ret['candidates'].append(kid)
+            ret['priority'] = min(ret['priority'], priority)
+        ret['candidate'] = len(ret['candidates']) > 0
+        return ret
 
 
-    def comp_het(self, min_depth=0, gt_ll=False, strict=False,
-                 only_affected=True):
+    def comp_het_pair(self, gt_types1, gt_bases1,
+                      gt_types2, gt_bases2,
+                      gt_phases1=None,
+                      gt_phases2=None,
+                      ref1=None, alt1=None,
+                      ref2=None, alt2=None,
+                      allow_unaffected=False,
+                      pattern_only=False,
+                      _splitter=re.compile("\||/")):
         """
-        affecteds are het.
-        unaffecteds are not hom_alt
-        (later remove candidates if unaffected share same het pair)
-        """
-        af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
+        Each of the sites here must have passed the comp_het() filter.
+        This further checks that a give pair is comp_het.
 
-        if only_affected:
-            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
+        if pattern_only is False, affected/unaffected status is ignored.
+        """
+        if gt_phases1 is None:
+            gt_phases1 = ["|" in b for b in gt_bases1]
+        if gt_phases2 is None:
+            gt_phases2 = ["|" in b for b in gt_bases2]
+
+        if ref1 is None and alt1 is None:
+            ref1, alt1 = self._get_ref_alt(gt_types1, gt_bases1)
+
+        if ref2 is None and alt2 is None:
+            ref2, alt2 = self._get_ref_alt(gt_types2, gt_bases2)
+
+        self.famphase(gt_types1, gt_phases1, gt_bases1,
+                      length_check=False)
+        self.famphase(gt_types2, gt_phases2, gt_bases2,
+                      length_check=False)
+
+        gt_bases1 = [_splitter.split(b) for b in gt_bases1]
+        gt_bases2 = [_splitter.split(b) for b in gt_bases2]
+
+        # get in (0, 1) format instead of (A, T)
+        ra = [ref1, alt1]
+        gt_nums1 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases1]
+        ra = [ref2, alt2]
+        gt_nums2 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases2]
+
+        if pattern_only:
+            return self._comp_het_pair_pattern(gt_types1, gt_nums1,
+                                               gt_types2, gt_nums2,
+                                               gt_phases1, gt_phases2)
+
+        for un in self.unaffecteds:
+            if gt_types2[un._i] == HOM_ALT or gt_types2[un._i] == HOM_ALT:
+                return False
+
+        ret = {'affected_phased': [], 'unaffected_phased': [],
+               'unaffected_unphased': [], 'affected_unphased': [],
+               'affected_skipped': [], 'candidates': []}
+
+        aff = None
+        for aff in self.affecteds:
+            if gt_types1[aff._i] != HET or gt_types2[aff._i] != HET:
+                ret['affected_skipped'].append(aff)
+                # Remove candidates where an affected from the same family does
+                # NOT share the same het pair.
+                ret['candidate'] = False
+                continue
+
+            aff_phased = gt_phases1[aff._i] and gt_phases2[aff._i]
+            # on same chrom.
+            if aff_phased and gt_nums1[aff._i] == gt_nums2[aff._i]:
+                ret['affected_skipped'].append(aff)
+                # Remove candidates where an affected from the same family does
+                # NOT share the same het pair.
+                ret['candidate'] = False
+                continue
+
+            if not 'candidate' in ret: ret['candidate'] = True
+            if aff_phased:
+                ret['affected_phased'].append(aff)
+            else:
+                ret['affected_unphased'].append(aff)
+            ret['candidates'].append(aff)
+
+        del aff
+        for un in self.unaffecteds:
+            if gt_types1[un._i] != HET or gt_types2[un._i] != HET:
+                continue
+
+            is_phased = gt_phases1[un._i] and gt_phases2[un._i]
+            # unaffected has the candidate pair on the same chromosome
+            if is_phased and gt_nums1[un._i] == gt_nums2[un._i]:
+                continue
+
+            if is_phased:
+                # found an unaffected with the same het-pair.
+                ret['unaffected_phased'].append(un)
+                if not allow_unaffected:
+                    ret['candidate'] = False
+            else:
+                ret['unaffected_unphased'].append(un)
+        if not 'candidate' in ret:
+            ret['candidate'] = False
+            ret['priority'] = None
+        elif ret['candidate']:
+
+            ret['priority'] = 2
+            if len(ret['affected_phased']) and len(ret['unaffected_unphased']) == 0:
+                ret['priority'] = 1
+        return ret
+
+    def comp_het(self, min_depth=0, gt_ll=False,
+                 only_affected=True,
+                 pattern_only=False):
+
+        if pattern_only:
+            af, un = empty, empty
+            for kid in self.samples_with_parent:
+                af |= (kid.gt_types == HET) & (kid.mom.gt_types != HOM_ALT) & (kid.dad.gt_types != HOM_ALT)
         else:
-            un = empty
+            # all affecteds must be het at both sites
+            af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
+            # no unaffected can be homozygous alt at either site.
+            un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
 
-        depth = self._restrict_to_min_depth(min_depth)
-        if not strict:
-            af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
+            #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
 
-        if gt_ll:
-            af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-            if only_affected:
+            if gt_ll:
+                af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
                 un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
 
+        depth = self._restrict_to_min_depth(min_depth)
         res = af & un & depth
         if res is empty:
             return 'False'
-
         return res
 
 if __name__ == "__main__":
@@ -757,31 +947,20 @@ if __name__ == "__main__":
 
         me = fam.mendel_violations()
         for k in me:
-            print k
-            print me[k]
-            print
+            print(k)
+            print(me[k])
+            print()
 
 
-        print "auto recessive:"
-        print fam.auto_rec(min_depth=10), "\n"
+        HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
 
-        print "auto dom:"
-        print fam.auto_dom()
-        print fam.auto_dom(min_depth=10)
+        print(fam.auto_rec(min_depth=10), "\n")
+
+        print("auto dom:")
+        print(fam.auto_dom())
+        print(fam.auto_dom(min_depth=10))
 
         import sqlite3
-        db = sqlite3.connect('test/test.auto_rec.db')
-        fams_ped = Family.from_ped('test/test.auto_rec.ped')
-        print fams_ped
-        1/0
-        fams_db = Family.from_cursor(db)
-        print "auto_rec:"
-        for famid, fam in fams_ped.items():
-            print famid
-            print fam.auto_rec()
-
-        print "de novo:"
-        for famid, fam in fams_ped.items():
-            print fam.de_novo()
-            break
-
+        db = sqlite3.connect('test.auto_rec.db')
+        fams_ped = Family.from_ped('test.auto_rec.ped')
+        print(fams_ped)
