@@ -1,0 +1,4 @@
+##fileformat=VCFv4.1
+#CHROM    POS     ID      REF     ALT     QUAL    FILTER INFO     FORMAT  dad	mom	akid	bkid
+1	100002	.	A	G	.	PASS	.	GT	0/0	0/1	0/1	0/0
+1	100003	.	A	G	.	PASS	.	GT	0/1	0/0	0/1	0/0

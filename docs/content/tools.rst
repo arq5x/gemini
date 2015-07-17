@@ -5,7 +5,7 @@ Built-in analysis tools
 As of version 0.14, the tools have a standardized output that is different
 from previous versions.
 Requested `--columns` will come first followed by a standard set of columns:
- 
+
  + variant_id - unique id from the databse
  + family_id - family id for this row
  + family_members - which family members were tested
@@ -15,7 +15,10 @@ Requested `--columns` will come first followed by a standard set of columns:
 
 Other tools such as `mendel_errors` additional columns at the end.
 
-.. warning::
+When queries are limited to variants in genes, the output will be in 
+`gene`, `chrom` order as opposed to the usual `gene`, `position` order.
+
+.. note::
 
     As of version 0.16.0, the inheritance tools (autsomal_dominant,
     autosomal_recessive, comp_het, mendel_errors, de_novo) are now
@@ -33,6 +36,13 @@ Other tools such as `mendel_errors` additional columns at the end.
     a visual representation is here:
     https://github.com/arq5x/gemini/blob/master/inheritance.ipynb
 
+.. note::
+
+   Candidate variants reported by the built-in inheritance model tools
+   will appear in order by chromosome, then alphabetically by gene.
+   In other words, they will not be in strict positional order for each chromosome.
+   This is in an effort to group all candidate variants by gene since the gene
+   is typically the atomic unit of interest.
 
 ==================================
 ``common_args``: common arguments
@@ -59,7 +69,7 @@ candidates where at least 4 families have a variant in that gene.
 ``--families``
 --------------------
 By default, candidate variants are reported for all families in the database.
-One can restrict the analysis to variants in specific familes with the 
+One can restrict the analysis to variants in specific familes with the
 ``--families`` option.  Families should be provided as a comma-separated list
 
 
@@ -113,12 +123,12 @@ at the _same_ site in the gene, compound heterozygotes occur when
 the individual's phenotype is caused by two heterozygous recessive alleles at
 _different_ sites in a particular gene.
 
-So basically, we are looking for two (typically loss-of-function (LoF))
+We are looking for two (typically loss-of-function (LoF))
 heterozygous variants impacting the same gene at different loci.  The
 complicating factor is that this is _recessive_ and as such, we must also
 require that the consequential alleles at each heterozygous site were
-inherited on different chromosomes (one from each parent).  As such, in order
-to use this tool, we require that all variants are phased.  Once this has been
+inherited on different chromosomes (one from each parent). 
+Where possible, `comp_hets` will phase by transmission. Once this has been
 done, the `comp_hets` tool will provide a report of candidate compound
 heterozygotes for each sample/gene.
 
@@ -129,32 +139,73 @@ heterozygotes for each sample/gene.
   unphased genotypes. Any candidate that could be one element of a comp_het
   will also be phaseable as long as the parents and their genotypes are known.
 
+  As of version 0.16.1, the --ignore-phasing option is removed and there is no
+  --lenient option. 
+  
+  In 0.16.2, a --pattern-only flag was added to find compound hets by inheritance
+  pattern without regard to affection status. A priority code was also added where
+  variants with priority 1 are much more informative. See docs below for further
+  information.
 
 ---------------------
 Genotype Requirements
 ---------------------
 
-- All affected individuals must be heterozygous at both sites. 
+- All affected individuals must be heterozygous at both sites.
 - No unaffected can be heterozygous at both sites.
 - No unaffected can be homozygous alterate at either site.
+- No phased-unaffected can be heterozygous at both sites.
+
+  a. `--allow-unaffected` keeps sites where a phased unaffected shares the het-pair
+
+  b. unphased, unaffected that share the het pair are counted and reported for each candidate pair.
+
+- Remove candidates where an affected from the same family does NOT share the same het pair.
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
 
-if `--lenient` is used then unknowns can be HET.
+we prioritize with these rules:
 
+===   ===      ====      =========   ========   ================================================
+mom   dad      kid       phaseable   priority   notes
+===   ===      ====      =========   ========   ================================================
+R-H   H-R      H-H       both        1          both sites phaseable and alts on opposite chroms
+R-H   H-H      H-H       one         2          should be a rare occurrence
+H-H   H-H      H-H       NO          2          should be a rare occurrence
+A-R   H-H      H-H       both        NA         exclude hom-alts from un-affecteds
+R-R   H-H      H-H       both        NA         phaseable, but alts are on the same chroms.
+===   ===      ====      =========   ========   ================================================
 
 .. note::
 
-    If you want to ignore phasing in search of _putative_ compound
-    heterozygotes, please see the ``--ignore-phasing`` option below.
-    This is not recommended now that phasing is done by transmission.
+   candidates of priority != 1 are very unlikely (< 1%) to be real
+   (see: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3734130/); we report them
+   for completeness, but strongly recommend using priority 1 only.
 
-Example usage with a subset of columns:
+
+------------
+Pattern Only
+------------
+
+To find compound heterozygotes by inheritance pattern only, without regard to affections, the
+following rules are used (with --pattern-only):
+
+- Kid must be HET at both sites.
+- Kid must have alts on different chromosomes.
+- Neither parent can be HOM_ALT at either site.
+- If either parent is phased at both sites and matches the kid, it's excluded.
+- If either parent is HET at both sites, priority is reduced.
+- When the above criteria are met, and both parents and kid are phased or parents are HET at different sites, the priority is 1.
+- If both parents are not phased, the priority is 2.
+- For every parent that's a het at both sites, the priority is incremented by 1.
+- The priority in a family is the minimum found among all kids.
 
 .. note::
 
     Each pair of consecutive lines in the output represent the two variants
     for a compound heterozygote in a give sample.  The third column,
     `comp_het_id`, tracks the distinct compound heterozygote variant pairs.
+
+Example usage with a subset of columns:
 
 .. code-block:: bash
 
@@ -198,16 +249,6 @@ We may also specify the families of interest:
     $ gemini comp_hets --families 1 my.db
     $ gemini comp_hets --families 1,7 my.db
 
-
----------------------
-``--ignore-phasing``
----------------------
-If your genotypes aren't phased this tool will phase them if parents are available
-we can't be certain that two heterozygotes. If you wish to ignore the existing
-phasing or the inferred phasing, use the
-``--ignore-phasing`` option.
-
-
 ===========================================================================
 ``mendelian_error``: Identify non-mendelian transmission.
 ===========================================================================
@@ -237,7 +278,7 @@ Genotype Requirements
 If allow `--only-affected` is used, then the tools will only consider samples that have parents
 **and** are affected. The default is to consider any sample with parents.
 
-This tool will report the probability of a mendelian error in the final column 
+This tool will report the probability of a mendelian error in the final column
 that is derived from the genotype likelihoods if they are available.
 
 Example:
@@ -258,7 +299,7 @@ Example:
     chr1	1004248	1004249	22	CEPH1463	NA12889(dad;unknown),NA12890(mom;unknown),NA12877(child;unknown)	G/G,G/G,G/C	NA12877	1	plausible de novo	1.000
 
 Where, here, we have required the called genotype to have at most a PL of 1 (lower is more confident).
-Note that the "violation" column indicates the type of mendelian error and the final column can be used for further filtering, 
+Note that the "violation" column indicates the type of mendelian error and the final column can be used for further filtering,
 with higher numbers indicating a greater probability of mendelian error. We have found > 0.99 to be a reasonable
 cutoff.
 
@@ -266,7 +307,7 @@ Arguments are similar to the other tools:
 
 
 .. code-block:: bash
-    
+
     positional arguments:
       db                    The name of the database to be queried.
 
@@ -1303,16 +1344,16 @@ than just the medium and high impact variants, add the ``--nonsynonymous`` flag.
 ===========================================================================
 Runs of homozygosity are long stretches of homozygous genotypes that reflect
 segments shared identically by descent and are a result of consanguinity or
-natural selection. Consanguinity elevates the occurrence of rare recessive 
-diseases (e.g. cystic fibrosis) that represent homozygotes for strongly deleterious 
-mutations. Hence, the identification of these runs holds medical value. 
+natural selection. Consanguinity elevates the occurrence of rare recessive
+diseases (e.g. cystic fibrosis) that represent homozygotes for strongly deleterious
+mutations. Hence, the identification of these runs holds medical value.
 
-The 'roh' tool in GEMINI returns runs of homozygosity identified in whole genome data. 
+The 'roh' tool in GEMINI returns runs of homozygosity identified in whole genome data.
 The tool basically looks at every homozygous position on the chromosome as a possible
-start site for the run and looks for those that could give rise to a potentially long 
-stretch of homozygous genotypes. 
+start site for the run and looks for those that could give rise to a potentially long
+stretch of homozygous genotypes.
 
-For e.g. for the given example allowing ``1 HET`` genotype (h) and ``2 UKW`` genotypes (u) 
+For e.g. for the given example allowing ``1 HET`` genotype (h) and ``2 UKW`` genotypes (u)
 the possible roh runs (H) would be:
 
 
@@ -1327,18 +1368,18 @@ the possible roh runs (H) would be:
 roh returned for --min-snps = 20 would be:
 
 .. code-block:: bash
-	
+
 	roh_run1     = H H H H h H H H H u H H H H H u H H H H H H H
 	roh_run2     =           H H H H u H H H H H u H H H H H H H h H H H H H
 
-As you can see, the immediate homozygous position right of a break (h or u) would be the possible 
-start of a new roh run and genotypes to the left of a break are pruned since they cannot 
+As you can see, the immediate homozygous position right of a break (h or u) would be the possible
+start of a new roh run and genotypes to the left of a break are pruned since they cannot
 be part of a longer run than we have seen before.
 
 
 
-Return ``roh`` with minimum of 50 snps, a minimum run length of 1 mb and a minimum sample depth of 20 
-for sample S138 (with default values for allowed number of HETS, UNKS and total depth). 
+Return ``roh`` with minimum of 50 snps, a minimum run length of 1 mb and a minimum sample depth of 20
+for sample S138 (with default values for allowed number of HETS, UNKS and total depth).
 
 .. code-block:: bash
 
@@ -1379,7 +1420,7 @@ the tumor but not in the normal sample.
 ``default behavior``
 ---------------------
 By default, ``set_somatic`` simply marks variants that are genotyped as
-homozygous reference in the normal sample and non-reference in the tumor. 
+homozygous reference in the normal sample and non-reference in the tumor.
 More stringent somatic filtering criteria are available through tunable
 command line parameters.
 

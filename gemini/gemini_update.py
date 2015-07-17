@@ -159,7 +159,7 @@ def write_fabricrc(base_file, tooldir, use_sudo):
 def install_tools(fab_cmd, fabfile, fabricrc):
     """Install 3rd party tools used by Gemini using a custom CloudBioLinux flavor.
     """
-    tools = ["tabix", "grabix", "samtools", "bedtools"]
+    tools = ["grabix"]
     flavor_dir = os.path.join(os.getcwd(), "gemini-flavor")
     if not os.path.exists(flavor_dir):
         os.makedirs(flavor_dir)

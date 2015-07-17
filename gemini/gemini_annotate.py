@@ -15,6 +15,7 @@ import pysam
 import cyvcf as vcf
 
 from gemini.annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
+from gemini_windower import check_dependencies
 from database import database_transaction
 
 def add_requested_columns(args, update_cursor, col_names, col_types=None):
@@ -269,6 +270,8 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
                               col_names, col_types, col_ops)
 
 def annotate(parser, args):
+    check_dependencies("annotate", [["tabix", "-h"],
+                                    ["bgzip", "-h"]])
     def _validate_args(args):
         if (args.col_operations or args.col_types or args.col_extracts):
             sys.exit('EXITING: You may only specify a column name (-c) when '
