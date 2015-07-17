@@ -9,7 +9,7 @@ check()
 export -f check
 
 cd test
-rm ./*.db
+#rm ./*.db
 
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
@@ -132,6 +132,8 @@ bash test-dashes.sh
 bash test-no-gls.sh
 
 bash test-multi-col.sh
+
+bash test-eff.sh
 
 python test-comphet.py
 # cleanup
