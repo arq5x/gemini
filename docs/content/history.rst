@@ -9,12 +9,13 @@ Release History
 #. Speed up and generalize database loading for multiple genome builds and species.
 #. Add an `is_splicing` column.
 
-0.16.2 (forthcoming)
+0.16.2
 =======================================
 #. Hone rules for unphased and partially-phased compound hets.
 #. Remove `--lenient` argument for comp_hets and add `--pattern-only` to find compound_hets regardless of affection status.
-#. Re (vt) decompose data files for dbsnp and ExAC (thanks Julien and Xiaolin for reporting).
-#. `--lenient` argument to `auto_dom` tool allows unknown parents.
+#. The `--lenient` argument to the `autosomal_dominant` tool has been relaxed to allow parents with unknown phenotypes.
+#. Re (vt) decompose data files for 1000 genomes and ExAC (thanks Julien and Xiaolin for reporting).
+
 
 0.16.1
 =======================================
@@ -52,7 +53,7 @@ Release History
 5. Read gt\* columns from the database for better backward compatibility.
 6. Code cleanup. Thanks to Christian Brueffer.
 
-0.14.0 
+0.14.0
 =======================================
 1. Standardized the output from the built-in tools into a common, BED+ format. Thanks to feedback from Jessica Chong and Daniel Gaston.
 2. Release of `mendel_errors` tool which also outputs the type of error and the probability (based on PL's)
@@ -90,12 +91,12 @@ Release History
 
 
 
-0.12.2 
+0.12.2
 =======================================
 Corrected a stale .c file in the cyvcf library. This is effectively a replacement for the 0.12.1 release.
 
 
-0.12.1 
+0.12.1
 =======================================
 1. Support for input VCF files containing variants with multiple alternate alleles. Thanks to Brent Pedersen.
 2. Updated, decomposed, and normalized the ExAC, Clinvar, Cosmic, dbSNP, and ESP annotation files to properly support variants with multiple alternate alleles.
@@ -146,7 +147,7 @@ Corrected a stale .c file in the cyvcf library. This is effectively a replacemen
 2. Updated Clinvar, COSMIC, and dbSNP to their latest versions.
 
 
-0.10.0 
+0.10.0
 ===================
 1. Provide an ``--annotation-dir`` argument that specifies the path the
    annotation databases, to overwrite configured data inputs. Thanks to Björn Grüning,
@@ -182,7 +183,7 @@ Corrected a stale .c file in the cyvcf library. This is effectively a replacemen
 11. Added support for the MPI Mouse Phenotype database via the ``mam_phenotype_id`` column in the ``gene_summary`` table.
 12. Enhanced security.
 13. Corrected the ESP allele frequencies to be based report _alternate_ allele frequency instead of _minor_ allele frequency.
-14. VEP version support updated (73-75) Support for aa length and bio type in VEP. 
+14. VEP version support updated (73-75) Support for aa length and bio type in VEP.
 15. The `lof_sieve` tool support has been extended to VEP annotations.
 16. Added the ``ccds_id`` and ``entrez_id`` columns to the ``gene_detailed`` table.
 
@@ -229,7 +230,7 @@ Corrected a stale .c file in the cyvcf library. This is effectively a replacemen
    the samples table.
 10. Fixed a bug that prevented variants that overlapped with multiple 1000G variants
     from having AAF info extracted from 1000G annotations.  This is now corrected such
-    that multiple overlaps with 1000G variants are tolerated, yet the logic ensures 
+    that multiple overlaps with 1000G variants are tolerated, yet the logic ensures
     that the AAF info is extracted for the correct variant.
 11. Fixed installation issues for the GEMINI browser.
 12. Added ``--show-families`` option to gemini query.
@@ -302,4 +303,3 @@ option.
 2. Added GERP conserved elements.
 3. Optionally addition of GERP conservation scores at base pair resolution.
 4. Move annotation files to Amazon S3.
-
