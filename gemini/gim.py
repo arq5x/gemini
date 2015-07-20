@@ -47,7 +47,7 @@ class GeminiInheritanceModel(object):
 
         # auto_rec and auto_dom candidates should be limited to
         # variants affecting genes.
-        if self.model in ("auto_rec", "auto_dom") or \
+        if self.model in ("auto_rec", "auto_dom", "comp_het") or \
            (self.model == "de_novo" and self.args.min_kindreds is not None):
 
             # we require the "gene" column for the auto_* tools
@@ -182,7 +182,10 @@ class GeminiInheritanceModel(object):
                 # for this check instead of checking all families.
                 cur_fam = row.print_fields.get('family_id')
                 for col in self.added:
-                    del row.print_fields[col]
+                    try:
+                        del row.print_fields[col]
+                    except ValueError:
+                        pass
 
                 cols = dict((col, row[col]) for col in req_cols)
                 fams_to_test = enumerate(self.families) if cur_fam is None \
@@ -309,7 +312,6 @@ class CompoundHet(GeminiInheritanceModel):
                     gt_ref_depths, gt_alt_depths, gt_quals" + \
                     " FROM variants " + \
                     " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
-
         if args.filter: query += " AND " + args.filter
         # we need to order results by gene so that we can sweep through the results
         return query + " ORDER BY gene"
@@ -322,6 +324,8 @@ class CompoundHet(GeminiInheritanceModel):
         """
         # we need to add the variant's chrom, start and gene if
         # not already there.
+        if "*" in [x.strip() for x in custom_columns.split(",")]:
+            return custom_columns
         self.added = []
         for col in ("gene", "start", "ref", "alt", "variant_id"):
             if custom_columns.find(col) < 0:
