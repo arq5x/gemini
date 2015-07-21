@@ -1,6 +1,8 @@
 #############################################################################
 # 1. Test window data for hwe (mean)                                         
 #############################################################################
+hash bedtools 2>/dev/null || { echo "skiping windower tests since we can't find bedtools"; exit; }
+
 echo "    window.t01...\c"                                                   
 echo "chr1	30000	40000	0.856
 chr1	60000	70000	0.7865" > exp                                                                              

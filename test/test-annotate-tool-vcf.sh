@@ -3,6 +3,10 @@
 ###########################################################################################
 source ./check.sh
 
+hash bgzip 2>/dev/null || { echo "skiping annotate tests since we can't find bgzip"; exit; }
+hash tabix 2>/dev/null || { echo "skiping annotate tests since we can't find tabix"; exit; }
+
+
 # make a dunnmy TABIX'ed annotation file
 #BaseQRankSum
 bgzip -c test.snpeff.vcf > test.anno.vcf.gz
