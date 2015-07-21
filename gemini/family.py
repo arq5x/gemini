@@ -832,9 +832,9 @@ class Family(object):
         gt_bases2 = [_splitter.split(b) for b in gt_bases2]
 
         # get in (0, 1) format instead of (A, T)
-        ra = [ref1, alt1]
+        ra = [ref1, alt1, "."]
         gt_nums1 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases1]
-        ra = [ref2, alt2]
+        ra = [ref2, alt2, "."]
         gt_nums2 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases2]
 
         if pattern_only:
@@ -843,8 +843,8 @@ class Family(object):
                                                gt_phases1, gt_phases2)
 
         for un in self.unaffecteds:
-            if gt_types2[un._i] == HOM_ALT or gt_types2[un._i] == HOM_ALT:
-                return False
+            if gt_types2[un._i] == HOM_ALT or gt_types1[un._i] == HOM_ALT:
+                return {'candidate': False}
 
         ret = {'affected_phased': [], 'unaffected_phased': [],
                'unaffected_unphased': [], 'affected_unphased': [],
@@ -909,12 +909,17 @@ class Family(object):
         if pattern_only:
             af, un = empty, empty
             for kid in self.samples_with_parent:
-                af |= (kid.gt_types == HET) & (kid.mom.gt_types != HOM_ALT) & (kid.dad.gt_types != HOM_ALT)
+                af |= (kid.gt_types == HET) & (kid.mom.gt_types != HOM_ALT) & (kid.dad.gt_types != HOM_ALT) \
+                                            & (kid.mom.gt_types != UNKNOWN) & (kid.dad.gt_types != UNKNOWN)
         else:
             # all affecteds must be het at both sites
             af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
             # no unaffected can be homozygous alt at either site.
             un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
+            for kid in self.samples_with_parent:
+                if not kid.affected: continue
+                un &= (kid.mom.gt_types != UNKNOWN)
+                un &= (kid.dad.gt_types != UNKNOWN)
 
             #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
 

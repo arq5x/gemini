@@ -7,7 +7,7 @@ from gemini.tests import test_inheritance
 
 TestFamily = test_inheritance.TestFamily
 
-HOM_REF, HET, UNKOWN, HOM_ALT = range(4)
+HOM_REF, HET, UNKNOWN, HOM_ALT = range(4)
 
 load_cmd = "gemini load -v {name}.vcf -p {name}.ped --skip-gene-tables --test-mode {name}.db"
 update_cmd = """echo "UPDATE  variants set is_exonic = 1;" | sqlite3 {name}.db"""
@@ -109,3 +109,24 @@ for ch, gt_types1, gt_types2 in [
     print "OK"
 
 
+famu = TestFamily("""\
+#family_id  sample_id   paternal_id maternal_id sex phenotype
+1   dad   0   0   1  -9
+1   mom   0   0   2  -9
+1   kid   dad   mom   1  -9""")
+famu.family.to_ped(open("famu.ped", "w"))
+
+vfh = open('famu.vcf', 'w')
+famu.gt_types = [UNKNOWN, HET, HET]
+famu.to_vcf(vfh)
+famu.gt_types = [HET, HOM_REF, HET] # the only case that works.
+famu.to_vcf(vfh, header=False)
+vfh.close()
+
+run(load_cmd.format(name="famu"))
+run(update_cmd.format(name="famu"))
+
+ret = run("gemini comp_hets --pattern-only --columns 'chrom,start,end,ref,alt' famu.db")
+assert not len(ret.strip())
+ret = run("gemini comp_hets  --columns 'chrom,start,end,ref,alt' famu.db")
+assert not len(ret.strip())
