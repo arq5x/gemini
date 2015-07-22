@@ -11,10 +11,10 @@ Release History
 
 0.16.3
 ======
-#. Fix bug in comp_het with reporting same pair multiple times.
-#. Handle UNKOWN genotypes in comp_het tool
+#. Fix bug in ``comp_het`` with reporting same pair multiple times.
+#. Handle UNKOWN genotypes in ``comp_het`` tool
 #. Fix cyvcf dependency in requirements
-#. Only run tests that require bgzip/tabix/bedtools if those exe's are available
+#. Only run tests that require bgzip/tabix/bedtools if they are available on PATH
 #. Limit ipython version to 3<version<4
 
 
