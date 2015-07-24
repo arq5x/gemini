@@ -61,7 +61,7 @@ A workflow for the above steps is given below.
   
   # setup
   VCF=/path/to/my.vcf
-  NORMVCF=/path/to/my.norm.vcf
+  NORMVCF=/path/to/my.norm.vcf.gz
   REF=/path/to/human.b37.fasta
   SNPEFFJAR=/path/to/snpEff.jar
 
@@ -69,12 +69,12 @@ A workflow for the above steps is given below.
   # NOTE: can also swap snpEff with VEP
   #NOTE: -classic and -formatEff flags needed with snpEff >= v4.1
   zless $VCF \
-     | sed 's/ID=AD,Number=./ID=AD,Number=R/'
+     | sed 's/ID=AD,Number=./ID=AD,Number=R/' \
      | vt decompose -s - \
      | vt normalize -r $REF - \
-     | java -Xmx4G -jar $SNPEFFJAR -formatEff -classic GRCh37.75  \
+     | java -Xmx4G -jar $SNPEFFJAR GRCh37.75 -formatEff -classic \
      | bgzip -c > $NORMVCF
-  tabix $NORMVCF
+  tabix -p vcf $NORMVCF
 
   # load the pre-processed VCF into GEMINI
   gemini load --cores 3 -t snpEff -v $NORMVCF $db
