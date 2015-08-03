@@ -1,0 +1,224 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+# native Python imports
+import os.path
+import time
+import sys
+import sqlite3
+import gzip
+import itertools as it
+
+import numpy as np
+import toml # toml.py
+
+# third-party imports
+import cyvcf as vcf
+
+import zlib
+import cPickle
+
+def pack_blob(obj):
+    return buffer(zlib.compress(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL)))
+
+def is_number(op, field):
+    return field.endswith("_float") or op in ("mean", "median", "min", "max")
+
+def is_integer(op, field):
+    return field.endswith("_int")
+
+def is_flag(op, infos):
+    return infos[op].type == "Flag"
+
+def name_type(op, field):
+    """
+    >>> name_type("sum", "t_float")
+    ('t', 'REAL')
+    >>> name_type("aaa", "tt_int")
+    ('tt', 'INTEGER')
+    >>> name_type("aaa", "ingt_flag")
+    ('ingt', 'BOOL')
+    >>> name_type("aaa", "hello")
+    ('hello', 'TEXT')
+    """
+    if field.endswith("_float"):
+        return field[:-6], "REAL"
+    if field.endswith("_int"):
+        return field[:-4], "INTEGER"
+    if field.endswith("flag"):
+        return field[:-5], "BOOL"
+    if op == "flag":
+        return field, "BOOL"
+    if op in ("min", "mean", "max"):
+        return field, "REAL"
+
+    return field, "TEXT"
+
+
+def xopen(path, mode="r"):
+    if path == "-":
+        if mode[0] == "w":
+            return sys.stdout
+        return sys.stdin
+
+    if path.endswith(".gz"):
+        return gzip.open(path, mode)
+    return open(path, mode)
+
+
+class VCFLoader(object):
+    def __init__(self, path, toml_path, db_path="test.db"):
+
+        # this will find the fields we are expecting during load.
+        self.load_config(toml_path)
+        self.vcf_reader = vcf.Reader(open(path))
+        if db_path is None:
+            db_path = (path[:-6 if path.endswith('.vcf.gz') else -3]) + "db"
+        self.db_path = db_path
+        self.db = sqlite3.connect(self.db_path)
+        self.db.isolation_level = None
+        self.cursor = self.db.cursor()
+        self.cursor.execute('PRAGMA synchronous = OFF')
+        self.cursor.execute('PRAGMA journal_mode=MEMORY')
+
+
+        self.create_tables()
+
+        self.extended_fields = ["chrom", "start", "end", "variant_id", "vid", "ref",
+                                "alt", "qual", "filter", "type", "sub_type"] \
+                               + self.fields + ["gts", "gt_types", "gt_phases",
+                                       "gt_depths", "gt_ref_depths",
+                                       "gt_alt_depths", "gt_quals",
+                                       "gt_copy_numbers", "gt_phred_ll_homref",
+                                       "gt_phred_ll_het", "gt_phred_ll_homalt"]
+    def create_tables(self):
+        self._create_variants_table()
+        self._create_sample_table()
+
+    def _create_sample_table(self):
+        samples = self.vcf_reader.samples
+        self.sample_to_idx = {s: i for i, s in enumerate(samples, start=1)}
+        self.cursor.execute("""\
+CREATE TABLE samples (
+    sample_id INTEGER,
+    family_id text default NULL,
+    name text default NULL,
+    paternal_id text default NULL,
+    maternal_id TEXT default NULL,
+    sex TEXT default NULL,
+    phenotype TEXT default NULL
+    )""")
+        q = "INSERT INTO samples VALUES (%s)" % ",".join(["?"] * 7)
+        self.cursor.executemany(q, [(self.sample_to_idx[s], 0, s, 0, 0, -9, -9) for s in samples])
+
+    def _create_variants_table(self):
+        tmpl = """\
+CREATE table variants (
+    chrom TEXT,
+    start INTEGER,
+    end INTEGER,
+    variant_id INTEGER,
+    vid TEXT,
+    ref TEXT,
+    alt TEXT,
+    qual REAL,
+    filter TEXT,
+    type TEXT,
+    sub_type TEXT,
+    %s,
+    gts BLOB,
+    gt_types BLOB,
+    gt_phases BLOB,
+    gt_depths BLOB,
+    gt_ref_depths BLOB,
+    gt_alt_depths BLOB,
+    gt_quals BLOB,
+    gt_copy_numbers BLOB,
+    gt_phred_ll_homref BLOB,
+    gt_phred_ll_het BLOB,
+    gt_phred_ll_homalt BLOB,
+    PRIMARY KEY(variant_id ASC)
+    )"""
+        cmd = tmpl % (",\n    ".join("%s %s" % (field, ftype) for field, ftype in
+                      it.izip(self.fields, self.types)))
+        self.cursor.execute(cmd)
+
+    def load_config(self, toml_path):
+        cfg = toml.loads(xopen(toml_path).read())
+        fields = []
+        ops = []
+        for f in cfg['annotation']:
+            fields.extend(f.get('names', f.get('fields')))
+            ops.extend(f['ops'])
+        assert len(ops) == len(fields)
+        self.config = cfg
+        self.o_fields = fields
+        self.ops = ops
+
+        field_types = [name_type(o, f) for f, o in it.izip(self.o_fields, self.ops)]
+
+        self.fields, self.types = map(list, zip(*field_types))
+
+    def insert(self, variants):
+        if len(variants) == 0:
+            return
+        t0 = time.time()
+        cur = self.cursor
+        query = "INSERT INTO variants values(%s)" % ",".join(["?"] * len(variants[0]))
+        try:
+            cur.executemany(query, variants)
+        except sqlite3.ProgrammingError:
+            raise
+            for var in variants:
+                cur.execute(query, var)
+        print("insert time:", time.time() - t0)
+
+    def load(self, buffer_size=10000):
+        tl = time.time()
+        load_buffer = []
+        ots = zip(self.types, self.o_fields)
+        tgt, igt,bt = 0, 0, 0
+        for i, v in enumerate(self.vcf_reader, start=1):
+            t0 = time.time()
+            vals = [v.INFO.get(f, '' if t == 'TEXT' else False if t == 'BOOL' else  None) for t, f in ots]
+            igt += time.time() - t0
+
+            t0 = time.time()
+            gts = [
+                pack_blob(np.array(v.gt_bases, np.str)),
+                pack_blob(np.array(v.gt_types, np.int8)),
+                pack_blob(np.array(v.gt_phases, np.bool)),
+                pack_blob(np.array(v.gt_depths, np.int32)),
+                pack_blob(np.array(v.gt_ref_depths, np.int32)),
+                pack_blob(np.array(v.gt_alt_depths, np.int32)),
+                pack_blob(np.array(v.gt_quals, np.float32)),
+                pack_blob(np.array(v.gt_copy_numbers, np.float32)),
+                pack_blob(None),
+                pack_blob(None),
+                pack_blob(None), ]
+            tgt += time.time() - t0
+
+            t0 = time.time()
+            basic = [v.CHROM, v.start, v.end, i - 1, v.ID or '', v.REF,
+                     ",".join(v.ALT), v.QUAL, v.FILTER, v.var_type,
+                     v.var_subtype]
+            bt += time.time() - t0
+            variant = basic + vals + gts
+            load_buffer.append(variant)
+
+            if i % buffer_size == 0:
+                self.insert(load_buffer)
+                load_buffer = []
+        self.insert(load_buffer)
+        print("gt time", tgt)
+        print("info time", igt)
+        print("basic time", bt)
+        print("total load time:", time.time() - tl)
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+
+    v = VCFLoader(sys.argv[1], sys.argv[2])
+    v.load()
