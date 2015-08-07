@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from effects import SnpEff
 
 # native Python imports
 import os.path
@@ -18,7 +19,8 @@ import cyvcf as vcf
 import zlib
 import cPickle
 
-def pack_blob(obj):
+def pack_blob(obj, _none=buffer(zlib.compress(cPickle.dumps(None, cPickle.HIGHEST_PROTOCOL)))):
+    if obj is None: return _none
     return buffer(zlib.compress(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL)))
 
 def is_number(op, field):
@@ -28,18 +30,21 @@ def is_integer(op, field):
     return field.endswith("_int")
 
 def is_flag(op, infos):
+    if not op in infos: return False
     return infos[op].type == "Flag"
 
-def name_type(op, field):
+def name_type(op, field, infos):
     """
-    >>> name_type("sum", "t_float")
+    >>> name_type("sum", "t_float", {})
     ('t', 'REAL')
-    >>> name_type("aaa", "tt_int")
+    >>> name_type("aaa", "tt_int", {})
     ('tt', 'INTEGER')
-    >>> name_type("aaa", "ingt_flag")
+    >>> name_type("aaa", "ingt_flag", {})
     ('ingt', 'BOOL')
-    >>> name_type("aaa", "hello")
+    >>> name_type("aaa", "hello", {})
     ('hello', 'TEXT')
+    >>> name_type("flag", "LCR", {})
+    ('LCR', 'BOOL')
     """
     if field.endswith("_float"):
         return field[:-6], "REAL"
@@ -47,6 +52,8 @@ def name_type(op, field):
         return field[:-4], "INTEGER"
     if field.endswith("flag"):
         return field[:-5], "BOOL"
+    if is_flag(field, infos):
+        return field, "BOOL"
     if op == "flag":
         return field, "BOOL"
     if op in ("min", "mean", "max"):
@@ -70,8 +77,8 @@ class VCFLoader(object):
     def __init__(self, path, toml_path, db_path="test.db"):
 
         # this will find the fields we are expecting during load.
-        self.load_config(toml_path)
         self.vcf_reader = vcf.Reader(open(path))
+        self.load_config(toml_path)
         if db_path is None:
             db_path = (path[:-6 if path.endswith('.vcf.gz') else -3]) + "db"
         self.db_path = db_path
@@ -89,8 +96,8 @@ class VCFLoader(object):
                                + self.fields + ["gts", "gt_types", "gt_phases",
                                        "gt_depths", "gt_ref_depths",
                                        "gt_alt_depths", "gt_quals",
-                                       "gt_copy_numbers", "gt_phred_ll_homref",
-                                       "gt_phred_ll_het", "gt_phred_ll_homalt"]
+                                       #"gt_copy_numbers",
+                                       "gt_phred_ll_homref", "gt_phred_ll_het", "gt_phred_ll_homalt"]
     def create_tables(self):
         self._create_variants_table()
         self._create_sample_table()
@@ -125,6 +132,16 @@ CREATE table variants (
     filter TEXT,
     type TEXT,
     sub_type TEXT,
+    gene TEXT,
+    impact_severity TEXT,
+    is_exonic BOOL,
+    is_coding BOOL,
+    is_lof BOOL,
+    biotype TEXT,
+    sift_pred TEXT,
+    sift_score REAL,
+    polyphen_pred TEXT,
+    polyphen_score REAL,
     %s,
     gts BLOB,
     gt_types BLOB,
@@ -133,7 +150,7 @@ CREATE table variants (
     gt_ref_depths BLOB,
     gt_alt_depths BLOB,
     gt_quals BLOB,
-    gt_copy_numbers BLOB,
+    --gt_copy_numbers BLOB,
     gt_phred_ll_homref BLOB,
     gt_phred_ll_het BLOB,
     gt_phred_ll_homalt BLOB,
@@ -155,8 +172,7 @@ CREATE table variants (
         self.o_fields = fields
         self.ops = ops
 
-        field_types = [name_type(o, f) for f, o in it.izip(self.o_fields, self.ops)]
-
+        field_types = [name_type(o, f, self.vcf_reader.infos) for f, o in it.izip(self.o_fields, self.ops)]
         self.fields, self.types = map(list, zip(*field_types))
 
     def insert(self, variants):
@@ -177,7 +193,7 @@ CREATE table variants (
         tl = time.time()
         load_buffer = []
         ots = zip(self.types, self.o_fields)
-        tgt, igt,bt = 0, 0, 0
+        tgt, igt, bt = 0, 0, 0
         for i, v in enumerate(self.vcf_reader, start=1):
             t0 = time.time()
             vals = [v.INFO.get(f, '' if t == 'TEXT' else False if t == 'BOOL' else  None) for t, f in ots]
@@ -192,16 +208,23 @@ CREATE table variants (
                 pack_blob(np.array(v.gt_ref_depths, np.int32)),
                 pack_blob(np.array(v.gt_alt_depths, np.int32)),
                 pack_blob(np.array(v.gt_quals, np.float32)),
-                pack_blob(np.array(v.gt_copy_numbers, np.float32)),
+                #pack_blob(np.array(v.gt_copy_numbers, np.float32)),
                 pack_blob(None),
                 pack_blob(None),
                 pack_blob(None), ]
             tgt += time.time() - t0
 
             t0 = time.time()
+            ann = SnpEff.top_severity(v.INFO['ANN'].split(","))
+            if isinstance(ann, list):
+                ann = ann[0]
             basic = [v.CHROM, v.start, v.end, i - 1, v.ID or '', v.REF,
                      ",".join(v.ALT), v.QUAL, v.FILTER, v.var_type,
-                     v.var_subtype]
+                     v.var_subtype, ann.gene, ann.impact_severity,
+                     ann.exonic, ann.coding, ann.lof, ann.biotype,
+                     ann.sift_class, ann.sift_value,
+                     ann.polyphen_class, ann.polyphen_value]
+
             bt += time.time() - t0
             variant = basic + vals + gts
             load_buffer.append(variant)
