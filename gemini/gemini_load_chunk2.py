@@ -62,17 +62,6 @@ def name_type(op, field, infos):
     return field, "TEXT"
 
 
-def xopen(path, mode="r"):
-    if path == "-":
-        if mode[0] == "w":
-            return sys.stdout
-        return sys.stdin
-
-    if path.endswith(".gz"):
-        return gzip.open(path, mode)
-    return open(path, mode)
-
-
 class VCFLoader(object):
     def __init__(self, path, toml_path, db_path="test.db"):
 
@@ -87,7 +76,6 @@ class VCFLoader(object):
         self.cursor = self.db.cursor()
         self.cursor.execute('PRAGMA synchronous = OFF')
         self.cursor.execute('PRAGMA journal_mode=MEMORY')
-
 
         self.create_tables()
 
@@ -161,7 +149,7 @@ CREATE table variants (
         self.cursor.execute(cmd)
 
     def load_config(self, toml_path):
-        cfg = toml.loads(xopen(toml_path).read())
+        cfg = toml.loads(open(toml_path).read())
         fields = []
         ops = []
         for f in cfg['annotation']:
@@ -194,6 +182,8 @@ CREATE table variants (
         load_buffer = []
         ots = zip(self.types, self.o_fields)
         tgt, igt, bt = 0, 0, 0
+        # TODO: pull the columns from the table and use a dict. To hard to track
+        # 140 columns.
         for i, v in enumerate(self.vcf_reader, start=1):
             t0 = time.time()
             vals = [v.INFO.get(f, '' if t == 'TEXT' else False if t == 'BOOL' else  None) for t, f in ots]
