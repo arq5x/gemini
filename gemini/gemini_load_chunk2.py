@@ -7,21 +7,27 @@ import os.path
 import time
 import sys
 import sqlite3
-import gzip
 import itertools as it
 
-import numpy as np
-import toml # toml.py
+import toml  # toml.py
 
 # third-party imports
-import cyvcf as vcf
+import cyvcf2 as vcf
+import blosc
+blosc.set_nthreads(1)
+blosc.set_blocksize(8192)
 
 import zlib
 import cPickle
 
-def pack_blob(obj, _none=buffer(zlib.compress(cPickle.dumps(None, cPickle.HIGHEST_PROTOCOL)))):
+def opack_blob(obj, _none=buffer(zlib.compress(cPickle.dumps(None, cPickle.HIGHEST_PROTOCOL)))):
     if obj is None: return _none
-    return buffer(zlib.compress(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL)))
+    return buffer(zlib.compress(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL), 1))
+
+def pack_blob(obj):
+    if obj is None: return ''
+    return buffer(blosc.compress(obj.tostring(), obj.dtype.itemsize, clevel=5, shuffle=True))
+    #return buffer(blosc.pack_array(obj))
 
 def is_number(op, field):
     return field.endswith("_float") or op in ("mean", "median", "min", "max")
@@ -61,12 +67,11 @@ def name_type(op, field, infos):
 
     return field, "TEXT"
 
-
 class VCFLoader(object):
     def __init__(self, path, toml_path, db_path="test.db"):
 
         # this will find the fields we are expecting during load.
-        self.vcf_reader = vcf.Reader(open(path))
+        self.vcf_reader = vcf.VCF(path)
         self.load_config(toml_path)
         if db_path is None:
             db_path = (path[:-6 if path.endswith('.vcf.gz') else -3]) + "db"
@@ -160,7 +165,7 @@ CREATE table variants (
         self.o_fields = fields
         self.ops = ops
 
-        field_types = [name_type(o, f, self.vcf_reader.infos) for f, o in it.izip(self.o_fields, self.ops)]
+        field_types = [name_type(o, f, {}) for f, o in it.izip(self.o_fields, self.ops)]
         self.fields, self.types = map(list, zip(*field_types))
 
     def insert(self, variants):
@@ -186,26 +191,26 @@ CREATE table variants (
         # 140 columns.
         for i, v in enumerate(self.vcf_reader, start=1):
             t0 = time.time()
-            vals = [v.INFO.get(f, '' if t == 'TEXT' else False if t == 'BOOL' else  None) for t, f in ots]
+            vals = [v.INFO_get(f, '' if t == 'TEXT' else False if t == 'BOOL' else  None) for t, f in ots]
             igt += time.time() - t0
 
             t0 = time.time()
             gts = [
-                pack_blob(np.array(v.gt_bases, np.str)),
-                pack_blob(np.array(v.gt_types, np.int8)),
-                pack_blob(np.array(v.gt_phases, np.bool)),
-                pack_blob(np.array(v.gt_depths, np.int32)),
-                pack_blob(np.array(v.gt_ref_depths, np.int32)),
-                pack_blob(np.array(v.gt_alt_depths, np.int32)),
-                pack_blob(np.array(v.gt_quals, np.float32)),
+                opack_blob(v.gt_bases),
+                pack_blob(v.gt_types),
+                pack_blob(v.gt_phases),
+                pack_blob(v.gt_depths),
+                pack_blob(v.gt_ref_depths),
+                pack_blob(v.gt_alt_depths),
+                pack_blob(v.gt_quals),
                 #pack_blob(np.array(v.gt_copy_numbers, np.float32)),
-                pack_blob(None),
-                pack_blob(None),
-                pack_blob(None), ]
+                pack_blob(v.gt_phred_ll_homref),
+                pack_blob(v.gt_phred_ll_het),
+                pack_blob(v.gt_phred_ll_homalt)]
             tgt += time.time() - t0
 
             t0 = time.time()
-            ann = SnpEff.top_severity(v.INFO['ANN'].split(","))
+            ann = SnpEff.top_severity(v.INFO_get('ANN').split(","))
             if isinstance(ann, list):
                 ann = ann[0]
             basic = [v.CHROM, v.start, v.end, i - 1, v.ID or '', v.REF,
