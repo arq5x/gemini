@@ -68,11 +68,12 @@ def name_type(op, field, infos):
     return field, "TEXT"
 
 class VCFLoader(object):
-    def __init__(self, path, toml_path, db_path="test.db"):
+    def __init__(self, path, toml_path, ped=None, db_path="test.db"):
 
         # this will find the fields we are expecting during load.
         self.vcf_reader = vcf.VCF(path)
         self.load_config(toml_path)
+        self.ped = ped
         if db_path is None:
             db_path = (path[:-6 if path.endswith('.vcf.gz') else -3]) + "db"
         self.db_path = db_path
@@ -98,7 +99,7 @@ class VCFLoader(object):
     def _create_sample_table(self):
         samples = self.vcf_reader.samples
         self.sample_to_idx = {s: i for i, s in enumerate(samples, start=1)}
-        self.cursor.execute("""\
+        create = """\
 CREATE TABLE samples (
     sample_id INTEGER,
     family_id text default NULL,
@@ -106,10 +107,43 @@ CREATE TABLE samples (
     paternal_id text default NULL,
     maternal_id TEXT default NULL,
     sex TEXT default NULL,
-    phenotype TEXT default NULL
-    )""")
+    phenotype TEXT default NULL%s
+)"""
+
         q = "INSERT INTO samples VALUES (%s)" % ",".join(["?"] * 7)
-        self.cursor.executemany(q, [(self.sample_to_idx[s], 0, s, 0, 0, -9, -9) for s in samples])
+
+        if self.ped is None:
+            self.cursor.execute(create)
+            self.cursor.executemany(q, [(self.sample_to_idx[s], 0, s, 0, 0, -9, -9) for s in samples])
+            return
+
+        fh = open(self.ped)
+        lheader = next(fh)
+        header = ["sample_id", "family_id", "paternal_id", "maternal_id", "sex", "phenotype"]
+        if lheader[0] != "#":
+            fh = it.chain([lheader], fh)
+        else:
+            header = header + lheader[1:].strip().split()[6:]
+
+        create = create % (",\n    " + ",\n    ".join(("%s TEXT" % h) for h in header[6:]))
+        self.cursor.execute(create)
+
+        inserts = []
+        for toks in (l.split("\t") if l.count("\t") > 1 else l.split() for l in fh):
+            # set name as sample_id
+            toks.insert(2, toks[1])
+            # switch family_id and sample_id since they are in opposite order in # ped
+            toks[:2] = toks[:2][::-1]
+            try:
+                toks[0] = self.sample_to_idx[toks[0]]
+            except KeyError:
+                # present in ped but not in samples
+                continue
+            inserts.append(toks)
+
+        assert len(set(len(x) for x in inserts)) == 1, ("weird ped file. missing tabs and spaces?")
+        q = "INSERT INTO samples VALUES (%s)" % ",".join(["?"] * len(inserts[0]))
+        self.cursor.executemany(q, sorted(inserts))
 
     def _create_variants_table(self):
         tmpl = """\
@@ -173,7 +207,7 @@ CREATE table variants (
             return
         t0 = time.time()
         cur = self.cursor
-        query = "INSERT INTO variants values(%s)" % ",".join(["?"] * len(variants[0]))
+        query = "INSERT INTO variants VALUES(%s)" % ",".join(["?"] * len(variants[0]))
         try:
             cur.executemany(query, variants)
         except sqlite3.ProgrammingError:
@@ -213,6 +247,7 @@ CREATE table variants (
             ann = SnpEff.top_severity(v.INFO_get('ANN').split(","))
             if isinstance(ann, list):
                 ann = ann[0]
+
             basic = [v.CHROM, v.start, v.end, i - 1, v.ID or '', v.REF,
                      ",".join(v.ALT), v.QUAL, v.FILTER, v.var_type,
                      v.var_subtype, ann.gene, ann.impact_severity,
@@ -238,5 +273,5 @@ if __name__ == "__main__":
     import doctest
     doctest.testmod()
 
-    v = VCFLoader(sys.argv[1], sys.argv[2])
+    v = VCFLoader(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
     v.load()
