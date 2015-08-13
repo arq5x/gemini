@@ -594,8 +594,8 @@ Genotype Requirements
 - [affected] No unaffected can be het or homalt (can be unknown)
 - de_novo mutations are not auto_dom (at least not in the first generation)
 - At least 1 affected must have 1 affected parent.
-- [strict] All affecteds must have parents with known phenotype.
-- [strict] All affected kids must have at least 1 affected parent
+- [strict] All affected with parents must have at least 1 affected parent
+- [strict] All affecteds with parents must have parents with known phenotype.
 - [strict] If no affected has a parent, a warning is issued.
 
 

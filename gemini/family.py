@@ -435,7 +435,7 @@ class Family(object):
                     kid_with_known_parents = True
                 # if he has a mom and dad that arent unknown, at least one of them must be affected
                 if not None in (kid.mom.affected, kid.dad.affected):
-                    if not kid.mom.affected or kid.dad.affected: return 'False'
+                    if not (kid.mom.affected or kid.dad.affected): return 'False'
 
         if strict and not kid_with_known_parents:
             return 'False'
