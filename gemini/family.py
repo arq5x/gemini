@@ -441,8 +441,8 @@ class Family(object):
             return 'False'
 
         if not kid_with_parents:
-            sys.stderr.write("WARNING: family %s had no usable samples for"
-                             " autosomal dominant test\n" % self.family_id)
+            sys.stderr.write("WARNING: using affected without parents for family \
+                    %s for autosomal dominant test. Use strict to prevent this.\n" % self.family_id)
         return af & un & depth
 
     def auto_rec(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
