@@ -55,6 +55,70 @@ def index_variation_impacts(cursor):
     cursor.execute('''create index varimp_gene_idx on \
                       variant_impacts(gene)''')
 
+def get_column_names(cursor, table_name):
+    """Utility method that returns all column names from the given table"""
+    return [row[1] for row in cursor.execute('''pragma table_info({0})'''.format(table_name))]
+
+def index_expanded_gt_tables(cursor):
+    for table_name in ['expanded_gt_types', 'expanded_gt_depths', 'expanded_gt_quals']:
+        column_names = get_column_names(cursor, table_name)
+        assert column_names[0] == 'variant_id'
+        for column_name in column_names[1:]:
+            cursor.execute('''create index var_{0}_{1}_idx on {0}({1})'''.format(table_name, column_name))
+
+def update_expanded_gt_table_family_indexes(cursor):
+    from collections import defaultdict
+    import gemini_constants
+
+    cursor.execute("select sample_id, name from samples")
+    sample_to_idx = {r[1]: r[0] - 1 for r in cursor}
+
+    # Map each parent pair (aka. family_key) to a list of their probands' (sample_id, phenotype).
+    # NOTE: The family_id string is ignored as it is redundant to the combination of sample_id, maternal_id, paternal_id
+    family_size_counter = defaultdict(int)
+    parents_to_probands = defaultdict(list)
+    for name, paternal_id, maternal_id, phenotype in cursor.execute(
+            "select name, paternal_id, maternal_id, phenotype from samples"):
+        if paternal_id == ".":
+            paternal_id = None
+        if maternal_id == ".":
+            maternal_id = None
+        if paternal_id and maternal_id:
+            family_size_counter[2] += 1
+            family_key = (paternal_id, maternal_id)
+        elif paternal_id or maternal_id:
+            family_size_counter[1] += 1
+            family_key = (paternal_id or maternal_id,)
+        else:
+            family_size_counter[0] += 1
+            family_key = (name,)
+
+        parents_to_probands[family_key].append( (name, phenotype) )
+
+    print("Identified %d families (%s)" % (len(parents_to_probands), dict(family_size_counter)))
+
+    for family_key, probands in parents_to_probands.items():
+        AFFECTED = str(gemini_constants.AFFECTED)
+        affected_probands = [sample_id for sample_id, phenotype in probands if phenotype == AFFECTED]
+        unaffected_probands = [sample_id for sample_id, phenotype in probands if phenotype != AFFECTED]
+
+        # create an index for each affected proband
+        for affected_proband in affected_probands:
+            index_columns = [affected_proband]
+            if family_key[0] != affected_proband:
+                index_columns += list(family_key)
+            index_columns += unaffected_probands
+
+            print(",".join(index_columns))
+
+            index_columns = map(lambda col_name: "s%d" % sample_to_idx[col_name], index_columns)
+            index_label = "gt_types_%s_%s_idx" % ("_".join(family_key), abs(hash(tuple(index_columns))))
+
+            cursor.execute("create index if not exists {0} on expanded_gt_types({1})".format(
+                index_label, ",".join(index_columns)))
+
+        # TODO delete indexes for families that are no longer in the samples table (aka. ped file)
+
 
 def index_samples(cursor):
     cursor.execute('''create unique index sample_name_idx on samples(name)''')
@@ -82,6 +146,7 @@ def create_indices(cursor):
     """
     index_variation(cursor)
     index_variation_impacts(cursor)
+    index_expanded_gt_tables(cursor)
     index_samples(cursor)
     index_gene_detailed(cursor)
     index_gene_summary(cursor)
@@ -329,6 +394,38 @@ def create_sample_table(cursor, args):
     structure = '''{0}, {1}'''.format(required, optional)
     creation = "create table if not exists samples ({0})".format(structure)
     cursor.execute(creation)
+
+def create_expanded_gt_tables(cursor, sample_names):
+    """Creates the expanded_gt_types, expanded_gt_depths, and expanded_gt_quals tables.
+    Still need to add allele balance.
+
+    Args:
+        sample_names: Sample names from the VCF file.
+    """
+    for table_name, value_type in [('expanded_gt_types', 'integer'),
+                                   ('expanded_gt_depths', 'integer'),
+                                   ('expanded_gt_quals', 'float')]:
+        # don't use sample names as column names to avoid problems with special chars, keywords, etc.
+        column_names = ["s{0}".format(i) for i in range(len(sample_names))]  # should I use some other sample id here?
+        per_sample_columns = ", ".join(["{0} {1}".format(column_name, value_type) for column_name in column_names])
+        cursor.execute("create table if not exists {0} "
+            "(variant_id integer, {1}, PRIMARY KEY(variant_id ASC))".format(table_name, per_sample_columns))
+
+
+def insert_into_expanded_gt_table(table_name, cursor, buffer):
+    """Inserts buffered values in to the given table.
+
+    Args:
+    	table_name: Must be one of "expanded_gt_types", "expanded_gt_depths", or "expanded_gt_quals"
+    """
+    assert table_name in ['expanded_gt_types', 'expanded_gt_depths', 'expanded_gt_quals']
+
+    num_values = len(buffer[0])
+    qmarks = ",".join(['?']*num_values)
+    cursor.execute("BEGIN TRANSACTION")
+    cursor.executemany("insert into {0} values ({1})".format(table_name, qmarks), buffer)
+    cursor.execute("END TRANSACTION")
+
 
 def _insert_variation_one_per_transaction(cursor, buffer):
     for variant in buffer:
