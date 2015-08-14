@@ -268,16 +268,16 @@ class Family(object):
             # can't phase kid with de-novo
 
             if kid_bases - parent_bases:
-                sys.stderr.write("skipping due to de_novo\n")
+                sys.stderr.write("skipping variant due to apparent de_novo in kid\n")
                 continue
 
             # no alleles from dad
             if len(kid_bases - set(dad_bases)) == len(kid_bases):
-                sys.stderr.write("skipping due no alleles from dad\n")
+                sys.stderr.write("skipping variant due to no alleles from dad (apparent mendelian error)\n")
                 continue
 
             if len(kid_bases - set(mom_bases)) == len(kid_bases):
-                sys.stderr.write("skipping due no alleles from mom\n")
+                sys.stderr.write("skipping variant due to no alleles from mom (apparent mendelian error)\n")
                 continue
 
             # should be able to phase here
