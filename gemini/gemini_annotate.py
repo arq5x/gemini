@@ -12,7 +12,7 @@ import tempfile
 import numpy as np
 from scipy.stats import mode
 import pysam
-import cyvcf as vcf
+import cyvcf2 as vcf
 
 from gemini.annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
 from gemini_windower import check_dependencies
@@ -215,7 +215,7 @@ def fix_val(val, type):
     except ValueError:
         sys.exit('Non %s value found in annotation file: %s\n' % (type, val))
 
-def get_hit_list(hits, col_idxs, args):
+def get_hit_list(hits, col_idxs, args, _count={}):
     hits = list(hits)
     if len(hits) == 0:
         return []
@@ -230,8 +230,10 @@ def get_hit_list(hits, col_idxs, args):
             for idx, col_idx in enumerate(col_idxs):
                 if not col_idx in info:
                     hit_list[idx].append('nan')
-                    sys.stderr.write("WARNING: %s is missing from INFO field in %s for at "
-                        "least one record.\n" % (col_idx, args.anno_file))
+                    if not col_idx in _count:
+                        sys.stderr.write("WARNING: %s is missing from INFO field in %s for at "
+                            "least one record.\n" % (col_idx, args.anno_file))
+                        _count[col_idx] = True
                 else:
                     hit_list[idx].append(info[col_idx])
                 # just append None since in a VCFthey are likely # to be missing ?
@@ -422,6 +424,7 @@ def get_extra_vcf(gemini_db, tmpl=None, tempdir=None):
         #atexit.register(rm, fh.name)
         #atexit.register(rm, fh.name + ".gz")
         #atexit.register(rm, fh.name + ".gz.tbi")
+        from cyvcf2 import Writer
 
-        return vcf.Writer(fh, tmpl)
+        return Writer(fh.name, tmpl)
     return vcf.Reader(fh)
