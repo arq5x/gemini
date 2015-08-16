@@ -151,20 +151,21 @@ and phenotypic information of the samples in the VCF file.
 
 The PED file format is documented here: PED_. An example PED file looks like this:
 
-|	1 M10475    None None  1    1
+|	1 M10475    -9 -9  1    1
 |	1 M10478     M10475  M10500    2    2
-|	1 M10500     None    None    2    2
+|	1 M10500     -9    -9    2    2
 |	1 M128215    M10475  M10500    1    1
 
 The columns are family_id, name, paternal_id, maternal_id, sex and phenotype.
+For gemini, you can use either tabs or spaces, but not both.
 
 You can also provide a PED file with a heading starting with #, and include extra
 fields, like this:
 
 |	#family_id name paternal_id maternal_id sex phenotype hair_color 
-| 	1 M10475    None None  1    1 brown 
+| 	1 M10475    -9       -9  1    1 brown 
 | 	1 M10478     M10475  M10500    2    2 brown 
-| 	1 M10500     None    None    2    2 black 
+| 	1 M10500     -9      -9    2    2 black 
 | 	1 M128215    M10475  M10500    1    1 blue 
 
 This will add the extra columns to the ``samples`` table and allow for you to

@@ -268,16 +268,16 @@ class Family(object):
             # can't phase kid with de-novo
 
             if kid_bases - parent_bases:
-                sys.stderr.write("skipping due to de_novo\n")
+                sys.stderr.write("skipping variant due to apparent de_novo in kid\n")
                 continue
 
             # no alleles from dad
             if len(kid_bases - set(dad_bases)) == len(kid_bases):
-                sys.stderr.write("skipping due no alleles from dad\n")
+                sys.stderr.write("skipping variant due to no alleles from dad (apparent mendelian error)\n")
                 continue
 
             if len(kid_bases - set(mom_bases)) == len(kid_bases):
-                sys.stderr.write("skipping due no alleles from mom\n")
+                sys.stderr.write("skipping variant due to no alleles from mom (apparent mendelian error)\n")
                 continue
 
             # should be able to phase here
@@ -435,14 +435,14 @@ class Family(object):
                     kid_with_known_parents = True
                 # if he has a mom and dad that arent unknown, at least one of them must be affected
                 if not None in (kid.mom.affected, kid.dad.affected):
-                    if not kid.mom.affected or kid.dad.affected: return 'False'
+                    if not (kid.mom.affected or kid.dad.affected): return 'False'
 
         if strict and not kid_with_known_parents:
             return 'False'
 
         if not kid_with_parents:
-            sys.stderr.write("WARNING: family %s had no usable samples for"
-                             " autosomal dominant test\n" % self.family_id)
+            sys.stderr.write("WARNING: using affected without parents for family \
+                    %s for autosomal dominant test. Use strict to prevent this.\n" % self.family_id)
         return af & un & depth
 
     def auto_rec(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
