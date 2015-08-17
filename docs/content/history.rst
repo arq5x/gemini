@@ -9,6 +9,12 @@ Release History
 #. Speed up and generalize database loading for multiple genome builds and species.
 #. Add an `is_splicing` column.
 
+0.16.4
+======
+#. switch to cyvcf2 to speed loading
+#. Empty filter is reported as empty rather than None
+
+
 0.16.3
 ======
 #. Fix bug in ``comp_het`` with reporting same pair multiple times.

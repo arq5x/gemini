@@ -93,7 +93,7 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t6...\c"
 
-echo "WARNING: family 2 had no usable samples for autosomal dominant test
+echo "WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
@@ -115,7 +115,7 @@ rm obs exp
 ## 7. Test with one family lacking parents, requiring two kindreds.
 ####################################################################
 echo "    auto_dom.t7...\c"
-echo "WARNING: family 2 had no usable samples for autosomal dominant test
+echo "WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
@@ -136,8 +136,8 @@ rm obs exp
 # 8. Test with two families lacking parents, requiring one kindred.
 ###################################################################
 echo "    auto_dom.t8...\c"
-echo "WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: family 2 had no usable samples for autosomal dominant test
+echo "WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
@@ -159,8 +159,8 @@ rm obs exp
 # 9. Test with two families lacking parents, requiring two kindreds.
 ###################################################################
 echo "    auto_dom.t9...\c"
-echo "WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: family 2 had no usable samples for autosomal dominant test
+echo "WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
@@ -181,9 +181,9 @@ rm obs exp
 # 10. Test with three family lacking parents, requiring one kindred.
 ###################################################################
 echo "    auto_dom.t10...\c"
-echo "WARNING: family 1 had no usable samples for autosomal dominant test
-WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: family 2 had no usable samples for autosomal dominant test
+echo "WARNING: using affected without parents for family 1 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
@@ -208,9 +208,9 @@ rm obs exp
 # 11. Test with three family lacking parents, requiring two kindreds.
 ###################################################################
 echo "    auto_dom.t11...\c"
-echo "WARNING: family 1 had no usable samples for autosomal dominant test
-WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: family 2 had no usable samples for autosomal dominant test
+echo "WARNING: using affected without parents for family 1 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
@@ -234,9 +234,9 @@ rm obs exp
 # 12. Test with three family lacking parents, requiring two kindreds.
 ###################################################################
 echo "    auto_dom.t12...\c"
-echo "WARNING: family 1 had no usable samples for autosomal dominant test
-WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: family 2 had no usable samples for autosomal dominant test
+echo "WARNING: using affected without parents for family 1 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
+WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
 ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
@@ -262,11 +262,8 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t13...\c"
 echo "WARNING: no affecteds in family 1
-WARNING: family 1 had no usable samples for autosomal dominant test
 WARNING: no affecteds in family 3
-WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: no affecteds in family 2
-WARNING: family 2 had no usable samples for autosomal dominant test" > exp
+WARNING: no affecteds in family 2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -280,11 +277,8 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t14...\c"
 echo "WARNING: no affecteds in family 1
-WARNING: family 1 had no usable samples for autosomal dominant test
 WARNING: no affecteds in family 3
-WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: no affecteds in family 2
-WARNING: family 2 had no usable samples for autosomal dominant test" > exp
+WARNING: no affecteds in family 2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 2 \
@@ -298,11 +292,8 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t15...\c"
 echo "WARNING: no affecteds in family 1
-WARNING: family 1 had no usable samples for autosomal dominant test
 WARNING: no affecteds in family 3
-WARNING: family 3 had no usable samples for autosomal dominant test
-WARNING: no affecteds in family 2
-WARNING: family 2 had no usable samples for autosomal dominant test" > exp
+WARNING: no affecteds in family 2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 3 \

@@ -64,10 +64,14 @@ class GeminiLoader(object):
         expected = "consequence,codons,amino_acids,gene,symbol,feature,exon,polyphen,sift,protein_position,biotype,warning".split(",")
 
         if self.args.anno_type == "VEP":
-            self._effect_fields = ["vep_%s" % x.lower() for x in self._get_vep_csq(self.vcf_reader) if not x.lower() in expected]
+            self._effect_fields = self._get_vep_csq(self.vcf_reader)
+            self._extra_effect_fields = [("vep_%s" % x) for x in self._effect_fields if not x.lower() in expected]
+            self._effect_fields = [x for x in self._effect_fields if x.lower() in expected]
+
         else:
             self._effect_fields = []
-        self._create_db(self._effect_fields)
+            self._extra_effect_fields = []
+        self._create_db(self._extra_effect_fields)
 
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             # load the sample info from the VCF file.
@@ -124,6 +128,8 @@ class GeminiLoader(object):
         self.var_buffer = []
         self.var_impacts_buffer = []
         self.skipped = 0
+        # need to keep the objects in memory since we just borrow it in python.
+        obj_buffer = []
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
@@ -134,7 +140,8 @@ class GeminiLoader(object):
                 self.skipped += 1
                 continue
             (variant, variant_impacts, extra_fields) = self._prepare_variation(var)
-            variant.extend(extra_fields.get(e) for e in self._effect_fields)
+            variant.extend(extra_fields.get(e) for e in self._extra_effect_fields)
+            obj_buffer.append(var)
             # add the core variant info to the variant buffer
             self.var_buffer.append(variant)
             # add each of the impact for this variant (1 per gene/transcript)
@@ -150,6 +157,7 @@ class GeminiLoader(object):
                                                   self.var_impacts_buffer)
                 # binary.genotypes.append(var_buffer)
                 # reset for the next batch
+                obj_buffer = []
                 self.var_buffer = []
                 self.var_impacts_buffer = []
             self.v_id += 1
@@ -448,25 +456,18 @@ class GeminiLoader(object):
         gt_phred_ll_homref = gt_phred_ll_het = gt_phred_ll_homalt = None
 
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
-            gt_bases = np.array(var.gt_bases, np.str)  # 'A/G', './.'
-            gt_types = np.array(var.gt_types, np.int8)  # -1, 0, 1, 2
-            gt_phases = np.array(var.gt_phases, np.bool)  # T F F
-            gt_depths = np.array(var.gt_depths, np.int32)  # 10 37 0
-            gt_ref_depths = np.array(var.gt_ref_depths, np.int32)  # 2 21 0 -1
-            gt_alt_depths = np.array(var.gt_alt_depths, np.int32)  # 8 16 0 -1
-            gt_quals = np.array(var.gt_quals, np.float32)  # 10.78 22 99 -1
+            gt_bases = var.gt_bases
+            gt_types = var.gt_types
+            gt_phases = var.gt_phases
+            gt_depths = var.gt_depths
+            gt_ref_depths = var.gt_ref_depths
+            gt_alt_depths = var.gt_alt_depths
+            gt_quals = var.gt_quals
             #gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
             gt_copy_numbers = None
-            try:
-                gt_phred_likelihoods = get_phred_lik(var.gt_phred_likelihoods)
-                if gt_phred_likelihoods is not None:
-                    gt_phred_ll_homref = gt_phred_likelihoods[:, 0]
-                    gt_phred_ll_het = gt_phred_likelihoods[:, 1]
-                    gt_phred_ll_homalt = gt_phred_likelihoods[:, 2]
-            except:
-                    gt_phred_ll_homref = var.gt_phred_ll_homref
-                    gt_phred_ll_het = var.gt_phred_ll_het
-                    gt_phred_ll_homalt = var.gt_phred_ll_homalt
+            gt_phred_ll_homref = var.gt_phred_ll_homref
+            gt_phred_ll_het = var.gt_phred_ll_het
+            gt_phred_ll_homalt = var.gt_phred_ll_homalt
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
         else:
@@ -476,7 +477,7 @@ class GeminiLoader(object):
         if self.args.skip_info_string:
             info = None
         else:
-            info = var.INFO
+            info = dict(var.INFO)
 
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
