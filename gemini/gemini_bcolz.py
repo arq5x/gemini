@@ -118,7 +118,7 @@ def create(db, cols=None):
         for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
             for j, gt_col in enumerate(gt_cols):
                 vals = decomp(row[j])
-                if vals is None:  # empty gt_phred_ll
+                if vals is None or len(vals) == 0:  # empty gt_phred_ll
                     vals = empty
                 for isamp, sample in enumerate(samples):
                     tmps[gt_col][isamp].append(vals[isamp])
