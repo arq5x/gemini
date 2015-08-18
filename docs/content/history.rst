@@ -12,7 +12,7 @@ Release History
 0.16.4
 ======
 #. switch to cyvcf2 to speed loading
-#. Empty filter is reported as empty rather than None
+#. per-sample depths are calculated using AD (GATK) or AO+RO (Freebayes). This makes depth filters more conservative.
 
 
 0.16.3
