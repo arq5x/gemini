@@ -366,65 +366,8 @@ def annotate(parser, args):
             c.execute('''create index %s on variants(%s)''' % (col_name + "idx", col_name))
 
 
-# ## Automate addition of extra fields to database
-
-def add_extras(gemini_db, chunk_dbs, region_only, tempdir=None):
-    """Annotate gemini database with extra columns from processed chunks, if available.
-    """
-    for chunk in chunk_dbs:
-        extra_file = get_extra_vcf(chunk, tempdir=tempdir)
-        if extra_file is False:
-            # there was not extra annotation so we just continue
-            continue
-        # these the the field names that we'll pull from the info field.
-        fields = [x.strip() for x in open(extra_file[:-3] + ".fields")]
-
-        ops = ["first" for t in fields]
-        Args = namedtuple("Args", "db,anno_file,anno_type,col_operations,col_names,col_types,col_extracts,region_only")
-
-        # TODO: hard-coded "text" into the type...
-        args = Args(gemini_db, extra_file, "extract", ",".join(ops),
-                    ",".join(fields), ",".join(["text"] * len(fields)),
-                    ",".join(fields),
-                    region_only)
-        annotate(None, args)
-        rm(extra_file[:-3] + ".fields")
-        rm(extra_file)
-        rm(extra_file + ".tbi")
-
-
 def rm(path):
     try:
         os.unlink(path)
     except:
         pass
-
-
-def get_extra_vcf(gemini_db, tmpl=None, tempdir=None):
-    """Retrieve extra file associated with a gemini database.
-    Most commonly, this will be with VEP annotations added.
-    Returns false if there are no vcfs associated with the database.
-    """
-    base = os.path.basename(gemini_db)
-    path = os.path.join(tempdir or tempfile.gettempdir(), "extra.%s.vcf" % base)
-    mode = "r" if tmpl is None else "w"
-    if mode == "r":
-        if not os.path.exists(path) and not os.path.exists(path + ".gz"):
-            return False
-        if not path.endswith(".gz"):
-            subprocess.check_call(["bgzip", "-f", path])
-            bgzip_out = path + ".gz"
-            subprocess.check_call(["tabix", "-p", "vcf", "-f", bgzip_out])
-            return bgzip_out
-        return path
-
-    fh = open(path, "w")
-    if mode == "w":
-        # can't do this here because we load in a separate process.
-        #atexit.register(rm, fh.name)
-        #atexit.register(rm, fh.name + ".gz")
-        #atexit.register(rm, fh.name + ".gz.tbi")
-        from cyvcf2 import Writer
-
-        return Writer(fh.name, tmpl)
-    return vcf.Reader(fh)
