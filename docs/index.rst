@@ -32,6 +32,7 @@ Please also see the original `manuscript <http://www.ploscompbiol.org/article/in
    2. GEMINI is very strict about adherence to VCF format 4.1.
    3. For best performance, load and query GEMINI databases on the fastest hard drive to which you have access.
 
+
 ============================
 Tutorials
 ============================
@@ -40,11 +41,11 @@ In addition to the documentation, please review the following tutorials if you
 are new to GEMINI. We recommend that you follow these tutorials in order, as they
 introduce concepts that build upon one another.
 
-+ `Introduction to GEMINI, basic variant querying and data exploration <https://s3.amazonaws.com/gemini-tutorials/Intro-To-Gemini.pdf>`_
-+ `Identifying de novo mutations underlying Mendelian disease <https://s3.amazonaws.com/gemini-tutorials/Gemini-DeNovo-Tutorial.pdf>`_
-+ `Identifying autosomal recessive variants underlying Mendelian disease <https://s3.amazonaws.com/gemini-tutorials/Gemini-Recessive-Tutorial.pdf>`_
-+ `Identifying autosomal dominant variants underlying Mendelian disease <https://s3.amazonaws.com/gemini-tutorials/Gemini-Dominant-Tutorial.pdf>`_
-+ `Other GEMINI tools <https://s3.amazonaws.com/gemini-tutorials/GEMINI-Other-Tools.pdf>`_
++ Introduction to GEMINI, basic variant querying and data exploration. `html <https://speakerdeck.com/arq5x/an-introduction-and-tutorial-for-variant-exploration-with-gemini>`_ `pdf <https://s3.amazonaws.com/gemini-tutorials/Intro-To-Gemini.pdf>`_
++ Identifying de novo mutations underlying Mendelian disease `html <https://speakerdeck.com/arq5x/identifying-de-novo-mutations-with-gemini>`_ `pdf <https://s3.amazonaws.com/gemini-tutorials/Gemini-DeNovo-Tutorial.pdf>`_
++ Identifying autosomal recessive variants underlying Mendelian disease `html <https://speakerdeck.com/arq5x/identifying-recessive-candidates-with-gemini>`_ `pdf <https://s3.amazonaws.com/gemini-tutorials/Gemini-Recessive-Tutorial.pdf>`_
++ Identifying autosomal dominant variants underlying Mendelian disease `html <https://speakerdeck.com/arq5x/identifying-dominant-candidates-with-gemini>`_ `pdf <https://s3.amazonaws.com/gemini-tutorials/Gemini-Dominant-Tutorial.pdf>`_
++ Other GEMINI tools `html <https://speakerdeck.com/arq5x/other-gemini-tools>`_ `pdf <https://s3.amazonaws.com/gemini-tutorials/GEMINI-Other-Tools.pdf>`_
 
 ============================
 Latest news
