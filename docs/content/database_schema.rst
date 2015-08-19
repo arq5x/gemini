@@ -164,6 +164,7 @@ aaf_adj_exac_fin          FLOAT         Adjusted allele frequency of the variant
 aaf_adj_exac_nfe          FLOAT         Adjusted allele frequency of the variant for NFE population in ExAC (AC_NFE/AN_NFE)
 aaf_adj_exac_oth          FLOAT         Adjusted allele frequency of the variant for OTH population in ExAC (AC_OTH/AN_OTH)
 aaf_adj_exac_sas          FLOAT         Adjusted allele frequency of the variant for SAS population in ExAC (AC_SAS/AN_SAS)
+max_aaf_all               FLOAT         the maximum of aaf_esp_ea, aaf_esp_aa, aaf_1kg_amr, aaf_1kg_eas,aaf_1kg_sas,aaf_1kg_afr,aaf_1kg_eur,aaf_adj_exac_afr,aaf_adj_exac_amr,aaf_adj_exac_eas,aaf_adj_exac_nfe,aaf_adj_exac_sas. and -1 if none of those databases/populations contain the variant.
 ========================  =========     =================================================================================================
 
 
