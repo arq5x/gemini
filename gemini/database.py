@@ -87,11 +87,15 @@ def create_indices(cursor):
     index_gene_summary(cursor)
 
 
-def create_tables(cursor):
+def create_tables(cursor, effect_fields=None):
     """
     Create our master DB tables
     """
-    cursor.execute('''create table if not exists variants (
+    if effect_fields:
+        effect_string = "".join(e + " TEXT,\n" for e in effect_fields)
+    else:
+        effect_string = ""
+    cmd = '''create table if not exists variants (
                     chrom text,
                     start integer,
                     end integer,
@@ -235,7 +239,9 @@ def create_tables(cursor):
                     aaf_adj_exac_nfe decimal(2,7),
                     aaf_adj_exac_oth decimal(2,7),
                     aaf_adj_exac_sas decimal(2,7),
-                    PRIMARY KEY(variant_id ASC))''')
+                    %s
+                    PRIMARY KEY(variant_id ASC))''' % effect_string
+    cursor.execute(cmd)
 
     cursor.execute('''create table if not exists variant_impacts  (
                     variant_id integer,

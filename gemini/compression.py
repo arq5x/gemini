@@ -7,8 +7,6 @@ try:
 except:
     from collections import OrderedDict
 
-# http://stackoverflow.com/questions/695794/more-efficient-way-to-
-# pickle-a-string
 
 def pack_blob(obj):
     return sqlite3.Binary(zdumps(obj))

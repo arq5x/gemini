@@ -181,14 +181,14 @@ rm obs exp
 # 10. Test a query of the variants table with a select *
 ####################################################################
 echo "    query.t10...\c"
-echo "chr1	30547	30548	None	1	1	T	G	50.09	None	snp	tv	0.116666666667
-chr1	30859	30860	None	2	1	G	C	54.3	None	snp	tv	0.433333333333
-chr1	30866	30869	None	3	1	CCT	C	49.48	None	indel	del	0.466666666667
-chr1	30894	30895	None	4	1	T	C	51.79	None	snp	ts	0.483333333333
-chr1	30922	30923	None	5	1	G	T	601.49	None	snp	tv	0.25" > exp
+echo "chr1	30547	30548	None	1	1	T	G	None	snp	tv	0.116666666667
+chr1	30859	30860	None	2	1	G	C	None	snp	tv	0.433333333333
+chr1	30866	30869	None	3	1	CCT	C	None	indel	del	0.466666666667
+chr1	30894	30895	None	4	1	T	C	None	snp	ts	0.483333333333
+chr1	30922	30923	None	5	1	G	T	None	snp	tv	0.25" > exp
 gemini query -q "select * \
                  from variants \
-                 limit 5" test.query.db | cut -f1-13 \
+                 limit 5" test.query.db | cut -f1-8,10-13 \
        > obs
 check obs exp
 rm obs exp

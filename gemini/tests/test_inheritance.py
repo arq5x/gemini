@@ -394,7 +394,8 @@ class TestFamily(object):
     def to_vcf(self, fh, var_dict=None, header=True, _POS=[100001]):
         if header:
             fh.write("##fileformat=VCFv4.1\n")
-            fh.write("#CHROM    POS     ID      REF     ALT     QUAL    FILTER INFO     FORMAT  ")
+            fh.write("""##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n""")
+            fh.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t")
             fh.write("\t".join(s.name for s in self.subjects) + "\n")
         if var_dict is None:
             var_dict = {}
@@ -416,7 +417,7 @@ class TestFamily(object):
             var_dict["ALT"] = "G"
 
         # convert from number back to repr
-        x = ["0/0", "0/1", ".", "1/1"]
+        x = ["0/0", "0/1", "./.", "1/1"]
         formats = [x[t] for t in self.gt_types]
 
         if self.gt_depths:
