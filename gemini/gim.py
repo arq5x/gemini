@@ -115,6 +115,7 @@ class GeminiInheritanceModel(object):
         """
         from .family import Family
         self.families = families = Family.from_cursor(self.gq.c).values()
+        args = self.args
 
         self.family_ids = []
         self.family_masks = []
@@ -126,12 +127,16 @@ class GeminiInheritanceModel(object):
         elif self.model == "comp_het":
             kwargs['pattern_only'] = self.args.pattern_only
 
+        requested_fams = None if not args.families else set(args.families.split(","))
+
         for family in families:
-            # e.g. family.auto_rec(gt_ll, min_depth)
-            family_filter = getattr(family,
-                    self.model)(gt_ll=self.args.gt_phred_ll,
-                                min_depth=self.args.min_sample_depth,
-                                **kwargs)
+            if requested_fams is None or family.family_id in requested_fams:
+                # e.g. family.auto_rec(gt_ll, min_depth)
+                family_filter = getattr(family, self.model)(gt_ll=self.args.gt_phred_ll,
+                                    min_depth=self.args.min_sample_depth,
+                                    **kwargs)
+            else:
+                family_filter = 'False'
 
             self.family_masks.append(family_filter)
             self.family_ids.append(family.family_id)
