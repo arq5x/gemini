@@ -14,6 +14,7 @@ Release History
 #. switch to cyvcf2 to speed loading
 #. per-sample depths are calculated using AD (GATK) or AO+RO (Freebayes). This makes depth filters more conservative.
 #. extra VEP annotations are loaded with loading machinery, not as an extra step as before.
+#. add max_aaf_all column (https://github.com/arq5x/gemini/issues/520) as an aggregate of a number of population filters
 #. use --families to limit queries *before* any work is done. Thanks to Bianca for reporting.
 
 0.16.3

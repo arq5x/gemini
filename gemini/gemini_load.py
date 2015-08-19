@@ -63,6 +63,7 @@ def load_singlecore(args):
     gemini_loader.store_version()
     gemini_loader.store_vcf_header()
     gemini_loader.populate_from_vcf()
+    gemini_db.add_max_aaf(gemini_loader.c)
 
     if not args.skip_gene_tables and not args.test_mode:
         gemini_loader.update_gene_table()
@@ -102,6 +103,7 @@ def get_merge_chunks_cmd(chunks, db, tempdir=None):
 
     return "gemini merge_chunks {chunk_names} {tempdir_string} --db {db}".format(**locals())
 
+
 def finalize_merged_db(tmp_db, db):
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
@@ -113,6 +115,7 @@ def finalize_merged_db(tmp_db, db):
     main_curr.execute('PRAGMA synchronous = OFF')
     main_curr.execute('PRAGMA journal_mode=MEMORY')
 
+    gemini_db.add_max_aaf(main_curr)
     gemini_db.create_indices(main_curr)
 
     main_conn.commit()

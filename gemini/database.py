@@ -40,6 +40,7 @@ def index_variation(cursor):
     cursor.execute('''create index var_fitcons_idx on variants(fitcons)''')
     cursor.execute('''create index var_sv_event_idx on variants(sv_event_id)''')
     cursor.execute('''create index chrom_varid_idx on variants(chrom,variant_id)''')
+    cursor.execute('CREATE index max_aaf_all_idx on variants(max_aaf_all)')
 
 def index_variation_impacts(cursor):
     cursor.execute('''create index varimp_exonic_idx on \
@@ -86,6 +87,14 @@ def create_indices(cursor):
     index_gene_detailed(cursor)
     index_gene_summary(cursor)
 
+def add_max_aaf(cursor):
+    # see: https://github.com/arq5x/gemini/issues/520
+    # skip finns
+    cursor.execute('ALTER TABLE variants ADD COLUMN max_aaf_all')
+    cursor.execute('''UPDATE variants set max_aaf_all = MAX(aaf_esp_ea, aaf_esp_aa, aaf_1kg_amr, aaf_1kg_eas, \
+                   aaf_1kg_sas,aaf_1kg_afr,aaf_1kg_eur,aaf_adj_exac_afr,aaf_adj_exac_amr,aaf_adj_exac_eas, \
+                aaf_adj_exac_nfe,aaf_adj_exac_sas)''')
+    cursor.execute('UPDATE variants set max_aaf_all = -1 WHERE max_aaf_all is NULL')
 
 def create_tables(cursor, effect_fields=None):
     """
