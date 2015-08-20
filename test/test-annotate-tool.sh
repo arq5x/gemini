@@ -3,6 +3,9 @@
 ###########################################################################################
 source ./check.sh
 
+hash bgzip 2>/dev/null || { echo "skiping annotate tests since we can't find bgzip"; exit; }
+hash tabix 2>/dev/null || { echo "skiping annotate tests since we can't find tabix"; exit; }
+
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548
 chr1	30922	30923" > anno.bed

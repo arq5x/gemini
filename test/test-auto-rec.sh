@@ -76,12 +76,13 @@ rm obs exp
 ###################################################################
 echo "    auto_rec.t5...\c"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	1" > exp
+WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2" > exp
 gemini autosomal_recessive  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
-    --min-kindreds 1 \
+	--min-kindreds 1 \
     --filter "impact_severity = 'HIGH'" \
-    -d 40 \
+    -d 23 \
     test.auto_rec.db > obs
 check obs exp
 rm obs exp

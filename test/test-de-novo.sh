@@ -52,7 +52,7 @@ gemini de_novo  \
 	--allow-unaffected \
     --columns "gene, ref, alt, impact, impact_severity" \
     --filter "impact_severity = 'MED'" \
-    -d 40 \
+    -d 24 \
     test.de_novo.db > obs
 check obs exp
 rm obs exp

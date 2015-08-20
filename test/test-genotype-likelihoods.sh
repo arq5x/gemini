@@ -1,4 +1,15 @@
 source ./check.sh
+check()
+{
+	echo $3
+    if diff $1 $2; then
+        echo ok
+    else
+        echo fail
+    fi
+}
+export -f check
+
 
 gemini query -q "select gt_phred_ll_homref.A, gt_phred_ll_het.A, gt_phred_ll_homalt.A, gt_phred_ll_homref.B, gt_phred_ll_het.B, gt_phred_ll_homalt.B from variants" test.PLs.db > obs
 echo "561	0	317	0	99	1176
@@ -9,9 +20,10 @@ echo "561	0	317	0	99	1176
 45	3	0	-1	-1	-1
 45	3	0	-1	-1	-1
 41	3	0	-1	-1	-1
-None	None	None	None	None	None" > exp
+-1	-1	-1	-1	-1	-1" > exp
 
 check obs exp "GLs.t01"
+rm -f obs exp
 
 
 gemini query -q "select (gt_phred_ll_homref).(*) from variants limit 2" test.PLs.db > obs
@@ -29,7 +41,6 @@ echo "gt_phred_ll_homref.A	gt_phred_ll_homref.B	gt_phred_ll_homref.C	gt_phred_ll
 check obs exp "GLs.t03"
 
 
-
 gemini query --header -q "select (gt_phred_ll_homalt).(*) from variants" --gt-filter "(gt_phred_ll_homalt).(*).(>=20).(all)" test.PLs.db > obs
 
 echo "gt_phred_ll_homalt.A	gt_phred_ll_homalt.B	gt_phred_ll_homalt.C	gt_phred_ll_homalt.D	gt_phred_ll_homalt.E	gt_phred_ll_homalt.F	gt_phred_ll_homalt.G	gt_phred_ll_homalt.H	gt_phred_ll_homalt.I	gt_phred_ll_homalt.J	gt_phred_ll_homalt.K	gt_phred_ll_homalt.L
@@ -38,6 +49,7 @@ echo "gt_phred_ll_homalt.A	gt_phred_ll_homalt.B	gt_phred_ll_homalt.C	gt_phred_ll
 3133	4373	5113	3872	3687	4458	1869	3878	63	2385	3825	2315
 2804	4749	6850	2750	1536	4131	3536	3157	3510	3511	5850	3064" > exp
 check obs exp "GLs.t04"
+rm -f obs exp
 
 
 gemini query --header -q "select (gt_phred_ll_het).(*) from variants" --gt-filter "(gt_phred_ll_het).(*).(>=0).(all)" test.PLs.db > obs
@@ -48,6 +60,7 @@ echo "gt_phred_ll_het.A	gt_phred_ll_het.B	gt_phred_ll_het.C	gt_phred_ll_het.D	gt
 0	0	65	0	0	0	0	0	0	0	0	0" > exp
 check obs exp "GLs.t05"
 
+rm -f obs exp
 
 gemini query --header -q "select (gt_phred_ll_het).(*) from variants" --gt-filter "(gt_phred_ll_het).(*).(>=0).(any) and gt_types.G == HOM_REF or gt_types.G == HET" test.PLs.db > obs
 echo "gt_phred_ll_het.A	gt_phred_ll_het.B	gt_phred_ll_het.C	gt_phred_ll_het.D	gt_phred_ll_het.E	gt_phred_ll_het.F	gt_phred_ll_het.G	gt_phred_ll_het.H	gt_phred_ll_het.I	gt_phred_ll_het.J	gt_phred_ll_het.K	gt_phred_ll_het.L

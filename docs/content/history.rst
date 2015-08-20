@@ -9,6 +9,23 @@ Release History
 #. Speed up and generalize database loading for multiple genome builds and species.
 #. Add an `is_splicing` column.
 
+0.17.0
+======
+#. switch to cyvcf2 to speed loading
+#. per-sample depths are calculated using AD (GATK) or AO+RO (Freebayes). This makes depth filters more conservative.
+#. extra VEP annotations are loaded with loading machinery, not as an extra step as before.
+#. add max_aaf_all column (https://github.com/arq5x/gemini/issues/520) as an aggregate of a number of population filters
+#. use --families to limit queries *before* any work is done. Thanks to Bianca for reporting.
+
+0.16.3
+======
+#. Fix bug in ``comp_het`` with reporting same pair multiple times.
+#. Handle UNKOWN genotypes in ``comp_het`` tool
+#. Fix cyvcf dependency in requirements
+#. Only run tests that require bgzip/tabix/bedtools if they are available on PATH
+#. Limit ipython version to 3<version<4
+
+
 0.16.2
 =======================================
 #. Hone rules for unphased and partially-phased compound hets.

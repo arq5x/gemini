@@ -268,16 +268,16 @@ class Family(object):
             # can't phase kid with de-novo
 
             if kid_bases - parent_bases:
-                sys.stderr.write("skipping due to de_novo\n")
+                sys.stderr.write("skipping variant due to apparent de_novo in kid\n")
                 continue
 
             # no alleles from dad
             if len(kid_bases - set(dad_bases)) == len(kid_bases):
-                sys.stderr.write("skipping due no alleles from dad\n")
+                sys.stderr.write("skipping variant due to no alleles from dad (apparent mendelian error)\n")
                 continue
 
             if len(kid_bases - set(mom_bases)) == len(kid_bases):
-                sys.stderr.write("skipping due no alleles from mom\n")
+                sys.stderr.write("skipping variant due to no alleles from mom (apparent mendelian error)\n")
                 continue
 
             # should be able to phase here
@@ -435,14 +435,14 @@ class Family(object):
                     kid_with_known_parents = True
                 # if he has a mom and dad that arent unknown, at least one of them must be affected
                 if not None in (kid.mom.affected, kid.dad.affected):
-                    if not kid.mom.affected or kid.dad.affected: return 'False'
+                    if not (kid.mom.affected or kid.dad.affected): return 'False'
 
         if strict and not kid_with_known_parents:
             return 'False'
 
         if not kid_with_parents:
-            sys.stderr.write("WARNING: family %s had no usable samples for"
-                             " autosomal dominant test\n" % self.family_id)
+            if len(self.affecteds) > 0:
+                sys.stderr.write("WARNING: using affected without parents for family %s for autosomal dominant test. Use strict to prevent this.\n" % self.family_id)
         return af & un & depth
 
     def auto_rec(self, min_depth=0, gt_ll=False, strict=True, only_affected=True):
@@ -832,9 +832,9 @@ class Family(object):
         gt_bases2 = [_splitter.split(b) for b in gt_bases2]
 
         # get in (0, 1) format instead of (A, T)
-        ra = [ref1, alt1]
+        ra = [ref1, alt1, "."]
         gt_nums1 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases1]
-        ra = [ref2, alt2]
+        ra = [ref2, alt2, "."]
         gt_nums2 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases2]
 
         if pattern_only:
@@ -843,8 +843,8 @@ class Family(object):
                                                gt_phases1, gt_phases2)
 
         for un in self.unaffecteds:
-            if gt_types2[un._i] == HOM_ALT or gt_types2[un._i] == HOM_ALT:
-                return False
+            if gt_types2[un._i] == HOM_ALT or gt_types1[un._i] == HOM_ALT:
+                return {'candidate': False}
 
         ret = {'affected_phased': [], 'unaffected_phased': [],
                'unaffected_unphased': [], 'affected_unphased': [],
@@ -909,12 +909,17 @@ class Family(object):
         if pattern_only:
             af, un = empty, empty
             for kid in self.samples_with_parent:
-                af |= (kid.gt_types == HET) & (kid.mom.gt_types != HOM_ALT) & (kid.dad.gt_types != HOM_ALT)
+                af |= (kid.gt_types == HET) & (kid.mom.gt_types != HOM_ALT) & (kid.dad.gt_types != HOM_ALT) \
+                                            & (kid.mom.gt_types != UNKNOWN) & (kid.dad.gt_types != UNKNOWN)
         else:
             # all affecteds must be het at both sites
             af = reduce(op.or_, [s.gt_types == HET for s in self.affecteds], empty)
             # no unaffected can be homozygous alt at either site.
             un = reduce(op.and_, [s.gt_types != HOM_ALT for s in self.unaffecteds], empty)
+            for kid in self.samples_with_parent:
+                if not kid.affected: continue
+                un &= (kid.mom.gt_types != UNKNOWN)
+                un &= (kid.dad.gt_types != UNKNOWN)
 
             #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
 

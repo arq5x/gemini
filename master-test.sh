@@ -135,7 +135,7 @@ bash test-multi-col.sh
 
 bash test-eff.sh
 
-python test-comphet.py
+gemini_python test-comphet.py
 # cleanup
 rm ./*.db
 rm ./file.dot

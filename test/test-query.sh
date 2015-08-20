@@ -181,14 +181,14 @@ rm obs exp
 # 10. Test a query of the variants table with a select *
 ####################################################################
 echo "    query.t10...\c"
-echo "chr1	30547	30548	None	1	1	T	G	50.09	None	snp	tv	0.116666666667
-chr1	30859	30860	None	2	1	G	C	54.3	None	snp	tv	0.433333333333
-chr1	30866	30869	None	3	1	CCT	C	49.48	None	indel	del	0.466666666667
-chr1	30894	30895	None	4	1	T	C	51.79	None	snp	ts	0.483333333333
-chr1	30922	30923	None	5	1	G	T	601.49	None	snp	tv	0.25" > exp
+echo "chr1	30547	30548	None	1	1	T	G	None	snp	tv	0.116666666667
+chr1	30859	30860	None	2	1	G	C	None	snp	tv	0.433333333333
+chr1	30866	30869	None	3	1	CCT	C	None	indel	del	0.466666666667
+chr1	30894	30895	None	4	1	T	C	None	snp	ts	0.483333333333
+chr1	30922	30923	None	5	1	G	T	None	snp	tv	0.25" > exp
 gemini query -q "select * \
                  from variants \
-                 limit 5" test.query.db | cut -f1-13 \
+                 limit 5" test.query.db | cut -f1-8,10-13 \
        > obs
 check obs exp
 rm obs exp
@@ -768,13 +768,20 @@ gemini query --header --format sampledetail --show-samples -q "select chrom, sta
 check obs exp
 rm obs exp
 
+echo "    query.t42...\c"
+echo "-1	None	None	None	None	None	None	None	0	0	0	0	0
+-1	None	None	None	None	None	None	None	None	None	None	None	None
+-1	None	None	None	None	None	None	None	None	None	None	None	None
+-1	None	None	None	None	None	None	None	None	None	None	None	None
+-1	None	None	0.9164	0.996	0.9233	0.6687	0.9364	None	None	None	None	None
+-1	None	None	None	None	None	None	None	0.292253521127	0.631578947368	0.98275862069	0.833928571429	0.866379310345
+0.0497	0.0457067757009	0.003663003663	0.036	0.003	0.0153	0.0015	0.0497	0.00255297421496	0.00804493017608	0	0.0405799922149	0.00488782051282
+-1	0.88742933156	0.544101123596	None	None	None	None	None	0.594155844156	0.950725980846	0.999403625954	0.971647095179	0.983191249799
+0.280445372303	0.136133389616	0.0213645761544	0.0418	0.001	0.045	0.0045	0.1034	0.0217391304348	0.118834080717	0	0.280445372303	0.154037886341
+-1	None	None	None	None	None	None	None	0	0	0	0	0" > exp
+gemini query -q "select max_aaf_all,aaf_esp_ea, aaf_esp_aa, aaf_1kg_amr, aaf_1kg_eas, \
+                 aaf_1kg_sas,aaf_1kg_afr,aaf_1kg_eur,aaf_adj_exac_afr,aaf_adj_exac_amr,aaf_adj_exac_eas, \
+                 aaf_adj_exac_nfe,aaf_adj_exac_sas from variants limit 10" test.query.db > obs
 
-
-
-
-
-
-
-
-
- 
+check obs exp
+rm obs exp

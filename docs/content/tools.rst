@@ -593,15 +593,18 @@ Genotype Requirements
 - All affecteds must be het
 - [affected] No unaffected can be het or homalt (can be unknown)
 - de_novo mutations are not auto_dom (at least not in the first generation)
-- At least 1 affected must have 1 affected parent.
+- At least 1 affected must have 1 affected parent (or have no parents).
+- If no affected has a parent, a warning is issued.
 - [strict] All affecteds must have parents with known phenotype.
 - [strict] All affected kids must have at least 1 affected parent
-- [strict] If no affected has a parent, a warning is issued.
 
 
 If `--lenient` is specified, the items prefixed with "[strict]" are not required.
 
 If `--allow-unaffected` is specified, the item prefix with "[affected]" is not required.
+
+Note that for autosomal dominant `--lenient` allows singleton affecteds to be used to meet the
+`--min-kindreds` requirement if they are HET.
 
 
 ---------------------

@@ -11,7 +11,6 @@ import subprocess
 from cluster_helper.cluster import cluster_view
 import database as gemini_db
 from gemini_load_chunk import GeminiLoader
-import gemini_annotate
 import uuid
 import time
 import datetime
@@ -64,6 +63,7 @@ def load_singlecore(args):
     gemini_loader.store_version()
     gemini_loader.store_vcf_header()
     gemini_loader.populate_from_vcf()
+    gemini_db.add_max_aaf(gemini_loader.c)
 
     if not args.skip_gene_tables and not args.test_mode:
         gemini_loader.update_gene_table()
@@ -73,20 +73,17 @@ def load_singlecore(args):
     if not args.no_genotypes and not args.no_load_genotypes:
         gemini_loader.store_sample_gt_counts()
 
-    gemini_annotate.add_extras(args.db, [args.db], region_only=False, tempdir=args.tempdir)
 
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)
     chunks = load_chunks_multicore(grabix_file, args)
     merge_chunks_multicore(chunks, args)
-    gemini_annotate.add_extras(args.db, chunks, region_only=False, tempdir=args.tempdir)
 
 def load_ipython(args):
     grabix_file = bgzip(args.vcf)
     with cluster_view(*get_ipython_args(args)) as view:
         chunks = load_chunks_ipython(grabix_file, args, view)
         merge_chunks_ipython(chunks, args, view)
-    gemini_annotate.add_extras(args.db, chunks, region_only=False, tempdir=args.tempdir)
 
 def merge_chunks(chunks, db, kwargs):
     cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"))
@@ -106,6 +103,7 @@ def get_merge_chunks_cmd(chunks, db, tempdir=None):
 
     return "gemini merge_chunks {chunk_names} {tempdir_string} --db {db}".format(**locals())
 
+
 def finalize_merged_db(tmp_db, db):
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
@@ -117,6 +115,7 @@ def finalize_merged_db(tmp_db, db):
     main_curr.execute('PRAGMA synchronous = OFF')
     main_curr.execute('PRAGMA journal_mode=MEMORY')
 
+    gemini_db.add_max_aaf(main_curr)
     gemini_db.create_indices(main_curr)
 
     main_conn.commit()

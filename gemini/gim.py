@@ -115,6 +115,7 @@ class GeminiInheritanceModel(object):
         """
         from .family import Family
         self.families = families = Family.from_cursor(self.gq.c).values()
+        args = self.args
 
         self.family_ids = []
         self.family_masks = []
@@ -126,12 +127,16 @@ class GeminiInheritanceModel(object):
         elif self.model == "comp_het":
             kwargs['pattern_only'] = self.args.pattern_only
 
+        requested_fams = None if not args.families else set(args.families.split(","))
+
         for family in families:
-            # e.g. family.auto_rec(gt_ll, min_depth)
-            family_filter = getattr(family,
-                    self.model)(gt_ll=self.args.gt_phred_ll,
-                                min_depth=self.args.min_sample_depth,
-                                **kwargs)
+            if requested_fams is None or family.family_id in requested_fams:
+                # e.g. family.auto_rec(gt_ll, min_depth)
+                family_filter = getattr(family, self.model)(gt_ll=self.args.gt_phred_ll,
+                                    min_depth=self.args.min_sample_depth,
+                                    **kwargs)
+            else:
+                family_filter = 'False'
 
             self.family_masks.append(family_filter)
             self.family_ids.append(family.family_id)
@@ -378,10 +383,9 @@ class CompoundHet(GeminiInheritanceModel):
         from .family import Family
         self.gq._connect_to_database()
         fams = self.fams = Family.from_cursor(self.gq.c)
-        samples_w_hetpair = defaultdict(list)
 
         for grp, li in self.gen_candidates('gene'):
-
+            samples_w_hetpair = defaultdict(list)
             sites = []
             for row in li:
 
@@ -408,7 +412,6 @@ class CompoundHet(GeminiInheritanceModel):
                         if not ch['candidate']: continue
 
                         samples_w_hetpair[(site1, site2)].append(ch)
-
             yield grp, self.filter_candidates(samples_w_hetpair)
 
 class Site(object):

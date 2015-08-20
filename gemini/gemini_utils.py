@@ -17,7 +17,7 @@ def get_gt_cols(cur):
             d = dict(zip(keys, row))
         else:
             d = row
-        if d['name'][:2] == 'gt' and d['type'] == 'blob':
+        if d['name'][:2] == 'gt' and d['type'].lower() == 'blob':
             gts.append(d['name'])
     return gts
 

@@ -2,13 +2,14 @@ numpy>=1.7.1
 pyparsing>=1.5.6,<=1.5.7
 cython>=0.22
 pysam>=0.6
-cyvcf>=0.1.16
+cyvcf2>=0.1.4
 PyYAML>=3.10
 pybedtools>=0.6.2
 jinja2>=2.7.1
 https://github.com/chapmanb/python-graph/releases/download/1.8.2/python-graph-core-1.8.2.tar.gz
 https://github.com/chapmanb/python-graph/releases/download/1.8.2/python-graph-dot-1.8.2.tar.gz
 bottle>=0.11.6
+ipython>=3.0,<4.0
 ipython-cluster-helper>=0.2.23
 bx-python>=0.7.1
 pandas>=0.11.0
@@ -18,4 +19,4 @@ Unidecode>=0.04.14
 cyordereddict==0.2.2
 bcolz>=0.8.1
 numexpr>=2.4.3
-gemini==0.16.2
+gemini==0.16.3
