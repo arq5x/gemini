@@ -30,24 +30,25 @@ def add_cols(cols, gt_filter):
 
 def gen_results(rows, gt_filters, min_filters, min_variants, columns):
     # we track the index of the passed filter in passed_filters.
-    passed_filters = {}
+    gene_passed_filters = {}
     subset = []
     for row in rows:
         cols = {c: row[c] for c in columns}
-        passed = False
         # have to test all filters since 1 row can meet multiple fitlers.
+        row_passed_filters = []
         for i, gt_filter in enumerate(gt_filters, start=1):
             if eval(gt_filter, cols):
                 # track that this filter passed.
-                passed_filters[i] = True
-                passed = True
-        if passed:
+                gene_passed_filters[i] = True
+                row_passed_filters.append(i)
+        if row_passed_filters:
+            row.print_fields['variant_passed_filters'] = ",".join(map(str, row_passed_filters))
             subset.append(row)
-    if len(passed_filters) < min_filters or len(subset) < min_variants:
+    if len(gene_passed_filters) < min_filters or len(subset) < min_variants:
         raise StopIteration
 
     # e.g. 1,2 indicating which filters passed
-    passed_filters = ",".join(str(x) for x in sorted(passed_filters))
+    passed_filters = ",".join(str(x) for x in sorted(gene_passed_filters))
     for row in subset:
         row.print_fields['passed_filters'] = passed_filters
         yield row
