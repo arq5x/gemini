@@ -13,18 +13,19 @@ def add_args(a=None):
     a.add_argument("--min-variants", type=int, default=1)
     a.add_argument("--gt-filter", required=True, default=[], action='append')
     a.add_argument("--filter")
-    a.add_argument("--columns", default="chrom,start,end,gene,impact")
+    a.add_argument("--columns", default="chrom,start,end,gene,impact,impact_severity,max_aaf_all")
     a.add_argument("db")
     return a
 
 
-def add_cols(cols, gt_filter, grouper):
+def add_cols(cols, gt_filter):
     assert isinstance(cols, list)
-    all_cols = [grouper] + ["gts", "gt_types", "gt_phases", "gt_depths",
-                            "gt_ref_depths", "gt_alt_depths", "gt_quals",
-                            "gt_phred_ll_homref", "gt_phred_ll_het",
-                            "gt_phred_ll_homalt"]
+    all_cols = ["gts", "gt_types", "gt_phases", "gt_depths",
+                "gt_ref_depths", "gt_alt_depths", "gt_quals",
+                "gt_phred_ll_homref", "gt_phred_ll_het",
+                "gt_phred_ll_homalt"]
     return [x for x in all_cols if x in gt_filter and not x in cols]
+
 
 
 def gen_results(rows, gt_filters, min_filters, min_variants, columns):
@@ -58,7 +59,9 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
     assert os.path.exists(db)
 
     orig_columns = [x.strip() for x in (columns or "").split(",")]
-    added_cols = add_cols(orig_columns, "||".join(gt_filters), grouper)
+    added_cols = add_cols(orig_columns, "||".join(gt_filters))
+    if grouper not in orig_columns:
+        added_cols.append(grouper)
     columns = orig_columns + added_cols
     assert not any(';' in c for c in columns)
 
