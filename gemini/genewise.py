@@ -10,7 +10,6 @@ def add_args(a=None):
     if a is None:
         a = ArgumentParser()
     a.add_argument("--min-filters", type=int, default=1)
-    a.add_argument("--min-variants", type=int, default=1)
     a.add_argument("--gt-filter", required=True, default=[], action='append')
     a.add_argument("--filter")
     a.add_argument("--columns", default="chrom,start,end,gene,impact,impact_severity,max_aaf_all")
@@ -27,7 +26,6 @@ def add_cols(cols, gt_filter):
     return [x for x in all_cols if x in gt_filter and not x in cols]
 
 
-
 def gen_results(rows, gt_filters, min_filters, min_variants, columns):
     # we track the index of the passed filter in passed_filters.
     gene_passed_filters = {}
@@ -42,7 +40,7 @@ def gen_results(rows, gt_filters, min_filters, min_variants, columns):
                 gene_passed_filters[i] = True
                 row_passed_filters.append(i)
         if row_passed_filters:
-            row.print_fields['variant_passed_filters'] = ",".join(map(str, row_passed_filters))
+            row.print_fields['per_variant_filters'] = ",".join(map(str, row_passed_filters))
             subset.append(row)
     if len(gene_passed_filters) < min_filters or len(subset) < min_variants:
         raise StopIteration
@@ -50,7 +48,8 @@ def gen_results(rows, gt_filters, min_filters, min_variants, columns):
     # e.g. 1,2 indicating which filters passed
     passed_filters = ",".join(str(x) for x in sorted(gene_passed_filters))
     for row in subset:
-        row.print_fields['passed_filters'] = passed_filters
+        row.print_fields['per_gene_filters'] = passed_filters
+        row.print_fields['n_passed_filters'] = len(row_passed_filters)
         yield row
 
 
@@ -91,9 +90,10 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
     for groupkey, grp in it.groupby(gq, grouper):
         grp = list(grp)
         for x in gen_results(list(grp), cleaned_filters, min_filters or 0,
-                             min_variants or 0, columns):
+                             min_variants, columns):
             for c in added_cols:
-                del x.print_fields[c]
+                if c != 'gene':
+                    del x.print_fields[c]
             if not header_printed:
                 print "\t".join(x.print_fields.keys())
                 header_printed = True
@@ -102,4 +102,4 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
 
 def run(args):
     genewise(args.db, args.gt_filter, args.filter, args.columns,
-             args.min_filters, args.min_variants)
+             args.min_filters)
