@@ -152,8 +152,8 @@ Genotype Requirements
 ---------------------
 
 - All affected individuals must be heterozygous at both sites.
-- No unaffected can be heterozygous at both sites.
 - No unaffected can be homozygous alterate at either site.
+- If any unphased-unaffected is het at both sites, the site will be give lower priority
 - No phased-unaffected can be heterozygous at both sites.
 
   a. `--allow-unaffected` keeps sites where a phased unaffected shares the het-pair
