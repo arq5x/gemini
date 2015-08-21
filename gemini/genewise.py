@@ -1,3 +1,4 @@
+import sys
 import os
 from compiler import compile
 import operator
@@ -40,7 +41,7 @@ def gen_results(rows, gt_filters, min_filters, min_variants, columns):
                 gene_passed_filters[i] = True
                 row_passed_filters.append(i)
         if row_passed_filters:
-            row.print_fields['per_variant_filters'] = ",".join(map(str, row_passed_filters))
+            row.print_fields['variant_filters'] = ",".join(map(str, row_passed_filters))
             subset.append(row)
     if len(gene_passed_filters) < min_filters or len(subset) < min_variants:
         raise StopIteration
@@ -48,8 +49,8 @@ def gen_results(rows, gt_filters, min_filters, min_variants, columns):
     # e.g. 1,2 indicating which filters passed
     passed_filters = ",".join(str(x) for x in sorted(gene_passed_filters))
     for row in subset:
-        row.print_fields['n_variant_filters'] = len(row_passed_filters)
-        row.print_fields['per_gene_filters'] = passed_filters
+        row.print_fields['n_gene_variants'] = len(subset)
+        row.print_fields['gene_filters'] = passed_filters
         yield row
 
 
@@ -101,5 +102,8 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
 
 
 def run(args):
+    if args.min_filters > len(args.gt_filter):
+        sys.stderr.write("ERROR gene-wise: specified --min-filter > the number of --gt-filters\n")
+        sys.exit(2)
     genewise(args.db, args.gt_filter, args.filter, args.columns,
              args.min_filters)
