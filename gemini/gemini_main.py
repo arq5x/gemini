@@ -1102,7 +1102,7 @@ def main():
     #########################################
 
     from .genewise import add_args
-    parser_genewise = subparsers.add_parser('genewise')
+    parser_genewise = subparsers.add_parser('gene_wise')
     add_args(parser_genewise)
     def genewise_run(parser, args):
         from .genewise import run
