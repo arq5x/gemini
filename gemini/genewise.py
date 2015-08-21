@@ -48,8 +48,8 @@ def gen_results(rows, gt_filters, min_filters, min_variants, columns):
     # e.g. 1,2 indicating which filters passed
     passed_filters = ",".join(str(x) for x in sorted(gene_passed_filters))
     for row in subset:
+        row.print_fields['n_variant_filters'] = len(row_passed_filters)
         row.print_fields['per_gene_filters'] = passed_filters
-        row.print_fields['n_passed_filters'] = len(row_passed_filters)
         yield row
 
 
