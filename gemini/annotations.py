@@ -720,6 +720,7 @@ def get_1000G_info(var, empty=EMPTY_1000G):
         # var.start is used since the chromosomal pos in pysam.asVCF is zero based (hit.pos)
         # and would be equivalent to (POS-1) i.e. var.start
         if var.start == hit.pos and \
+           var.ALT and len(var.ALT) > 0 and \
            var.ALT[0] == hit.alt and \
            hit.ref == var.REF:
             for info in hit.info.split(";"):

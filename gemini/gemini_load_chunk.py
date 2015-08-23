@@ -133,6 +133,8 @@ class GeminiLoader(object):
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
+            if not var.ALT or len(var.ALT) == 0:
+                continue
             if len(var.ALT) > 1 and not self.seen_multi:
                 self._multiple_alts_message()
 
