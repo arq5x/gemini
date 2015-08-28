@@ -16,6 +16,7 @@ Release History
 #. extra VEP annotations are loaded with loading machinery, not as an extra step as before.
 #. add max_aaf_all column (https://github.com/arq5x/gemini/issues/520) as an aggregate of a number of population filters
 #. use --families to limit queries *before* any work is done. Thanks to Bianca for reporting.
+#. no longer create bcolz indicies by default. Users can create them with `gemini bcolz_index`
 
 0.16.3
 ======
