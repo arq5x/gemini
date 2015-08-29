@@ -659,6 +659,59 @@ are not):
 
 
 ===========================================================================
+``gene_wise``: Custom genotype filtering by gene. 
+===========================================================================
+The gemini query tool allows querying by variant and the inheritance tools
+described above enable querying by gene for fixed inheritance patterns.
+The `gene_wise` tool allows querying by gene with custom genotype filters
+to bridge the gap between these tools.
+
+With this tool, multiple `--gt-filter` s can be specified. Each filter can
+be any valid filter; often, it will make sense to have 1 filter for each
+family. For example, given this pedigree:
+
+.. image : todo add image
+
+Where only the orange samples are sequenced, we could devise a query::
+
+    gemini gene_wise $db \
+        --min-filters 3 \
+        --gt-filter "gt_types.fam1_kid == HET and gt_types.fam1_mom == HOM_REF and gt_types.fam1_dad == HOM_REF" \
+        --gt-filter "gt_types.fam2_kid == HET" \
+        --gt-filter "gt_types.fam3_kid == HET" \
+        --columns "chrom,start,end,gene,impact,impact_severity" \
+        --filter "max_aaf_all < 0.005"
+
+The `--min-filters` option means that we want all 3 of those filters to be met in a
+gene in order for variants in that gene to be reported. We can envision a scenario where
+we have 6 families (and 6 filters) and we want to report genes where 4 of them meet the
+filters. In that case, the query would have 6 `--gt-filter` s and `--min-filters` of 3.
+
+This differs from using gemini query with a single `--gt-filter` that combines each of those 
+terms with an *and* because this allows each filter to be met **in a different variant** but
+**in the same gene** while the gemini query tool applies all elements of the single filter
+to each variant.
+
+The output from the above query is::
+
+    chrom  start     end       gene      impact              impact_severity  variant_filters  n_gene_variants  gene_filters
+    chr5   60839982  60839983  ZSWIM6    non_syn_coding      MED              1,2,3            1                1,2,3
+    chr6   32548031  32548032  HLA-DRB1  non_syn_coding      MED              1                4                1,2,3
+    chr6   32552059  32552060  HLA-DRB1  frame_shift         HIGH             2                4                1,2,3
+    chr6   32552131  32552132  HLA-DRB1  inframe_codon_gain  MED              3                4                1,2,3
+    chr6   32552136  32552137  HLA-DRB1  non_syn_coding      MED              3                4                1,2,3
+
+Note that the first gene has the same variant for all 3 families, so we could have found this with
+the gemini query tool. However, for the HLA gene, each of the 3 filters passed in different variant
+so this would be missed by the query tool which only looks at a single variant at a time.
+
+As with the other tools, this tool orders by chromosome and gene and it applies `WHERE (is_exonic = 1 AND impact_severity != 'LOW')"` to the query.
+
+ + The `variant_filters` column shows which filters were passed by the variant.
+ + The `n_gene_variants` column shows how many variants in the gene are being reported.
+ + The `gene_filter` column shows which filters in the gene passed by any variant.
+
+===========================================================================
 ``pathways``: Map genes and variants to KEGG pathways.
 ===========================================================================
 Mapping genes to biological pathways is useful in understanding the

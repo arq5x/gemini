@@ -1098,6 +1098,18 @@ def main():
     parser_fusions.set_defaults(func=fusions_fn)
 
     #########################################
+    # genewise
+    #########################################
+
+    from .genewise import add_args
+    parser_genewise = subparsers.add_parser('gene_wise')
+    add_args(parser_genewise)
+    def genewise_run(parser, args):
+        from .genewise import run
+        run(args)
+    parser_genewise.set_defaults(func=genewise_run)
+
+    #########################################
     # $ gemini QC
     #########################################
     parser_qc = subparsers.add_parser('qc',
