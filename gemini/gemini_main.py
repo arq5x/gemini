@@ -150,11 +150,11 @@ def main():
                              action='store_true',
                              help='Do not load gene tables. Loaded by default.',
                              default=False)
-    parser_load.add_argument('--skip-info-string',
+    parser_load.add_argument('--save-info-string',
                              dest='skip_info_string',
-                             action='store_true',
-                             help='Do not load INFO string from VCF file to reduce DB size. Loaded by default',
-                             default=False)
+                             action='store_false',
+                             help='Load INFO string from VCF file. Not loaded by default',
+                             default=True)
     parser_load.add_argument('--no-load-genotypes',
                              dest='no_load_genotypes',
                              action='store_true',
