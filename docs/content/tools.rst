@@ -670,7 +670,7 @@ With this tool, multiple `--gt-filter` s can be specified. Each filter can
 be any valid filter; often, it will make sense to have 1 filter for each
 family. For example, given this pedigree:
 
-.. image : todo add image
+.. image:: ../images/gene_wise_example.png
 
 Where only the orange samples are sequenced, we could devise a query::
 
