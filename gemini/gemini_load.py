@@ -50,11 +50,6 @@ def load(parser, args):
     else:
         load_singlecore(args)
 
-    if not args.no_bcolz:
-        from gemini.gemini_bcolz import create
-        create(args.db)
-
-
 def load_singlecore(args):
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
