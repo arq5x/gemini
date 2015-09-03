@@ -16,10 +16,10 @@ gemini load --skip-gene-tables --test-mode -v test4.vep.snpeff.vcf --skip-gerp-b
 gemini load --skip-gene-tables --test-mode -v test4.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t VEP test4.vep.db --no-bcolz
 gemini load --skip-gene-tables --test-mode -v test5.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test5.snpeff.db --no-bcolz &
 gemini load --skip-gene-tables --test-mode -v test5.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t VEP test5.vep.db --no-bcolz
-gemini load --test-mode -v test.query.vcf --skip-gerp-bp --skip-cadd -t snpEff test.query.db --no-bcolz &
+gemini load --test-mode -v test.query.vcf --save-info-string --skip-gerp-bp --skip-cadd -t snpEff test.query.db --no-bcolz &
+gemini load --test-mode -v test.query.vcf --skip-gerp-bp --skip-cadd --cores 2 -t snpEff test.query.core.db --no-bcolz &
 gemini load --skip-gene-tables --test-mode -v test.query.vcf --skip-gerp-bp --skip-cadd -t VEP test.query.vep.db --no-bcolz
 wait
-gemini load --test-mode -v test.query.vcf --skip-gerp-bp --skip-cadd --cores 2 -t snpEff test.query.core.db --no-bcolz
 gemini load --skip-gene-tables --test-mode -v test.region.vep.vcf --skip-gerp-bp --skip-cadd -t VEP test.region.db --no-bcolz &
 gemini load --skip-gene-tables --test-mode -v test.burden.vcf --skip-gerp-bp --skip-cadd -t VEP -p test.burden.ped test.burden.db --no-bcolz &
 gemini load --skip-gene-tables --test-mode -v test.comp_het.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.ped test.comp_het.db --no-bcolz &
@@ -50,7 +50,7 @@ gemini load --skip-gene-tables --test-mode -v test.vcf_id.snpeff.vcf  --skip-ger
 gemini load --skip-gene-tables --test-mode -p test.de_novo.ped -v test.family.vcf  --skip-gerp-bp --skip-cadd -t snpEff test.family.db --no-bcolz
 gemini load --skip-gene-tables --test-mode -p test_extended_ped.ped -v test4.vep.snpeff.vcf  --skip-gerp-bp --skip-cadd -t snpEff extended_ped.db --no-bcolz
 cp extended_ped.db test.amend.db
-gemini load -p test.somatic.ped -v test.somatic.vcf  --skip-gerp-bp --skip-cadd -t VEP test.somatic.db --no-bcolz &
+gemini load -p test.somatic.ped --save-info-string -v test.somatic.vcf  --skip-gerp-bp --skip-cadd -t VEP test.somatic.db --no-bcolz &
 gemini load -p test.fusions.ped -v test.fusions.vcf  --skip-gerp-bp --skip-cadd -t VEP test.fusions.db --no-bcolz
 gemini load --skip-gene-tables --test-mode -v test.exac.vcf --skip-gerp-bp --skip-cadd test.exac.db --no-bcolz &
 gemini load -t VEP -v test.esp.zero.vcf test.esp.db --skip-gerp-bp --skip-gene-tables --test-mode --no-bcolz

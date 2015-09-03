@@ -815,29 +815,30 @@ class GeminiQuery(object):
         self.c.execute('select * from samples limit 1')
         self.sample_column_names = [tup[0] for tup in self.c.description]
 
-    def _is_gt_filter_safe(self):
+    def _is_gt_filter_safe(self, gt_filter=None):
         """
         Test to see if the gt_filter string is potentially malicious.
 
         A future improvement would be to use pyparsing to
         traverse and directly validate the string.
         """
-        if self.gt_filter is None or len(self.gt_filter.strip()) == 0:
+        gt_filter = gt_filter or self.gt_filter
+        if gt_filter is None or len(gt_filter.strip()) == 0:
             return True
 
         # avoid builtins
         # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
-        if "__" in self.gt_filter:
+        if "__" in gt_filter:
             return False
 
         # avoid malicious commands
         evil = [" rm ", "os.system"]
-        if any(s in self.gt_filter for s in evil):
+        if any(s in gt_filter for s in evil):
             return False
 
         # make sure a "gt" col is in the string
         valid_cols = list(flatten(("%s." % gtc, "(%s)." % gtc) for gtc in self.gt_cols))
-        if any(s in self.gt_filter for s in valid_cols):
+        if any(s in gt_filter for s in valid_cols):
             return True
 
         # assume the worst
@@ -935,7 +936,7 @@ class GeminiQuery(object):
             sample_info.append((int(row['sample_id']) - 1, str(row['name'])))
         return sample_info
 
-    def _correct_genotype_filter(self):
+    def _correct_genotype_filter(self, gt_filter=None):
         """
         This converts a raw genotype filter that contains
         'wildcard' statements into a filter that can be eval()'ed.
@@ -979,7 +980,7 @@ class GeminiQuery(object):
         # and
         #    (   gt_types).(*).(!=HOM_REF).(all)
         seen_count = False
-        wildcard_tokens = re.split(r'(\(\s*gt\w+\s*\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(self.gt_filter))
+        wildcard_tokens = re.split(r'(\(\s*gt\w+\s*\)\.\(.+?\)\.\(.+?\)\.\(.+?\))', str(gt_filter or self.gt_filter))
         for token_idx, token in enumerate(wildcard_tokens):
             # NOT a WILDCARD
             # We must then split on whitespace and
