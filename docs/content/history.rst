@@ -2,12 +2,16 @@
 Release History
 #############################
 
-(Future)
-=======================================
-#. Support for both SO and HGVS terms.
-#. Update parsing for snpEff >= 4.0
-#. Speed up and generalize database loading for multiple genome builds and species.
+0.19.0 (future)
+===============
+#. Use vcfanno for faster, more generalized variant annotation and database creation.
+
+0.18.0 (future)
+===============
+#. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
+#. Update support for SO term variant impact predictions via VEP and SnpEff.
 #. Add an `is_splicing` column.
+#. X-linked recessive and dominant tools.
 
 0.17.0
 ======
