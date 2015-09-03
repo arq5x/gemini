@@ -352,6 +352,8 @@ class CompoundHet(GeminiInheritanceModel):
             comp_het_counter[0] += 1
 
             for fam_ch in candidates[comp_het]:
+                if fam_ch['priority'] > args.max_priority:
+                    continue
                 # when to use affected_unphased?
                 for subject in (fam_ch['candidates'] if args.pattern_only else fam_ch['affected_phased'] + fam_ch['affected_unphased']):
                     family_id = subject.family_id
