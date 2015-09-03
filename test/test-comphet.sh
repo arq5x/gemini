@@ -36,11 +36,23 @@ chr1	17729	17730	WASH7P	C	A	splice_acceptor	7	4	child_4(child_4;affected;male),d
 gemini comp_hets \
     --column "chrom,start,end,gene,ref,alt,impact" \
 	--allow-unaffected \
+	--max-priority 2 \
     --filter "impact_severity = 'HIGH'" \
      test.comp_het.db > obs
 check obs exp
 rm obs exp
 
+##### change max priority to default.
+echo "    comp_het.t2b...\c"
+
+touch exp
+gemini comp_hets \
+    --column "chrom,start,end,gene,ref,alt,impact" \
+	--allow-unaffected \
+    --filter "impact_severity = 'HIGH'" \
+     test.comp_het.db > obs
+check obs exp
+rm obs exp
 ###############################################################################
 # 3. Test comp-het
 ###############################################################################
@@ -52,9 +64,22 @@ chr1	17729	17730	WASH7P	C	A	splice_acceptor	7	4	child_4(child_4;affected;male),d
 gemini comp_hets \
     --column "chrom,start,end,gene,ref,alt,impact" \
     --filter "impact_severity = 'HIGH'" \
+	--max-priority 2 \
      test.comp_het.db > obs
 check obs exp
 rm obs exp
+
+
+echo "    comp_het.t3b...\c"
+touch exp
+
+gemini comp_hets \
+    --column "chrom,start,end,gene,ref,alt,impact" \
+    --filter "impact_severity = 'HIGH'" \
+     test.comp_het.db > obs
+check obs exp
+rm obs exp
+
 
 ###############################################################################
 # 4. Test basic comp-het functionality with --families

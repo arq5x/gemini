@@ -19,6 +19,7 @@ Release History
 #. No longer create bcolz indicies by default. Users can create them with `gemini bcolz_index`.
 #. New `genewise` tool. See docs.
 #. gemini load: --skip-info-string has been replaced with --save-info-string and the INFO field is not longer saved by default.
+#. comp_hets: default to only showing confident (priority 1) candidates. Show all candidates with --max-priority 3.
 
 0.16.3
 ======

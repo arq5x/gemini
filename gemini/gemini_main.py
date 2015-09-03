@@ -661,6 +661,13 @@ def main():
             help='find compound hets by inheritance pattern, without regard to affection',
             default=False)
 
+    parser_comp_hets.add_argument('--max-priority',
+            type=int,
+            help='Default (1) is to show only confident compound hets. Set to 2' \
+             + ' or higher to include pairs that are less likely true comp-hets',
+            default=1)
+
+
     def comp_hets_fn(parser, args):
         from .gim import CompoundHet
         CompoundHet(args).run()
