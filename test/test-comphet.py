@@ -58,9 +58,9 @@ for ch, gt_types1, gt_types2 in [
     run(load_cmd.format(name="fam1"))
     run(update_cmd.format(name="fam1"))
 
-    ret = run("gemini comp_hets --columns 'chrom,start,end,ref,alt' fam1.db")
+    ret = run("gemini comp_hets --max-priority 2 --columns 'chrom,start,end,ref,alt' fam1.db")
     if ch:
-        assert len(ret.strip().split("\n")) == 2 + 1
+        assert len(ret.strip().split("\n")) == 2 + 1, ret
     else:
         assert not ret.strip()
     print ret
