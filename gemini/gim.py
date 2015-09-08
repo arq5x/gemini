@@ -386,6 +386,9 @@ class CompoundHet(GeminiInheritanceModel):
         self.gq._connect_to_database()
         fams = self.fams = Family.from_cursor(self.gq.c)
 
+        if args.families:
+            fams = {f: fam for f, fam in fams.items() if f in set(args.families.split(","))}
+
         for grp, li in self.gen_candidates('gene'):
             samples_w_hetpair = defaultdict(list)
             sites = []
