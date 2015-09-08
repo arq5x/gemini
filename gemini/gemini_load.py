@@ -50,11 +50,6 @@ def load(parser, args):
     else:
         load_singlecore(args)
 
-    if not args.no_bcolz:
-        from gemini.gemini_bcolz import create
-        create(args.db)
-
-
 def load_singlecore(args):
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
@@ -132,7 +127,7 @@ def merge_chunks_ipython(chunks, args, view):
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
         print st, "merging", len(chunks), "chunks."
         sub_merges = get_chunks_to_merge(chunks)
-        tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
+        tmp_dbs = get_temp_dbs(len(sub_merges), os.getcwd())
         merge_args = {"tempdir": args.tempdir}
         view.map(merge_chunks, sub_merges, tmp_dbs, [merge_args] * len(sub_merges))
         merge_chunks_ipython(tmp_dbs, args, view)

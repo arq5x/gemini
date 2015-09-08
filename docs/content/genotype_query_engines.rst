@@ -23,10 +23,8 @@ bcolz indexes
 =============
 
 We have a implemented indexes using `bcolz <http://bcolz.blosc.org/>`_.
-As of version 0.15, gemini will create the bcolz indexes by default at
-the end of the database load unless `--no-bcolz` is specified.
 
-It can be used for existing databases by creating the external indexes:
+These can be used for existing databases by creating the external indexes:
 
 .. code-block:: bash
 

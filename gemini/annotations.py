@@ -284,6 +284,8 @@ def _get_var_ref_and_alt(var):
 
     if isinstance(alt, basestring):
         alt = alt.split(",")
+    elif isinstance(alt, (tuple, list)):
+        alt = [x for x in alt if x]
     return ref, alt
 
 def _get_cadd_scores(var, labels, hit):
@@ -356,6 +358,9 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
 
         # Get variant ref, alt.
         var_ref, var_alt = _get_var_ref_and_alt(var)
+        # no alternative alleles, return the original region_only hits
+        if not var_alt or len(var_alt) == 0:
+            return hits
         var_alt = set(var_alt)
 
         # Warn for multiple alleles.
@@ -715,6 +720,7 @@ def get_1000G_info(var, empty=EMPTY_1000G):
         # var.start is used since the chromosomal pos in pysam.asVCF is zero based (hit.pos)
         # and would be equivalent to (POS-1) i.e. var.start
         if var.start == hit.pos and \
+           var.ALT and len(var.ALT) > 0 and \
            var.ALT[0] == hit.alt and \
            hit.ref == var.REF:
             for info in hit.info.split(";"):

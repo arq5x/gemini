@@ -1,5 +1,6 @@
 *.py[cod]
 *.ipynb*
+*.swp
 
 test/exp*
 test/obs*

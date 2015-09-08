@@ -150,11 +150,11 @@ def main():
                              action='store_true',
                              help='Do not load gene tables. Loaded by default.',
                              default=False)
-    parser_load.add_argument('--skip-info-string',
+    parser_load.add_argument('--save-info-string',
                              dest='skip_info_string',
-                             action='store_true',
-                             help='Do not load INFO string from VCF file to reduce DB size. Loaded by default',
-                             default=False)
+                             action='store_false',
+                             help='Load INFO string from VCF file. Not loaded by default',
+                             default=True)
     parser_load.add_argument('--no-load-genotypes',
                              dest='no_load_genotypes',
                              action='store_true',
@@ -164,11 +164,6 @@ def main():
                              dest='no_genotypes',
                              action='store_true',
                              help='There are no genotypes in the file (e.g. some 1000G VCFs)',
-                             default=False)
-    parser_load.add_argument('--no-bcolz',
-                             dest='no_bcolz',
-                             action='store_true',
-                             help='Don\'t automatically create a bcolz index for genotypes',
                              default=False)
     parser_load.add_argument('--cores', dest='cores',
                              default=1,
@@ -666,6 +661,13 @@ def main():
             help='find compound hets by inheritance pattern, without regard to affection',
             default=False)
 
+    parser_comp_hets.add_argument('--max-priority',
+            type=int,
+            help='Default (1) is to show only confident compound hets. Set to 2' \
+             + ' or higher to include pairs that are less likely true comp-hets',
+            default=1)
+
+
     def comp_hets_fn(parser, args):
         from .gim import CompoundHet
         CompoundHet(args).run()
@@ -1096,6 +1098,18 @@ def main():
         from tool_fusions import run
         run(parser, args)
     parser_fusions.set_defaults(func=fusions_fn)
+
+    #########################################
+    # genewise
+    #########################################
+
+    from .genewise import add_args
+    parser_genewise = subparsers.add_parser('gene_wise')
+    add_args(parser_genewise)
+    def genewise_run(parser, args):
+        from .genewise import run
+        run(args)
+    parser_genewise.set_defaults(func=genewise_run)
 
     #########################################
     # $ gemini QC

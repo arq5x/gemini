@@ -2,20 +2,28 @@
 Release History
 #############################
 
-(Future)
-=======================================
-#. Support for both SO and HGVS terms.
-#. Update parsing for snpEff >= 4.0
-#. Speed up and generalize database loading for multiple genome builds and species.
+0.19.0 (future)
+===============
+#. Use vcfanno for faster, more generalized variant annotation and database creation.
+
+0.18.0 (future)
+===============
+#. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
+#. Update support for SO term variant impact predictions via VEP and SnpEff.
 #. Add an `is_splicing` column.
+#. X-linked recessive and dominant tools.
 
 0.17.0
 ======
 #. switch to cyvcf2 to speed loading
 #. per-sample depths are calculated using AD (GATK) or AO+RO (Freebayes). This makes depth filters more conservative.
 #. extra VEP annotations are loaded with loading machinery, not as an extra step as before.
-#. add max_aaf_all column (https://github.com/arq5x/gemini/issues/520) as an aggregate of a number of population filters
+#. add max_aaf_all column (https://github.com/arq5x/gemini/issues/520) as an aggregate of a number of population filters.
 #. use --families to limit queries *before* any work is done. Thanks to Bianca for reporting.
+#. No longer create bcolz indicies by default. Users can create them with `gemini bcolz_index`.
+#. New `genewise` tool. See docs.
+#. gemini load: --skip-info-string has been replaced with --save-info-string and the INFO field is not longer saved by default.
+#. comp_hets: default to only showing confident (priority 1) candidates. Show all candidates with --max-priority 3.
 
 0.16.3
 ======
