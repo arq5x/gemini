@@ -87,10 +87,8 @@ the GEMINI database.
 ``-d [0]`` (depth)
 ---------------------
 
-Unfortunately, spurious inherited variants can often appear due to
-insufficient sequence coverage
-One simple way to filter such artifacts is to enforce a minimum sequence
-depth (default: 0) for each sample. We can do that with this flag.
+Filter variants that do not have at least this depth for all members in a
+a family. Default is 0.
 
 ----------------------
 ``--allow-unaffected``
@@ -321,8 +319,8 @@ Arguments are similar to the other tools:
                             variant in a gene.
       --families FAMILIES   Restrict analysis to a specific set of 1 or more
                             (comma) separated) families
-      -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth (genotype DP) req'd
-                            for each sample (def. = 0)
+      -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth required for
+                            each sample in a family (default = 0)
       --gt-pl-max GT_PHRED_LL
                             The maximum phred-scaled genotype likelihod (PL)
                             allowed for each sample.
