@@ -110,7 +110,9 @@ finding compound_hets in unaffected samples.
 
 In order to eliminate less confident genotypes, it is possible to enforce a maximum PL value
 for each sample. On this scale, lower values indicate more confidence that the called genotype
-is correct. 10 is a reasonable value:
+is correct. 10 is a reasonable value. This is applied per-family such that all
+members of a family must meet this level in order to by reported in the final
+results.
 
 ===========================================================================
 ``comp_hets``: Identifying potential compound heterozygotes
@@ -323,7 +325,7 @@ Arguments are similar to the other tools:
                             each sample in a family (default = 0)
       --gt-pl-max GT_PHRED_LL
                             The maximum phred-scaled genotype likelihod (PL)
-                            allowed for each sample.
+                            allowed for each sample in a family.
       --allow-unaffected    consider candidates that also appear in unaffected samples.
 
 
