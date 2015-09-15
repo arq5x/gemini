@@ -81,22 +81,28 @@ def load_ipython(args):
         merge_chunks_ipython(chunks, args, view)
 
 def merge_chunks(chunks, db, kwargs):
-    cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"))
+    cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"),
+                               vcf=kwargs.get("vcf"), anno_type=kwargs.get("anno_type"))
     print "Merging chunks."
     subprocess.check_call(cmd, shell=True)
     cleanup_temp_db_files(chunks)
     return db
 
-def get_merge_chunks_cmd(chunks, db, tempdir=None):
+def get_merge_chunks_cmd(chunks, db, tempdir=None, vcf=None, anno_type=None):
     chunk_names = ""
     for chunk in chunks:
         chunk_names += " --chunkdb  " + chunk
 
-    tempdir_string = ""
+    tempdir_string, vcf_string, annotype_string = "", "", ""
     if tempdir is not None:
         tempdir_string = " --tempdir " + tempdir
+    if vcf is not None:
+        vcf_string = " --vcf " + vcf
+    if anno_type is not None:
+        annotype_string = " -t " + anno_type
 
-    return "gemini merge_chunks {chunk_names} {tempdir_string} --db {db}".format(**locals())
+    return ("gemini merge_chunks {chunk_names} {tempdir_string} "
+            "{vcf_string} {annotype_string} --db {db}").format(**locals())
 
 
 def finalize_merged_db(tmp_db, db):
@@ -128,7 +134,7 @@ def merge_chunks_ipython(chunks, args, view):
         print st, "merging", len(chunks), "chunks."
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.getcwd())
-        merge_args = {"tempdir": args.tempdir}
+        merge_args = {"tempdir": args.tempdir, "vcf": args.vcf, "anno_type": args.anno_type}
         view.map(merge_chunks, sub_merges, tmp_dbs, [merge_args] * len(sub_merges))
         merge_chunks_ipython(tmp_dbs, args, view)
 
@@ -144,7 +150,8 @@ def merge_chunks_multicore(chunks, args):
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
         for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
-            cmd = get_merge_chunks_cmd(sub_merge, tmp_db, tempdir=args.tempdir)
+            cmd = get_merge_chunks_cmd(sub_merge, tmp_db, tempdir=args.tempdir, vcf=args.vcf,
+                                       anno_type=args.anno_type)
             procs.append(subprocess.Popen(cmd, shell=True))
         wait_until_finished(procs)
         cleanup_temp_db_files(chunks)

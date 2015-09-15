@@ -295,6 +295,12 @@ def main():
     parser_mergechunks.add_argument('--db',
             dest='db',
             help='The name of the final database to be loaded.')
+    parser_mergechunks.add_argument('--vcf',
+            dest='vcf',
+            help='Original VCF file, for retrieving extra annotation fields.')
+    parser_mergechunks.add_argument('-t', dest='anno_type',
+            default=None, choices=["snpEff", "VEP"],
+            help="The annotations to be used with the input vcf.")
     parser_mergechunks.add_argument('--chunkdb',
             nargs='*',
             dest='chunkdbs',
