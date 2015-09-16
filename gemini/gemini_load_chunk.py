@@ -47,13 +47,20 @@ def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=-1):
         return None
     return np.array(out, dtype=dtype)
 
+def get_extra_effects_fields(args):
+    """Retrieve additional effects fields contained in the VCF.
+
+    Useful for merging VEP databases with additional fields.
+    """
+    loader = GeminiLoader(args, prepare_db=False)
+    return loader._extra_effect_fields
 
 class GeminiLoader(object):
     """
     Object for creating and populating a gemini
     database and auxillary data files.
     """
-    def __init__(self, args, buffer_size=10000):
+    def __init__(self, args, buffer_size=10000, prepare_db=True):
         self.args = args
         self.seen_multi = False
 
@@ -71,6 +78,8 @@ class GeminiLoader(object):
         else:
             self._effect_fields = []
             self._extra_effect_fields = []
+        if not prepare_db:
+            return
         self._create_db(self._extra_effect_fields)
 
         if not self.args.no_genotypes and not self.args.no_load_genotypes:

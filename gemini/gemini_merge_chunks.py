@@ -6,6 +6,7 @@ import sys
 import uuid
 
 import database as gemini_db
+import gemini_load_chunk
 
 
 def append_variant_info(main_curr, chunk_db):
@@ -176,7 +177,7 @@ def merge_db_chunks(args):
     main_curr.execute('PRAGMA synchronous = OFF')
     main_curr.execute('PRAGMA journal_mode=MEMORY')
     # create the gemini database tables for the new DB
-    gemini_db.create_tables(main_curr)
+    gemini_db.create_tables(main_curr, gemini_load_chunk.get_extra_effects_fields(args) if args.vcf else [])
 
     databases = []
     for database in args.chunkdbs:

@@ -48,8 +48,8 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
             dest='min_sample_depth',
             type=int,
             help="The minimum aligned\
-              sequence depth (genotype DP) req'd for\
-              each sample (def. = 0)",
+              sequence depth required for\
+              each sample in a family (default = 0)",
             default=0)
 
     if gt_ll:
@@ -57,7 +57,7 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
                             dest='gt_phred_ll',
                             type=int,
                             help="The maximum phred-scaled genotype likelihod"
-                                 " (PL) allowed for each sample.",
+                                 " (PL) allowed for each sample in a family.",
                             default=None)
 
 def examples(parser, args):
@@ -295,6 +295,12 @@ def main():
     parser_mergechunks.add_argument('--db',
             dest='db',
             help='The name of the final database to be loaded.')
+    parser_mergechunks.add_argument('--vcf',
+            dest='vcf',
+            help='Original VCF file, for retrieving extra annotation fields.')
+    parser_mergechunks.add_argument('-t', dest='anno_type',
+            default=None, choices=["snpEff", "VEP"],
+            help="The annotations to be used with the input vcf.")
     parser_mergechunks.add_argument('--chunkdb',
             nargs='*',
             dest='chunkdbs',
