@@ -13,6 +13,12 @@ Release History
 #. Add an `is_splicing` column.
 #. X-linked recessive and dominant tools.
 
+0.17.1
+======
+# Change handling of missing values in PL/GL (--gt-pl-max) so that missing values are set to int32 max. (Thanks Karyn for reporting).
+# Fix distributed loading of VEP with extra columns (@chapmanb) [Regression since 0.17.0]
+# Fix comp_het test and improve efficiency (thanks Bianca for reporting)
+
 0.17.0
 ======
 #. switch to cyvcf2 to speed loading
