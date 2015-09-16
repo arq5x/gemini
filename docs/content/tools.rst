@@ -87,10 +87,8 @@ the GEMINI database.
 ``-d [0]`` (depth)
 ---------------------
 
-Unfortunately, spurious inherited variants can often appear due to
-insufficient sequence coverage
-One simple way to filter such artifacts is to enforce a minimum sequence
-depth (default: 0) for each sample. We can do that with this flag.
+Filter variants that do not have at least this depth for all members in a
+a family. Default is 0.
 
 ----------------------
 ``--allow-unaffected``
@@ -112,7 +110,9 @@ finding compound_hets in unaffected samples.
 
 In order to eliminate less confident genotypes, it is possible to enforce a maximum PL value
 for each sample. On this scale, lower values indicate more confidence that the called genotype
-is correct. 10 is a reasonable value:
+is correct. 10 is a reasonable value. This is applied per-family such that all
+members of a family must meet this level in order to by reported in the final
+results.
 
 ===========================================================================
 ``comp_hets``: Identifying potential compound heterozygotes
@@ -321,11 +321,11 @@ Arguments are similar to the other tools:
                             variant in a gene.
       --families FAMILIES   Restrict analysis to a specific set of 1 or more
                             (comma) separated) families
-      -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth (genotype DP) req'd
-                            for each sample (def. = 0)
+      -d MIN_SAMPLE_DEPTH   The minimum aligned sequence depth required for
+                            each sample in a family (default = 0)
       --gt-pl-max GT_PHRED_LL
                             The maximum phred-scaled genotype likelihod (PL)
-                            allowed for each sample.
+                            allowed for each sample in a family.
       --allow-unaffected    consider candidates that also appear in unaffected samples.
 
 
