@@ -90,7 +90,7 @@ def create_indices(cursor):
 def add_max_aaf(cursor):
     # see: https://github.com/arq5x/gemini/issues/520
     # skip finns
-    cursor.execute('ALTER TABLE variants ADD COLUMN max_aaf_all')
+    cursor.execute('ALTER TABLE variants ADD COLUMN max_aaf_all REAL')
     cursor.execute('UPDATE variants set max_aaf_all = MAX(coalesce(aaf_esp_ea,-1), coalesce(aaf_esp_aa,-1), coalesce(aaf_1kg_amr,-1), coalesce(aaf_1kg_eas,-1), coalesce(aaf_1kg_sas,-1), coalesce(aaf_1kg_afr,-1), coalesce(aaf_1kg_eur,-1), coalesce(aaf_adj_exac_afr,-1), coalesce(aaf_adj_exac_amr,-1), coalesce(aaf_adj_exac_eas,-1), coalesce(aaf_adj_exac_nfe,-1), coalesce(aaf_adj_exac_sas,-1))')
 
 def create_tables(cursor, effect_fields=None):
