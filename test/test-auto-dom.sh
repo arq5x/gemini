@@ -345,8 +345,7 @@ rm obs exp
 # 19. Test with --families but not valid
 ###################################################################
 echo "    auto_dom.t19...\c"
-echo "WARNING: no affecteds in family 1
-WARNING: no affecteds in family 3" > exp
+echo "WARNING: no affecteds in family 3" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --families 3 \

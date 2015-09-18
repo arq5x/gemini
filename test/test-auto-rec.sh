@@ -279,10 +279,10 @@ rm obs exp
 ###################################################################
 echo "    auto_rec.t17...\c"
 #NOTE: don't include unaffecteds by default.
-echo "WARNING: no affecteds in family 3
-WARNING: no affecteds in family 2" > exp
+echo "WARNING: no affecteds in family 3" > exp
 gemini autosomal_recessive  \
     --columns "chrom, start, end, ref, alt, impact" \
     --families 3 test.auto_rec.no_parents.5.db &> obs
 check obs exp
+exit
 rm obs exp
