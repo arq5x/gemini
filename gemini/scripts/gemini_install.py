@@ -387,6 +387,17 @@ def check_output(*popenargs, **kwargs):
         raise subprocess.CalledProcessError(retcode, cmd, output=output)
     return output
 
+def report():
+    """
+    Report that an installation or update has occurred.
+    """
+    url = "http://www.quinlanlab.org/tracking/gemini/index.html"
+    try:
+        connection = urllib2.urlopen(url)
+        connection.close()
+    except:
+        pass
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated installer for gemini framework.")
     parser.add_argument("tooldir", help="Directory to install 3rd party software tools",
@@ -407,4 +418,5 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         parser.print_help()
     else:
+        report()
         main(parser.parse_args())

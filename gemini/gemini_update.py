@@ -10,6 +10,7 @@ import gemini.config
 def release(parser, args):
     """Update gemini to the latest release, along with associated data files.
     """
+    report()
     url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
     repo = "https://github.com/arq5x/gemini.git"
     cbl_repo = "https://github.com/chapmanb/cloudbiolinux.git"
@@ -74,6 +75,17 @@ def release(parser, args):
         if not os.path.exists(test_dir) or os.path.isdir(test_dir):
             _update_testbase(test_dir, repo, gemini_cmd)
             print "Run test suite with: cd %s && bash master-test.sh" % test_dir
+
+def report():
+    """
+    Report that an installation or update has occurred.
+    """
+    url = "http://www.quinlanlab.org/tracking/gemini/index.html"
+    try:
+        connection = urllib2.urlopen(url)
+        connection.close()
+    except:
+        pass
 
 def clean_env_variables():
     """Adjust environmental variables which can cause conflicts with installed anaconda python.
