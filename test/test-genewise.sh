@@ -57,3 +57,15 @@ gemini gene_wise  \
     test.auto_dom.db  > obs
 check obs exp
 
+echo "genewise.t4"
+echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_filters	n_gene_variants	gene_filters
+ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	1	2	1
+ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	1	2	1
+WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	1
+WDR37	chr10	1142208	1142209	T	C	stop_loss	HIGH	1	2	1" > exp
+gemini gene_wise  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+	--gt-filter  "((gt_types).(phenotype==1).(==HOM_ALT).(none))" \
+	--min-filters 1 \
+    test.auto_dom.db  > obs
+check obs exp

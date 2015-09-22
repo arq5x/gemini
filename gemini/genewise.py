@@ -27,12 +27,16 @@ def add_cols(cols, gt_filter):
     return [x for x in all_cols if x in gt_filter and not x in cols]
 
 
-def gen_results(rows, gt_filters, min_filters, min_variants, columns):
+def gen_results(rows, gt_filters, min_filters, min_variants, columns,
+        user_dict=None):
     # we track the index of the passed filter in passed_filters.
     gene_passed_filters = {}
+    if user_dict is None:
+        user_dict = {}
     subset = []
     for row in rows:
         cols = {c: row[c] for c in columns}
+        cols.update(user_dict)
         # have to test all filters since 1 row can meet multiple fitlers.
         row_passed_filters = []
         for i, gt_filter in enumerate(gt_filters, start=1):
@@ -87,11 +91,12 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
     if isinstance(grouper, basestring):
         grouper = operator.itemgetter(grouper)
 
+    user_dict = dict(sample_info=gq.sample_info)
     header_printed = False
     for groupkey, grp in it.groupby(gq, grouper):
         grp = list(grp)
         for x in gen_results(list(grp), cleaned_filters, min_filters or 0,
-                             min_variants, columns):
+                             min_variants, columns, user_dict=user_dict):
             for c in added_cols:
                 if c != 'gene':
                     del x.print_fields[c]
