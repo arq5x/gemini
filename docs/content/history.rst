@@ -13,6 +13,10 @@ Release History
 #. Add an `is_splicing` column.
 #. X-linked recessive and dominant tools.
 
+0.17.2
+======
+#. Fix bcolz dependencies owing to issues with bcolz 0.11.0 
+
 0.17.1
 ======
 #. Change handling of missing values in PL/GL (--gt-pl-max) so that missing values are set to int32 max. (Thanks Karyn for reporting).
