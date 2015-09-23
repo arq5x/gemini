@@ -18,4 +18,4 @@ cyordereddict==0.2.2
 bcolz===0.10.0
 numexpr>=2.4.3
 cyvcf2>=0.1.9
-gemini==0.17.1
+gemini==0.17.2
