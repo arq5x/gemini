@@ -15,9 +15,10 @@ Release History
 
 0.17.1
 ======
-# Change handling of missing values in PL/GL (--gt-pl-max) so that missing values are set to int32 max. (Thanks Karyn for reporting).
-# Fix distributed loading of VEP with extra columns (@chapmanb) [Regression since 0.17.0]
-# Fix comp_het test and improve efficiency (thanks Bianca for reporting)
+#. Change handling of missing values in PL/GL (--gt-pl-max) so that missing values are set to int32 max. (Thanks Karyn for reporting).
+#. Fix distributed loading of VEP with extra columns (@chapmanb) [Regression since 0.17.0]
+#. Fix comp_het test and improve efficiency (thanks Bianca for reporting)
+#. Bug fix: populate eval dictionary with sample_info.
 
 0.17.0
 ======
