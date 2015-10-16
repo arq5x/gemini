@@ -118,7 +118,7 @@ anc_allele                STRING        The reported ancestral allele if there i
 rms_bq                    FLOAT         The RMS base quality at this position.
 cigar                     STRING        CIGAR string describing how to align an alternate allele to the reference allele.
 depth                     INTEGER       The number of aligned sequence reads that led to this variant call
-strand_bias               FLOAT         Strand bias at the variant position
+strand_bias               FLOAT         Strand bias at the variant position. From the "SB" tag.
 rms_map_qual              FLOAT         RMS mapping quality, a measure of variance of quality scores
 in_hom_run                INTEGER       Homopolymer runs for the variant allele
 num_mapq_zero             INTEGER       Total counts of reads with mapping quality equal to zero
