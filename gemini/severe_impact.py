@@ -86,7 +86,7 @@ def interpret_severe_impact(args, var, effect_fields):
         for effect_string in effect_strings:
             # nc_transcript_variant&intron_variant|||ENSG00000243485|MIR1302-11|ENST00000
             each_string = effect_string.split("|")
-
+            
             if "&" in each_string[0]:
                 impact_strings = each_string[0].split("&")
                 # impact_strings will be [nc_transcript_variant,
@@ -120,16 +120,31 @@ def interpret_severe_impact(args, var, effect_fields):
                     max_severity = impact_info.priority_code  # initialize the max_severity to the former value of priority code
                     top_severity =  impact_info.priority
         
-        # prioritize biotype
+        # Get highest impact using biotype, severity, SIFT, and PolyPhen scores.
         set_flag = flag = 4
+        max_polyphen_score = -1 # Higher number is higher impact for PolyPhen, values in [0,1]
+        min_sift_score = 2 # Lower number is higher impact for SIFT, values in [0,1]
         for idx, impact in enumerate(impact_all):
+            # Set flag for Biotype.
             if impact.effect_severity == str(top_severity) and impact.biotype == "protein_coding":    
                 set_flag = 0    
             elif impact.effect_severity == str(top_severity) and impact.biotype != "protein_coding":
                 set_flag = 1
-            if impact.effect_severity == str(top_severity) and set_flag < flag:
-                flag = set_flag
-                impact_features = impact
+
+            # Only consider updating impact if biotype if severity and biotype are reasonable.
+            if impact.effect_severity == str(top_severity) and set_flag <= flag:
+                # Now look at Polyphen, SIFT scores to judge impact.
+                
+                # Get Polyphen, SIFT scores.
+                cur_polyphen_score = float(impact.polyphen_score or 0)
+                cur_sift_score = float(impact.sift_score or 1)
+                
+                # If SIFT and/or PolyPhen score are more significant than current impact, update impact.
+                if (cur_polyphen_score >= max_polyphen_score) and (cur_sift_score <= min_sift_score):
+                    flag = set_flag
+                    impact_features = impact
+                    max_polyphen_score = cur_polyphen_score
+                    min_sift_score = cur_sift_score
         
     else:
         # should not get here, as the valid -t options should be handled
