@@ -1,3 +1,4 @@
+set -e
 gemini load -v test.auto_rec.vcf tt.db --no-genotypes && rm tt.db
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.PLs.vcf  test.PLs.db &
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.mendel.vcf -p test.mendel.ped  test.mendel.db

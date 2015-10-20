@@ -205,6 +205,11 @@ def main():
                               metavar='sample',
                               default=None,
                               help='New sample information file to load')
+    parser_amend.add_argument('--clear',
+                              default=False,
+                              action="store_true",
+                              help='Set all values in this column to NULL before loading.')
+
     def amend_fn(parser, args):
         import gemini_amend
         gemini_amend.amend(parser, args)

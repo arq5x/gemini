@@ -1,0 +1,5 @@
+#family_id name paternal_id maternal_id sex phenotype ethnicity hair_color
+1 M10475    None None  1    1    None	brown
+1 M10478     M10475  M10500    2    2    None	red
+1 M10500     None    None    2    2    None	
+1 M128215    M10475  M10500    1    1    None	green
