@@ -82,8 +82,8 @@ class EffectDetails(object):
         self.polyphen_score = None
         self.sift_pred = None
         self.sift_score = None
-        self.consequence = effect_dict[self.effect_name] if self.effect_severity != None else self.effect_name
-        self.so = effect_so[self.effect_name] if self.effect_severity != None else self.effect_name
+        self.consequence = '+'.join([effect_dict[name] for name in self.effect_name.split('+')]) if self.effect_severity != None else self.effect_name
+        self.so = '+'.join([effect_so[name] for name in self.effect_name.split('+')]) if self.effect_severity != None else self.effect_name
 
     def __str__(self):
         return "\t".join([self.consequence, self.effect_severity,
@@ -382,12 +382,17 @@ eff_pattern = '(\S+)[(](\S+)[)]'
 eff_search = re.compile(eff_pattern)
 
 
+def recognized_effects(effect_key):
+    return sorted([effect_map[x] for x in effect_key.split('+') if x in effect_map],
+            key=lambda x: x.priority_code)
+
+
 def gatk_effect_details(info):
     """Convert GATK prepared snpEff effect details into standard EffectDetails.
     """
     name = info.get("SNPEFF_EFFECT", None)
     if name is not None:
-        effect = effect_map[name]
+        effect = recognized_effects(name)[0]
         detail_string = "|{impact}|{codon_change}|{aa_change}|{gene}|{biotype}|{coding}|{transcript}|{exon}".format(
             impact=info.get("SNPEFF_IMPACT", ""),
             codon_change=info.get("SNPEFF_CODON_CHANGE", ""),

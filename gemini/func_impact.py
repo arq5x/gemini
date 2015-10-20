@@ -41,13 +41,13 @@ def interpret_impact(args, var, effect_fields):
                 impact_detail = piece[1]
                     # all the other information, which is inside the ()
                 try:
-                    impact_info = snpEff.effect_map[impact_string]
+                    impact_info = snpEff.recognized_effects(impact_string)[0]
                     impact_details = snpEff.EffectDetails(impact_string,
                                                       impact_info.priority,
                                                       impact_detail,
                                                       counter,
                                                       args.maj_version)
-                except KeyError:
+                except IndexError:
                     impact_details = snpEff.EffectDetails(impact_string,
                                                     None,
                                                     impact_detail,

@@ -45,7 +45,7 @@ def interpret_severe_impact(args, var, effect_fields):
                 impact_detail = piece[1]
                     
                 try:
-                    impact_info = snpEff.effect_map[impact_string]
+                    impact_info = snpEff.recognized_effects(impact_string)[0]
                     # update the impact stored if a higher or an equal severity transcript
                     # is encountered
                     if impact_info.priority_code <= max_severity:
@@ -59,7 +59,7 @@ def interpret_severe_impact(args, var, effect_fields):
                         max_severity = impact_info.priority_code 
                         # This would store the highest priority for the next outer loop
                         top_severity =  impact_info.priority
-                except KeyError:
+                except IndexError:
                     pass
                     
         # prioritizing biotype: initialize flags to a high value
