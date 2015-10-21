@@ -4,6 +4,7 @@ check()
         echo ok
     else
         echo fail
+		exit 1
     fi
 }
 export -f check
@@ -12,14 +13,14 @@ export -f check
 ###################################################################
 echo "    auto_dom.t1...\c"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-SPRN	chr10	135336655	135336656	G	A	intron	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142208	1142209	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+SPRN	chr10	135336655	135336656	G	A	intron_variant	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
@@ -34,13 +35,13 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t2...\c"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142208	1142209	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 
 gemini autosomal_dominant \
 	--columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
@@ -95,14 +96,14 @@ echo "    auto_dom.t6...\c"
 
 echo "WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-SPRN	chr10	135336655	135336656	G	A	intron	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+SPRN	chr10	135336655	135336656	G	A	intron_variant	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -117,13 +118,13 @@ rm obs exp
 echo "    auto_dom.t7...\c"
 echo "WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
 	--lenient \
@@ -139,14 +140,14 @@ echo "    auto_dom.t8...\c"
 echo "WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
 WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-SPRN	chr10	135336655	135336656	G	A	intron	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+SPRN	chr10	135336655	135336656	G	A	intron_variant	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -162,13 +163,13 @@ echo "    auto_dom.t9...\c"
 echo "WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
 WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
 	--lenient \
@@ -185,17 +186,17 @@ echo "WARNING: using affected without parents for family 1 for autosomal dominan
 WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
 WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
-SPRN	chr10	135336655	135336656	G	A	intron	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	3" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
+SPRN	chr10	135336655	135336656	G	A	intron_variant	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	3" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -212,16 +213,16 @@ echo "WARNING: using affected without parents for family 1 for autosomal dominan
 WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
 WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	3" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	3" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 2 \
@@ -238,16 +239,16 @@ echo "WARNING: using affected without parents for family 1 for autosomal dominan
 WARNING: using affected without parents for family 3 for autosomal dominant test. Use strict to prevent this.
 WARNING: using affected without parents for family 2 for autosomal dominant test. Use strict to prevent this.
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	3
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	3" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/C,C/C,C/T	1_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	3
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	3
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	3" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 3 \
@@ -307,14 +308,14 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t17...\c"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-SPRN	chr10	135336655	135336656	G	A	intron	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142208	1142209	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+SPRN	chr10	135336655	135336656	G	A	intron_variant	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --families 2,3 \
@@ -328,11 +329,11 @@ rm obs exp
 ###################################################################
 echo "    auto_dom.t18...\c"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	1
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	1
-SPRN	chr10	135336655	135336656	G	A	intron	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	1
-WDR37	chr10	1142208	1142209	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	1" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	1
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	1
+SPRN	chr10	135336655	135336656	G	A	intron_variant	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	1
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	1" > exp
 gemini autosomal_dominant  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --families 3 \

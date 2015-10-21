@@ -30,8 +30,8 @@ rm obs exp
 # CHANGE: no longer include dad_4 in output since he is unaffected.
 echo "    comp_het.t2...\c"
 echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	2" > exp
+chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	2
+chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	2" > exp
 
 gemini comp_hets \
     --column "chrom,start,end,gene,ref,alt,impact" \
@@ -58,8 +58,8 @@ rm obs exp
 ###############################################################################
 echo "    comp_het.t3...\c"
 echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	2" > exp
+chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	2
+chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	2" > exp
 
 gemini comp_hets \
     --column "chrom,start,end,gene,ref,alt,impact" \
@@ -164,8 +164,9 @@ rm obs exp
 
 echo "    comp_het.t11"
 echo "chrom	start	end	ref	alt	gene	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
-chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_5	1
-chr1	17729	17730	C	A	WASH7P	splice_acceptor	5	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	A|C,C/C,C/A	child_4	1	1_3_5	1" > exp
+chr1	17362	17366	TTCT	T	WASH7P	exon_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_5	1
+chr1	17729	17730	C	A	WASH7P	exon_variant	5	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	A|C,C/C,C/A	child_4	1	1_3_5	1" > exp
+
 gemini comp_hets \
 	--column "chrom,start,end,ref,alt,gene,impact" \
 	test.comp_het.unphase.db > obs
