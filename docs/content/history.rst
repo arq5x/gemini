@@ -8,8 +8,11 @@ Release History
 
 0.18.0 (future)
 ===============
+1. Update support for SO term variant impact predictions via VEP and SnpEff and support newest snpEff version.
+   If both snpEff and VEP annotations are present use `gemini load -t all` to save all annotations and the most
+   deleterious will be saved in the variants table.
+
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
-#. Update support for SO term variant impact predictions via VEP and SnpEff.
 #. Add an `is_splicing` column.
 #. X-linked recessive and dominant tools.
 
