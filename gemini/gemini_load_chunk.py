@@ -478,7 +478,9 @@ class GeminiLoader(object):
         for idx, impact in enumerate(impacts or [], start=1):
             var_impact = [self.v_id, idx, impact.gene,
                           impact.transcript, impact.is_exonic,
-                          impact.is_coding, impact.is_lof,
+                          impact.is_coding,
+                          impact.is_splicing,
+                          impact.is_lof,
                           impact.exon, impact.codon_change,
                           impact.aa_change, impact.aa_length,
                           impact.biotype, impact.top_consequence,
@@ -539,6 +541,7 @@ class GeminiLoader(object):
                    top_impact.transcript,
                    top_impact.is_exonic,
                    top_impact.is_coding,
+                   top_impact.is_splicing,
                    top_impact.is_lof,
                    top_impact.exon,
                    top_impact.codon_change,

@@ -172,6 +172,7 @@ def create_tables(cursor, effect_fields=None):
                     transcript text,
                     is_exonic bool,
                     is_coding bool,
+                    is_splicing bool,
                     is_lof bool,
                     exon text,
                     codon_change text,
@@ -256,6 +257,7 @@ def create_tables(cursor, effect_fields=None):
                     transcript text,
                     is_exonic bool,
                     is_coding bool,
+                    is_splicing bool,
                     is_lof bool,
                     exon text,
                     codon_change text,
@@ -379,11 +381,10 @@ def insert_variation_impacts(cursor, buffer):
     """
     Populate the variant_impacts table with each variant in the buffer.
     """
+    if len(buffer) == 0: return
     cursor.execute("BEGIN TRANSACTION")
-    cursor.executemany('insert into variant_impacts values (?,?,?,?,?,?,?,?, \
-                                                            ?,?,?,?,?,?,?,?, \
-                                                            ?,?,?)',
-                       buffer)
+    qs = ",".join(["?"] * len(buffer[0]))
+    cursor.executemany('insert into variant_impacts values (%s)' % qs, buffer)
     cursor.execute("END")
 
 
