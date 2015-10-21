@@ -130,7 +130,7 @@ def main():
     parser_load.add_argument('-v', dest='vcf',
                              help='The VCF file to be loaded.')
     parser_load.add_argument('-t', dest='anno_type',
-                             default=None, choices=["snpEff", "VEP"],
+                             default=None, choices=["snpEff", "VEP", "all"],
                              help="The annotations to be used with the input vcf.")
     parser_load.add_argument('-p', dest='ped_file',
                              help='Sample information file in PED+ format.',
