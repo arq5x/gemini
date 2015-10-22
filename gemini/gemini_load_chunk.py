@@ -149,7 +149,8 @@ class GeminiLoader(object):
         anno_keys = {}
         if self.args.anno_type in ("snpEff", "all"):
             if "ANN" in reader:
-                parts = [x.strip(" [])'(\"") for x in re.split("\||\(", reader["EFF"]["Description"].split(":", 1)[1].strip())]
+                desc = reader["ANN"]["Description"]
+                parts = [x.strip("\"'") for x in re.split("\s*\|\s*", desc.split(":", 1)[1].strip('" '))]
                 anno_keys["ANN"] = parts
             elif "EFF" in reader:
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(", reader["EFF"]["Description"].split(":", 1)[1].strip())]
@@ -160,7 +161,7 @@ class GeminiLoader(object):
             if "CSQ" in reader:
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(",
                                                                reader["CSQ"]["Description"].split(":", 1)[1].strip())]
-                anno_keys["ANN"] = parts
+                anno_keys["CSQ"] = parts
 
 
         # process and load each variant in the VCF file
@@ -424,7 +425,7 @@ class GeminiLoader(object):
                     impacts += [geneimpacts.SnpEff(e, anno_keys["ANN"]) for e in var.INFO["ANN"].split(",")]
 
             elif self.args.anno_type in ("all", "VEP"):
-                impacts += [geneimpacts.VEP(e) for e in var.INFO["CSQ"].split(",")]
+                impacts += [geneimpacts.VEP(e, anno_keys["CSQ"]) for e in var.INFO["CSQ"].split(",")]
 
             for i, im in enumerate(impacts, start=1):
                 im.anno_id = i
