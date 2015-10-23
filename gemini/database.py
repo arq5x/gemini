@@ -246,6 +246,9 @@ def create_tables(cursor, effect_fields=None):
                     aaf_adj_exac_nfe decimal(2,7),
                     aaf_adj_exac_oth decimal(2,7),
                     aaf_adj_exac_sas decimal(2,7),
+                    exac_num_het int,
+                    exac_num_hom_alt int,
+                    exac_num_chroms int,
                     %s
                     PRIMARY KEY(variant_id ASC))''' % effect_string
     cursor.execute(cmd)

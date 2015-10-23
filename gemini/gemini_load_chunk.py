@@ -395,7 +395,8 @@ class GeminiLoader(object):
             is_conserved = None
             esp = annotations.ESPInfo(None, None, None, None, None)
             thousandG = annotations.ThousandGInfo(None, None, None, None, None, None, None)
-            Exac = annotations.ExacInfo(None, None, None, None, None, None, None, None, None, None)
+            Exac = annotations.ExacInfo(None, None, None, None, None, None,
+                    None, None, None, None, None, None, None)
             recomb_rate = None
             gms = annotations.GmsTechs(None, None, None)
             grc = None
@@ -598,7 +599,10 @@ class GeminiLoader(object):
                    Exac.aaf_AFR, Exac.aaf_AMR,
                    Exac.aaf_EAS, Exac.aaf_FIN,
                    Exac.aaf_NFE, Exac.aaf_OTH,
-                   Exac.aaf_SAS]
+                   Exac.aaf_SAS,
+                   Exac.num_het,
+                   Exac.num_hom_alt,
+                   Exac.num_chroms]
 
         return variant, variant_impacts, extra_fields
 
