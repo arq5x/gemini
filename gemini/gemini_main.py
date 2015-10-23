@@ -130,7 +130,7 @@ def main():
     parser_load.add_argument('-v', dest='vcf',
                              help='The VCF file to be loaded.')
     parser_load.add_argument('-t', dest='anno_type',
-                             default=None, choices=["snpEff", "VEP"],
+                             default=None, choices=["snpEff", "VEP",  "all"],
                              help="The annotations to be used with the input vcf.")
     parser_load.add_argument('-p', dest='ped_file',
                              help='Sample information file in PED+ format.',
@@ -205,6 +205,11 @@ def main():
                               metavar='sample',
                               default=None,
                               help='New sample information file to load')
+    parser_amend.add_argument('--clear',
+                              default=False,
+                              action="store_true",
+                              help='Set all values in this column to NULL before loading.')
+
     def amend_fn(parser, args):
         import gemini_amend
         gemini_amend.amend(parser, args)
@@ -299,7 +304,7 @@ def main():
             dest='vcf',
             help='Original VCF file, for retrieving extra annotation fields.')
     parser_mergechunks.add_argument('-t', dest='anno_type',
-            default=None, choices=["snpEff", "VEP"],
+            default=None, choices=["snpEff", "VEP", "all"],
             help="The annotations to be used with the input vcf.")
     parser_mergechunks.add_argument('--chunkdb',
             nargs='*',

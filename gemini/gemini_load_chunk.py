@@ -2,11 +2,13 @@
 
 # native Python imports
 import os.path
+import re
 import sys
 import sqlite3
 import numpy as np
 import shutil
 import uuid
+import geneimpacts
 
 # third-party imports
 import cyvcf2 as vcf
@@ -18,14 +20,17 @@ import gene_table
 import infotag
 import database
 import annotations
-import func_impact
-import severe_impact
 import popgen
 import structural_variants as svs
 from gemini_constants import *
 from compression import pack_blob
 from gemini.config import read_gemini_config
 
+class empty(object):
+    def __getattr__(self, key):
+        return None
+
+empty = empty()
 
 def get_phred_lik(gt_phred_likelihoods, dtype=np.int32, empty_val=-1):
     """
@@ -139,6 +144,25 @@ class GeminiLoader(object):
         self.skipped = 0
         # need to keep the objects in memory since we just borrow it in python.
         obj_buffer = []
+        reader = self.vcf_reader
+
+        anno_keys = {}
+        if self.args.anno_type in ("snpEff", "all"):
+            if "ANN" in reader:
+                desc = reader["ANN"]["Description"]
+                parts = [x.strip("\"'") for x in re.split("\s*\|\s*", desc.split(":", 1)[1].strip('" '))]
+                anno_keys["ANN"] = parts
+            elif "EFF" in reader:
+                parts = [x.strip(" [])'(\"") for x in re.split("\||\(", reader["EFF"]["Description"].split(":", 1)[1].strip())]
+                anno_keys["EFF"] = parts
+            else:
+                print "snpEff header not found"
+        if self.args.anno_type in ("VEP", "all"):
+            if "CSQ" in reader:
+                parts = [x.strip(" [])'(\"") for x in re.split("\||\(",
+                                                               reader["CSQ"]["Description"].split(":", 1)[1].strip())]
+                anno_keys["CSQ"] = parts
+
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
@@ -150,7 +174,7 @@ class GeminiLoader(object):
             if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
                 self.skipped += 1
                 continue
-            (variant, variant_impacts, extra_fields) = self._prepare_variation(var)
+            (variant, variant_impacts, extra_fields) = self._prepare_variation(var, anno_keys)
             variant.extend(extra_fields.get(e) for e in self._extra_effect_fields)
             obj_buffer.append(var)
             # add the core variant info to the variant buffer
@@ -289,7 +313,7 @@ class GeminiLoader(object):
         database.create_tables(self.c, effect_fields or [])
         database.create_sample_table(self.c, self.args)
 
-    def _prepare_variation(self, var):
+    def _prepare_variation(self, var, anno_keys):
         """private method to collect metrics for a single variant (var) in a VCF file.
 
         Extracts variant information, variant impacts and extra fields for annotation.
@@ -387,69 +411,28 @@ class GeminiLoader(object):
             cadd_scaled = None
             gerp_bp = None
 
-        # impact is a list of impacts for this variant
-        impacts = None
-        severe_impacts = None
-        # impact terms initialized to None for handling unannotated vcf's
-        # anno_id in variants is for the trans. with the most severe impact term
-        gene = transcript = exon = codon_change = aa_change = aa_length = \
-            biotype = consequence = consequence_so = effect_severity = None
-        is_coding = is_exonic = is_lof = None
-        polyphen_pred = polyphen_score = sift_pred = sift_score = anno_id = None
+        if anno_keys == {}:
+            impacts = []
+            top_impact = empty
 
-        if self.args.anno_type is not None:
-            impacts = func_impact.interpret_impact(self.args, var, self._effect_fields)
-            il = [i for i in impacts if i.effect_severity]
-            # in case we don't have sever impact, we still try to get the impact
-            # to annote the main variants table.
-            if len(il) == 0 and len(impacts) > 0:
-                il = impacts[:1]
-            if len(il) > 0:
-                im = il[0]
+        else:
 
-                transcript = im.transcript
-                exon, gene = im.exon, im.gene
-                effect_severity = im.effect_severity
-                codon_change = im.codon_change
-                biotype = im.biotype
-                is_coding = im.is_coding
-                aa_change, aa_length, consequence = im.aa_change, im.aa_length, im.consequence
-                sift_score = im.sift_score
+            impacts = []
+            if self.args.anno_type in ("all", "snpEff"):
+                if "EFF" in anno_keys:
+                    impacts += [geneimpacts.OldSnpEff(e, anno_keys["EFF"]) for e in var.INFO["EFF"].split(",")]
+                elif "ANN" in anno_keys:
+                    impacts += [geneimpacts.SnpEff(e, anno_keys["ANN"]) for e in var.INFO["ANN"].split(",")]
 
-                polyphen_pred = im.polyphen_pred
-                polyphen_score = im.polyphen_score
-                sift_pred = im.sift_pred
-                sift_score = im.sift_score
-                anno_id = im.anno_id
-                is_exonic = im.is_exonic
-                is_coding = im.is_coding
-                is_lof = im.is_lof
+            elif self.args.anno_type in ("all", "VEP"):
+                impacts += [geneimpacts.VEP(e, anno_keys["CSQ"]) for e in var.INFO["CSQ"].split(",")]
 
-            severe_impacts = \
-                severe_impact.interpret_severe_impact(self.args, var, self._effect_fields)
-            if severe_impacts:
-                extra_fields.update(severe_impacts.extra_fields)
-                gene = severe_impacts.gene
-                transcript = severe_impacts.transcript
-                exon = severe_impacts.exon
-                codon_change = severe_impacts.codon_change
-                aa_change = severe_impacts.aa_change
-                aa_length = severe_impacts.aa_length
-                biotype = severe_impacts.biotype
-                consequence = severe_impacts.consequence
-                effect_severity = severe_impacts.effect_severity
-                polyphen_pred = severe_impacts.polyphen_pred
-                polyphen_score = severe_impacts.polyphen_score
-                sift_pred = severe_impacts.sift_pred
-                sift_score = severe_impacts.sift_score
-                anno_id = severe_impacts.anno_id
-                is_exonic = severe_impacts.is_exonic
-                is_coding = severe_impacts.is_coding
-                is_lof = severe_impacts.is_lof
-                consequence_so = severe_impacts.so
+            for i, im in enumerate(impacts, start=1):
+                im.anno_id = i
+            top_impact = geneimpacts.Effect.top_severity(impacts)
+            if isinstance(top_impact, list):
+                top_impact = top_impact[0]
 
-
-        # construct the filter string
         filter = None
         if var.FILTER is not None and var.FILTER != ".":
             if isinstance(var.FILTER, list):
@@ -499,7 +482,7 @@ class GeminiLoader(object):
                           impact.is_coding, impact.is_lof,
                           impact.exon, impact.codon_change,
                           impact.aa_change, impact.aa_length,
-                          impact.biotype, impact.consequence,
+                          impact.biotype, impact.top_consequence,
                           impact.so, impact.effect_severity,
                           impact.polyphen_pred, impact.polyphen_score,
                           impact.sift_pred, impact.sift_score]
@@ -514,7 +497,7 @@ class GeminiLoader(object):
         # 1 row per variant to VARIANTS table
         chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
-                   vcf_id, self.v_id, anno_id, var.REF, ','.join([x or "" for x in var.ALT]),
+                   vcf_id, self.v_id, top_impact.anno_id, var.REF, ','.join([x or "" for x in var.ALT]),
                    var.QUAL, filter, var.var_type,
                    var.var_subtype, pack_blob(gt_bases), pack_blob(gt_types),
                    pack_blob(gt_phases), pack_blob(gt_depths),
@@ -552,10 +535,24 @@ class GeminiLoader(object):
                    in_segdup, is_conserved, gerp_bp, gerp_el,
                    hom_ref, het, hom_alt, unknown,
                    aaf, hwe_p_value, inbreeding_coeff, pi_hat,
-                   recomb_rate, gene, transcript, is_exonic,
-                   is_coding, is_lof, exon, codon_change, aa_change,
-                   aa_length, biotype, consequence, consequence_so, effect_severity,
-                   polyphen_pred, polyphen_score, sift_pred, sift_score,
+                   recomb_rate,
+                   top_impact.gene,
+                   top_impact.transcript,
+                   top_impact.is_exonic,
+                   top_impact.is_coding,
+                   top_impact.is_lof,
+                   top_impact.exon,
+                   top_impact.codon_change,
+                   top_impact.aa_change,
+                   top_impact.aa_length,
+                   top_impact.biotype,
+                   top_impact.top_consequence,
+                   top_impact.so,
+                   top_impact.effect_severity,
+                   top_impact.polyphen_pred,
+                   top_impact.polyphen_score,
+                   top_impact.sift_pred,
+                   top_impact.sift_score,
                    infotag.get_ancestral_allele(var), infotag.get_rms_bq(var),
                    infotag.get_cigar(var),
                    infotag.get_depth(var), infotag.get_strand_bias(var),
@@ -732,7 +729,7 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
-    if args.anno_type not in ['snpEff', 'VEP', None]:
+    if args.anno_type not in ['snpEff', 'VEP', None, "all"]:
         parser.print_help()
         exit("\nERROR: Unsupported selection for -t\n")
 

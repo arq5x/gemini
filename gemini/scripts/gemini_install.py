@@ -26,7 +26,6 @@ import urllib
 remotes = {"requirements_pip": "https://raw.github.com/arq5x/gemini/master/requirements.txt",
            "requirements_conda": "",
            "versioned_installations": "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
-           "cloudbiolinux": "https://github.com/chapmanb/cloudbiolinux.git",
            "gemini": "https://github.com/arq5x/gemini.git",
            "anaconda": "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86%s.sh"}
 
@@ -91,10 +90,8 @@ def main(args, remotes=remotes):
     install_conda_pkgs(anaconda, remotes, args)
     gemini = install_gemini(anaconda, remotes, args.datadir, args.tooldir, args.sudo)
     if args.install_tools:
-        cbl = get_cloudbiolinux(remotes["cloudbiolinux"])
-        fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.datadir, args.sudo)
         print "Installing associated tools..."
-        install_tools(gemini["fab"], cbl["tool_fabfile"], fabricrc)
+        link_tools(args.tooldir, anaconda["dir"])
     os.chdir(work_dir)
     install_data(gemini["python"], gemini["data_script"], args)
     os.chdir(work_dir)
@@ -109,6 +106,36 @@ def main(args, remotes=remotes):
 
     shutil.rmtree(work_dir)
 
+def link_tools(tooldir, anaconda_dir):
+    """Link tools installed via conda into the tool directory.
+    """
+    bins = ["grabix"]
+    for binfile in bins:
+        orig_file = os.path.join(anaconda_dir, "bin", binfile)
+        final_file = os.path.join(tooldir, "bin", binfile)
+        if os.path.exists(orig_file):
+            _do_link(orig_file, final_file)
+
+def _do_link(orig_file, final_file):
+    """Perform a soft link of the original file into the final location.
+
+    We need the symlink to point to /anaconda/bin directory, not the real location
+    in the pkgs directory so conda can resolve LD_LIBRARY_PATH and the interpreters.
+    """
+    needs_link = True
+    # working symlink, check if already in the right place or remove it
+    if os.path.exists(final_file):
+        if (os.path.realpath(final_file) == os.path.realpath(orig_file) and
+              orig_file == os.path.normpath(os.path.join(os.path.dirname(final_file), os.readlink(final_file)))):
+            needs_link = False
+        else:
+            os.remove(final_file)
+    # broken symlink
+    elif os.path.lexists(final_file):
+        os.unlink(final_file)
+    if needs_link:
+        os.symlink(os.path.relpath(orig_file, os.path.dirname(final_file)), final_file)
+
 def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     """Install gemini plus python dependencies inside isolated Anaconda environment.
     """
@@ -120,8 +147,6 @@ def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
     #         subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
     #     except subprocess.CalledProcessError:
     #         pass
-    # Ensure latest version of fabric for running CloudBioLinux
-    subprocess.check_call([anaconda["pip"], "install", "fabric>=1.7.0"])
     # allow downloads excluded in recent pip (1.5 or greater) versions
     try:
         p = subprocess.Popen([anaconda["pip"], "--version"], stdout=subprocess.PIPE)
@@ -162,14 +187,14 @@ def install_conda_pkgs(anaconda, remotes, args):
     if args.gemini_version != 'latest':
         pkgs = ["--file", remotes['requirements_conda']]
     else:
-        pkgs = ["bcolz", "conda", "cython", "ipyparallel",
+        pkgs = ["bcolz", "conda", "cython", "grabix", "ipyparallel",
                 "jinja2", "nose", "numexpr", "numpy", "openssl", "pip", "pybedtools",
                 "pycrypto", "pyparsing", "python-graph-core", "python-graph-dot",
                 "pyyaml", "pyzmq", "pandas", "scipy"]
         if platform.architecture()[0] != "32bit":
             pkgs += ["bx-python", "pysam", "ipython-cluster-helper"]
 
-    channels = ["-c", "https://conda.binstar.org/bcbio"]
+    channels = ["-c", "bcbio", "-c", "bioconda"]
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
 
 def install_anaconda_python(args, remotes):
@@ -221,25 +246,6 @@ def _cleanup_problem_files(venv_dir):
         bin_cmd = os.path.join(venv_dir, "bin", cmd)
         if os.path.exists(bin_cmd):
             os.remove(bin_cmd)
-
-def install_tools(fab_cmd, fabfile, fabricrc):
-    """Install 3rd party tools used by Gemini using a custom CloudBioLinux flavor.
-    """
-    tools = ["grabix"]
-    flavor_dir = os.path.join(os.getcwd(), "gemini-flavor")
-    if not os.path.exists(flavor_dir):
-        os.makedirs(flavor_dir)
-    with open(os.path.join(flavor_dir, "main.yaml"), "w") as out_handle:
-        out_handle.write("packages:\n")
-        out_handle.write("  - bio_nextgen\n")
-        out_handle.write("libraries:\n")
-    with open(os.path.join(flavor_dir, "custom.yaml"), "w") as out_handle:
-        out_handle.write("bio_nextgen:\n")
-        for tool in tools:
-            out_handle.write("  - %s\n" % tool)
-    cmd = [fab_cmd, "-f", fabfile, "-H", "localhost", "-c", fabricrc,
-           "install_biolinux:target=custom,flavor=%s" % flavor_dir]
-    subprocess.check_call(cmd)
 
 def install_data(python_cmd, data_script, args):
     """Install biological data used by gemini.
@@ -311,26 +317,6 @@ def _update_testdir_revision(gemini_cmd):
     else:
         subprocess.check_call(["git", "reset", "--hard", "HEAD"])
 
-def write_fabricrc(base_file, tooldir, datadir, use_sudo):
-    out_file = os.path.join(os.getcwd(), os.path.basename(base_file))
-    with open(base_file) as in_handle:
-        with open(out_file, "w") as out_handle:
-            for line in in_handle:
-                if line.startswith("system_install"):
-                    line = "system_install = %s\n" % tooldir
-                elif line.startswith("local_install"):
-                    line = "local_install = %s/install\n" % tooldir
-                elif line.startswith("data_files"):
-                    line = "data_files = %s\n" % datadir
-                elif line.startswith("use_sudo"):
-                    line = "use_sudo = %s\n" % use_sudo
-                elif line.startswith("edition"):
-                    line = "edition = minimal\n"
-                elif line.startswith("#galaxy_home"):
-                    line = "galaxy_home = %s\n" % os.path.join(datadir, "galaxy")
-                out_handle.write(line)
-    return out_file
-
 def make_dirs(args):
     sudo_cmd = ["sudo"] if args.sudo else []
     for dname in [args.datadir, args.tooldir]:
@@ -338,13 +324,6 @@ def make_dirs(args):
             subprocess.check_call(sudo_cmd + ["mkdir", "-p", dname])
             username = check_output("echo $USER", shell=True).strip()
             subprocess.check_call(sudo_cmd + ["chown", username, dname])
-
-def get_cloudbiolinux(repo):
-    base_dir = os.path.join(os.getcwd(), "cloudbiolinux")
-    if not os.path.exists(base_dir):
-        subprocess.check_call(["git", "clone", repo])
-    return {"fabricrc": os.path.join(base_dir, "config", "fabricrc.txt"),
-            "tool_fabfile": os.path.join(base_dir, "fabfile.py")}
 
 def clean_env_variables():
     """Adjust environmental variables which can cause conflicts with installed anaconda python.

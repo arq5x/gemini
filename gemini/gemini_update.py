@@ -12,7 +12,6 @@ def release(parser, args):
     """
     url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
     repo = "https://github.com/arq5x/gemini.git"
-    cbl_repo = "https://github.com/chapmanb/cloudbiolinux.git"
     # update locally isolated python
     base = os.path.dirname(os.path.realpath(sys.executable))
     gemini_cmd = os.path.join(base, "gemini")
@@ -23,12 +22,12 @@ def release(parser, args):
     if not args.dataonly:
         if os.path.exists(conda_bin):
             clean_env_variables()
-            pkgs = ["bcolz", "bx-python", "conda", "cython", "ipyparallel", "ipython-cluster-helper",
+            pkgs = ["bcolz", "bx-python", "conda", "cython", "grabix", "ipyparallel",
+                    "ipython-cluster-helper",
                     "jinja2", "nose", "numexpr", "numpy", "openssl", "pip", "pybedtools",
                     "pycrypto", "pyparsing", "python-graph-core", "python-graph-dot",
                     "pysam", "pyyaml", "pyzmq", "pandas", "scipy"]
-            channels = ["-c", "https://conda.binstar.org/bcbio"]
-            subprocess.check_call([conda_bin, "install", "--yes", "numpy"])
+            channels = ["-c", "bcbio", "-c", "bioconda"]
             subprocess.check_call([conda_bin, "install", "--yes"] + channels + pkgs)
         elif os.path.exists(activate_bin):
             pass
@@ -59,9 +58,9 @@ def release(parser, args):
         print "Gemini upgraded to latest version"
     if args.tooldir:
         print "Upgrading associated tools..."
-        cbl = get_cloudbiolinux(cbl_repo)
-        fabricrc = write_fabricrc(cbl["fabricrc"], args.tooldir, args.sudo)
-        install_tools(fab_cmd, cbl["tool_fabfile"], fabricrc)
+        if os.path.exists(conda_bin):
+            anaconda_dir = os.path.dirname(os.path.dirname(conda_bin))
+            link_tools(args.tooldir, anaconda_dir)
     # update datafiles
     config = gemini.config.read_gemini_config(args=args)
     extra_args = ["--extra=%s" % x for x in args.extra]
@@ -131,46 +130,32 @@ def _update_testdir_revision(gemini_cmd):
     else:
         subprocess.check_call(["git", "reset", "--hard", "HEAD"])
 
-# ## Tools
-
-def get_cloudbiolinux(repo):
-    base_dir = os.path.join(os.getcwd(), "cloudbiolinux")
-    if not os.path.exists(base_dir):
-        subprocess.check_call(["git", "clone", repo])
-    return {"fabricrc": os.path.join(base_dir, "config", "fabricrc.txt"),
-            "tool_fabfile": os.path.join(base_dir, "fabfile.py")}
-
-def write_fabricrc(base_file, tooldir, use_sudo):
-    out_file = os.path.join(os.getcwd(), os.path.basename(base_file))
-    with open(base_file) as in_handle:
-        with open(out_file, "w") as out_handle:
-            for line in in_handle:
-                if line.startswith("system_install"):
-                    line = "system_install = %s\n" % tooldir
-                elif line.startswith("local_install"):
-                    line = "local_install = %s/install\n" % tooldir
-                elif line.startswith("use_sudo"):
-                    line = "use_sudo = %s\n" % use_sudo
-                elif line.startswith("edition"):
-                    line = "edition = minimal\n"
-                out_handle.write(line)
-    return out_file
-
-def install_tools(fab_cmd, fabfile, fabricrc):
-    """Install 3rd party tools used by Gemini using a custom CloudBioLinux flavor.
+def link_tools(tooldir, anaconda_dir):
+    """Link tools installed via conda into the tool directory.
     """
-    tools = ["grabix"]
-    flavor_dir = os.path.join(os.getcwd(), "gemini-flavor")
-    if not os.path.exists(flavor_dir):
-        os.makedirs(flavor_dir)
-    with open(os.path.join(flavor_dir, "main.yaml"), "w") as out_handle:
-        out_handle.write("packages:\n")
-        out_handle.write("  - bio_nextgen\n")
-        out_handle.write("libraries:\n")
-    with open(os.path.join(flavor_dir, "custom.yaml"), "w") as out_handle:
-        out_handle.write("bio_nextgen:\n")
-        for tool in tools:
-            out_handle.write("  - %s\n" % tool)
-    cmd = [fab_cmd, "-f", fabfile, "-H", "localhost", "-c", fabricrc,
-           "install_biolinux:target=custom,flavor=%s" % flavor_dir]
-    subprocess.check_call(cmd)
+    bins = ["grabix"]
+    for binfile in bins:
+        orig_file = os.path.join(anaconda_dir, "bin", binfile)
+        final_file = os.path.join(tooldir, "bin", binfile)
+        if os.path.exists(orig_file):
+            _do_link(orig_file, final_file)
+
+def _do_link(orig_file, final_file):
+    """Perform a soft link of the original file into the final location.
+
+    We need the symlink to point to /anaconda/bin directory, not the real location
+    in the pkgs directory so conda can resolve LD_LIBRARY_PATH and the interpreters.
+    """
+    needs_link = True
+    # working symlink, check if already in the right place or remove it
+    if os.path.exists(final_file):
+        if (os.path.realpath(final_file) == os.path.realpath(orig_file) and
+              orig_file == os.path.normpath(os.path.join(os.path.dirname(final_file), os.readlink(final_file)))):
+            needs_link = False
+        else:
+            os.remove(final_file)
+    # broken symlink
+    elif os.path.lexists(final_file):
+        os.unlink(final_file)
+    if needs_link:
+        os.symlink(os.path.relpath(orig_file, os.path.dirname(final_file)), final_file)

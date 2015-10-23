@@ -4,6 +4,7 @@ check()
     	echo ok
 	else
     	echo fail
+		exit 1;
 	fi
 }
 export -f check
@@ -267,15 +268,15 @@ rm obs exp
 echo "    query.t15...\c"
 echo "chr1	865218	865219	G	A	SAMD11	G/A	G/G
 chr1	874948	874949	G	GAC	SAMD11	G/GAC	G/G
-chr1	880750	880751	A	G	SAMD11	A/G	A/A
+chr1	880750	880751	A	G	NOC2L	A/G	A/A
 chr1	886408	886409	G	C	NOC2L	G/C	G/G
 chr1	891897	891898	T	C	NOC2L	T/C	T/T
 chr1	892470	892471	G	A	NOC2L	G/A	G/G
 chr1	898602	898603	C	G	KLHL17	C/G	C/C
-chr1	906301	906302	C	T	C1orf170	C/T	C/C
-chr1	908822	908823	G	A	C1orf170	G/A	G/G
+chr1	906301	906302	C	T	PLEKHN1	C/T	C/C
+chr1	908822	908823	G	A	PLEKHN1	G/A	G/G
 chr1	909308	909309	T	C	PLEKHN1	T/C	T/T
-chr1	909418	909419	C	T	C1orf170	C/T	C/C
+chr1	909418	909419	C	T	PLEKHN1	C/T	C/C
 chr1	934796	934797	T	G	HES4	T/G	T/T
 chr1	970559	970563	GGGT	G	AGRN	GGGT/G	GGGT/GGGT
 chr1	970561	970563	GT	G	AGRN	GT/G	GT/GT
@@ -600,9 +601,9 @@ rm obs exp
 #########################################################################
 echo "    query.t34...\c"
 echo "variant_id	chrom	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
-46	chr1	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frame_shift
-578	chr1	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frame_shift
-733	chr1	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gain" > exp
+46	chr1	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frameshift_variant
+578	chr1	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frameshift_variant
+733	chr1	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gained" > exp
 
 gemini query --header -q "select v.variant_id, v.chrom, v.gene, \
 	           g.transcript_status, g.transcript, g.transcript_start, \
@@ -621,17 +622,17 @@ rm obs exp
 #########################################################################
 echo "    query.t35...\c"
 echo "gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
-SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frame_shift
-TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frame_shift
-TNFRSF18	KNOWN	ENST00000379265	1139224	1141951	AITR,CD357,GITR	None	234	frame_shift
-TNFRSF18	KNOWN	ENST00000379268	1138891	1142071	AITR,CD357,GITR	None	241	frame_shift
-TNFRSF18	KNOWN	ENST00000328596	1138888	1141951	AITR,CD357,GITR	None	255	frame_shift
-SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gain
-SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	frame_shift
-SCNN1D	KNOWN	ENST00000325425	1217489	1227404	ENaCdelta,dNaCh	96.77990092	704	frame_shift
-SCNN1D	KNOWN	ENST00000379116	1215816	1227399	ENaCdelta,dNaCh	96.77990092	802	frame_shift
-SCNN1D	KNOWN	ENST00000338555	1215968	1227404	ENaCdelta,dNaCh	96.77990092	638	frame_shift
-SCNN1D	KNOWN	ENST00000400928	1217576	1227409	ENaCdelta,dNaCh	96.77990092	638	frame_shift" > exp
+SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frameshift_variant
+TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frameshift_variant
+TNFRSF18	KNOWN	ENST00000379265	1139224	1141951	AITR,CD357,GITR	None	234	frameshift_variant
+TNFRSF18	KNOWN	ENST00000379268	1138891	1142071	AITR,CD357,GITR	None	241	frameshift_variant
+TNFRSF18	KNOWN	ENST00000328596	1138888	1141951	AITR,CD357,GITR	None	255	frameshift_variant
+SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gained
+SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	frameshift_variant
+SCNN1D	KNOWN	ENST00000325425	1217489	1227404	ENaCdelta,dNaCh	96.77990092	704	frameshift_variant
+SCNN1D	KNOWN	ENST00000379116	1215816	1227399	ENaCdelta,dNaCh	96.77990092	802	frameshift_variant
+SCNN1D	KNOWN	ENST00000338555	1215968	1227404	ENaCdelta,dNaCh	96.77990092	638	frameshift_variant
+SCNN1D	KNOWN	ENST00000400928	1217576	1227409	ENaCdelta,dNaCh	96.77990092	638	frameshift_variant" > exp
 
 gemini query --header -q "select v.gene, g.transcript_status,g.transcript, g.transcript_start, \
 	g.transcript_end, g.synonym, g.rvis_pct, g.protein_length, \
@@ -649,10 +650,10 @@ rm obs exp
 ###########################################################################
 echo "    query.t36...\c"
 echo "chrom	gene	strand	transcript_min_start	transcript_max_end	synonym	rvis_pct	impact
-chr1	SAMD11	1	860260	879955	MGC45873	None	frame_shift
-chr1	TNFRSF18	-1	1138888	1142071	AITR,CD357,GITR	None	frame_shift
-chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	stop_gain
-chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	frame_shift" > exp
+chr1	SAMD11	1	860260	879955	MGC45873	None	frameshift_variant
+chr1	TNFRSF18	-1	1138888	1142071	AITR,CD357,GITR	None	frameshift_variant
+chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	stop_gained
+chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	frameshift_variant" > exp
 
 gemini query --header -q "select v.chrom, v.gene, g.strand, g.transcript_min_start, g.transcript_max_end, \
 g.synonym, g.rvis_pct, v.impact from variants v, gene_summary g \
@@ -668,14 +669,14 @@ rm obs exp
 ############################################################################
 echo "    query.t37...\c"
 echo "gene	impact	transcript	transcript_min_start	transcript_max_end	rvis_pct	synonym
-SCNN1D	stop_gain	ENST00000470022	1215816	1227409	96.77990092	ENaCdelta,dNaCh" > exp
+SCNN1D	stop_gained	ENST00000470022	1215816	1227409	96.77990092	ENaCdelta,dNaCh" > exp
 
 gemini query --header -q "select g.gene, v.impact, v.transcript, \
 	   g.transcript_min_start, g.transcript_max_end, g.rvis_pct, g.synonym \
 		  from gene_summary g, variant_impacts v \
 			  where g.gene=v.gene AND \
 				g.gene ='SCNN1D' AND \
-				v.impact ='stop_gain'" test.query.db > obs
+				v.impact ='stop_gained'" test.query.db > obs
 check obs exp
 rm obs exp
 
@@ -685,10 +686,10 @@ rm obs exp
 ############################################################################
 echo "    query.t38...\c"
 echo "chrom	gene	strand	transcript_min_start	transcript_max_end	synonym	rvis_pct	impact
-chr1	SAMD11	1	860260	879955	MGC45873	None	frame_shift
-chr1	TNFRSF18	-1	1138888	1142071	AITR,CD357,GITR	None	frame_shift
-chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	stop_gain
-chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	frame_shift" > exp
+chr1	SAMD11	1	860260	879955	MGC45873	None	frameshift_variant
+chr1	TNFRSF18	-1	1138888	1142071	AITR,CD357,GITR	None	frameshift_variant
+chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	stop_gained
+chr1	SCNN1D	1	1215816	1227409	ENaCdelta,dNaCh	96.77990092	frameshift_variant" > exp
 
 gemini query --header -q "select v.chrom, v.gene, g.strand, g.transcript_min_start, g.transcript_max_end, \
 g.synonym, g.rvis_pct, v.impact from variants v, gene_summary g \
@@ -704,9 +705,9 @@ rm obs exp
 ###########################################################################
 echo "    query.t39...\c"
 echo "variant_id	chrom	gene	transcript_status	transcript	transcript_start	transcript_end	synonym	rvis_pct	protein_length	impact
-46	chr1	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frame_shift
-578	chr1	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frame_shift
-733	chr1	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gain" > exp
+46	chr1	SAMD11	KNOWN	ENST00000342066	861118	879955	MGC45873	None	681	frameshift_variant
+578	chr1	TNFRSF18	PUTATIVE	ENST00000486728	1139224	1141060	AITR,CD357,GITR	None	169	frameshift_variant
+733	chr1	SCNN1D	NOVEL	ENST00000470022	1217305	1221548	ENaCdelta,dNaCh	96.77990092	138	stop_gained" > exp
 
 gemini query --header -q "select v.variant_id, v.chrom, v.gene, \
 	           g.transcript_status, g.transcript, g.transcript_start, \

@@ -8,16 +8,24 @@ Release History
 
 0.18.0 (future)
 ===============
+1. Update support for SO term variant impact predictions via VEP and SnpEff and support newest snpEff version.
+   If both snpEff and VEP annotations are present use `gemini load -t all` to save all annotations and the most
+   deleterious will be saved in the variants table.
+
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
-#. Update support for SO term variant impact predictions via VEP and SnpEff.
 #. Add an `is_splicing` column.
 #. X-linked recessive and dominant tools.
 
+0.17.2
+======
+#. Fix bcolz dependencies owing to issues with bcolz 0.11.0 
+
 0.17.1
 ======
-# Change handling of missing values in PL/GL (--gt-pl-max) so that missing values are set to int32 max. (Thanks Karyn for reporting).
-# Fix distributed loading of VEP with extra columns (@chapmanb) [Regression since 0.17.0]
-# Fix comp_het test and improve efficiency (thanks Bianca for reporting)
+#. Change handling of missing values in PL/GL (--gt-pl-max) so that missing values are set to int32 max. (Thanks Karyn for reporting).
+#. Fix distributed loading of VEP with extra columns (@chapmanb) [Regression since 0.17.0]
+#. Fix comp_het test and improve efficiency (thanks Bianca for reporting)
+#. Bug fix: populate eval dictionary with sample_info.
 
 0.17.0
 ======
