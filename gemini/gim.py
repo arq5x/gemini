@@ -412,6 +412,7 @@ class CompoundHet(GeminiInheritanceModel):
                                                ref2=site2.row['ref'],
                                                alt2=site2.row['alt'],
                                                allow_unaffected=args.allow_unaffected,
+                                               fast_mode=True,
                                                pattern_only=args.pattern_only)
 
                         if not ch['candidate']: continue
