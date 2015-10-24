@@ -251,10 +251,8 @@ class Family(object):
         assert isinstance(gt_bases[0], basestring)
         assert isinstance(gt_types[0], int) or int(gt_types[0]) == gt_types[0]
 
-        for s in (subj for subj in self.subjects if gt_types[subj._i] == HET):
-            # here we have a phaseable (HET) person ..
-            if s.mom is None or s.dad is None: continue
-            # ... with a mom and dad
+        for s in (subj for subj in self.subjects if subj.mom is not None and subj.dad is not None and gt_types[subj._i] == HET):
+            # here we have a phaseable (HET) person with a mom and dad ..
             ## cant be same.
             if gt_types[s.mom._i] == gt_types[s.dad._i]: continue
             ## cant have unknown
@@ -268,16 +266,19 @@ class Family(object):
             # can't phase kid with de-novo
 
             if kid_bases - parent_bases:
-                sys.stderr.write("skipping variant due to apparent de_novo in kid\n")
+                sys.stderr.write("not phasing variant due to apparent de_novo in kid (%s) in family %s\n"
+                                 % (s.name, self.family_id))
                 continue
 
             # no alleles from dad
             if len(kid_bases - set(dad_bases)) == len(kid_bases):
-                sys.stderr.write("skipping variant due to no alleles from dad (apparent mendelian error)\n")
+                sys.stderr.write("not phasing variant due to no alleles in %s from dad %s (apparent mendelian error) in family %s\n"
+                                  % (s.name, s.dad.name, self.family_id))
                 continue
 
             if len(kid_bases - set(mom_bases)) == len(kid_bases):
-                sys.stderr.write("skipping variant due to no alleles from mom (apparent mendelian error)\n")
+                sys.stderr.write("not phasing variant due to no alleles in %s from mom %s (apparent mendelian error) in family %s\n"
+                                 % (s.name, s.mom.name, self.family_id))
                 continue
 
             # should be able to phase here
@@ -804,6 +805,7 @@ class Family(object):
                       ref1=None, alt1=None,
                       ref2=None, alt2=None,
                       allow_unaffected=False,
+                      fast_mode=False,
                       pattern_only=False,
                       _splitter=re.compile("\||/")):
         """
@@ -828,14 +830,16 @@ class Family(object):
         self.famphase(gt_types2, gt_phases2, gt_bases2,
                       length_check=False)
 
-        gt_bases1 = [_splitter.split(b) for b in gt_bases1]
-        gt_bases2 = [_splitter.split(b) for b in gt_bases2]
+        #gt_bases1 = [_splitter.split(b) for b in gt_bases1]
+        #gt_bases2 = [_splitter.split(b) for b in gt_bases2]
+        gt_bases1 = [b.split("|" if p else "/") for b, p in zip(gt_bases1, gt_phases1)]
+        gt_bases2 = [b.split("|" if p else "/") for b, p in zip(gt_bases2, gt_phases2)]
 
         # get in (0, 1) format instead of (A, T)
-        ra = [ref1, alt1, "."]
-        gt_nums1 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases1]
-        ra = [ref2, alt2, "."]
-        gt_nums2 = [(ra.index(b[0]), ra.index(b[1])) for b in gt_bases2]
+        ra = {ref1: 0, alt1: 1, ".": 2}
+        gt_nums1 = [(ra[b[0]], ra[b[1]]) for b in gt_bases1]
+        ra = {ref2: 0, alt2: 1, ".": 2}
+        gt_nums2 = [(ra[b[0]], ra[b[1]]) for b in gt_bases2]
 
         if pattern_only:
             return self._comp_het_pair_pattern(gt_types1, gt_nums1,
@@ -854,9 +858,8 @@ class Family(object):
         for aff in self.affecteds:
             if gt_types1[aff._i] != HET or gt_types2[aff._i] != HET:
                 ret['affected_skipped'].append(aff)
-                # Remove candidates where an affected from the same family does
-                # NOT share the same het pair.
                 ret['candidate'] = False
+                if fast_mode: break
                 continue
 
             aff_phased = gt_phases1[aff._i] and gt_phases2[aff._i]
@@ -866,6 +869,7 @@ class Family(object):
                 # Remove candidates where an affected from the same family does
                 # NOT share the same het pair.
                 ret['candidate'] = False
+                if fast_mode: break
                 continue
 
             if not 'candidate' in ret: ret['candidate'] = True
@@ -876,22 +880,26 @@ class Family(object):
             ret['candidates'].append(aff)
 
         del aff
-        for un in self.unaffecteds:
-            if gt_types1[un._i] != HET or gt_types2[un._i] != HET:
-                continue
+        if ret['candidates'] != []:
 
-            is_phased = gt_phases1[un._i] and gt_phases2[un._i]
-            # unaffected has the candidate pair on the same chromosome
-            if is_phased and gt_nums1[un._i] == gt_nums2[un._i]:
-                continue
+            for un in self.unaffecteds:
+                if gt_types1[un._i] != HET or gt_types2[un._i] != HET:
+                    continue
 
-            if is_phased:
-                # found an unaffected with the same het-pair.
-                ret['unaffected_phased'].append(un)
-                if not allow_unaffected:
-                    ret['candidate'] = False
-            else:
-                ret['unaffected_unphased'].append(un)
+                is_phased = gt_phases1[un._i] and gt_phases2[un._i]
+                # unaffected has the candidate pair on the same chromosome
+                if is_phased and gt_nums1[un._i] == gt_nums2[un._i]:
+                    continue
+
+                if is_phased:
+                    # found an unaffected with the same het-pair.
+                    ret['unaffected_phased'].append(un)
+                    if not allow_unaffected:
+                        ret['candidate'] = False
+                        if fast_mode: break
+                else:
+                    ret['unaffected_unphased'].append(un)
+
         if not 'candidate' in ret:
             ret['candidate'] = False
             ret['priority'] = None
