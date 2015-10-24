@@ -217,7 +217,7 @@ def install_anaconda_python(args, remotes):
             shutil.rmtree(anaconda_dir)
         url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux", arch)
         if not os.path.exists(os.path.basename(url)):
-            subprocess.check_call(["wget", url])
+            subprocess.check_call(["wget", "--continue", url])
         subprocess.check_call("bash %s -b -p %s" %
                               (os.path.basename(url), anaconda_dir), shell=True)
     return {"conda": conda,

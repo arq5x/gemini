@@ -136,7 +136,7 @@ def _download_to_dir(url, out_fname, dirname, version, cur_version):
         max_retries = 2
         retries = 0
         while 1:
-            cmd = ["wget", "-O", out_fname, url]
+            cmd = ["wget", "--continue", "-O", out_fname, url]
             retcode = subprocess.call(cmd)
             if retcode == 0:
                 break
