@@ -2,7 +2,7 @@
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
 bx-python=0.7.2=np18py27_1
-cyvcf2>=0.1.8
+cyvcf2>=0.1.8
 conda=3.5.5=py27_0
 cython=0.22.1=py27_0
 dateutil=2.1=py27_2
