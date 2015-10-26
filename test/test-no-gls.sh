@@ -42,14 +42,14 @@ rm obs exp
 
 echo "nogls.auto_dom.t4"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
-SPRN	chr10	135336655	135336656	G	A	intron	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
-WDR37	chr10	1142208	1142209	T	C	stop_loss	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	C/C,C/T,C/T	2_mom,2_kid	2
+SPRN	chr10	135336655	135336656	G	A	intron_variant	LOW	5	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	G/A,G/G,G/A	3_dad,3_kid	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/T,T/C	3_dad,3_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;affected),2_kid(2_kid;affected)	T/T,T/C,T/C	2_mom,2_kid	2
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	T/C,T/C,T/C	3_dad,3_kid	2" > exp
 
 python drop-gl-columns.py test.auto_dom.db test.aa.db
 gemini autosomal_dominant  \
