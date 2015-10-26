@@ -11,9 +11,12 @@ Release History
 1. Update support for SO term variant impact predictions via VEP and SnpEff and support newest snpEff version.
    If both snpEff and VEP annotations are present use `gemini load -t all` to save all annotations and the most
    deleterious will be saved in the variants table.
+2. Add an `is_splicing` column.
+3. Add `exac_num_het`, `exac_num_hom_alt` and `exac_num_chroms` columns. (See #568).
+4. Fix issues with cyvcf2 handling of haploid calls (from X chromosome from GATK; thanks Athina for reporting)
+
 
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
-#. Add an `is_splicing` column.
 #. X-linked recessive and dominant tools.
 
 0.17.2
