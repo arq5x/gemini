@@ -160,7 +160,10 @@ ExacInfo = collections.namedtuple("ExacInfo",
                                    aaf_FIN \
                                    aaf_NFE \
                                    aaf_OTH \
-                                   aaf_SAS")
+                                   aaf_SAS \
+                                   num_het \
+                                   num_hom_alt \
+                                   num_chroms")
 
 def load_annos(args):
     """
@@ -734,7 +737,7 @@ def get_1000G_info(var, empty=EMPTY_1000G):
     return empty
 
 EXAC_EMTPY = ExacInfo(False, None, None, None, None, None,
-                     None, None, None, None)
+                     None, None, None, None, None, None, None)
 def get_exac_info(var, empty=EXAC_EMTPY):
     """
     Returns the allele frequencies from the Exac data (Broad)
@@ -782,8 +785,13 @@ def get_exac_info(var, empty=EXAC_EMTPY):
                 ac_list = ac.split(",")
                 afs[grp] = float(ac_list[allele_num]) / float(an)
 
+            num_hets = info_map.get("AC_Het")
+            num_homs = info_map.get("AC_Hom")
+            called_chroms = info_map.get('AN_Adj')
+
             return ExacInfo(True, aaf_ALL, afs['Adj'], afs['AFR'], afs['AMR'],
-                                afs['EAS'], afs['FIN'], afs['NFE'], afs['OTH'], afs['SAS'])
+                                afs['EAS'], afs['FIN'], afs['NFE'], afs['OTH'],
+                                afs['SAS'], num_hets, num_homs, called_chroms)
 
     return empty
 

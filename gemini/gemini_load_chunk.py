@@ -395,7 +395,8 @@ class GeminiLoader(object):
             is_conserved = None
             esp = annotations.ESPInfo(None, None, None, None, None)
             thousandG = annotations.ThousandGInfo(None, None, None, None, None, None, None)
-            Exac = annotations.ExacInfo(None, None, None, None, None, None, None, None, None, None)
+            Exac = annotations.ExacInfo(None, None, None, None, None, None,
+                    None, None, None, None, None, None, None)
             recomb_rate = None
             gms = annotations.GmsTechs(None, None, None)
             grc = None
@@ -479,7 +480,9 @@ class GeminiLoader(object):
         for idx, impact in enumerate(impacts or [], start=1):
             var_impact = [self.v_id, idx, impact.gene,
                           impact.transcript, impact.is_exonic,
-                          impact.is_coding, impact.is_lof,
+                          impact.is_coding,
+                          impact.is_splicing,
+                          impact.is_lof,
                           impact.exon, impact.codon_change,
                           impact.aa_change, impact.aa_length,
                           impact.biotype, impact.top_consequence,
@@ -540,6 +543,7 @@ class GeminiLoader(object):
                    top_impact.transcript,
                    top_impact.is_exonic,
                    top_impact.is_coding,
+                   top_impact.is_splicing,
                    top_impact.is_lof,
                    top_impact.exon,
                    top_impact.codon_change,
@@ -595,7 +599,10 @@ class GeminiLoader(object):
                    Exac.aaf_AFR, Exac.aaf_AMR,
                    Exac.aaf_EAS, Exac.aaf_FIN,
                    Exac.aaf_NFE, Exac.aaf_OTH,
-                   Exac.aaf_SAS]
+                   Exac.aaf_SAS,
+                   Exac.num_het,
+                   Exac.num_hom_alt,
+                   Exac.num_chroms]
 
         return variant, variant_impacts, extra_fields
 
