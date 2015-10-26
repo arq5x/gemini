@@ -14,7 +14,7 @@ Release History
 2. Add an `is_splicing` column.
 3. Add `exac_num_het`, `exac_num_hom_alt` and `exac_num_chroms` columns. (See #568).
 4. Fix issues with cyvcf2 handling of haploid calls (from X chromosome from GATK; thanks Athina for reporting)
-
+5. fix handling of VEP extra fiels (thanks @jsh58).
 
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
 #. X-linked recessive and dominant tools.
