@@ -217,7 +217,7 @@ def install_anaconda_python(args, remotes):
             shutil.rmtree(anaconda_dir)
         url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux", arch)
         if not os.path.exists(os.path.basename(url)):
-            subprocess.check_call(["wget", url])
+            subprocess.check_call(["wget", "--continue", url])
         subprocess.check_call("bash %s -b -p %s" %
                               (os.path.basename(url), anaconda_dir), shell=True)
     return {"conda": conda,
@@ -278,7 +278,7 @@ def install_testbase(datadir, repo, gemini):
         os.chdir(os.path.split(gemini_dir)[0])
         if repo.startswith("git+"):
             repo = repo[4:]
-        if repo.endswith("@dev"):
+        if repo.find("@"):
             url, branch = repo.rsplit("@", 1)
             subprocess.check_call(["git", "clone", "-b", branch, url])
         else:
@@ -338,8 +338,7 @@ def check_dependencies():
     """
     print "Checking required dependencies..."
     for cmd, url in [("git", "http://git-scm.com/"),
-                     ("wget", "http://www.gnu.org/software/wget/"),
-                     ("curl", "http://curl.haxx.se/")]:
+                     ("wget", "http://www.gnu.org/software/wget/")]:
         try:
             retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
