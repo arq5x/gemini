@@ -1,5 +1,5 @@
 # extract positive human enhancers from VISTA
-curl -s "http://enhancer.lbl.gov/cgi-bin/imagedb3.pl?show=1;page=1;form=ext_search;search.status=Positives;search.org=Human;page_size=100;search.result=yes;action=search;search.gene=;search.sequence=1" \
+wget -O - -q "http://enhancer.lbl.gov/cgi-bin/imagedb3.pl?show=1;page=1;form=ext_search;search.status=Positives;search.org=Human;page_size=100;search.result=yes;action=search;search.gene=;search.sequence=1" \
   | grep "^>" \
   > vista.human.positive.enhancers.headers.fa
 

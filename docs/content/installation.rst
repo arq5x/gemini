@@ -13,13 +13,9 @@ and data files.
 
     $ wget https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py
 
-If ``wget`` isn't available, you can use ``curl`` instead:
-
-.. code-block:: bash
-
-    $ curl \
-    https://raw.github.com/arq5x/gemini/master/gemini/scripts/gemini_install.py \
-    > gemini_install.py
+While other tools (e.g., ``curl``) can be used to download this file, ``wget`` is
+required by the installation script.  Please install ``wget`` if it is not already
+available:
 
 Once you have downloaded the above installation script, you can proceed as follows:
 
@@ -77,6 +73,7 @@ The installer requires:
   
   - Python 2.7.x
   - git
+  - wget
   - a working C / C++ compiler such as gcc
   - zlib (including headers)
 
@@ -88,7 +85,7 @@ above dependencies:
 
 .. code-block:: bash
 
-  $ sudo yum -y install python27 git gcc gcc-c++ zlib-devel
+  $ sudo yum -y install python27 git wget gcc gcc-c++ zlib-devel
 
 
 Installing without root access.
