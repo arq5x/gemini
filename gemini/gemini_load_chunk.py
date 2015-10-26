@@ -77,8 +77,7 @@ class GeminiLoader(object):
 
         if self.args.anno_type == "VEP":
             self._effect_fields = self._get_vep_csq(self.vcf_reader)
-            self._extra_effect_fields = [("vep_%s" % x) for x in self._effect_fields if not x.lower() in expected]
-            self._effect_fields = [x for x in self._effect_fields if x.lower() in expected]
+            self._extra_effect_fields = [("vep_%s" % x.lower()) for x in self._effect_fields if not x.lower() in expected]
 
         else:
             self._effect_fields = []
