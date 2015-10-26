@@ -14,6 +14,8 @@ cd test
 # setup the testing databases from the testing VCF files
 bash data-setup.sh
 
+bash test-vep-extra.sh
+
 bash test-vcf-output.sh
 
 bash test-mendel-error.sh

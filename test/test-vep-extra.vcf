@@ -1,0 +1,14 @@
+##fileformat=VCFv4.2
+##source=VarScan2
+##INFO=<ID=CIGAR,Number=1,Type=String,Description="CIGAR representation of the alternate allele">
+##INFO=<ID=TYPE,Number=1,Type=String,Description="Type of alternate allele (sub, ins, or del)">
+##INFO=<ID=HP,Number=1,Type=Integer,Description="Length of adjacent homopolymer that matches variant">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AF,Number=1,Type=Float,Description="Allele frequency">
+##FORMAT=<ID=AO,Number=1,Type=Integer,Description="Alternate allele observations">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth (max. over reference positions)">
+##FORMAT=<ID=RO,Number=1,Type=Integer,Description="Reference allele observations">
+##VEP=v81 cache=/home/john/.vep/homo_sapiens_refseq/81_GRCh37 db=. gencode=GENCODE 19 regbuild=13 dbSNP=142 sift=sift5.2.2 ClinVar=201501 HGMD-PUBLIC=20144 COSMIC=71 polyphen=2.2.2 assembly=GRCh37.p13 ESP=20141103 genebuild=2011-04
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Consequence|BIOTYPE|IMPACT|Codons|CDS_position|Amino_acids|Protein_position|EXON|PolyPhen|SIFT|Gene|Feature|SYMBOL|HGVSc|HGVSp">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+chr2	178095865	.	T	C	.	.	CIGAR=1X;TYPE=sub;HP=1;CSQ=missense_variant|protein_coding|MODERATE|cAg/cGg|1397/1749|Q/R|466/582|5/5|probably_damaging(0.917)|deleterious(0)|4780|NM_001145413.2|NFE2L2|c.1397A>G|p.Q466R	GT:AF:AO:DP:RO	0/1:0.25:50:200:150

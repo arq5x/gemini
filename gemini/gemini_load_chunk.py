@@ -77,14 +77,15 @@ class GeminiLoader(object):
 
         if self.args.anno_type == "VEP":
             self._effect_fields = self._get_vep_csq(self.vcf_reader)
-            self._extra_effect_fields = [("vep_%s" % x.lower()) for x in self._effect_fields if not x.lower() in expected]
+            # tuples of (db_column, CSQ name)
+            self._extra_effect_fields = [("vep_%s" % x.lower(), x) for x in self._effect_fields if not x.lower() in expected]
 
         else:
             self._effect_fields = []
             self._extra_effect_fields = []
         if not prepare_db:
             return
-        self._create_db(self._extra_effect_fields)
+        self._create_db([x[0] for x  in self._extra_effect_fields])
 
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             # load the sample info from the VCF file.
@@ -174,7 +175,7 @@ class GeminiLoader(object):
                 self.skipped += 1
                 continue
             (variant, variant_impacts, extra_fields) = self._prepare_variation(var, anno_keys)
-            variant.extend(extra_fields.get(e) for e in self._extra_effect_fields)
+            variant.extend(extra_fields.get(e[0]) for e in self._extra_effect_fields)
             obj_buffer.append(var)
             # add the core variant info to the variant buffer
             self.var_buffer.append(variant)
@@ -494,6 +495,9 @@ class GeminiLoader(object):
         sv = svs.StructuralVariant(var)
         ci_left = sv.get_ci_left()
         ci_right = sv.get_ci_right()
+
+        for dbkey, infokey in self._extra_effect_fields:
+            extra_fields[dbkey] = top_impact.effects[infokey]
 
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
