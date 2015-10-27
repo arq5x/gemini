@@ -278,7 +278,7 @@ def install_testbase(datadir, repo, gemini):
         os.chdir(os.path.split(gemini_dir)[0])
         if repo.startswith("git+"):
             repo = repo[4:]
-        if repo.find("@"):
+        if "@" in repo:
             url, branch = repo.rsplit("@", 1)
             subprocess.check_call(["git", "clone", "-b", branch, url])
         else:
