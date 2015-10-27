@@ -5,9 +5,11 @@ Release History
 0.19.0 (future)
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
+#. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
+#. X-linked recessive and dominant tools.
 
-0.18.0 (future)
-===============
+0.18.0
+======
 1. Update support for SO term variant impact predictions via VEP and SnpEff and support newest snpEff version.
    If both snpEff and VEP annotations are present use `gemini load -t all` to save all annotations and the most
    deleterious will be saved in the variants table.
@@ -16,8 +18,6 @@ Release History
 4. Fix issues with cyvcf2 handling of haploid calls (from X chromosome from GATK; thanks Athina for reporting)
 5. fix handling of VEP extra fiels (thanks @jsh58).
 
-#. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
-#. X-linked recessive and dominant tools.
 
 0.17.2
 ======
