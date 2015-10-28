@@ -22,7 +22,7 @@ def release(parser, args):
     if not args.dataonly:
         if os.path.exists(conda_bin):
             clean_env_variables()
-            pkgs = ["bcolz", "bx-python", "conda", "cython", "grabix", "ipyparallel",
+            pkgs = ["bcolz", "bx-python", "conda", "cyordereddict", "cython", "grabix", "ipyparallel",
                     "ipython-cluster-helper",
                     "jinja2", "nose", "numexpr", "numpy", "openssl", "pip", "pybedtools",
                     "pycrypto", "pyparsing", "python-graph-core", "python-graph-dot",

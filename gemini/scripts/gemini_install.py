@@ -187,7 +187,7 @@ def install_conda_pkgs(anaconda, remotes, args):
     if args.gemini_version != 'latest':
         pkgs = ["--file", remotes['requirements_conda']]
     else:
-        pkgs = ["bcolz", "conda", "cython", "grabix", "ipyparallel",
+        pkgs = ["bcolz", "conda", "cyordereddict", "cython", "grabix", "ipyparallel",
                 "jinja2", "nose", "numexpr", "numpy", "openssl", "pip", "pybedtools",
                 "pycrypto", "pyparsing", "python-graph-core", "python-graph-dot",
                 "pyyaml", "pyzmq", "pandas", "scipy"]
