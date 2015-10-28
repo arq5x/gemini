@@ -409,14 +409,16 @@ class Family(object):
                 return 'False'
         af = reduce(op.and_, [s.gt_types == HET for s in self.affecteds], empty)
         if len(self.unaffecteds) and only_affected:
-            un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT) for s in self.unaffecteds])
+            un = reduce(op.and_, [(s.gt_types != HET) & (s.gt_types != HOM_ALT)
+                                  for s in self.unaffecteds], empty)
         else:
             un = None
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
             af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds], empty)
             if len(self.unaffecteds) and only_affected:
-                un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in self.unaffecteds])
+                un &= reduce(op.and_, [s.gt_phred_ll_het > gt_ll for s in
+                                       self.unaffecteds], empty)
         # need at least 1 kid with parent who has the mutation
         # parents can't have unkown phenotype.
         kid_with_known_parents = False
@@ -478,9 +480,9 @@ class Family(object):
 
         depth = self._restrict_to_min_depth(min_depth)
         if gt_ll:
-            af &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.affecteds])
+            af &= reduce(op.and_, [s.gt_phred_ll_homalt <= gt_ll for s in self.affecteds], empty)
             if only_affected:
-                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
+                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds], empty)
 
         return af & un & depth
 
@@ -932,8 +934,10 @@ class Family(object):
             #af &= reduce(op.or_, [s.gt_types == HET for s in self.unknown], empty)
 
             if gt_ll:
-                af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in self.affecteds])
-                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in self.unaffecteds])
+                af &= reduce(op.and_, [s.gt_phred_ll_het <= gt_ll for s in
+                    self.affecteds], empty)
+                un &= reduce(op.and_, [s.gt_phred_ll_homalt > gt_ll for s in
+                    self.unaffecteds], empty)
 
         depth = self._restrict_to_min_depth(min_depth)
         res = af & un & depth
