@@ -58,7 +58,7 @@ def get_extra_effects_fields(args):
     Useful for merging VEP databases with additional fields.
     """
     loader = GeminiLoader(args, prepare_db=False)
-    return loader._extra_effect_fields
+    return [x[0] for x in loader._extra_effect_fields]
 
 class GeminiLoader(object):
     """
