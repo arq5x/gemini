@@ -163,7 +163,7 @@ Genotype Requirements
 - Remove candidates where an affected from the same family does NOT share the same het pair.
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
   
-  a. If parental genotypes are unavailable, all comp_het variant pairs will automatically be given priority == 2
+  a. If data from one or both parents are unavailable and the child's data was not phased prior to loading into GEMINI, all comp_het variant pairs will automatically be given priority == 2
   
   b. `--max-priority x` can be used to set the maximum allowed priority level at which candidate pairs are included in the output.
 
