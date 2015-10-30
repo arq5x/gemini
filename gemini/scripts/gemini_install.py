@@ -27,7 +27,7 @@ remotes = {"requirements_pip": "https://raw.github.com/arq5x/gemini/master/requi
            "requirements_conda": "",
            "versioned_installations": "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
            "gemini": "https://github.com/arq5x/gemini.git",
-           "anaconda": "http://repo.continuum.io/miniconda/Miniconda-3.7.0-%s-x86%s.sh"}
+           "anaconda": "http://repo.continuum.io/miniconda/Miniconda-latest-%s-x86%s.sh"}
 
 remotes_dev = remotes.copy()
 remotes_dev.update({
