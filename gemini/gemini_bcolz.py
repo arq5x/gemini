@@ -185,7 +185,7 @@ def fix_sample_name(s):
 def filter(db, query, user_dict):
     # these should be translated to a bunch or or/and statements within gemini
     # so they are supported, but must be translated before getting here.
-    if query == "False":
+    if query == "False" or query is None or query is False:
         return []
     if "any(" in query or "all(" in query or \
        ("sum(" in query and not query.startswith("sum(") and query.count("sum(") == 1):
