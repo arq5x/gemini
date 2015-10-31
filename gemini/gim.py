@@ -170,7 +170,7 @@ class GeminiInheritanceModel(object):
                 masks.append(m)
         else:
             # 1 mask per family
-            masks = ['False' if m is None or m.strip('(').strip(')') in
+            masks = ['False' if m is None or m is False or m.strip('(').strip(')') in
                      ('empty', 'False') else m for m in self.family_masks]
             masks = [compiler.compile(m, m, 'eval') if m != 'False' else 'False' for m in masks]
 
