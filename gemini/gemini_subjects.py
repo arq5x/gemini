@@ -4,7 +4,7 @@ import sys
 from collections import defaultdict
 from compiler import compile
 
-from .family import Family
+from inheritance import Family
 from gemini_constants import *
 import GeminiQuery
 

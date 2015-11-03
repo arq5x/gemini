@@ -11,6 +11,7 @@ from .gemini_bcolz import filter, NoGTIndexException
 from .mendelianerror import mendelian_error
 import itertools as it
 import operator as op
+from inheritance import Family
 
 
 class GeminiInheritanceModel(object):
@@ -113,7 +114,6 @@ class GeminiInheritanceModel(object):
         Extract the relevant genotype filters, as well all labels
         for each family in the database.
         """
-        from .family import Family
         self.families = families = Family.from_cursor(self.gq.c).values()
         args = self.args
 
@@ -170,7 +170,7 @@ class GeminiInheritanceModel(object):
                 masks.append(m)
         else:
             # 1 mask per family
-            masks = ['False' if m is None or m.strip('(').strip(')') in
+            masks = ['False' if m is None or m is False or m.strip('(').strip(')') in
                      ('empty', 'False') else m for m in self.family_masks]
             masks = [compiler.compile(m, m, 'eval') if m != 'False' else 'False' for m in masks]
 
@@ -382,7 +382,6 @@ class CompoundHet(GeminiInheritanceModel):
     def candidates(self):
         args = self.args
 
-        from .family import Family
         self.gq._connect_to_database()
         fams = self.fams = Family.from_cursor(self.gq.c)
 
