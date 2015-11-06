@@ -44,7 +44,7 @@ anno_files = \
 'kegg_pathways_ensembl69',
 'kegg_pathways_ensembl70',
 'kegg_pathways_ensembl71',
-'hprd_interaction_graph',
+'hprd_interaction_edges.gz',
 'cse-hiseq-8_4-2013-02-20.bed.gz',
 'hg19.vista.enhancers.20131108.bed.gz',
 'cosmic-v68-GRCh37.tidy.vcf.gz',

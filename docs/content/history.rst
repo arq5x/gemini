@@ -17,6 +17,7 @@ Release History
 3. Add `exac_num_het`, `exac_num_hom_alt` and `exac_num_chroms` columns. (See #568).
 4. Fix issues with cyvcf2 handling of haploid calls (from X chromosome from GATK; thanks Athina for reporting)
 5. fix handling of VEP extra fiels (thanks @jsh58).
+6. remove pygraph dependency (networkx is easier to install). Allow specifying custom edges to interactions tools.
 
 
 0.17.2

@@ -794,6 +794,9 @@ def main():
             type=int,
             help="Set filter for BFS:\n"
                  "valid numbers starting from 0")
+    parser_interaction.add_argument("--edges",
+            help="edges file (default is hprd). Format is geneA|geneB\ngeneA|geneC...")
+
     parser_interaction.add_argument('--var',
             dest='var_mode',
             help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',
@@ -816,6 +819,8 @@ def main():
             dest='radius',
             type=int,
             help="set filter for BFS:\n")
+    parser_interaction.add_argument("--edges",
+            help="edges file (default is hprd). Format is geneA|geneB\ngeneA|geneC...")
     parser_interaction.add_argument('--var',
             dest='var_mode',
             help='var mode: Returns variant info (e.g. impact, biotype) for interacting genes',

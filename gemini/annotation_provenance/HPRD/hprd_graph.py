@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+#NOTE: we just made this into an edges text file by dumping the pygraph
+#representation for gemini 0.18
+
 import cPickle
 from pygraph.classes.graph import graph
 from pygraph.classes.exceptions import AdditionError
