@@ -142,4 +142,3 @@ gemini_python test-comphet.py
 # cleanup
 rm ./*.db
 rm -Rf *.gts
-rm ./file.dot
