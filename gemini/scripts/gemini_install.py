@@ -14,6 +14,7 @@ Requires: Python 2.7 (or 2.6 and argparse), git, and compilers (gcc, g++)
 
 Run gemini_install.py -h for usage.
 """
+from __future__ import print_function
 import argparse
 import platform
 import os
@@ -23,26 +24,19 @@ import sys
 import urllib2
 import urllib
 
-remotes = {"requirements_pip": "https://raw.github.com/arq5x/gemini/master/requirements.txt",
-           "requirements_conda": "",
+remotes = {"requirements_conda": "",
            "versioned_installations": "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
-           "gemini": "https://github.com/arq5x/gemini.git",
            "anaconda": "http://repo.continuum.io/miniconda/Miniconda-latest-%s-x86%s.sh"}
 
 remotes_dev = remotes.copy()
 remotes_dev.update({
-    "requirements_pip": "https://raw.github.com/arq5x/gemini/dev/requirements.txt",
-    "gemini": "git+https://github.com/arq5x/gemini.git@dev",
     "requirements_conda": "https://raw.githubusercontent.com/arq5x/gemini/dev/versioning/unstable/requirements_conda.txt",
 })
 
 remotes_bp = remotes_dev
 remotes_bp.update({
-    "requirements_pip": "https://raw.github.com/brentp/gemini/dev/requirements.txt",
-    "gemini": "git+https://github.com/brentp/gemini.git@dev",
     "requirements_conda": "https://raw.githubusercontent.com/brentp/gemini/dev/versioning/unstable/requirements_conda.txt",
 })
-
 
 def main(args, remotes=remotes):
     check_dependencies()
@@ -58,143 +52,53 @@ def main(args, remotes=remotes):
         else:
             remotes = remotes_bp
 
-        requirements_pip = remotes['requirements_pip']
         requirements_conda = remotes['requirements_conda']
-        urllib.urlretrieve(requirements_pip, filename='_pip_dev.txt')
         urllib.urlretrieve(requirements_conda, filename='_conda_dev.txt')
 
         # quick hack to support testing installs:
         if args.gemini_version == "bp":
-            for f in ('_pip_dev.txt', '_conda_dev.txt'):
+            for f in '_conda_dev.txt':
                 contents = open(f).read().replace('arq5x', 'brentp')
                 with open(f, 'w') as fh:
                     fh.write(contents)
 
-        remotes.update({'requirements_pip': '_pip_dev.txt', 'requirements_conda': '_conda_dev.txt'})
+        remotes.update({'requirements_conda': '_conda_dev.txt'})
 
     elif args.gemini_version != 'latest':
-        requirements_pip = os.path.join(remotes['versioned_installations'],
-                                        args.gemini_version, 'requirements_pip.txt')
         requirements_conda = os.path.join(remotes['versioned_installations'],
                                           args.gemini_version, 'requirements_conda.txt')
         try:
-            urllib2.urlopen(requirements_pip)
+            urllib2.urlopen(requirements_conda)
         except:
             sys.exit('Gemini version %s could not be found. Try the latest version.' % args.gemini_version)
-        remotes.update({'requirements_pip': requirements_pip, 'requirements_conda': requirements_conda})
+        remotes.update({'requirements_conda': requirements_conda})
 
-    print "Installing isolated base python installation"
+    print("Installing isolated base python installation")
     make_dirs(args)
     anaconda = install_anaconda_python(args, remotes)
-    print "Installing gemini..."
-    install_conda_pkgs(anaconda, remotes, args)
-    gemini = install_gemini(anaconda, remotes, args.datadir, args.tooldir, args.sudo)
-    if args.install_tools:
-        print "Installing associated tools..."
-        link_tools(args.tooldir, anaconda["dir"])
-    os.chdir(work_dir)
-    install_data(gemini["python"], gemini["data_script"], args)
-    os.chdir(work_dir)
-    test_script = install_testbase(args.datadir, remotes["gemini"], gemini)
-    print "Finished: gemini, tools and data installed"
-    print " Tools installed in:\n  %s" % args.tooldir
-    print " Data installed in:\n  %s" % args.datadir
-    print " Run tests with:\n  cd %s && bash %s" % (os.path.dirname(test_script),
-                                                    os.path.basename(test_script))
-    print " NOTE: be sure to add %s/bin to your PATH." % args.tooldir
-    print " NOTE: Install data files for GERP_bp & CADD_scores (not installed by default).\n "
+    print("Installing base gemini package...")
+    gemini = install_conda_pkgs(anaconda, remotes, args)
+    install_rest(gemini, args)
+    print("Finished: gemini, tools and data installed")
+    if args.tooldir:
+        print(" Tools installed in:\n  %s" % args.tooldir)
+        print(" NOTE: be sure to add %s/bin to your PATH." % args.tooldir)
+    if args.install_data:
+        print(" Data installed in:\n  %s" % args.datadir)
+        print(" NOTE: Install data files for GERP_bp & CADD_scores (not installed by default).\n ")
+    print(" Run tests with:\n  cd %s && bash master-test.sh" %
+          (os.path.join(os.path.dirname(anaconda["dir"]), "github_gemini")))
 
     shutil.rmtree(work_dir)
-
-def link_tools(tooldir, anaconda_dir):
-    """Link tools installed via conda into the tool directory.
-    """
-    bins = ["grabix"]
-    for binfile in bins:
-        orig_file = os.path.join(anaconda_dir, "bin", binfile)
-        final_file = os.path.join(tooldir, "bin", binfile)
-        if os.path.exists(orig_file):
-            _do_link(orig_file, final_file)
-
-def _do_link(orig_file, final_file):
-    """Perform a soft link of the original file into the final location.
-
-    We need the symlink to point to /anaconda/bin directory, not the real location
-    in the pkgs directory so conda can resolve LD_LIBRARY_PATH and the interpreters.
-    """
-    needs_link = True
-    # working symlink, check if already in the right place or remove it
-    if os.path.exists(final_file):
-        if (os.path.realpath(final_file) == os.path.realpath(orig_file) and
-              orig_file == os.path.normpath(os.path.join(os.path.dirname(final_file), os.readlink(final_file)))):
-            needs_link = False
-        else:
-            os.remove(final_file)
-    # broken symlink
-    elif os.path.lexists(final_file):
-        os.unlink(final_file)
-    if needs_link:
-        os.symlink(os.path.relpath(orig_file, os.path.dirname(final_file)), final_file)
-
-def install_gemini(anaconda, remotes, datadir, tooldir, use_sudo):
-    """Install gemini plus python dependencies inside isolated Anaconda environment.
-    """
-    # Work around issue with distribute where asks for 'distribute==0.0'
-    # try:
-    #     subprocess.check_call([anaconda["easy_install"], "--upgrade", "distribute"])
-    # except subprocess.CalledProcessError:
-    #     try:
-    #         subprocess.check_call([anaconda["pip"], "install", "--upgrade", "distribute"])
-    #     except subprocess.CalledProcessError:
-    #         pass
-    # allow downloads excluded in recent pip (1.5 or greater) versions
-    try:
-        p = subprocess.Popen([anaconda["pip"], "--version"], stdout=subprocess.PIPE)
-        pip_version = p.communicate()[0].split()[1]
-    except:
-        pip_version = ""
-    pip_compat = []
-    if pip_version >= "1.5":
-        for req in ["python-graph-core", "python-graph-dot"]:
-            pip_compat += ["--allow-external", req, "--allow-unverified", req]
-    # Set PIP SSL certificate to installed conda certificate to avoid SSL errors
-    cert_file = os.path.join(anaconda["dir"], "ssl", "cert.pem")
-    if os.path.exists(cert_file):
-        os.environ["PIP_CERT"] = cert_file
-    subprocess.check_call([anaconda["pip"], "install"] + pip_compat + ["-r", remotes["requirements_pip"]])
-    python_bin = os.path.join(anaconda["dir"], "bin", "python")
-    _cleanup_problem_files(anaconda["dir"])
-    for final_name, ve_name in [("gemini", "gemini"), ("gemini_python", "python"),
-                                ("gemini_pip", "pip")]:
-        final_script = os.path.join(tooldir, "bin", final_name)
-        ve_script = os.path.join(anaconda["dir"], "bin", ve_name)
-        sudo_cmd = ["sudo"] if use_sudo else []
-        if os.path.lexists(final_script):
-            subprocess.check_call(sudo_cmd + ["rm", "-f", final_script])
-        else:
-            subprocess.check_call(sudo_cmd + ["mkdir", "-p", os.path.dirname(final_script)])
-        cmd = ["ln", "-s", ve_script, final_script]
-        subprocess.check_call(sudo_cmd + cmd)
-    library_loc = check_output("%s -c 'import gemini; print gemini.__file__'" % python_bin,
-                               shell=True)
-    return {"fab": os.path.join(anaconda["dir"], "bin", "fab"),
-            "data_script": os.path.join(os.path.dirname(library_loc.strip()), "install-data.py"),
-            "python": python_bin,
-            "cmd": os.path.join(anaconda["dir"], "bin", "gemini")}
 
 def install_conda_pkgs(anaconda, remotes, args):
     if args.gemini_version != 'latest':
         pkgs = ["--file", remotes['requirements_conda']]
     else:
-        pkgs = ["bcolz", "conda", "cyordereddict", "cython", "grabix", "ipyparallel",
-                "jinja2", "nose", "numexpr", "numpy", "openssl", "pip", "pybedtools",
-                "pycrypto", "pyparsing", "python-graph-core", "python-graph-dot",
-                "pyyaml", "pyzmq", "pandas", "scipy"]
-        if platform.architecture()[0] != "32bit":
-            pkgs += ["bx-python", "pysam", "ipython-cluster-helper"]
-
+        pkgs = ["gemini"]
     channels = ["-c", "bcbio", "-c", "bioconda"]
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
+    return os.path.join(anaconda["dir"], "bin", "gemini")
 
 def install_anaconda_python(args, remotes):
     """Provide isolated installation of Anaconda python.
@@ -220,95 +124,23 @@ def install_anaconda_python(args, remotes):
         subprocess.check_call("bash %s -b -p %s" %
                               (os.path.basename(url), anaconda_dir), shell=True)
     return {"conda": conda,
-            "pip": os.path.join(bindir, "pip"),
-            "easy_install": os.path.join(bindir, "easy_install"),
             "dir": anaconda_dir}
 
-def _cleanup_problem_files(venv_dir):
-    """Remove problem bottle items in PATH which conflict with site-packages
+def install_rest(gemini, args):
+    """Install biological data and tests used by gemini.
     """
-    for cmd in ["bottle.py", "bottle.pyc"]:
-        bin_cmd = os.path.join(venv_dir, "bin", cmd)
-        if os.path.exists(bin_cmd):
-            os.remove(bin_cmd)
-
-def install_data(python_cmd, data_script, args):
-    """Install biological data used by gemini.
-    """
-    data_dir = os.path.join(args.datadir, "gemini_data") if args.sharedpy else args.datadir
-    cmd = [python_cmd, data_script, data_dir]
-    if args.install_data:
-        print "Installing gemini data..."
-    else:
-        cmd.append("--nodata")
+    cmd = [gemini, "update", "--dataonly", "--annotationdir", os.path.join(args.datadir, "gemini_data")]
+    if not args.install_data:
+        cmd += ["--nodata"]
+    if args.tooldir:
+        cmd += ["--tooldir", args.tooldir]
+    print(" ".join(cmd))
     subprocess.check_call(cmd)
 
-def install_testbase(datadir, repo, gemini):
-    """Clone or update gemini code so we have the latest test suite.
-    """
-    gemini_dir = os.path.join(datadir, "gemini")
-    cur_dir = os.getcwd()
-    needs_git = True
-    if os.path.exists(gemini_dir):
-        os.chdir(gemini_dir)
-        try:
-            subprocess.check_call(["git", "pull", "origin", "master", "--tags"])
-            needs_git = False
-        except:
-            os.chdir(cur_dir)
-            shutil.move(gemini_dir, "gtmp")
-
-    branch = None
-    if needs_git:
-        os.chdir(os.path.split(gemini_dir)[0])
-        if repo.startswith("git+"):
-            repo = repo[4:]
-        if "@" in repo:
-            url, branch = repo.rsplit("@", 1)
-            subprocess.check_call(["git", "clone", "-b", branch, url])
-        else:
-            subprocess.check_call(["git", "clone", repo])
-        os.makedirs(os.path.join(gemini_dir, "data"))
-        if os.path.exists(os.path.join(cur_dir, "gtmp", "data")):
-            for f in os.listdir(os.path.join(cur_dir, "gtmp", "data")):
-                shutil.move(os.path.join(cur_dir, "gtmp", "data", f), os.path.join(gemini_dir, "data"))
-            #shutil.move(os.path.join(cur_dir, "gtmp"), gemini_dir)
-            shutil.rmtree(os.path.join(cur_dir, "gtmp", "data"))
-    os.chdir(gemini_dir)
-    if branch is None: # otherwise, we use the test structure at current head.
-        _update_testdir_revision(gemini["cmd"])
-
-    os.chdir(cur_dir)
-    return os.path.join(gemini_dir, "master-test.sh")
-
-def _update_testdir_revision(gemini_cmd):
-    """Update test directory to be in sync with a tagged installed version or development.
-    """
-    try:
-        p = subprocess.Popen([gemini_cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        gversion = p.communicate()[0].split()[1]
-    except:
-        gversion = ""
-    tag = ""
-    if gversion:
-        try:
-            p = subprocess.Popen("git tag -l | grep %s" % gversion, stdout=subprocess.PIPE, shell=True)
-            tag = p.communicate()[0].strip()
-        except:
-            tag = ""
-    if tag:
-        subprocess.check_call(["git", "checkout", "tags/%s" % tag])
-        pass
-    else:
-        subprocess.check_call(["git", "reset", "--hard", "HEAD"])
-
 def make_dirs(args):
-    sudo_cmd = ["sudo"] if args.sudo else []
     for dname in [args.datadir, args.tooldir]:
-        if not os.path.exists(dname):
-            subprocess.check_call(sudo_cmd + ["mkdir", "-p", dname])
-            username = check_output("echo $USER", shell=True).strip()
-            subprocess.check_call(sudo_cmd + ["chown", username, dname])
+        if dname and not os.path.exists(dname):
+            os.makedirs(dname)
 
 def clean_env_variables():
     """Adjust environmental variables which can cause conflicts with installed anaconda python.
@@ -321,9 +153,8 @@ def clean_env_variables():
 def check_dependencies():
     """Ensure required tools for installation are present.
     """
-    print "Checking required dependencies..."
-    for cmd, url in [("git", "http://git-scm.com/"),
-                     ("wget", "http://www.gnu.org/software/wget/")]:
+    print("Checking required dependencies...")
+    for cmd, url in [("wget", "http://www.gnu.org/software/wget/")]:
         try:
             retcode = subprocess.call([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
@@ -331,42 +162,18 @@ def check_dependencies():
         if retcode == 127:
             raise OSError("gemini requires %s (%s)" % (cmd, url))
         else:
-            print " %s found" % cmd
-
-def check_output(*popenargs, **kwargs):
-    """python2.6 compatible version of check_output.
-    Thanks to:
-    https://github.com/stackforge/bindep/blob/master/bindep/support_py26.py
-    """
-    if 'stdout' in kwargs:
-        raise ValueError('stdout argument not allowed, it will be overridden.')
-    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
-    retcode = process.poll()
-    if retcode:
-        cmd = kwargs.get("args")
-        if cmd is None:
-            cmd = popenargs[0]
-        raise subprocess.CalledProcessError(retcode, cmd, output=output)
-    return output
+            print(" %s found" % cmd)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated installer for gemini framework.")
+    parser.add_argument("datadir", help="Directory to install anaconda python and gemini data files",
+                        type=os.path.abspath)
     parser.add_argument("tooldir", help="Directory to install 3rd party software tools",
                         type=os.path.abspath)
-    parser.add_argument("datadir", help="Directory to install gemini data files",
-                        type=os.path.abspath)
-    parser.add_argument("--gemini-version", dest="gemini_version", default="latest",
-                        help="Install one specific gemini version with a fixed dependency chain.")
-    parser.add_argument("--nosudo", help="Specify we cannot use sudo for commands",
-                        dest="sudo", action="store_false", default=True)
-    parser.add_argument("--notools", help="Do not install tool dependencies",
-                        dest="install_tools", action="store_false", default=True)
     parser.add_argument("--nodata", help="Do not install data dependencies",
                         dest="install_data", action="store_false", default=True)
-    parser.add_argument("--sharedpy", help=("Indicate we share an Anaconda Python directory with "
-                                            "another project. Creates unique gemini data directory."),
-                        action="store_true", default=False)
+    parser.add_argument("--gemini-version", dest="gemini_version", default="latest",
+                        help="Install one specific gemini version with a fixed dependency chain.")
     if len(sys.argv) == 1:
         parser.print_help()
     else:
