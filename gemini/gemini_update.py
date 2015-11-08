@@ -10,49 +10,17 @@ import gemini.config
 def release(parser, args):
     """Update gemini to the latest release, along with associated data files.
     """
-    url = "https://raw.github.com/arq5x/gemini/master/requirements.txt"
     repo = "https://github.com/arq5x/gemini.git"
     # update locally isolated python
     base = os.path.dirname(os.path.realpath(sys.executable))
     gemini_cmd = os.path.join(base, "gemini")
     pip_bin = os.path.join(base, "pip")
-    fab_cmd = os.path.join(base, "fab")
-    activate_bin = os.path.join(base, "activate")
     conda_bin = os.path.join(base, "conda")
     if not args.dataonly:
-        if os.path.exists(conda_bin):
-            clean_env_variables()
-            pkgs = ["bcolz", "bx-python", "conda", "cyordereddict", "cython", "grabix", "ipyparallel",
-                    "ipython-cluster-helper",
-                    "jinja2", "nose", "numexpr", "numpy", "openssl", "pip", "pybedtools",
-                    "pycrypto", "pyparsing", "python-graph-core", "python-graph-dot",
-                    "pysam", "pyyaml", "pyzmq", "pandas", "scipy"]
-            channels = ["-c", "bcbio", "-c", "bioconda"]
-            subprocess.check_call([conda_bin, "install", "--yes"] + channels + pkgs)
-        elif os.path.exists(activate_bin):
-            pass
-        else:
-            raise NotImplementedError("Can only upgrade gemini installed in anaconda or virtualenv")
-        # allow downloads excluded in recent pip (1.5 or greater) versions
-        try:
-            p = subprocess.Popen([pip_bin, "--version"], stdout=subprocess.PIPE)
-            pip_version = p.communicate()[0].split()[1]
-        except:
-            pip_version = ""
-        pip_compat = []
-        if pip_version >= "1.5":
-            for req in ["python-graph-core", "python-graph-dot"]:
-                pip_compat += ["--allow-external", req, "--allow-unverified", req]
-        # update libraries
-        # Set PIP SSL certificate to installed conda certificate to avoid SSL errors
-        if os.path.exists(conda_bin):
-            anaconda_dir = os.path.dirname(os.path.dirname(conda_bin))
-            cert_file = os.path.join(anaconda_dir, "ssl", "cert.pem")
-            if os.path.exists(cert_file):
-                os.environ["PIP_CERT"] = cert_file
-        subprocess.check_call([pip_bin, "install"] + pip_compat + ["-r", url])
+        if not os.path.exists(conda_bin):
+            raise NotImplementedError("Can only upgrade gemini installed with anaconda")
+        subprocess.check_call([conda_bin, "install", "-y", "-c", "bioconda", "gemini", "pip"])
         if args.devel:
-            print("Installing latest GEMINI development version")
             subprocess.check_call([pip_bin, "install", "--upgrade", "--no-deps",
                                    "git+%s" % repo])
         print "Gemini upgraded to latest version"
@@ -63,24 +31,16 @@ def release(parser, args):
             link_tools(args.tooldir, anaconda_dir)
     # update datafiles
     config = gemini.config.read_gemini_config(args=args)
-    extra_args = ["--extra=%s" % x for x in args.extra]
-    subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]] + extra_args)
-    print "Gemini data files updated"
+    gemini.config.write_gemini_config(config)
+    if args.install_data:
+        extra_args = ["--extra=%s" % x for x in args.extra]
+        subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]] + extra_args)
+        print "Gemini data files updated"
     # update tests
-    if not args.dataonly:
-        test_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(pip_bin))),
-                                "gemini")
-        if not os.path.exists(test_dir) or os.path.isdir(test_dir):
-            _update_testbase(test_dir, repo, gemini_cmd)
-            print "Run test suite with: cd %s && bash master-test.sh" % test_dir
-
-def clean_env_variables():
-    """Adjust environmental variables which can cause conflicts with installed anaconda python.
-    """
-    for k in ["PYTHONPATH", "PYTHONHOME"]:
-        os.environ.pop(k, None)
-    # https://docs.python.org/2/using/cmdline.html#envvar-PYTHONNOUSERSITE
-    os.environ["PYTHONNOUSERSITE"] = "1"
+    test_dir = os.path.join(os.path.dirname(os.path.dirname(base)), "github_gemini")
+    if not os.path.exists(test_dir) or os.path.isdir(test_dir):
+        _update_testbase(test_dir, repo, gemini_cmd)
+    print "Run test suite with: cd %s && bash master-test.sh" % test_dir
 
 def _get_install_script():
     try:
@@ -101,10 +61,8 @@ def _update_testbase(repo_dir, repo, gemini_cmd):
             os.chdir(cur_dir)
             shutil.rmtree(repo_dir)
     if needs_git:
-        p = os.path.split(repo_dir)[0]
-        print "cloning %s to %s" % (repo, p)
-        os.chdir(p)
-        subprocess.check_call(["git", "clone", repo])
+        print "cloning %s to %s" % (repo, repo_dir)
+        subprocess.check_call(["git", "clone", repo, repo_dir])
     os.chdir(repo_dir)
     _update_testdir_revision(gemini_cmd)
     os.chdir(cur_dir)
@@ -133,10 +91,14 @@ def _update_testdir_revision(gemini_cmd):
 def link_tools(tooldir, anaconda_dir):
     """Link tools installed via conda into the tool directory.
     """
-    bins = ["grabix"]
-    for binfile in bins:
+    bin_dir = os.path.join(tooldir, "bin")
+    if not os.path.exists(bin_dir):
+        os.makedirs(bin_dir)
+    bins = [("", "grabix"), ("", "gemini"),
+            ("gemini_", "python"), ("gemini_", "conda"), ("gemini_", "pip")]
+    for prefix, binfile in bins:
         orig_file = os.path.join(anaconda_dir, "bin", binfile)
-        final_file = os.path.join(tooldir, "bin", binfile)
+        final_file = os.path.join(bin_dir, "%s%s" % (prefix, binfile))
         if os.path.exists(orig_file):
             _do_link(orig_file, final_file)
 

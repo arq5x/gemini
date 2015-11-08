@@ -1003,11 +1003,13 @@ def main():
                                action="store_true", default=False)
     parser_update.add_argument("--dataonly", help="Only update data, not the underlying libraries.",
                                action="store_true", default=False)
+    parser_update.add_argument("--nodata", help="Do not install data dependencies",
+                               dest="install_data", action="store_false", default=True)
     parser_update.add_argument("--extra", help="Add additional non-standard genome annotations to include",
                                action="append", default=[], choices=["gerp_bp","cadd_score"])
+    parser_update.add_argument("--annotationdir", help="Directory to install gemini data files",
+                               type=os.path.abspath)
     parser_update.add_argument("--tooldir", help="Directory for third party tools (ie /usr/local) update")
-    parser_update.add_argument("--sudo", help="Use sudo for tool installation commands",
-                               dest="sudo", action="store_true", default=False)
     def update_fn(parser, args):
         import gemini_update
         gemini_update.release(parser, args)

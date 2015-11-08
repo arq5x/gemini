@@ -56,10 +56,10 @@ def read_gemini_config(dirs=None, allow_missing=False, use_globals=True, args=No
             raise
     with open(fname) as in_handle:
         config = yaml.load(in_handle)
-    if args and hasattr(args, "annotation_dir") and args.annotation_dir:
+    if args and hasattr(args, "annotationdir") and args.annotationdir:
         # If --annotation-dir is given via commandline interface, we will overwrite the
         # location from the config file
-        config["annotation_dir"] = args.annotation_dir
+        config["annotation_dir"] = args.annotationdir
     return config
 
 def _find_best_config_file(dirs=None):
