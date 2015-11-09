@@ -106,7 +106,7 @@ def _download_anno_files(base_url, file_names, anno_dir, cur_config):
     """Download and install each of the annotation files
     """
     for orig in file_names:
-        if orig.endswith(".gz"):
+        if orig.endswith(".gz") and not orig.endswith("hprd_interaction_edges.gz"):
             dls = [orig, "%s.tbi" % orig]
         else:
             dls = [orig]
