@@ -332,7 +332,7 @@ class CompoundHet(GeminiInheritanceModel):
         if "*" in [x.strip() for x in custom_columns.split(",")]:
             return custom_columns
         self.added = []
-        for col in ("gene", "start", "ref", "alt", "variant_id"):
+        for col in ("gene", "chrom", "start", "ref", "alt", "variant_id"):
             if custom_columns.find(col) < 0:
                 custom_columns += "," + col
                 if col != "variant_id":
