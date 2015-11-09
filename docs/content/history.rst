@@ -10,14 +10,16 @@ Release History
 
 0.18.0
 ======
+0. Improved installation and update via conda (via Brad Chapman!).
 1. Update support for SO term variant impact predictions via VEP and SnpEff and support newest snpEff version.
    If both snpEff and VEP annotations are present use `gemini load -t all` to save all annotations and the most
    deleterious will be saved in the variants table.
 2. Add an `is_splicing` column.
 3. Add `exac_num_het`, `exac_num_hom_alt` and `exac_num_chroms` columns. (See #568).
 4. Fix issues with cyvcf2 handling of haploid calls (from X chromosome from GATK; thanks Athina for reporting)
-5. fix handling of VEP extra fiels (thanks @jsh58).
+5. fix handling of VEP extra fields (thanks @jsh58).
 6. remove pygraph dependency (networkx is easier to install). Allow specifying custom edges to interactions tools.
+7. fix some edge-cases in compound het tool. Thanks to Jamie Kwok for reporting.
 
 
 0.17.2
