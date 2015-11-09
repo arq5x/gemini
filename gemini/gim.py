@@ -264,9 +264,15 @@ class GeminiInheritanceModel(object):
                     yield item
 
     def run(self):
+        has_gts = False
+        from .gemini_bcolz import gt_cols_types
         for i, s in enumerate(self.report_candidates()):
             if i == 0:
+                has_gts = [x[0] for x in gt_cols_types if x[0] in s] or False
                 print "\t".join(s.keys())
+            if has_gts:
+                for col in has_gts:
+                    s[col] = str(s[col]).replace('\n', '')
             print "\t".join(map(str, s.values()))
 
 
