@@ -119,7 +119,8 @@ class GeminiInheritanceModel(object):
 
         self.family_ids = []
         self.family_masks = []
-        kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False)}
+        kwargs = {'only_affected': not getattr(self.args, "allow_unaffected", False),
+                  'min_gq': args.min_gq}
         if self.model == "mendel_violations":
             kwargs = {'only_affected': self.args.only_affected}
         if self.model != "comp_het" and self.model != "mendel_violations":
@@ -152,6 +153,8 @@ class GeminiInheritanceModel(object):
                         'gt_phred_ll_homalt']:
                 if col in self.gt_cols:
                     req_cols.append(col)
+        if args.min_gq != 0 and 'gt_quals' in self.gt_cols:
+            req_cols.append('gt_quals')
 
         is_mendel = False
 

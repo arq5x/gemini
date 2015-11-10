@@ -6,7 +6,7 @@ import argparse
 import gemini.version
 
 def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
-        allow_unaffected=True, lenient=True):
+        allow_unaffected=True, lenient=True, gq=True):
     """Common arguments added to various sub-parsers"""
     parser.add_argument('db',
             metavar='db',
@@ -50,6 +50,12 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
             help="The minimum aligned\
               sequence depth required for\
               each sample in a family (default = 0)",
+            default=0)
+    if gq:
+        parser.add_argument('--min-gq',
+            type=int,
+            help="The minimum genotype quality required for \
+               each sample in a family (default = 0)",
             default=0)
 
     if gt_ll:

@@ -20,6 +20,7 @@ Release History
 5. fix handling of VEP extra fields (thanks @jsh58).
 6. remove pygraph dependency (networkx is easier to install). Allow specifying custom edges to interactions tools.
 7. fix some edge-cases in compound het tool. Thanks to Jamie Kwok for reporting.
+8. Allow requring a minimum genotype quality in inheritance tools with --min-gq option.
 
 
 0.17.2

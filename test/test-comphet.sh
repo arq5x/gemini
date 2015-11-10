@@ -193,3 +193,19 @@ echo "start	end	ref	alt	variant_id	family_id	family_members	family_genotypes	sam
 gemini comp_hets --columns "start, end, ref, alt" --pattern-only from_inheritance.db > obs
 check obs exp
 
+
+###############################################################################
+# test that --min-gq has an effect.
+echo "    comp_het.t15...\c"
+rm -f exp
+touch exp
+
+gemini comp_hets \
+    --column "chrom,start,end,gene,ref,alt,impact" \
+	--allow-unaffected \
+	--max-priority 2 \
+	--min-gq 80 \
+    --filter "impact_severity = 'HIGH'" \
+     test.comp_het.db > obs
+check obs exp
+rm obs exp

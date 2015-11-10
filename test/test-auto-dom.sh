@@ -353,3 +353,31 @@ gemini autosomal_dominant  \
     test.auto_dom.no_parents.5.db &> obs
 check obs exp
 rm obs exp
+
+###################################################################
+# 20. Test min-gq
+###################################################################
+echo "    auto_dom.t20...\c"
+touch exp
+
+gemini autosomal_dominant  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+	--min-gq 200 \
+	--lenient \
+    test.auto_dom.db > obs
+check obs exp
+rm obs exp
+
+###################################################################
+# 21. Test min-gq
+###################################################################
+echo "    auto_dom.t21...\c"
+echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	3	3	3_dad(3_dad;affected),3_mom(3_mom;unknown),3_kid(3_kid;affected)	C/T,C/C,C/T	3_dad,3_kid	1" > exp
+gemini autosomal_dominant  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+	--min-gq 70 \
+	--lenient \
+    test.auto_dom.db > obs
+check obs exp
+rm obs exp
