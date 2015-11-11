@@ -137,8 +137,6 @@ bash test-multi-col.sh
 
 bash test-eff.sh
 
-gemini_python test-comphet.py
-
 # cleanup
 rm ./*.db
 rm -Rf *.gts
