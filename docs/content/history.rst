@@ -17,10 +17,11 @@ Release History
 2. Add an `is_splicing` column.
 3. Add `exac_num_het`, `exac_num_hom_alt` and `exac_num_chroms` columns. (See #568).
 4. Fix issues with cyvcf2 handling of haploid calls (from X chromosome from GATK; thanks Athina for reporting)
-5. fix handling of VEP extra fields (thanks @jsh58).
-6. remove pygraph dependency (networkx is easier to install). Allow specifying custom edges to interactions tools.
-7. fix some edge-cases in compound het tool. Thanks to Jamie Kwok for reporting.
+5. Fix handling of VEP extra fields (thanks @jsh58).
+6. Remove pygraph dependency (networkx is easier to install). Allow specifying custom edges to interactions tools.
+7. Fix some edge-cases in compound het tool. Thanks to Jamie Kwok for reporting.
 8. Allow requring a minimum genotype quality in inheritance tools with --min-gq option.
+9. Fix bug in cyvcf2 for parsing hemizyous (0/.) variants from decomposition.
 
 
 0.17.2
