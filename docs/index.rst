@@ -64,6 +64,7 @@ we suggest to do a fresh install using a command like:
 
     wget https://github.com/arq5x/gemini/raw/master/gemini/scripts/gemini_install.py
     python gemini_install.py $tools $data
+    PATH=$tools/bin:$data/anaconda/bin:$PATH
 
 where `$tools` and `$data` are paths writable on your system.
 
