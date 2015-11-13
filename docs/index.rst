@@ -55,7 +55,7 @@ Latest news
 New Installation 
 ----------------
 
-In version 0.18, we have introduced a new installation procedure based on `conda <http://conda.pydata.org/docs/>`_ that
+In version *0.18*, we have introduced a new installation procedure based on `conda <http://conda.pydata.org/docs/>`_ that
 should make the installation more reliable.
 For users with an existing installation with any trouble using `gemini update --devel`,
 we suggest to do a fresh install using a command like:
@@ -67,6 +67,14 @@ we suggest to do a fresh install using a command like:
     PATH=$tools/bin:$data/anaconda/bin:$PATH
 
 where `$tools` and `$data` are paths writable on your system.
+
+With an existing `$tool` and `$data` directory from a previous install, you can use the installer to re-install the Python code with the new version, but leave the existing data in place. To do this, first remove the old anaconda directory:
+
+.. code-block::
+
+    rm -rf $data/anaconda
+
+then run the installation commands above.
 
 ----------------------------
 Changes to Inheritance Tools
