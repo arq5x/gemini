@@ -50,6 +50,23 @@ introduce concepts that build upon one another.
 ============================
 Latest news
 ============================
+
+----------------
+New Installation 
+----------------
+
+In version 0.18, we have introduced a new installation procedure based on `conda <http://conda.pydata.org/docs/>`_ that
+should make the installation more reliable.
+For users with an existing installation with any trouble using `gemini update --devel`,
+we suggest to do a fresh install using a command like:
+
+.. code-block::
+
+    wget https://github.com/arq5x/gemini/raw/master/gemini/scripts/gemini_install.py
+    python gemini_install.py $tools $data
+
+where `$tools` and `$data` are paths writable on your system.
+
 ----------------------------
 Changes to Inheritance Tools
 ----------------------------
@@ -57,29 +74,6 @@ Changes to Inheritance Tools
 As of version 0.16.0, the built-in Mendelian inheritance tools are more stringent by default (they can be relaxed with the ``--lenient``) option. By default, samples with unknown phenotype will not affect the tools, and
 strict requirements are placed on family structure. See the the :doc:`docs <content/tools>` for
 more info. In addition, the inheritance tools now support multi-generational pedigrees.
-
-
-----------------------------
-Much faster genotype queries
-----------------------------
-As of version 0.15.0, GEMINI creates auxilliary index files
-using the `bcolz` library. This allows queries that filter
-on sample genotype information via the ``--gt-filter`` option
-to be **up to 1000 times faster than identical queries using
-version 0.14.0 or earlier**. Details of the implementation and caveats can be found :doc:`here <content/genotype_query_engines>`.
-
-.. note::
-
-    In order to expedite your queries with the new bcolz indexing strategy, one must invoke the ``--use-bcolz``
-    option. We will likely phase this option out over time.
-    For example::
-
-        gemini query \
-          -q "select variant_id, gts.kid from variants"  \
-          --gt-filter "gt_types.mom == HET and gt_types.dad == HET and gts.kid != 'HET'" \
-          --use-bcolz \
-        foo.db
-
 
 ----------------------------
 New GEMINI Workflow
