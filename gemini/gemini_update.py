@@ -30,7 +30,7 @@ def release(parser, args):
             anaconda_dir = os.path.dirname(os.path.dirname(conda_bin))
             link_tools(args.tooldir, anaconda_dir)
     # update datafiles
-    config = gemini.config.read_gemini_config(args=args)
+    config = gemini.config.read_gemini_config(args=args, allow_missing=True)
     gemini.config.write_gemini_config(config)
     if args.install_data:
         extra_args = ["--extra=%s" % x for x in args.extra]

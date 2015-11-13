@@ -47,15 +47,17 @@ def _get_config_file(dirs=None, use_globals=True):
                      .format(CONFIG_FILE, dnames))
 
 def read_gemini_config(dirs=None, allow_missing=False, use_globals=True, args=None):
+    config = {}
     try:
         fname = _get_config_file(dirs, use_globals=use_globals)
     except ValueError:
         if allow_missing:
-            return {}
+            fname = None
         else:
             raise
-    with open(fname) as in_handle:
-        config = yaml.load(in_handle)
+    if fname:
+        with open(fname) as in_handle:
+            config = yaml.load(in_handle)
     if args and hasattr(args, "annotationdir") and args.annotationdir:
         # If --annotation-dir is given via commandline interface, we will overwrite the
         # location from the config file
