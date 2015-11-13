@@ -170,9 +170,9 @@ def check_dependencies():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated installer for gemini framework.")
-    parser.add_argument("datadir", help="Directory to install anaconda python and gemini data files",
-                        type=os.path.abspath)
     parser.add_argument("tooldir", help="Directory to install 3rd party software tools",
+                        type=os.path.abspath)
+    parser.add_argument("datadir", help="Directory to install anaconda python and gemini data files",
                         type=os.path.abspath)
     parser.add_argument("--nodata", help="Do not install data dependencies",
                         dest="install_data", action="store_false", default=True)
