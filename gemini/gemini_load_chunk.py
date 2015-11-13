@@ -412,27 +412,33 @@ class GeminiLoader(object):
             cadd_scaled = None
             gerp_bp = None
 
+        top_impact = empty
         if anno_keys == {}:
             impacts = []
-            top_impact = empty
-
         else:
 
             impacts = []
             if self.args.anno_type in ("all", "snpEff"):
-                if "EFF" in anno_keys:
-                    impacts += [geneimpacts.OldSnpEff(e, anno_keys["EFF"]) for e in var.INFO["EFF"].split(",")]
-                elif "ANN" in anno_keys:
-                    impacts += [geneimpacts.SnpEff(e, anno_keys["ANN"]) for e in var.INFO["ANN"].split(",")]
+                try:
+                    if "EFF" in anno_keys:
+                        impacts += [geneimpacts.OldSnpEff(e, anno_keys["EFF"]) for e in var.INFO["EFF"].split(",")]
+                    elif "ANN" in anno_keys:
+                        impacts += [geneimpacts.SnpEff(e, anno_keys["ANN"]) for e in var.INFO["ANN"].split(",")]
+                except KeyError:
+                    pass
 
             elif self.args.anno_type in ("all", "VEP"):
-                impacts += [geneimpacts.VEP(e, anno_keys["CSQ"]) for e in var.INFO["CSQ"].split(",")]
+                try:
+                    impacts += [geneimpacts.VEP(e, anno_keys["CSQ"]) for e in var.INFO["CSQ"].split(",")]
+                except KeyError:
+                    pass
 
             for i, im in enumerate(impacts, start=1):
                 im.anno_id = i
-            top_impact = geneimpacts.Effect.top_severity(impacts)
-            if isinstance(top_impact, list):
-                top_impact = top_impact[0]
+            if impacts != []:
+                top_impact = geneimpacts.Effect.top_severity(impacts)
+                if isinstance(top_impact, list):
+                    top_impact = top_impact[0]
 
         filter = None
         if var.FILTER is not None and var.FILTER != ".":
@@ -496,8 +502,9 @@ class GeminiLoader(object):
         ci_left = sv.get_ci_left()
         ci_right = sv.get_ci_right()
 
-        for dbkey, infokey in self._extra_effect_fields:
-            extra_fields[dbkey] = top_impact.effects[infokey]
+        if top_impact is not empty:
+            for dbkey, infokey in self._extra_effect_fields:
+                extra_fields[dbkey] = top_impact.effects[infokey]
 
         # construct the core variant record.
         # 1 row per variant to VARIANTS table

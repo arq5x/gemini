@@ -12,3 +12,4 @@
 ##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Consequence|BIOTYPE|IMPACT|Codons|CDS_position|Amino_acids|Protein_position|EXON|PolyPhen|SIFT|Gene|Feature|SYMBOL|HGVSc|HGVSp">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
 chr2	178095865	.	T	C	.	.	CIGAR=1X;TYPE=sub;HP=1;CSQ=missense_variant|protein_coding|MODERATE|cAg/cGg|1397/1749|Q/R|466/582|5/5|probably_damaging(0.917)|deleterious(0)|4780|NM_001145413.2|NFE2L2|c.1397A>G|p.Q466R	GT:AF:AO:DP:RO	0/1:0.25:50:200:150
+chr2	178095865	.	T	C	.	.	CIGAR=1X;TYPE=sub;HP=1	GT:AF:AO:DP:RO	0/1:0.25:50:200:150
