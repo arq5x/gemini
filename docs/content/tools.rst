@@ -20,7 +20,7 @@ When queries are limited to variants in genes, the output will be in
 
 .. note::
 
-    As of version 0.16.0, the inheritance tools (autsomal_dominant,
+    As of version 0.16.0, the inheritance tools (autosomal_dominant,
     autosomal_recessive, comp_het, mendel_errors, de_novo) are now
     more strict by default.
 
@@ -43,6 +43,8 @@ When queries are limited to variants in genes, the output will be in
    In other words, they will not be in strict positional order for each chromosome.
    This is in an effort to group all candidate variants by gene since the gene
    is typically the atomic unit of interest.
+   
+   Additionally, all current built-in tools (autosomal_dominant, comp_hets, and autosomal_recessive) only analyze autosomal (non sex chromosome) variants. Analysis of X- and Y-linked phenotypes must be done manually with `--gt-filter`
 
 ==================================
 ``common_args``: common arguments
@@ -117,7 +119,7 @@ results.
 ===========================================================================
 ``comp_hets``: Identifying potential compound heterozygotes
 ===========================================================================
-Many recessive disorders are caused by compound heterozygotes. Unlike canonical
+Many autosomal recessive disorders are caused by compound heterozygotes. Unlike canonical
 recessive sites where the same recessive allele is inherited from both parents
 at the _same_ site in the gene, compound heterozygotes occur when
 the individual's phenotype is caused by two heterozygous recessive alleles at
