@@ -613,6 +613,8 @@ If `--allow-unaffected` is specified, the item prefix with "[affected]" is not r
 Note that for autosomal dominant `--lenient` allows singleton affecteds to be used to meet the
 `--min-kindreds` requirement if they are HET.
 
+If there is incomplete penetrance in the kindred (unaffected obligate carriers), these individuals currently must be coded as having unknown phenotype or as being affected.
+
 
 ---------------------
 ``default behavior``
