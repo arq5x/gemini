@@ -8,6 +8,14 @@ check()
 }
 export -f check
 
+which gemini 2> /dev/null
+
+if [ $? -eq 1 ]
+then
+  SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
+  export PATH=$PATH:"${SCRIPT_PATH}/../../bin"
+fi
+
 cd test
 #rm ./*.db
 
