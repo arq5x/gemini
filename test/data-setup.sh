@@ -25,6 +25,7 @@ wait
 gemini load --skip-gene-tables --test-mode -v test.region.vep.vcf --skip-gerp-bp --skip-cadd -t VEP test.region.db &
 gemini load --skip-gene-tables --test-mode -v test.burden.vcf --skip-gerp-bp --skip-cadd -t VEP -p test.burden.ped test.burden.db &
 gemini load --skip-gene-tables --test-mode -v test.comp_het.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.ped test.comp_het.db &
+gemini load --skip-gene-tables --test-mode -v test.comp_het.singleton.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.ped test.comp_het.singleton.db &
 gemini load --skip-gene-tables --test-mode -v test.comp_het.2.vcf --skip-gerp-bp --skip-cadd -t snpEff test.comp_het_default.db
 gemini load --skip-gene-tables --test-mode -v test.comp_het.3.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.ped test.comp_het_default.2.db &
 gemini load --skip-gene-tables --test-mode -v test.comp_het.4.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.2.ped test.comp_het_default.4.db
