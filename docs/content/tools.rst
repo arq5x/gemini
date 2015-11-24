@@ -165,7 +165,8 @@ Genotype Requirements
 - Remove candidates where an affected from the same family does NOT share the same het pair.
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
   
-  a. If data from one or both parents are unavailable and the child's data was not phased prior to loading into GEMINI, all comp_het variant pairs will automatically be given priority == 2
+  a. If data from one or both parents are unavailable and the child's data was not phased prior to loading into GEMINI,
+     all comp_het variant pairs will automatically be given priority == 3
   
   b. `--max-priority x` can be used to set the maximum allowed priority level at which candidate pairs are included in the output.
 
@@ -176,17 +177,20 @@ we prioritize with these rules:
 mom   dad      kid       phaseable   priority   notes
 ===   ===      ====      =========   ========   ================================================
 R-H   H-R      H-H       both        1          both sites phaseable and alts on opposite chroms
-R-H   H-H      H-H       one         2          should be a rare occurrence
-H-H   H-H      H-H       NO          2          should be a rare occurrence
+               H-H       NO          2          singleton (unphaseable) HETs have priority 2.
+R-H   H-H      H-H       one         3          should be a rare occurrence
+H-H   H-H      H-H       NO          3          should be a rare occurrence
 A-R   H-H      H-H       both        NA         exclude hom-alts from un-affecteds
 R-R   H-H      H-H       both        NA         phaseable, but alts are on the same chroms.
 ===   ===      ====      =========   ========   ================================================
 
 .. note::
 
-   candidates of priority != 1 are very unlikely (< 1%) to be real
+   candidates of priority == 3 are very unlikely (< 1%) to be real
    (see: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3734130/); we report them
-   for completeness, but strongly recommend using priority 1 only.
+   for completeness, but strongly recommend using priority 1 and 2 only.
+   Priority 2 is useful when there are multiple families, some of which consist of
+   only a single sequenced, affected sample.
 
 
 ------------

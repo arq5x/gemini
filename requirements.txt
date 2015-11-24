@@ -1,5 +1,5 @@
 numpy>=1.7.1
-inheritance>=0.0.3
+inheritance>=0.0.4
 geneimpacts>=0.0.4
 pyparsing>=1.5.6,<=1.5.7
 cython>=0.22.1

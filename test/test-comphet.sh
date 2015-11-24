@@ -30,13 +30,13 @@ rm obs exp
 # CHANGE: no longer include dad_4 in output since he is unaffected.
 echo "    comp_het.t2...\c"
 echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	2" > exp
+chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	3
+chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	3" > exp
 
 gemini comp_hets \
     --column "chrom,start,end,gene,ref,alt,impact" \
 	--allow-unaffected \
-	--max-priority 2 \
+	--max-priority 3 \
     --filter "impact_severity = 'HIGH'" \
      test.comp_het.db > obs
 check obs exp
@@ -58,13 +58,13 @@ rm obs exp
 ###############################################################################
 echo "    comp_het.t3...\c"
 echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
-chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	2
-chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	2" > exp
+chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	3
+chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	3" > exp
 
 gemini comp_hets \
     --column "chrom,start,end,gene,ref,alt,impact" \
     --filter "impact_severity = 'HIGH'" \
-	--max-priority 2 \
+	--max-priority 3 \
      test.comp_het.db > obs
 check obs exp
 rm obs exp
@@ -207,5 +207,27 @@ gemini comp_hets \
 	--min-gq 80 \
     --filter "impact_severity = 'HIGH'" \
      test.comp_het.db > obs
+check obs exp
+rm obs exp
+
+# singleton
+echo "comp_het.t16"
+touch exp
+gemini comp_hets \
+    --column "chrom,start,end,gene,ref,alt,impact" \
+	--max-priority 1 \
+	test.comp_het.singleton.db > obs
+
+check obs exp
+rm obs exp
+
+echo "comp_het.t17"
+echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
+chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	1	1	child_1(child_1;affected;male)	TTCT/T	child_1	1	1_1_2	2
+chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	2	1	child_1(child_1;affected;male)	C/A	child_1	1	1_1_2	2" > exp
+gemini comp_hets \
+    --column "chrom,start,end,gene,ref,alt,impact" \
+	--max-priority 2 \
+	test.comp_het.singleton.db > obs
 check obs exp
 rm obs exp
