@@ -93,6 +93,7 @@ transcript                STRING        | The variant transcript that was most s
 is_exonic                 BOOL          Does the variant affect an exon for >= 1 transcript?
 is_coding                 BOOL          Does the variant fall in a coding region (excl. 3' & 5' UTRs) for >= 1 transcript?
 is_lof                    BOOL          Based on the value of the impact col, is the variant LOF for >= transcript?
+is_splicing               BOOL          Does the variant affect a canonical or possible splice site? That is, set to TRUE if the SO term is any of ``splice_acceptor_variant``, ``splice_donor_variant``, or ``splice_region_variant``.
 exon                      STRING        Exon information for the severely affected transcript
 codon_change              STRING        What is the codon change?
 aa_change                 STRING        What is the amino acid change (for a snp)?
@@ -165,6 +166,9 @@ aaf_adj_exac_nfe          FLOAT         Adjusted allele frequency of the variant
 aaf_adj_exac_oth          FLOAT         Adjusted allele frequency of the variant for OTH population in ExAC (AC_OTH/AN_OTH)
 aaf_adj_exac_sas          FLOAT         Adjusted allele frequency of the variant for SAS population in ExAC (AC_SAS/AN_SAS)
 max_aaf_all               FLOAT         the maximum of aaf_esp_ea, aaf_esp_aa, aaf_1kg_amr, aaf_1kg_eas,aaf_1kg_sas,aaf_1kg_afr,aaf_1kg_eur,aaf_adj_exac_afr,aaf_adj_exac_amr,aaf_adj_exac_eas,aaf_adj_exac_nfe,aaf_adj_exac_sas. and -1 if none of those databases/populations contain the variant.
+exac_num_het              INTEGER       The number of heterozygote genotypes observed in ExAC. Pulled from the ExAC ``AC_Het`` INFO field.
+exac_num_hom_alt          INTEGER       The number of homozygous alt. genotypes observed in ExAC. Pulled from the ExAC ``AC_Het`` INFO field.
+exac_num_chroms           INTEGER       The number of chromosomes underlying the ExAC variant call. Pulled from the ExAC ``AN_Adj`` INFO field.
 ========================  =========     =================================================================================================
 
 
