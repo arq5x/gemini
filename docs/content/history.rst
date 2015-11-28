@@ -22,8 +22,7 @@ Release History
 7. Fix some edge-cases in compound het tool. Thanks to Jamie Kwok for reporting.
 8. Allow requring a minimum genotype quality in inheritance tools with --min-gq option.
 9. Fix bug in cyvcf2 for parsing hemizyous (0/.) variants from decomposition.
-10. `comp_het` tool now has a priority 2 level for unphased singletons where both sites are HET. Candidates where
-    both parents and HET, along with the affected are now priority 3.
+10. `comp_het` tool now has a priority 2 level for unphased singletons where both sites are HET. Candidates where both parents and HET, along with the affected are now priority 3.
 
 
 0.17.2
