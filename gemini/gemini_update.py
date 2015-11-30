@@ -78,7 +78,7 @@ def _update_testdir_revision(gemini_cmd):
     tag = ""
     if gversion:
         try:
-            p = subprocess.Popen("git tag -l | grep %s" % gversion, stdout=subprocess.PIPE, shell=True)
+            p = subprocess.Popen("git tag -l | grep %s$" % gversion, stdout=subprocess.PIPE, shell=True)
             tag = p.communicate()[0].strip()
         except:
             tag = ""
