@@ -13,11 +13,11 @@ export -f check
 ###################################################################
 echo "    auto_rec.t1...\c"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	2	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/T,C/T,T/T	1_kid	2
 ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/T,C/T,T/T	2_kid	2
-SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2" > exp
+SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1" > exp
 
 gemini autosomal_recessive  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
@@ -95,11 +95,11 @@ rm obs exp
 echo "    auto_rec.t6...\c"
 echo "WARNING: auto-recessive called on family 1 where no affected has parents
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	2	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/T,C/T,T/T	1_kid	2
 ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/T,C/T,T/T	2_kid	2
-SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2" > exp
+SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1" > exp
 gemini autosomal_recessive  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -131,11 +131,11 @@ echo "    auto_rec.t8...\c"
 echo "WARNING: auto-recessive called on family 1 where no affected has parents
 WARNING: auto-recessive called on family 2 where no affected has parents
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	2	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/T,C/T,T/T	1_kid	2
 ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/T,C/T,T/T	2_kid	2
-SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2" > exp
+SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1" > exp
 gemini autosomal_recessive  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -169,11 +169,11 @@ echo "WARNING: auto-recessive called on family 1 where no affected has parents
 WARNING: auto-recessive called on family 3 where no affected has parents
 WARNING: auto-recessive called on family 2 where no affected has parents
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2
 ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	2	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/T,C/T,T/T	1_kid	2
 ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	3	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/T,C/T,T/T	2_kid	2
-SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	2
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/C,T/C,C/C	2_kid	2" > exp
+SYCE1	chr10	135369531	135369532	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/C,T/C,C/C	3_kid	1" > exp
 gemini autosomal_recessive  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
@@ -266,8 +266,8 @@ echo "    auto_rec.t16...\c"
 echo "WARNING: no affecteds in family 3
 WARNING: no affecteds in family 2
 gene	chrom	start	end	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	2	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/T,C/T,T/T	1_kid	1
-WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	1" > exp
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/C,T/C,C/C	1_kid	1
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	2	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	C/T,C/T,T/T	1_kid	1" > exp
 gemini autosomal_recessive  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
