@@ -8,6 +8,11 @@ Release History
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
 #. X-linked recessive and dominant tools.
 
+0.18.1
+======
+1. Don't user order by when not needed for built in tools. Speeds up queries when min-kindreds is None or 1.
+2. Document --min-gq
+
 0.18.0
 ======
 0. Improved installation and update via conda (via Brad Chapman!).
