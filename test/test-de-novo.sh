@@ -4,6 +4,7 @@ check()
         echo ok
     else
         echo fail
+		exit 1
     fi
 }
 export -f check
@@ -118,12 +119,12 @@ rm obs exp
 ###################################################################
 echo "    de_novo.t7...\c"
 echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
+WDR37	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	1
 ASAH2C	C	T	missense_variant	MED	2	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/C,C/C,C/T	2_kid	2
 ASAH2C	C	T	missense_variant	MED	3	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	C/C,C/C,C/T	3_kid	2
 SYCE1	T	C	missense_variant	MED	5	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
 SYCE1	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/T,T/T,T/C	3_kid	3
-SYCE1	T	C	missense_variant	MED	5	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/T,T/T,T/C	2_kid	3
-WDR37	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	1" > exp
+SYCE1	T	C	missense_variant	MED	5	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	T/T,T/T,T/C	2_kid	3" > exp
 gemini de_novo  \
     --columns "gene, ref, alt, impact, impact_severity" \
     --min-kindreds 1 \
