@@ -92,6 +92,14 @@ the GEMINI database.
 Filter variants that do not have at least this depth for all members in a
 a family. Default is 0.
 
+
+---------------------
+``--min-gq [0]``
+---------------------
+
+Filter variants that do not have at least this genotype quality for each sample in a family.
+Default is 0. Higher values are more stringent.
+
 ----------------------
 ``--allow-unaffected``
 ----------------------
