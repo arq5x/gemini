@@ -12,6 +12,7 @@ Release History
 ======
 1. Don't user order by when not needed for built in tools. Speeds up queries when min-kindreds is None or 1.
 2. Document --min-gq
+3. Set missing AF to -1 (instead of NULL) for unknown for all ESP, 1KG, ExAC allele frequency columns.
 
 0.18.0
 ======

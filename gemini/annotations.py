@@ -165,6 +165,9 @@ ExacInfo = collections.namedtuple("ExacInfo",
                                    num_hom_alt \
                                    num_chroms")
 
+EXAC_EMPTY = ExacInfo(False, -1, -1, -1, -1, -1,
+                     -1, -1, -1, -1, -1, -1, -1)
+
 def load_annos(args):
     """
     Populate a dictionary of Tabixfile handles for
@@ -697,6 +700,8 @@ def get_esp_info(var):
                         else:
                             # alt allele is stored as 2nd.
                             acs[key] = float(lines[1]) / denom
+                    else:
+                        acs[key] = -1
 
                 # Is the SNP on an human exome chip?
                 if info_map.get('EXOME_CHIP') is not None and \
@@ -706,10 +711,11 @@ def get_esp_info(var):
                         info_map['EXOME_CHIP'] == "yes":
                     exome_chip = 1
                 break
-    return ESPInfo(found, acs.get('EA_AC'), acs.get("AA_AC"), acs.get("TAC"), exome_chip)
+    return ESPInfo(found, acs.get('EA_AC', -1), acs.get("AA_AC", -1),
+            acs.get("TAC", -1), exome_chip)
 
 
-EMPTY_1000G = ThousandGInfo(False, None, None, None, None, None, None)
+EMPTY_1000G = ThousandGInfo(False, -1, -1, -1, -1, -1, -1)
 def get_1000G_info(var, empty=EMPTY_1000G):
     """
     Returns a suite of annotations from the 1000 Genomes project
@@ -731,14 +737,12 @@ def get_1000G_info(var, empty=EMPTY_1000G):
                     (key, value) = info.split("=", 1)
                     info_map[key] = value
 
-            return ThousandGInfo(True, info_map.get('AF'), info_map.get('AMR_AF'),
-                         info_map.get('EAS_AF'), info_map.get('SAS_AF'),
-                         info_map.get('AFR_AF'), info_map.get('EUR_AF'))
+            return ThousandGInfo(True, info_map.get('AF', -1), info_map.get('AMR_AF', -1),
+                         info_map.get('EAS_AF', -1), info_map.get('SAS_AF', -1),
+                         info_map.get('AFR_AF', -1), info_map.get('EUR_AF', -1))
     return empty
 
-EXAC_EMTPY = ExacInfo(False, None, None, None, None, None,
-                     None, None, None, None, None, None, None)
-def get_exac_info(var, empty=EXAC_EMTPY):
+def get_exac_info(var, empty=EXAC_EMPTY):
     """
     Returns the allele frequencies from the Exac data (Broad)
     """
@@ -769,7 +773,7 @@ def get_exac_info(var, empty=EXAC_EMTPY):
             if info_map.get('AF') is not None:
                 aaf_ALL = info_map['AF'].split(",")[allele_num]
             else:
-                aaf_ALL = None
+                aaf_ALL = -1
 
             for grp in ('Adj', 'AFR', 'AMR', 'EAS', 'FIN', 'NFE', 'OTH', 'SAS'):
                 ac = info_map.get('AC_%s' % grp)
@@ -785,9 +789,9 @@ def get_exac_info(var, empty=EXAC_EMTPY):
                 ac_list = ac.split(",")
                 afs[grp] = float(ac_list[allele_num]) / float(an)
 
-            num_hets = info_map.get("AC_Het")
-            num_homs = info_map.get("AC_Hom")
-            called_chroms = info_map.get('AN_Adj')
+            num_hets = info_map.get("AC_Het", -1)
+            num_homs = info_map.get("AC_Hom", -1)
+            called_chroms = info_map.get('AN_Adj', -1)
 
             return ExacInfo(True, aaf_ALL, afs['Adj'], afs['AFR'], afs['AMR'],
                                 afs['EAS'], afs['FIN'], afs['NFE'], afs['OTH'],
