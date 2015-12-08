@@ -32,6 +32,8 @@ bash test-mendel-error.sh
 
 bash test-genotype-likelihoods.sh
 
+bash test-t-all.sh
+
 # Test gemini region
 bash test-region.sh
 
