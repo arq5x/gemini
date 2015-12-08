@@ -427,7 +427,7 @@ class GeminiLoader(object):
                 except KeyError:
                     pass
 
-            elif self.args.anno_type in ("all", "VEP"):
+            if self.args.anno_type in ("all", "VEP"):
                 try:
                     impacts += [geneimpacts.VEP(e, anno_keys["CSQ"]) for e in var.INFO["CSQ"].split(",")]
                 except KeyError:
