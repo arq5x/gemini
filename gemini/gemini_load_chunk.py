@@ -331,6 +331,7 @@ class GeminiLoader(object):
         if os.path.exists(db_path):
             os.remove(db_path)
         self.conn = sqlite3.connect(db_path)
+        self.conn.text_factory = str
         self.conn.isolation_level = None
         self.c = self.conn.cursor()
         self.c.execute('PRAGMA synchronous = OFF')

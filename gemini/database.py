@@ -463,6 +463,7 @@ def update_gene_summary_w_cancer_census(cursor, genes):
 @contextlib.contextmanager
 def database_transaction(db):
     conn = sqlite3.connect(db)
+    conn.text_factory = str
     conn.isolation_level = None
     cursor = conn.cursor()
     cursor.execute('PRAGMA synchronous = OFF')

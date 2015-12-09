@@ -111,6 +111,8 @@ def finalize_merged_db(tmp_db, db):
     print st, "indexing final database."
 
     main_conn = sqlite3.connect(tmp_db)
+    main_conn.text_factory = str
+
     main_conn.isolation_level = None
     main_curr = main_conn.cursor()
     main_curr.execute('PRAGMA synchronous = OFF')
