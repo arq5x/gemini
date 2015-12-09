@@ -133,7 +133,7 @@ def install_rest(gemini, args):
         annotation_dir = os.path.join(args.datadir, "data")
     else:
         annotation_dir = os.path.join(args.datadir, "gemini_data")
-    cmd = [gemini, "update", "--dataonly", "--annotationdir", annotation_dir]
+    cmd = [gemini, "--annotation-dir", annotation_dir, "update", "--dataonly"]
     if not args.install_data:
         cmd += ["--nodata"]
     if args.tooldir:
