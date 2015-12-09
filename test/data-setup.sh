@@ -14,6 +14,7 @@ gemini load --skip-gene-tables --test-mode -v test1.snpeff.vcf --skip-gerp-bp --
 gemini load --skip-gene-tables --test-mode -v test2.snpeff.vcf --skip-gerp-bp --skip-cadd test2.snpeff.db
 gemini load --skip-gene-tables --test-mode -v test3.snpeff.vcf --skip-gerp-bp --skip-cadd test3.snpeff.db &
 gemini load --skip-gene-tables --test-mode -v test.clinvar.vcf --skip-gerp-bp --skip-cadd test.clinvar.db
+gemini load -t all -v test.clinvar_gene_pheno.vcf --test-mode --skip-gene-tables test.clinvar_gene_pheno.db &
 gemini load --skip-gene-tables --test-mode -v test4.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test4.snpeff.db &
 gemini load --skip-gene-tables --test-mode -v test4.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t VEP test4.vep.db
 gemini load --skip-gene-tables --test-mode -v test5.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test5.snpeff.db &

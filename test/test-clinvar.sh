@@ -34,4 +34,10 @@ gemini query -q "select chrom, end, in_omim,
                         clinvar_on_diag_assay,
                         clinvar_causal_allele from variants" test.clinvar.db > obs
 check obs exp
-#rm obs exp
+rm obs exp
+
+echo "    clinvar.t02\c"
+echo "malignant_melanoma
+None" > exp
+ gemini query -q "select clinvar_gene_phenotype from variants" test.clinvar_gene_pheno.db > obs
+ check obs exp
