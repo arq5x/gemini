@@ -335,7 +335,7 @@ class CompoundHet(GeminiInheritanceModel):
                     " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
         if args.filter: query += " AND " + args.filter
         # we need to order results by gene so that we can sweep through the results
-        return query + " ORDER BY gene"
+        return query + " ORDER BY chrom, gene"
 
     def _add_necessary_columns(self, custom_columns):
         """
