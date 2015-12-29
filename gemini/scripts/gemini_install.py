@@ -93,11 +93,17 @@ def main(args, remotes=remotes):
 
 def install_conda_pkgs(anaconda, remotes, args):
     if args.gemini_version != 'latest':
-        pkgs = ["--file", remotes['requirements_conda']]
+        req_file = '_conda-requirements-%s.txt' % args.gemini_version
+        urllib.urlretrieve(remotes["requirements_conda"], filename=req_file)
+        pkgs = ["--file", req_file]
     else:
+        req_file = None
         pkgs = ["gemini"]
-    channels = ["-c", "bcbio", "-c", "bioconda"]
+    channels = ["-c", "bioconda"]
+    print(" ".join([anaconda["conda"], "install", "--yes"] + channels + pkgs))
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
+    if req_file and os.path.exists(req_file):
+        os.remove(req_file)
     return os.path.join(anaconda["dir"], "bin", "gemini")
 
 def install_anaconda_python(args, remotes):
