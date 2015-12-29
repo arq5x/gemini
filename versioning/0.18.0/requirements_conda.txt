@@ -9,7 +9,7 @@ cython=0.22.1=py27_0
 dateutil=2.1=py27_2
 geneimpacts>=0.0.4
 inheritance>=0.0.4
-ipython=2.1.0=py27_2
+ipython>=4.0
 jinja2=2.7.2=py27_0
 libsodium=0.4.5=0
 markupsafe=0.18=py27_0
