@@ -149,6 +149,8 @@ bash test-multi-col.sh
 
 bash test-eff.sh
 
+bash test-geno2mp.sh
+
 # cleanup
 rm ./*.db
 rm -Rf *.gts

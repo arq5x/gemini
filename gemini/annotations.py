@@ -47,7 +47,8 @@ def get_anno_files( args ):
      'vista_enhancers': os.path.join(anno_dirname, 'hg19.vista.enhancers.20131108.bed.gz'),
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bed.gz"),
      'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
-     'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz')
+     'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz'),
+     'geno2mp': os.path.join(anno_dirname, 'geno2mp.variants.tidy.vcf.gz'),
     }
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
@@ -741,6 +742,19 @@ def get_1000G_info(var, empty=EMPTY_1000G):
                          info_map.get('EAS_AF', -1), info_map.get('SAS_AF', -1),
                          info_map.get('AFR_AF', -1), info_map.get('EUR_AF', -1))
     return empty
+
+def get_geno2mp_ct(var):
+
+    for hit in annotations_in_vcf(var, "geno2mp", "vcf", "grch37"):
+        if not (var.start == hit.pos and var.REF == hit.ref):
+            continue
+        if not var.ALT[0] in hit.alt.split(","): continue
+
+        ct = next(x for x in hit.info.split(";") if x.startswith("HPO_CT="))
+        val = int(ct.split("=")[1])
+        return val
+    # missing is -1
+    return -1
 
 def get_exac_info(var, empty=EXAC_EMPTY):
     """

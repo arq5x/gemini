@@ -9,6 +9,7 @@ gemini load --skip-gene-tables --test-mode -v test.cosmic.vcf --skip-gerp-bp --s
 gemini load --skip-gene-tables --test-mode -v test.roh.vcf --skip-gerp-bp --skip-cadd -t snpEff test.roh.vcf.db &
 gemini load --skip-gene-tables --test-mode -v test.cadd.vcf --skip-gerp-bp --skip-cadd test.no.cadd.db
 gemini load --skip-gene-tables --test-mode -v test.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test.snpeff.vcf.db &
+gemini load --skip-gene-tables --test-mode -v test.geno2mp.vcf --skip-gerp-bp --skip-cadd -t snpEff test.geno2mp.db &
 gemini load --skip-gene-tables --test-mode -v test1.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test1.snpeff.db
 gemini load --skip-gene-tables --test-mode -v test1.snpeff.vcf --skip-gerp-bp --skip-cadd -t VEP test1.vep.db &
 gemini load --skip-gene-tables --test-mode -v test2.snpeff.vcf --skip-gerp-bp --skip-cadd test2.snpeff.db
