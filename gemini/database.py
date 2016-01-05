@@ -152,6 +152,7 @@ def create_tables(cursor, effect_fields=None):
                     clinvar_on_diag_assay bool,
                     clinvar_causal_allele text,
                     clinvar_gene_phenotype text,
+                    geno2mp_hpo_ct integer,
                     pfam_domain text,
                     cyto_band text default NULL,
                     rmsk text default NULL,

@@ -576,6 +576,7 @@ class GeminiLoader(object):
                    clinvar_info.clinvar_on_diag_assay,
                    clinvar_info.clinvar_causal_allele,
                    clinvar_gene_phenotype,
+                   annotations.get_geno2mp_ct(var),
                    pfam_domain, cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, gerp_bp, gerp_el,
                    hom_ref, het, hom_alt, unknown,

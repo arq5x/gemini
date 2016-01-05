@@ -19,6 +19,7 @@ Release History
    Likely usage is: --filter "... and clinvar_gene_phenotype LIKE '%dysplasia%' where the '%' are needed
    because the column is a '|' delimited list of all disease for that gene.
 6. Fix bug in gemini annotate where numeric operations on integers did not work for VCF.
+7. Add `geno2mp_hpo_ct` column which will be > 0 if that variant is present in geno2mp (http://geno2mp.gs.washington.edu/Geno2MP/#/)
 
 0.18.0
 ======
