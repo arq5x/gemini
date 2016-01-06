@@ -60,7 +60,7 @@ should make the installation more reliable.
 For users with an existing installation with any trouble using `gemini update --devel`,
 we suggest to do a fresh install using a command like:
 
-.. code-block::
+.. code-block:: bash
 
     wget https://github.com/arq5x/gemini/raw/master/gemini/scripts/gemini_install.py
     python gemini_install.py $tools $data
@@ -70,7 +70,7 @@ where `$tools` and `$data` are paths writable on your system.
 
 With an existing `$tool` and `$data` directory from a previous install, you can use the installer to re-install the Python code with the new version, but leave the existing data in place. To do this, first remove the old anaconda directory:
 
-.. code-block::
+.. code-block:: bash
 
     rm -rf $data/anaconda
 
