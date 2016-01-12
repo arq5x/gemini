@@ -1,0 +1,124 @@
+##fileformat=VCFv4.1
+##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth (reads with MQ=255 or with bad mates are filtered)">
+##FORMAT=<ID=GQ,Number=1,Type=Float,Description="Genotype Quality">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes, for each ALT allele, in the same order as listed">
+##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency, for each ALT allele, in the same order as listed">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##INFO=<ID=BaseQRankSum,Number=1,Type=Float,Description="Z-score from Wilcoxon rank sum test of Alt Vs. Ref base qualities">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth; some reads may have been filtered">
+##INFO=<ID=DS,Number=0,Type=Flag,Description="Were any of the samples downsampled?">
+##INFO=<ID=Dels,Number=1,Type=Float,Description="Fraction of Reads Containing Spanning Deletions">
+##INFO=<ID=FS,Number=1,Type=Float,Description="Phred-scaled p-value using Fisher's exact test to detect strand bias">
+##INFO=<ID=HRun,Number=1,Type=Integer,Description="Largest Contiguous Homopolymer Run of Variant Allele In Either Direction">
+##INFO=<ID=HaplotypeScore,Number=1,Type=Float,Description="Consistency of the site with at most two segregating haplotypes">
+##INFO=<ID=InbreedingCoeff,Number=1,Type=Float,Description="Inbreeding coefficient as estimated from the genotype likelihoods per-sample when compared against the Hardy-Weinberg expectation">
+##INFO=<ID=MQ,Number=1,Type=Float,Description="RMS Mapping Quality">
+##INFO=<ID=MQ0,Number=1,Type=Integer,Description="Total Mapping Quality Zero Reads">
+##INFO=<ID=MQRankSum,Number=1,Type=Float,Description="Z-score From Wilcoxon rank sum test of Alt vs. Ref read mapping qualities">
+##INFO=<ID=QD,Number=1,Type=Float,Description="Variant Confidence/Quality by Depth">
+##INFO=<ID=ReadPosRankSum,Number=1,Type=Float,Description="Z-score from Wilcoxon rank sum test of Alt vs. Ref read position bias">
+##UnifiedGenotyper="analysis_type=UnifiedGenotyper input_file=[bam/all.conc.on.pos.dedup.realigned.bam] read_buffer_size=null phone_home=STANDARD read_filter=[] intervals=null excludeIntervals=null interval_set_rule=UNION interval_merging=ALL reference_sequence=/home/arq5x/cphg-home/shared/genomes/hg19/bwa/gatk/hg19_gatk.fa rodBind=[] nonDeterministicRandomSeed=false downsampling_type=BY_SAMPLE downsample_to_fraction=null downsample_to_coverage=250 baq=OFF baqGapOpenPenalty=40.0 performanceLog=null useOriginalQualities=false defaultBaseQualities=-1 validation_strictness=SILENT unsafe=null num_threads=10 num_cpu_threads=null num_io_threads=null num_bam_file_handles=null read_group_black_list=null pedigree=[] pedigreeString=[] pedigreeValidationType=STRICT allow_intervals_with_unindexed_bam=false logging_level=INFO log_to_file=null help=false genotype_likelihoods_model=BOTH p_nonref_model=EXACT heterozygosity=0.0010 pcr_error_rate=1.0E-4 genotyping_mode=DISCOVERY output_mode=EMIT_VARIANTS_ONLY standard_min_confidence_threshold_for_calling=30.0 standard_min_confidence_threshold_for_emitting=30.0 computeSLOD=false alleles=(RodBinding name= source=UNBOUND) min_base_quality_score=17 max_deletion_fraction=0.05 multiallelic=false max_alternate_alleles=5 min_indel_count_for_genotyping=5 indel_heterozygosity=1.25E-4 indelGapContinuationPenalty=10.0 indelGapOpenPenalty=45.0 indelHaplotypeSize=80 bandedIndel=false indelDebug=false ignoreSNPAlleles=false dbsnp=(RodBinding name= source=UNBOUND) out=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub NO_HEADER=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub debug_file=null metrics_file=null annotation=[] excludeAnnotation=[] filter_mismatching_base_and_quals=false"
+##contig=<ID=chr1,length=249250621,assembly=hg19>
+##contig=<ID=chr10,length=135534747,assembly=hg19>
+##contig=<ID=chr11,length=135006516,assembly=hg19>
+##contig=<ID=chr11_gl000202_random,length=40103,assembly=hg19>
+##contig=<ID=chr12,length=133851895,assembly=hg19>
+##contig=<ID=chr13,length=115169878,assembly=hg19>
+##contig=<ID=chr14,length=107349540,assembly=hg19>
+##contig=<ID=chr15,length=102531392,assembly=hg19>
+##contig=<ID=chr16,length=90354753,assembly=hg19>
+##contig=<ID=chr17,length=81195210,assembly=hg19>
+##contig=<ID=chr17_ctg5_hap1,length=1680828,assembly=hg19>
+##contig=<ID=chr17_gl000203_random,length=37498,assembly=hg19>
+##contig=<ID=chr17_gl000204_random,length=81310,assembly=hg19>
+##contig=<ID=chr17_gl000205_random,length=174588,assembly=hg19>
+##contig=<ID=chr17_gl000206_random,length=41001,assembly=hg19>
+##contig=<ID=chr18,length=78077248,assembly=hg19>
+##contig=<ID=chr18_gl000207_random,length=4262,assembly=hg19>
+##contig=<ID=chr19,length=59128983,assembly=hg19>
+##contig=<ID=chr19_gl000208_random,length=92689,assembly=hg19>
+##contig=<ID=chr19_gl000209_random,length=159169,assembly=hg19>
+##contig=<ID=chr1_gl000191_random,length=106433,assembly=hg19>
+##contig=<ID=chr1_gl000192_random,length=547496,assembly=hg19>
+##contig=<ID=chr2,length=243199373,assembly=hg19>
+##contig=<ID=chr20,length=63025520,assembly=hg19>
+##contig=<ID=chr21,length=48129895,assembly=hg19>
+##contig=<ID=chr21_gl000210_random,length=27682,assembly=hg19>
+##contig=<ID=chr22,length=51304566,assembly=hg19>
+##contig=<ID=chr3,length=198022430,assembly=hg19>
+##contig=<ID=chr4,length=191154276,assembly=hg19>
+##contig=<ID=chr4_ctg9_hap1,length=590426,assembly=hg19>
+##contig=<ID=chr4_gl000193_random,length=189789,assembly=hg19>
+##contig=<ID=chr4_gl000194_random,length=191469,assembly=hg19>
+##contig=<ID=chr5,length=180915260,assembly=hg19>
+##contig=<ID=chr6,length=171115067,assembly=hg19>
+##contig=<ID=chr6_apd_hap1,length=4622290,assembly=hg19>
+##contig=<ID=chr6_cox_hap2,length=4795371,assembly=hg19>
+##contig=<ID=chr6_dbb_hap3,length=4610396,assembly=hg19>
+##contig=<ID=chr6_mann_hap4,length=4683263,assembly=hg19>
+##contig=<ID=chr6_mcf_hap5,length=4833398,assembly=hg19>
+##contig=<ID=chr6_qbl_hap6,length=4611984,assembly=hg19>
+##contig=<ID=chr6_ssto_hap7,length=4928567,assembly=hg19>
+##contig=<ID=chr7,length=159138663,assembly=hg19>
+##contig=<ID=chr7_gl000195_random,length=182896,assembly=hg19>
+##contig=<ID=chr8,length=146364022,assembly=hg19>
+##contig=<ID=chr8_gl000196_random,length=38914,assembly=hg19>
+##contig=<ID=chr8_gl000197_random,length=37175,assembly=hg19>
+##contig=<ID=chr9,length=141213431,assembly=hg19>
+##contig=<ID=chr9_gl000198_random,length=90085,assembly=hg19>
+##contig=<ID=chr9_gl000199_random,length=169874,assembly=hg19>
+##contig=<ID=chr9_gl000200_random,length=187035,assembly=hg19>
+##contig=<ID=chr9_gl000201_random,length=36148,assembly=hg19>
+##contig=<ID=chrM,length=16571,assembly=hg19>
+##contig=<ID=chrUn_gl000211,length=166566,assembly=hg19>
+##contig=<ID=chrUn_gl000212,length=186858,assembly=hg19>
+##contig=<ID=chrUn_gl000213,length=164239,assembly=hg19>
+##contig=<ID=chrUn_gl000214,length=137718,assembly=hg19>
+##contig=<ID=chrUn_gl000215,length=172545,assembly=hg19>
+##contig=<ID=chrUn_gl000216,length=172294,assembly=hg19>
+##contig=<ID=chrUn_gl000217,length=172149,assembly=hg19>
+##contig=<ID=chrUn_gl000218,length=161147,assembly=hg19>
+##contig=<ID=chrUn_gl000219,length=179198,assembly=hg19>
+##contig=<ID=chrUn_gl000220,length=161802,assembly=hg19>
+##contig=<ID=chrUn_gl000221,length=155397,assembly=hg19>
+##contig=<ID=chrUn_gl000222,length=186861,assembly=hg19>
+##contig=<ID=chrUn_gl000223,length=180455,assembly=hg19>
+##contig=<ID=chrUn_gl000224,length=179693,assembly=hg19>
+##contig=<ID=chrUn_gl000225,length=211173,assembly=hg19>
+##contig=<ID=chrUn_gl000226,length=15008,assembly=hg19>
+##contig=<ID=chrUn_gl000227,length=128374,assembly=hg19>
+##contig=<ID=chrUn_gl000228,length=129120,assembly=hg19>
+##contig=<ID=chrUn_gl000229,length=19913,assembly=hg19>
+##contig=<ID=chrUn_gl000230,length=43691,assembly=hg19>
+##contig=<ID=chrUn_gl000231,length=27386,assembly=hg19>
+##contig=<ID=chrUn_gl000232,length=40652,assembly=hg19>
+##contig=<ID=chrUn_gl000233,length=45941,assembly=hg19>
+##contig=<ID=chrUn_gl000234,length=40531,assembly=hg19>
+##contig=<ID=chrUn_gl000235,length=34474,assembly=hg19>
+##contig=<ID=chrUn_gl000236,length=41934,assembly=hg19>
+##contig=<ID=chrUn_gl000237,length=45867,assembly=hg19>
+##contig=<ID=chrUn_gl000238,length=39939,assembly=hg19>
+##contig=<ID=chrUn_gl000239,length=33824,assembly=hg19>
+##contig=<ID=chrUn_gl000240,length=41933,assembly=hg19>
+##contig=<ID=chrUn_gl000241,length=42152,assembly=hg19>
+##contig=<ID=chrUn_gl000242,length=43523,assembly=hg19>
+##contig=<ID=chrUn_gl000243,length=43341,assembly=hg19>
+##contig=<ID=chrUn_gl000244,length=39929,assembly=hg19>
+##contig=<ID=chrUn_gl000245,length=36651,assembly=hg19>
+##contig=<ID=chrUn_gl000246,length=38154,assembly=hg19>
+##contig=<ID=chrUn_gl000247,length=36422,assembly=hg19>
+##contig=<ID=chrUn_gl000248,length=39786,assembly=hg19>
+##contig=<ID=chrUn_gl000249,length=38502,assembly=hg19>
+##contig=<ID=chrX,length=155270560,assembly=hg19>
+##contig=<ID=chrY,length=59373566,assembly=hg19>
+##reference=file:///home/arq5x/cphg-home/shared/genomes/hg19/bwa/gatk/hg19_gatk.fa
+##SnpEffVersion="SnpEff 3.1b (build 2012-11-14), by Pablo Cingolani"
+##SnpEffCmd="SnpEff  GRCh37.68 -c /Users/arq5x/src/other/snpEff_3_1/snpEff.config -i vcf -o vcf rs-exome.all.raw.nobaq.2012-Nov-15.vcf "
+##INFO=<ID=EFF,Number=.,Type=String,Description="Predicted effects for this variant.Format: 'Effect ( Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon [ | ERRORS | WARNINGS ] )' ">
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence type as predicted by VEP. Format: Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|ALLELE_NUM">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	1094PC0005	1094PC0009	1094PC0012	1094PC0013	1094PC0016	1094PC0017	1094PC0018	1094PC0019	1094PC0020	1094PC0021	1094PC0022	1094PC0023	1094PC0025	1478PC0001B	1478PC0002	1478PC0003	1478PC0004	1478PC0005	1478PC0006B	1478PC0007B	1478PC0008B	1478PC0009B	1478PC0010	1478PC0011	1478PC0012	1478PC0013B	1478PC0014B	1478PC0015B	1478PC0016	1478PC0017B	1478PC0018	1478PC0019	1478PC0020	1478PC0021	1478PC0022B	1478PC0023B	1478PC0024B	1478PC0025	1719PC0001	1719PC0002	1719PC0003	1719PC0004	1719PC0005	1719PC0006	1719PC0007	1719PC0008	1719PC0009	1719PC0010	1719PC0011	1719PC0012	1719PC0013	1719PC0014	1719PC0015	1719PC0016	1719PC0017	1719PC0018	1719PC0019	1719PC0020	1719PC0021	1719PC0022
+chr1	1116311	.	A	G	3493.8	.	AC=48;AF=0.4706;AN=102;BaseQRankSum=7.547;DP=286;Dels=0.01;FS=2.211;HRun=0;HaplotypeScore=0.9639;InbreedingCoeff=0.0983;MQ=52.73;MQ0=0;MQRankSum=0.694;QD=18.89;ReadPosRankSum=0.096;EFF=DOWNSTREAM(MODIFIER|||||TTLL10|retained_intron|CODING|ENST00000514695|),INTRON(MODIFIER||||404|TTLL10|protein_coding|CODING|ENST00000379288|4),INTRON(MODIFIER||||673|TTLL10|protein_coding|CODING|ENST00000379289|8),INTRON(MODIFIER||||673|TTLL10|protein_coding|CODING|ENST00000379290|8),INTRON(MODIFIER|||||TTLL10|retained_intron|CODING|ENST00000460998|1),UPSTREAM(MODIFIER|||||TTLL10-AS1|antisense|NON_CODING|ENST00000379317|);CSQ=upstream_gene_variant|||ENSG00000205231|TTLL10-AS1|ENST00000379317|||||antisense|1,upstream_gene_variant|||ENSG00000162571|TTLL10|ENST00000486379||||-/45|nonsense_mediated_decay|1,intron_variant|||ENSG00000162571|TTLL10|ENST00000379289||||-/673|protein_coding|1,intron_variant&nc_transcript_variant|||ENSG00000162571|TTLL10|ENST00000460998|||||retained_intron|1,downstream_gene_variant|||ENSG00000162571|TTLL10|ENST00000514695|||||retained_intron|1,intron_variant|||ENSG00000162571|TTLL10|ENST00000379290||||-/673|protein_coding|1,intron_variant|||ENSG00000162571|TTLL10|ENST00000379288||||-/404|protein_coding|1	GT:AD:DP:GQ:PL	./.	./.	0/0:1,0:1:3:0,3,28	./.	./.	./.	1/1:0,1:1:3.01:33,3,0	1/1:0,1:1:3.01:37,3,0	0/0:4,0:4:9.02:0,9,102	0/0:2,0:2:3.01:0,3,33	0/0:1,0:1:3.01:0,3,33	./.	./.	1/1:0,3:3:9.03:115,9,0	0/1:3,1:4:21.44:21,0,68	0/1:1,1:2:29.23:34,0,29	1/1:0,1:1:3.01:40,3,0	0/1:2,5:8:50.32:163,0,50	0/1:3,2:5:53.36:53,0,80	./.	0/0:6,0:6:15.02:0,15,157	0/1:5,2:7:56.97:57,0,85	0/0:6,0:6:15:0,15,147	1/1:0,1:1:3.01:37,3,0	0/0:2,0:2:6.01:0,6,65	0/0:2,0:2:6.02:0,6,68	1/1:0,4:4:12.04:152,12,0	0/1:1,1:2:19.67:33,0,20	0/1:3,1:4:27.97:28,0,46	0/1:1,2:3:26.22:69,0,26	0/1:2,1:3:30.98:31,0,58	0/1:1,1:2:27.42:27,0,27	0/1:4,2:6:47.65:48,0,118	1/1:0,1:1:3.01:37,3,0	1/1:0,4:4:12.04:153,12,0	./.	0/1:6,3:9:48.06:84,0,48	0/0:6,0:7:15.03:0,15,175	0/1:3,2:5:15.67:70,0,16	0/1:4,3:7:90.98:91,0,106	0/1:5,3:10:88.76:89,0,110	0/0:3,0:3:9.02:0,9,99	1/1:1,2:5:6.02:71,6,0	0/0:1,0:3:2.99:0,3,23	1/1:0,5:5:15.04:176,15,0	0/0:4,0:7:9.01:0,9,86	0/0:9,0:13:21.02:0,21,234	1/1:0,7:7:18.06:233,18,0	0/0:5,0:6:12.01:0,12,121	0/1:5,9:17:80.64:218,0,81	1/1:0,19:22:42.12:492,42,0	0/0:15,0:18:33.05:0,33,346	1/1:0,16:16:36.10:443,36,0	0/0:4,1:6:6.02:0,6,75	1/1:0,5:5:12.02:128,12,0	0/1:2,3:6:21.41:90,0,21	0/0:8,0:8:12.02:0,12,122	0/1:1,1:2:32.56:33,0,33	1/1:0,4:4:9.03:109,9,0	0/0:4,0:4:6.01:0,6,67
+chr1	1226971	.	T	C	63.36	.	AC=1;AF=0.0085;AN=118;BaseQRankSum=-1.160;DP=1268;Dels=0.00;FS=4.729;HRun=4;HaplotypeScore=0.4672;InbreedingCoeff=-0.0189;MQ=58.51;MQ0=0;MQRankSum=1.085;QD=3.73;ReadPosRankSum=-0.628;EFF=DOWNSTREAM(MODIFIER||||759|ACAP3|protein_coding|CODING|ENST00000353662|),DOWNSTREAM(MODIFIER||||834|ACAP3|protein_coding|CODING|ENST00000354700|),DOWNSTREAM(MODIFIER|||||ACAP3|processed_transcript|CODING|ENST00000379037|),DOWNSTREAM(MODIFIER|||||ACAP3|retained_intron|CODING|ENST00000467278|),DOWNSTREAM(MODIFIER|||||ACAP3|retained_intron|CODING|ENST00000470659|),DOWNSTREAM(MODIFIER|||||ACAP3|retained_intron|CODING|ENST00000476572|),DOWNSTREAM(MODIFIER|||||ACAP3|retained_intron|CODING|ENST00000492936|),DOWNSTREAM(MODIFIER|||||SCNN1D|nonsense_mediated_decay|CODING|ENST00000379101|),NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|cTt/cCt|L633P|638|SCNN1D|protein_coding|CODING|ENST00000338555|),NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|cTt/cCt|L633P|638|SCNN1D|protein_coding|CODING|ENST00000400928|),NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|cTt/cCt|L664P|669|SCNN1D|protein_coding|CODING|ENST00000379110|),NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|cTt/cCt|L699P|704|SCNN1D|protein_coding|CODING|ENST00000325425|),NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|cTt/cCt|L797P|802|SCNN1D|protein_coding|CODING|ENST00000379116|);CSQ=missense_variant|cTt/cCt|L/P|ENSG00000162572|SCNN1D|ENST00000338555|15/15|benign(0.02)|tolerated(0.18)|633/638|protein_coding|1,downstream_gene_variant|||ENSG00000131584|ACAP3|ENST00000467278|||||retained_intron|1,downstream_gene_variant|||ENSG00000131584|ACAP3|ENST00000492936|||||retained_intron|1,downstream_gene_variant|||ENSG00000162572|SCNN1D|ENST00000379101||||-/328|nonsense_mediated_decay|1,downstream_gene_variant|||ENSG00000131584|ACAP3|ENST00000476572|||||retained_intron|1,downstream_gene_variant|||ENSG00000131584|ACAP3|ENST00000379037|||||processed_transcript|1,downstream_gene_variant|||ENSG00000131584|ACAP3|ENST00000354700||||-/834|protein_coding|1,missense_variant|cTt/cCt|L/P|ENSG00000162572|SCNN1D|ENST00000325425|15/15|benign(0.189)|tolerated(0.21)|699/704|protein_coding|1,downstream_gene_variant|||ENSG00000131584|ACAP3|ENST00000353662||||-/759|protein_coding|1,downstream_gene_variant|||ENSG00000162572|SCNN1D|ENST00000379099||||-/308|protein_coding|1,missense_variant|cTt/cCt|L/P|ENSG00000162572|SCNN1D|ENST00000400928|14/14|benign(0.02)|tolerated(0.18)|633/638|protein_coding|1,downstream_gene_variant|||ENSG00000131584|ACAP3|ENST00000470659|||||retained_intron|1,missense_variant|cTt/cCt|L/P|ENSG00000162572|SCNN1D|ENST00000379116|18/18|benign(0.189)|deleterious(0.04)|797/802|protein_coding|1	GT:AD:DP:GQ:PL	0/0:7,0:7:15.04:0,15,180	0/0:17,0:17:42.11:0,42,497	0/0:15,0:15:45.14:0,45,564	0/0:13,0:13:30.09:0,30,370	0/0:37,2:39:99:0,99,1309	0/0:46,0:46:99:0,126,1646	0/0:75,0:75:99:0,208,2722	0/0:34,2:36:99:0,102,1346	0/0:86,0:86:99:0,250,3243	0/0:118,1:119:99:0,340,4412	0/0:37,0:38:99:0,108,1419	0/0:27,0:27:81.26:0,81,1062	0/0:63,1:64:99:0,178,2232	0/0:6,0:6:12.04:0,12,158	0/0:16,0:16:39.13:0,39,541	0/0:3,0:3:9.03:0,9,114	0/0:3,0:3:9.03:0,9,115	0/0:10,0:10:27.08:0,27,336	0/0:15,0:15:36.12:0,36,496	0/0:1,0:1:3.01:0,3,39	0/0:11,0:11:33.11:0,33,432	0/0:13,0:13:36.10:0,36,461	0/0:8,0:8:21.07:0,21,279	0/0:9,0:9:27.09:0,27,345	0/0:10,1:11:21.07:0,21,293	0/0:6,0:6:15.05:0,15,209	0/0:4,0:4:12.04:0,12,156	0/0:5,0:5:15.05:0,15,191	0/0:4,0:4:12.04:0,12,161	0/0:2,0:2:6.02:0,6,78	0/0:10,0:10:30.10:0,30,400	0/0:5,1:6:15.05:0,15,206	0/0:6,0:6:12.04:0,12,162	0/0:5,0:5:15.05:0,15,203	./.	0/0:6,1:7:18.06:0,18,233	0/0:9,0:9:24.08:0,24,323	0/0:9,0:9:18.05:0,18,232	0/0:17,0:17:45.13:0,45,569	0/0:38,0:38:87.26:0,87,1104	0/0:17,0:17:48.13:0,48,590	0/0:22,2:24:48.14:0,48,612	0/0:17,0:17:42.13:0,42,548	0/0:18,0:18:36.08:0,36,449	0/0:25,1:26:60.20:0,60,816	0/0:17,0:17:45.14:0,45,586	0/0:37,0:37:93.28:0,93,1188	0/1:12,5:17:99:111,0,365	0/0:20,1:21:45.13:0,45,568	0/0:28,0:28:66.19:0,66,872	0/0:45,0:45:99:0,99,1277	0/0:30,1:31:78.23:0,78,981	0/0:20,1:21:51.16:0,51,670	0/0:22,0:22:48.12:0,48,608	0/0:20,0:20:51.15:0,51,661	0/0:12,1:13:30.09:0,30,374	0/0:13,0:14:33.11:0,33,436	0/0:32,0:32:72.22:0,72,932	0/0:13,0:13:30.10:0,30,391	0/0:19,0:19:45.14:0,45,583

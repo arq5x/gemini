@@ -151,6 +151,8 @@ def create_tables(cursor, effect_fields=None):
                     clinvar_in_locus_spec_db bool,
                     clinvar_on_diag_assay bool,
                     clinvar_causal_allele text,
+                    clinvar_gene_phenotype text,
+                    geno2mp_hpo_ct integer,
                     pfam_domain text,
                     cyto_band text default NULL,
                     rmsk text default NULL,
@@ -462,6 +464,7 @@ def update_gene_summary_w_cancer_census(cursor, genes):
 @contextlib.contextmanager
 def database_transaction(db):
     conn = sqlite3.connect(db)
+    conn.text_factory = str
     conn.isolation_level = None
     cursor = conn.cursor()
     cursor.execute('PRAGMA synchronous = OFF')

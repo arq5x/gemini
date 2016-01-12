@@ -37,10 +37,11 @@ def release(parser, args):
         subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]] + extra_args)
         print "Gemini data files updated"
     # update tests
-    test_dir = os.path.join(os.path.dirname(os.path.dirname(base)), "github_gemini")
-    if not os.path.exists(test_dir) or os.path.isdir(test_dir):
-        _update_testbase(test_dir, repo, gemini_cmd)
-    print "Run test suite with: cd %s && bash master-test.sh" % test_dir
+    if not args.dataonly:
+        test_dir = os.path.join(os.path.dirname(os.path.dirname(base)), "github_gemini")
+        if not os.path.exists(test_dir) or os.path.isdir(test_dir):
+            _update_testbase(test_dir, repo, gemini_cmd)
+        print "Run test suite with: cd %s && bash master-test.sh" % test_dir
 
 def _get_install_script():
     try:
@@ -64,7 +65,10 @@ def _update_testbase(repo_dir, repo, gemini_cmd):
         print "cloning %s to %s" % (repo, repo_dir)
         subprocess.check_call(["git", "clone", repo, repo_dir])
     os.chdir(repo_dir)
-    _update_testdir_revision(gemini_cmd)
+    try:
+        _update_testdir_revision(gemini_cmd)
+    except Exception, msg:
+        print("Unable to update to revision, skipping: %s" % msg)
     os.chdir(cur_dir)
 
 def _update_testdir_revision(gemini_cmd):
@@ -78,7 +82,7 @@ def _update_testdir_revision(gemini_cmd):
     tag = ""
     if gversion:
         try:
-            p = subprocess.Popen("git tag -l | grep %s" % gversion, stdout=subprocess.PIPE, shell=True)
+            p = subprocess.Popen("git tag -l | grep %s$" % gversion, stdout=subprocess.PIPE, shell=True)
             tag = p.communicate()[0].strip()
         except:
             tag = ""

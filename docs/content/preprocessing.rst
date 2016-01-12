@@ -9,7 +9,7 @@ Step 1. split, left-align, and trim variants
 =============================================
 
 Variants with multiple alternate alleles will not be handled correctly by gemini (or by the tools
-used to annotate the variants). As projects get more samples it is likely that a non-negligible 
+used to annotate the variants). As projects get more samples it is likely that a non-negligible
 percentage of site will have multiple alternate alleles.
 
 In addition, variants that are not left-aligned and trimmed can be incorrectly (or not)
@@ -23,7 +23,7 @@ left-align, and trim their variants**. The tools we recommend for this are eithe
     vt decompose -s $VCF | vt normalize -r $REFERENCE - > $NEW_VCF
 
 gemini uses the allele depths from the AD tag. In order for `vt` to decompose correctly, users will have
-to change the #INFO field for AD in the header from Number=. to Number=R. 
+to change the #INFO field for AD in the header from Number=. to Number=R.
 
 Then the `$NEW_VCF` can be annotated with snpEff or VEP.
 
@@ -45,8 +45,8 @@ into GEMINI.
 
 .. note::
 	Choose the annotator as per your requirement!
-	Some gene/transcript annotations are available with only one tool (e.g. 
-	``Polyphen/Sift`` with VEP). As such these values would be set to None, 
+	Some gene/transcript annotations are available with only one tool (e.g.
+	``Polyphen/Sift`` with VEP). As such these values would be set to None,
 	if an alternate annotator is used during the load step.
 
 Instructions for installing and running these tools can be found in the following section:
@@ -156,17 +156,18 @@ The PED file format is documented here: PED_. An example PED file looks like thi
 |	1 M10500     -9    -9    2    2
 |	1 M128215    M10475  M10500    1    1
 
-The columns are family_id, name, paternal_id, maternal_id, sex and phenotype.
-For gemini, you can use either tabs or spaces, but not both.
+The columns are ``family_id``, ``name``, ``paternal_id``, ``maternal_id``,
+``sex`` and ``phenotype``. For GEMINI, you can use either tabs or spaces, but
+not both.
 
 You can also provide a PED file with a heading starting with #, and include extra
 fields, like this:
 
-|	#family_id name paternal_id maternal_id sex phenotype hair_color 
-| 	1 M10475    -9       -9  1    1 brown 
-| 	1 M10478     M10475  M10500    2    2 brown 
-| 	1 M10500     -9      -9    2    2 black 
-| 	1 M128215    M10475  M10500    1    1 blue 
+|	#family_id name paternal_id maternal_id sex phenotype hair_color
+| 	1 M10475    -9       -9  1    1 brown
+| 	1 M10478     M10475  M10500    2    2 brown
+| 	1 M10500     -9      -9    2    2 black
+| 	1 M128215    M10475  M10500    1    1 blue
 
 This will add the extra columns to the ``samples`` table and allow for you to
 use those extra columns during queries.
@@ -217,4 +218,4 @@ Loading VCFs without genotypes.
 To do.
 
 .. _PED: http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped
-.. _vt-paper: http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped 
+.. _vt-paper: http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped

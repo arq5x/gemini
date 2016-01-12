@@ -801,6 +801,7 @@ class GeminiQuery(object):
         # open up a new database
         if os.path.exists(self.db):
             self.conn = sqlite3.connect(self.db)
+            self.conn.text_factory = str
             self.conn.isolation_level = None
             # allow us to refer to columns by name
             #self.conn.row_factory = RowFactory

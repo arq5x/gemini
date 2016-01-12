@@ -51,7 +51,8 @@ anno_files = \
 'detailed_gene_table_v75',
 'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv',
-'ExAC.r0.3.sites.vep.tidy.vcf.gz'
+'ExAC.r0.3.sites.vep.tidy.vcf.gz',
+'geno2mp.variants.tidy.vcf.gz',
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}
 
@@ -70,6 +71,7 @@ anno_versions = {
     "cosmic-v68-GRCh37.tidy.vcf.gz": 3,
     "ESP6500SI.all.snps_indels.tidy.v2.vcf.gz": 2,
     'ExAC.r0.3.sites.vep.tidy.vcf.gz': 3,
+    'geno2mp.variants.tidy.vcf.gz': 1,
     }
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):

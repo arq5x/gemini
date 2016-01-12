@@ -161,7 +161,7 @@ def annotate_variants_count(args, conn, col_names):
 def _map_list_types(hit_list, col_type):
     # TODO: handle missing because of VCF.
     try:
-        if col_type == "int":
+        if col_type in ("int", "integer"):
             return [int(h) for h in hit_list if not h in (None, 'nan')]
         elif col_type == "float":
             return [float(h) for h in hit_list if not h in (None, 'nan')]

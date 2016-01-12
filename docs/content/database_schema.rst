@@ -201,6 +201,9 @@ clinvar_dsdbid            STRING        Variant disease database ID
 clinvar_disease_acc       STRING        Variant Accession and Versions
 clinvar_in_locus_spec_db  BOOL          Submitted from a locus-specific database?
 clinvar_on_diag_assay     BOOL          Variation is interrogated in a clinical diagnostic assay?
+clinvar_gene_phenotype    STRING        '|' delimited list of phenotypes associated with this gene (includes any variant in the same 
+                                        gene in clinvar not just the current variant).
+geno2mp_hpo_ct            INTEGER       Value from geno2mp indicating count of HPO profiles. Set to -1 if missing
 ========================  ========      ==============================================================================================
 
 

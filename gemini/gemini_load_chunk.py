@@ -60,6 +60,30 @@ def get_extra_effects_fields(args):
     loader = GeminiLoader(args, prepare_db=False)
     return [x[0] for x in loader._extra_effect_fields]
 
+def load_clinvar(cpath):
+    from cyvcf2 import VCF
+    from collections import defaultdict
+
+    lookup = {}
+    for v in VCF(cpath):
+        info = v.INFO
+        gene = info.get('GENEINFO')
+        if gene is None: continue
+        diseases = [x for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
+        if diseases == []: continue
+
+        genes = [x.split(":")[0] for x in gene.split("|")]
+        for gene in genes:
+            key = v.CHROM, gene
+            if key in lookup:
+                lookup[key].extend(diseases)
+            else:
+                lookup[key] = diseases
+    for k in lookup:
+        lookup[k] = "|".join(sorted(set(lookup[k]))).lower()
+    return lookup
+
+
 class GeminiLoader(object):
     """
     Object for creating and populating a gemini
@@ -95,6 +119,8 @@ class GeminiLoader(object):
             self.num_samples = len(self.samples)
         else:
             self.num_samples = 0
+
+        self.clinvar_chrom_gene_lookup = load_clinvar(annotations.get_anno_files(self.args)['clinvar'])
 
         self.buffer_size = buffer_size
         self._get_anno_version()
@@ -305,6 +331,7 @@ class GeminiLoader(object):
         if os.path.exists(db_path):
             os.remove(db_path)
         self.conn = sqlite3.connect(db_path)
+        self.conn.text_factory = str
         self.conn.isolation_level = None
         self.c = self.conn.cursor()
         self.c.execute('PRAGMA synchronous = OFF')
@@ -427,7 +454,7 @@ class GeminiLoader(object):
                 except KeyError:
                     pass
 
-            elif self.args.anno_type in ("all", "VEP"):
+            if self.args.anno_type in ("all", "VEP"):
                 try:
                     impacts += [geneimpacts.VEP(e, anno_keys["CSQ"]) for e in var.INFO["CSQ"].split(",")]
                 except KeyError:
@@ -450,10 +477,15 @@ class GeminiLoader(object):
         vcf_id = None
         if var.ID is not None and var.ID != ".":
             vcf_id = var.ID
+        chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
+
+        clinvar_gene_phenotype = None
+        if top_impact.gene is not None:
+            clinvar_gene_phenotype = self.clinvar_chrom_gene_lookup.get((chrom[3:], top_impact.gene))
 
         # build up numpy arrays for the genotype information.
         # these arrays will be pickled-to-binary, compressed,
-        # and loaded as SqlLite BLOB values (see compression.pack_blob)
+        # and loaded as BLOB values (see compression.pack_blob)
         gt_phred_ll_homref = gt_phred_ll_het = gt_phred_ll_homalt = None
 
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
@@ -508,7 +540,6 @@ class GeminiLoader(object):
 
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
-        chrom = var.CHROM if var.CHROM.startswith("chr") else "chr" + var.CHROM
         variant = [chrom, var.start, var.end,
                    vcf_id, self.v_id, top_impact.anno_id, var.REF, ','.join([x or "" for x in var.ALT]),
                    var.QUAL, filter, var.var_type,
@@ -544,6 +575,8 @@ class GeminiLoader(object):
                    clinvar_info.clinvar_in_locus_spec_db,
                    clinvar_info.clinvar_on_diag_assay,
                    clinvar_info.clinvar_causal_allele,
+                   clinvar_gene_phenotype,
+                   annotations.get_geno2mp_ct(var),
                    pfam_domain, cyto_band, rmsk_hits, in_cpg,
                    in_segdup, is_conserved, gerp_bp, gerp_el,
                    hom_ref, het, hom_alt, unknown,

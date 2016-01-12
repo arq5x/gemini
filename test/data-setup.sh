@@ -9,11 +9,13 @@ gemini load --skip-gene-tables --test-mode -v test.cosmic.vcf --skip-gerp-bp --s
 gemini load --skip-gene-tables --test-mode -v test.roh.vcf --skip-gerp-bp --skip-cadd -t snpEff test.roh.vcf.db &
 gemini load --skip-gene-tables --test-mode -v test.cadd.vcf --skip-gerp-bp --skip-cadd test.no.cadd.db
 gemini load --skip-gene-tables --test-mode -v test.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test.snpeff.vcf.db &
+gemini load --skip-gene-tables --test-mode -v test.geno2mp.vcf --skip-gerp-bp --skip-cadd -t snpEff test.geno2mp.db &
 gemini load --skip-gene-tables --test-mode -v test1.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test1.snpeff.db
 gemini load --skip-gene-tables --test-mode -v test1.snpeff.vcf --skip-gerp-bp --skip-cadd -t VEP test1.vep.db &
 gemini load --skip-gene-tables --test-mode -v test2.snpeff.vcf --skip-gerp-bp --skip-cadd test2.snpeff.db
 gemini load --skip-gene-tables --test-mode -v test3.snpeff.vcf --skip-gerp-bp --skip-cadd test3.snpeff.db &
 gemini load --skip-gene-tables --test-mode -v test.clinvar.vcf --skip-gerp-bp --skip-cadd test.clinvar.db
+gemini load -t all -v test.clinvar_gene_pheno.vcf --test-mode --skip-gene-tables test.clinvar_gene_pheno.db &
 gemini load --skip-gene-tables --test-mode -v test4.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test4.snpeff.db &
 gemini load --skip-gene-tables --test-mode -v test4.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t VEP test4.vep.db
 gemini load --skip-gene-tables --test-mode -v test5.vep.snpeff.vcf --skip-gerp-bp --skip-cadd -t snpEff test5.snpeff.db &

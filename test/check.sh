@@ -4,7 +4,8 @@ check() {
     	echo ok
 	else
     	echo fail
-		echo $3 >> failed.tests.txt
+		echo $3
+		exit 1
 	fi
 }
 export -f check

@@ -16,7 +16,7 @@ from inheritance import Family
 
 class GeminiInheritanceModel(object):
 
-    required_columns = ("family_id", "family_members",
+    required_columns = ("gene", "family_id", "family_members",
                         "family_genotypes", "samples", "family_count")
 
     def __init__(self, args):
@@ -41,7 +41,7 @@ class GeminiInheritanceModel(object):
             query = "SELECT chrom, start, end, * %s " \
                 + "FROM variants" % ", ".join(self.gt_cols)
 
-        query = sql_utils.ensure_columns(query, ['variant_id'])
+        query = sql_utils.ensure_columns(query, ['variant_id', 'gene'])
         # add any non-genotype column limits to the where clause
         if self.args.filter:
             query += " WHERE " + self.args.filter
@@ -52,11 +52,18 @@ class GeminiInheritanceModel(object):
            (self.model == "de_novo" and self.args.min_kindreds is not None):
 
             # we require the "gene" column for the auto_* tools
-            query = sql_utils.ensure_columns(query, ['gene'])
             if self.args.filter:
-                query += " AND gene is not NULL ORDER BY chrom, gene"
+                query += " AND gene is not NULL"
             else:
-                query += " WHERE gene is not NULL ORDER BY chrom, gene"
+                query += " WHERE gene is not NULL"
+
+        # only need to order by gene for comp_het and when min_kindreds is used.
+        if self.model == "comp_het" or not (
+                self.args.min_kindreds in (None, 1)
+                and (self.args.families is None
+                     or not "," in self.args.families)):
+            query += " ORDER by chrom, gene"
+
         return query
 
     def bcolz_candidates(self):
@@ -328,7 +335,7 @@ class CompoundHet(GeminiInheritanceModel):
                     " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
         if args.filter: query += " AND " + args.filter
         # we need to order results by gene so that we can sweep through the results
-        return query + " ORDER BY gene"
+        return query + " ORDER BY chrom, gene"
 
     def _add_necessary_columns(self, custom_columns):
         """

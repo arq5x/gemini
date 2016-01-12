@@ -92,6 +92,14 @@ the GEMINI database.
 Filter variants that do not have at least this depth for all members in a
 a family. Default is 0.
 
+
+---------------------
+``--min-gq [0]``
+---------------------
+
+Filter variants that do not have at least this genotype quality for each sample in a family.
+Default is 0. Higher values are more stringent.
+
 ----------------------
 ``--allow-unaffected``
 ----------------------
@@ -166,7 +174,7 @@ Genotype Requirements
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
   
   a. If data from one or both parents are unavailable and the child's data was not phased prior to loading into GEMINI,
-     all comp_het variant pairs will automatically be given priority == 3
+     all comp_het variant pairs will automatically be given priority == 2
   
   b. `--max-priority x` can be used to set the maximum allowed priority level at which candidate pairs are included in the output.
 
@@ -177,7 +185,7 @@ we prioritize with these rules:
 mom   dad      kid       phaseable   priority   notes
 ===   ===      ====      =========   ========   ================================================
 R-H   H-R      H-H       both        1          both sites phaseable and alts on opposite chroms
-               H-H       NO          2          singleton (unphaseable) HETs have priority 2.
+n/a   n/a      H-H       NO          2          singleton (unphaseable) HETs have priority 2.
 R-H   H-H      H-H       one         3          should be a rare occurrence
 H-H   H-H      H-H       NO          3          should be a rare occurrence
 A-R   H-H      H-H       both        NA         exclude hom-alts from un-affecteds
@@ -186,7 +194,7 @@ R-R   H-H      H-H       both        NA         phaseable, but alts are on the s
 
 .. note::
 
-   candidates of priority == 3 are very unlikely (< 1%) to be real
+   candidates of priority == 3 are very unlikely (< 1%) to be causal for a rare Mendelian condition
    (see: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3734130/); we report them
    for completeness, but strongly recommend using priority 1 and 2 only.
    Priority 2 is useful when there are multiple families, some of which consist of

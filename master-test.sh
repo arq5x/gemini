@@ -32,6 +32,8 @@ bash test-mendel-error.sh
 
 bash test-genotype-likelihoods.sh
 
+bash test-t-all.sh
+
 # Test gemini region
 bash test-region.sh
 
@@ -146,6 +148,8 @@ bash test-no-gls.sh
 bash test-multi-col.sh
 
 bash test-eff.sh
+
+bash test-geno2mp.sh
 
 # cleanup
 rm ./*.db

@@ -1013,8 +1013,6 @@ def main():
                                dest="install_data", action="store_false", default=True)
     parser_update.add_argument("--extra", help="Add additional non-standard genome annotations to include",
                                action="append", default=[], choices=["gerp_bp","cadd_score"])
-    parser_update.add_argument("--annotationdir", help="Directory to install gemini data files",
-                               type=os.path.abspath)
     parser_update.add_argument("--tooldir", help="Directory for third party tools (ie /usr/local) update")
     def update_fn(parser, args):
         import gemini_update
