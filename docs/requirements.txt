@@ -1,1 +1,4 @@
 sphinx
+numpy
+numexpr
+bcolz
