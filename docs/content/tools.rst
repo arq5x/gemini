@@ -1030,7 +1030,7 @@ file, the ``annotate`` tool can summarize the values observed with multiple opti
 
     1. ``-o mean``.  Compute the average of the values.  **They must be numeric**.
     2. ``-o median``. Compute the median of the values.  **They must be numeric**.
-    3. ``-o mix``. Compute the minimum of the values.  **They must be numeric**.
+    3. ``-o min``. Compute the minimum of the values.  **They must be numeric**.
     4. ``-o max``. Compute the maximum of the values.  **They must be numeric**.
     5. ``-o mode``. Compute the maximum of the values.  **They must be numeric**.
     6. ``-o first``. Use the value from the **first** record in the annotation file.
