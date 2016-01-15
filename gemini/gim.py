@@ -345,15 +345,16 @@ class CompoundHet(GeminiInheritanceModel):
         """
         # we need to add the variant's chrom, start and gene if
         # not already there.
-        if "*" in [x.strip() for x in custom_columns.split(",")]:
-            return custom_columns
+        custom_columns = [x.strip() for x in custom_columns.split(",")]
+        if "*" in custom_columns:
+            return ",".join(custom_columns)
         self.added = []
         for col in ("gene", "chrom", "start", "ref", "alt", "variant_id"):
-            if custom_columns.find(col) < 0:
-                custom_columns += "," + col
+            if not col in custom_columns:
+                custom_columns.append(col)
                 if col != "variant_id":
                     self.added.append(col)
-        return custom_columns
+        return ",".join(custom_columns)
 
     def filter_candidates(self, candidates,
                           comp_het_counter=[0]):
