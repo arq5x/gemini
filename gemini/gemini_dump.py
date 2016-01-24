@@ -24,8 +24,7 @@ def get_variants(c, args):
     if args.use_header:
         print args.separator.join(col for col in col_names)
     for row in c:
-        print args.separator.join(str(row[i]) if row[i] is not None else "." \
-                                              for i in non_gt_idxs )
+        print args.separator.join('.' if (row[i] is None) else row[i].encode('utf-8') if type(row[i]) is unicode else str(row[i]) for i in non_gt_idxs )
 
 
 def get_genotypes(c, args):
