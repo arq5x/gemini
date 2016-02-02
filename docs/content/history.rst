@@ -22,6 +22,7 @@ Release History
 7. Add `geno2mp_hpo_ct` column which will be > 0 if that variant is present in geno2mp (http://geno2mp.gs.washington.edu/Geno2MP/#/)
 8. Fix comp_hets tool when exac_num_hom_alt was requested. (Thanks to @davemcg for reporting).
 9. Fix bug in comp_hets tool where attempting to phase a "." genotype would result in an error. (Thanks to Aparna and Martina for reporting)
+10. Fix bug in mendel_errors tool when specifying --families. Thanks to @davemcg for reporting.
 
 0.18.0
 ======

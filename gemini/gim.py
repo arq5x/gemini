@@ -165,12 +165,15 @@ class GeminiInheritanceModel(object):
 
         is_mendel = False
 
-        if isinstance(self.family_masks[0], dict):
+        if any(isinstance(m, dict) for m in self.family_masks):
             assert self.model == "mendel_violations"
             is_mendel = True
             masks = []
             # mdict contains filter for 'de novo', 'LOH', etc.
             for mdict in self.family_masks:
+                if isinstance(mdict, basestring):
+                    masks.append(mdict)
+                    continue
                 m = {}
                 for k, mask in mdict.items():
                     m[k] = 'False' if mask is None or mask.strip("(").strip(")") == 'False' else mask
