@@ -80,8 +80,11 @@ def write_gemini_config(new_config, dirs=None):
         fname = _get_config_file(dirs, use_globals=False)
     except ValueError:
         fname = _find_best_config_file(dirs)
-    if not os.path.exists(os.path.dirname(fname)):
-        os.makedirs(os.path.dirname(fname))
-    with open(fname, "w") as out_handle:
-        yaml.dump(new_config, out_handle, allow_unicode=False,
-                  default_flow_style=False)
+    if not os.access(fname, os.W_OK):
+        print("Warning: unable to write GEMINI configuration file to %s" % fname)
+    else:
+        if not os.path.exists(os.path.dirname(fname)):
+            os.makedirs(os.path.dirname(fname))
+        with open(fname, "w") as out_handle:
+            yaml.dump(new_config, out_handle, allow_unicode=False,
+                      default_flow_style=False)
