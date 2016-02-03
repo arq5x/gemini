@@ -462,12 +462,12 @@ class GeminiQuery(object):
 
     We create a GeminiQuery object by specifying database to which to
     connect::
+
         from gemini import GeminiQuery
         gq = GeminiQuery("my.db")
 
     We can then issue a query against the database and iterate through
     the results by using the ``run()`` method::
-
 
         for row in gq:
             print row

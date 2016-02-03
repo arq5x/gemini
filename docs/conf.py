@@ -259,6 +259,7 @@ class Mock(object):
             return Mock()
 
 MOCK_MODULES = ['numpy', 'matplotlib', 'matplotlib.pyplot',
+                'inheritance',
                 'matplotlib.sphinxext', 'matplotlib.sphinxext.plot_directive']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
