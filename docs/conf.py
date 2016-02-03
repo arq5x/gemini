@@ -16,7 +16,24 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
 
-from gemini import __version__ as version
+
+# from mpld3
+def get_version():
+    """Get the version info from the mpld3 package without importing it"""
+    import ast
+
+    with open(os.path.join(os.path.abspath('../'), "gemini", "version.py"), "r") as init_file:
+        module = ast.parse(init_file.read())
+
+    version = (ast.literal_eval(node.value) for node in ast.walk(module)
+               if isinstance(node, ast.Assign)
+               and node.targets[0].id == "__version__")
+    try:
+        return next(version)
+    except StopIteration:
+        raise ValueError("version could not be located")
+
+version = get_version()
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
