@@ -865,6 +865,41 @@ affect protein_coding transcripts from processed RNA, etc.
 
 
 ===========================================================
+``amend``: updating / changing the sample information
+===========================================================
+Occassionally one may need to update the sample information
+stored in the ``samples`` table. The ``amend`` tool allows one
+to provide an updated PED file as input and it will update 
+each sample_id in the PED file that matches a sample_id.
+
+For example, assume you have already loaded a GEMINI database
+with a ``samples.ped`` where mom and dad are unaffected and 
+kid isaffected:
+
+.. code-block:: bash
+    
+    $ cat samples.ped
+    1 dad 0 0 1  1
+    1 mom 0 0 1  1
+    1 kid dad mom 2  2
+
+    $ gemini load -v my.vcf -p samples.ped -t VEP my.db
+
+Now, let's say you realized that the dad is also affected and you
+want to correct the ``samples`` table accordingly. You would first
+edit the PED file and then run the ``amend`` tool using the updated
+PED.
+
+.. code-block:: bash
+
+    $ cat samples.ped
+    1 dad 0 0 1  2
+    1 mom 0 0 1  1
+    1 kid dad mom 2  2
+
+    $ gemini amend --sample samples.ped my.db
+
+===========================================================
 ``annotate``: adding your own custom annotations
 ===========================================================
 It is inevitable that researchers will want to enhance the gemini framework with
