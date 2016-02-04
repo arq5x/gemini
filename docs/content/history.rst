@@ -11,14 +11,14 @@ Release History
 0.18.1
 ======
 1. Don't user order by when not needed for built in tools. Speeds up queries when min-kindreds is None or 1.
-2. Document --min-gq
+2. Document the ``--min-gq`` option
 3. Set missing AF to -1 (instead of NULL) for unknown for all ESP, 1KG, ExAC allele frequency columns.
 4. Fix gemini load with -t all when only VEP is present.
 5. Add clinvar_gene_phenotype column which can be used to limit candidates to those that are in the same
    gene as a gene with the known phenotype from clinvar. Phenotypes are all lower case.
    Likely usage is: --filter "... and clinvar_gene_phenotype LIKE '%dysplasia%' where the '%' are needed
    because the column is a '|' delimited list of all disease for that gene.
-6. Fix bug in gemini annotate where numeric operations on integers did not work for VCF.
+6. Fix bug in gemini ``annotate`` where numeric operations on integers did not work for VCF.
 7. Add `geno2mp_hpo_ct` column which will be > 0 if that variant is present in geno2mp (http://geno2mp.gs.washington.edu/Geno2MP/#/)
 8. Fix comp_hets tool when exac_num_hom_alt was requested. (Thanks to @davemcg for reporting).
 9. Fix bug in comp_hets tool where attempting to phase a "." genotype would result in an error. (Thanks to Aparna and Martina for reporting)
