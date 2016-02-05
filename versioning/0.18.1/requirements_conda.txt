@@ -8,7 +8,7 @@ conda=3.5.5=py27_0
 cython=0.22.1=py27_0
 dateutil=2.1=py27_2
 geneimpacts>=0.0.7
-inheritance>=0.0.4
+inheritance>=0.0.5
 ipython>=4.0
 jinja2=2.7.2=py27_0
 libsodium=0.4.5=0
