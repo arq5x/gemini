@@ -13,9 +13,12 @@
 #wget  ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar_20150305.vcf.gz \
 #tabix clinvar_20150305.vcf.gz
 
+DATE=20160203
 
-vt decompose -s ~/Downloads/clinvar_20150305.vcf.gz \
+wget ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar_$DATE.vcf.gz \
+
+vt decompose -s clinvar_$DATE.vcf.gz \
 		   | python clinvar.py \
 		   | vt normalize -r /data/human/b37/human_g1k_v37_decoy.fasta - \
-		   | bgzip -c > clinvar_20150305.tidy.vcf.gz
-tabix clinvar_20150305.tidy.vcf.gz
+		   | bgzip -c > clinvar_$DATE.tidy.vcf.gz
+tabix clinvar_$DATE.tidy.vcf.gz
