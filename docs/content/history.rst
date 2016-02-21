@@ -8,6 +8,10 @@ Release History
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
 #. X-linked recessive and dominant tools.
 
+0.18.2
+======
+#. Update the Clinvar annotation file to the February 3, 2016 release.
+
 0.18.1
 ======
 #. Add ``clinvar_gene_phenotype`` column which can be used to limit candidates to those that are in the same
