@@ -8,6 +8,11 @@ Release History
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
 #. X-linked recessive and dominant tools.
 
+0.18.3
+======
+#. handle rare VEP annotation with '' or "?" as impact
+#. fix handling of multiple values for list/uniq_list in gemini_annotate
+
 0.18.2
 ======
 #. Update the Clinvar annotation file to the February 3, 2016 release.

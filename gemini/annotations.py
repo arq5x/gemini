@@ -393,9 +393,10 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
             # the mappability uses "." as the alt for all rows. so
             if var_ref == anno_ref and (len(var_alt & anno_alt) >= 1 \
                     or anno_alt == set(".")):
-                matched_hits.append(h)
+                # also need to match on the start coord.
+                if start -1 == coords[1]:
+                    matched_hits.append(h)
         hits = matched_hits
-
     return hits
 
 
