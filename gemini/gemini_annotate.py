@@ -265,7 +265,12 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
                 val = op_funcs[op](hit_list[idx], col_types[idx])
             except ValueError:
                 val = None
-            vals.append(fix_val(val, col_types[idx]))
+            if not 'list' in op:
+                vals.append(fix_val(val, col_types[idx]))
+            else:
+                # already stringed it in list/uniq_list so don't check type
+                vals.append(val)
+
         return vals
 
     return _annotate_variants(args, conn, summarize_hits,
