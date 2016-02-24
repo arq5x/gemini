@@ -386,7 +386,8 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
                 start = int(h.split('\t', 2)[1])
             else:
                 # Assume it's a Pysam entry.
-                start = h.pos
+                # start is 0-based for pysam so we add 1.
+                start = h.pos + 1
             multiallele_warning(chrom, start - 1, anno_alt, True)
 
             # Match via ref and set intersection of alternates.
