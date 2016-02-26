@@ -1,13 +1,23 @@
 import os
 import warnings
+import webbrowser
 from collections import namedtuple
 
 import GeminiQuery
-from gemini_inheritance_model_utils import GeminiInheritanceModelFactory
 
-import tool_de_novo_mutations as de_novo_tool
-import tool_autosomal_recessive as recessive_tool
-import tool_autosomal_dominant as dominant_tool
+try:
+    # Puzzle browser plugin
+    from puzzle.server import factory as puzzle_app
+    from puzzle.plugins import GeminiPlugin
+    from puzzle.server.settings import BaseConfig
+except ImportError:
+    pass
+
+#from gemini_inheritance_model_utils import GeminiInheritanceModelFactory
+
+#import tool_de_novo_mutations as de_novo_tool
+#import tool_autosomal_recessive as recessive_tool
+#import tool_autosomal_dominant as dominant_tool
 
 # based upon bottle example here:
 # https://bitbucket.org/timtan/bottlepy-in-real-case
@@ -232,14 +242,45 @@ def db_schema():
     return template('db_schema.j2')
 
 
+## Switch between the different available browsers
+def browser_puzzle(args):
+    host = args.host
+    port = args.port
+
+    plugin = GeminiPlugin(db=args.db, vtype="sv")
+    root = os.path.expanduser("~/.puzzle")
+
+    BaseConfig.PUZZLE_BACKEND = plugin
+    BaseConfig.UPLOAD_DIR = os.path.join(root, 'resources')
+
+    puzzle_srv = puzzle_app.create_app(config_obj=BaseConfig)
+    webbrowser.open_new_tab("http://{}:{}".format(host, port))
+    run(puzzle_srv, host=host, port=port)
+
+def browser_builtin(args):
+    host = args.host
+    port = args.port
+
+    webbrowser.open_new_tab("http://{}:{}".format(host, port))
+    run(app, host=host, port=port,
+        reloader=True, debug=True)
+
+
 def browser_main(parser, args):
     global database
-
-    print "!!!!!"
-    print "NOTE: open a browser and point it to http://localhost:8088/query"
-    print "!!!!!"
-
     database = args.db
+    browser = args.use
 
-    run(app, host='localhost', port=8088,
-        reloader=True, debug=True)
+    try:
+        if args.use == "puzzle":
+            browser_puzzle(args)
+        # XXX: https://github.com/dgaston/kvasir
+        #if args.use == "kvasir":
+        #    raise NotImplementedError
+        elif args.use == "builtin":
+            raise NotImplementedError("GEMINI builtin browser needs some maintenace")
+            browser_builtin(args)
+        else:
+            raise NotImplementedError("GEMINI-compatible Browser '{browser}' not found.".format(browser=browser))
+    except ImportError:
+        raise("Is {browser} correctly installed?".format(browser=browser))

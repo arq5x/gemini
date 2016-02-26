@@ -902,6 +902,14 @@ def main():
             help='Browser interface to gemini')
     parser_browser.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
+    parser_browser.add_argument('--use', metavar='use', default='puzzle',
+            help='Which browser to use: builtin or puzzle')
+    parser_browser.add_argument('--host', metavar='host', default='localhost',
+            help='Hostname, default: localhost.')
+    parser_browser.add_argument('--port', metavar='port', default='8088',
+            help='Port, default: 8088.')
+
+
     def browser_fn(parser, args):
         import gemini_browser
         gemini_browser.browser_main(parser, args)

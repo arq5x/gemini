@@ -21,3 +21,4 @@ cyordereddict==0.2.2
 bcolz>=0.11.3
 numexpr>=2.4.3
 gemini==0.18.2
+puzzle==0.0.3
