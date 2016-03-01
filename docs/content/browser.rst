@@ -12,10 +12,23 @@ you would like to explore).
 
 .. code-block:: bash
 
-    $ gemini browser my.db
+    $ gemini browser my.db --use builtin
 
 At this point, the GEMINI browser is running on port 8088 on your local machine.
 Open a web browser to http://localhost:8088/query  You should see something like:
 
 .. image:: ../images/browser-query.png
     :width: 600pt
+
+NOTE: The internal (builtin) browser is in maintenace mode, please look at alternative browser support below for now.
+
+## Alternative browser support
+
+GEMINI also allows to third_party genome browsers such as [puzzle](https://github.com/robinandeer/puzzle), the
+successor of [SciLifeLab](http://www.scilifelab.se/)'s [scout](https://github.com/robinandeer/scout).
+
+If you want to spawn GEMINI-compatible browsers, you can use the following commandline:
+
+.. code-block:: bash
+
+    $ gemini browser my.db [--use puzzle]
