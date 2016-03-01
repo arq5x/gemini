@@ -5,14 +5,6 @@ from collections import namedtuple
 
 import GeminiQuery
 
-try:
-    # Puzzle browser plugin
-    from puzzle.server import factory as puzzle_app
-    from puzzle.plugins import GeminiPlugin
-    from puzzle.server.settings import BaseConfig
-except ImportError:
-    pass
-
 #from gemini_inheritance_model_utils import GeminiInheritanceModelFactory
 
 #import tool_de_novo_mutations as de_novo_tool
@@ -247,6 +239,14 @@ def browser_puzzle(args):
     host = args.host
     port = args.port
 
+    try:
+        # Puzzle browser plugin
+        from puzzle.server import factory as puzzle_app
+        from puzzle.plugins import GeminiPlugin
+        from puzzle.server.settings import BaseConfig
+    except ImportError:
+        raise ImportError("Please 'pip install puzzle' if you want to run it")
+
     plugin = GeminiPlugin(db=args.db, vtype="sv")
     root = os.path.expanduser("~/.puzzle")
 
@@ -283,4 +283,4 @@ def browser_main(parser, args):
         else:
             raise NotImplementedError("GEMINI-compatible Browser '{browser}' not found.".format(browser=browser))
     except ImportError:
-        raise("Is {browser} correctly installed?".format(browser=browser))
+        raise ImportError("Is {browser} correctly installed?".format(browser=browser))
