@@ -5,11 +5,10 @@ from collections import namedtuple
 
 import GeminiQuery
 
-#from gemini_inheritance_model_utils import GeminiInheritanceModelFactory
+import GeminiQuery
+from gemini.gim import (AutoDom, AutoRec, DeNovo, MendelViolations, CompoundHet)
 
-#import tool_de_novo_mutations as de_novo_tool
-#import tool_autosomal_recessive as recessive_tool
-#import tool_autosomal_dominant as dominant_tool
+database = None
 
 # based upon bottle example here:
 # https://bitbucket.org/timtan/bottlepy-in-real-case
@@ -38,7 +37,7 @@ app = Bottle()
 static_folder = 'static'
 _static_folder = os.path.join(os.path.dirname(__file__), static_folder)
 
-@app.route('/stats/region/:chrom',method='GET')
+@app.route('/stats/region/:chrom', method='GET')
 def stats_region(chrom):
     # Note: chrom is give as an argument
 
@@ -162,30 +161,49 @@ def query():
         return template('query.j2', dbfile=database)
 
 
+default_cols = ['chrom', 'start', 'end', 'ref', 'alt',
+                'polyphen_pred', 'sift_pred',
+                'max_aaf_all', 'impact', 'impact_severity',
+                'gene', 'biotype', 'transcript']
+# turn a dictionary into something that can be accessed by attribute.
+class Arguments(object):
+    """
+    >>> args = Arguments(db='some.db')
+    >>> args.db
+    'some.db'
+    """
+    _opts = ("columns", "db", "filter", "min_kindreds", "families",
+                 "pattern_only", "max_priority", # only for compound_het
+                 "allow_unaffected", "min_gq", "lenient", "min_sample_depth")
+    def __init__(self, **kwargs):
+        if not "min_gq" in kwargs: kwargs['min_gq'] = 0
+        if not "lenient" in kwargs: kwargs['lenient'] = False
+        for k in ("families", "filter"):
+            if not k in kwargs: kwargs[k] = None
+        if not "gt_phred_ll" in kwargs: kwargs['gt_phred_ll'] = None
+        if not "min_sample_depth" in kwargs: kwargs['min_sample_depth'] = 0
+
+        for k in ("min_kindreds", "max_priority"):
+            if not k in kwargs: kwargs[k] = 1
+        for k in ("pattern_only", "allow_unaffected"):
+            if not k in kwargs: kwargs[k] = False
+        if not "columns" in kwargs:
+            kwargs['columns'] = ",".join(default_cols)
+        self.__dict__.update(**kwargs)
 
 
 @app.route('/de_novo', method='GET')
 def de_novo():
 
-    Arguments = namedtuple('Arguments', ['db', 'min_sample_depth'], verbose=True)
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
 
-        min_sample_depth = str(request.GET.get('min-depth', '').strip())
+        min_sample_depth = str(request.GET.get('min-depth', '10').strip())
         igv_links = request.GET.get('igv_links')
 
         args = Arguments(db=database, min_sample_depth=min_sample_depth)
 
-        de_novo_factory = \
-            GeminiInheritanceModelFactory(args, model="de_novo")
-        de_novo_factory.get_candidates()
-
-        if len(min_sample_depth) == 0:
-            row_iter = \
-                de_novo_tool.get_de_novo_candidates(gq.c)
-        else:
-            row_iter = \
-                de_novo_tool.get_de_novo_candidates(gq.c, int(min_sample_depth))
+        row_iter = DeNovo(args).report_candidates()
 
         return template('de_novo.j2', dbfile=database,
                         rows=row_iter,
@@ -200,12 +218,10 @@ def auto_rec():
 
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
+        min_sample_depth = str(request.GET.get('min-depth', '10').strip())
+        args = Arguments(db=database, min_sample_depth=min_sample_depth)
 
-        c = connect_to_db(database)
-
-        row_iter = \
-            recessive_tool.get_auto_recessive_candidates(c)
-
+        row_iter = AutoRec(args).report_candidates()
         return template('auto_rec.j2', dbfile=database, rows=row_iter)
 
     else:
@@ -217,12 +233,9 @@ def auto_dom():
 
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
-
-        c = connect_to_db(database)
-
-        row_iter = \
-            dominant_tool.get_auto_dominant_candidates(c)
-
+        min_sample_depth = str(request.GET.get('min-depth', '10').strip())
+        args = Arguments(db=database, min_sample_depth=min_sample_depth)
+        row_iter = AutoDom(args).report_candidates()
         return template('auto_dom.j2', dbfile=database, rows=row_iter)
 
     else:
@@ -278,7 +291,6 @@ def browser_main(parser, args):
         #if args.use == "kvasir":
         #    raise NotImplementedError
         elif args.use == "builtin":
-            raise NotImplementedError("GEMINI builtin browser needs some maintenace")
             browser_builtin(args)
         else:
             raise NotImplementedError("GEMINI-compatible Browser '{browser}' not found.".format(browser=browser))

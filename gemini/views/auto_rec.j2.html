@@ -48,9 +48,17 @@
 	<table class='table table-striped table-hover table-condensed'>
 		<tbody>
 			{%for row in rows %}
+           {% if loop.index0 == 0 %}
+            <tr>
+                {%for col in row %}
+                <th>{{col}}</th> 
+                {% endfor %}
+            </tr>
+            {% endif %}
+
 			<tr>
 				{%for col in row %}
-				<td>{{col}}</td>
+				<td>{{row[col]}}</td>
 				{% endfor %}
 			</tr>
 			{% endfor %}
