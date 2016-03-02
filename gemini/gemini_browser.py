@@ -257,8 +257,8 @@ def browser_puzzle(args):
         from puzzle.server import factory as puzzle_app
         from puzzle.plugins import GeminiPlugin
         from puzzle.server.settings import BaseConfig
-    except ImportError:
-        raise ImportError("Please 'pip install puzzle' if you want to run it")
+    except ImportError as e:
+        raise ImportError("%s\nPlease 'pip install puzzle' if you want to run it\n" % e)
 
     plugin = GeminiPlugin(db=args.db, vtype="sv")
     root = os.path.expanduser("~/.puzzle")
@@ -294,5 +294,5 @@ def browser_main(parser, args):
             browser_builtin(args)
         else:
             raise NotImplementedError("GEMINI-compatible Browser '{browser}' not found.".format(browser=browser))
-    except ImportError:
-        raise ImportError("Is {browser} correctly installed?".format(browser=browser))
+    except ImportError as e:
+        raise ImportError("{exc}\nIs {browser} correctly installed?".format(exc=e, browser=browser))
