@@ -12,6 +12,9 @@ Release History
 ======
 #. handle rare VEP annotation with '' or "?" as impact
 #. fix handling of multiple values for list/uniq_list in gemini_annotate
+#. handle snpEff with unknown impact (TODO: bump geneimpacts req to 0.0.9)
+#. fix builtin browser and add support for puzzle browser
+#. x-linked inheritance models (TODO: expose in gemini and bump inheritance req)
 
 0.18.2
 ======
