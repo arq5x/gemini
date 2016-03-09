@@ -58,15 +58,14 @@ def load_singlecore(args):
     gemini_loader.store_version()
     gemini_loader.store_vcf_header()
     gemini_loader.populate_from_vcf()
-    gemini_db.add_max_aaf(gemini_loader.c)
 
     if not args.skip_gene_tables and not args.test_mode:
         gemini_loader.update_gene_table()
     if not args.test_mode:
         gemini_loader.build_indices_and_disconnect()
 
-    if not args.no_genotypes and not args.no_load_genotypes:
-        gemini_loader.store_sample_gt_counts()
+    #if not args.no_genotypes and not args.no_load_genotypes:
+    #    gemini_loader.store_sample_gt_counts()
 
 
 def load_multicore(args):
@@ -118,7 +117,6 @@ def finalize_merged_db(tmp_db, db):
     main_curr.execute('PRAGMA synchronous = OFF')
     main_curr.execute('PRAGMA journal_mode=MEMORY')
 
-    gemini_db.add_max_aaf(main_curr)
     gemini_db.create_indices(main_curr)
 
     main_conn.commit()
