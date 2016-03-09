@@ -806,8 +806,7 @@ class GeminiLoader(object):
         assert cols == ["sample_id", "num_hom_ref", "num_het", "num_hom_alt",
                         "num_unknown"], cols
         self.c.commit()
-
-        self.c.execute(tbl.insert(), [dict(zip(cols, (idx,
+        self.c.execute(tbl.insert(), [dict(zip(cols, (idx + 1,
                                                       int(gtc[HOM_REF]),
                                                       int(gtc[HET]),
                                                       int(gtc[HOM_ALT]),

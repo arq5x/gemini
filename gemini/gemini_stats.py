@@ -222,7 +222,7 @@ def get_variants_by_sample(c, args):
              FROM sample_genotype_counts"
     c.execute(query)
     for row in c:
-        sample = idx_to_sample[row['sample_id']]
+        sample = idx_to_sample[row['sample_id'] - 1]
         print "\t".join(str(s) for s in [sample,
                                          row['total']])
 

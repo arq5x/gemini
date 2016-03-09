@@ -373,6 +373,7 @@ def create_tables(path, effect_fields=None):
         t = sql.Table(tbl, metadata, *db[tbl])
         t.drop(checkfirst=True)
         mapped[tbl] = t
+    session.commit()
 
     metadata.create_all()
     return session, metadata
