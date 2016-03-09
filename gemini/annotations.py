@@ -740,9 +740,9 @@ def get_1000G_info(var, empty=EMPTY_1000G):
                     (key, value) = info.split("=", 1)
                     info_map[key] = value
 
-            return ThousandGInfo(True, info_map.get('AF', -1), info_map.get('AMR_AF', -1),
-                         info_map.get('EAS_AF', -1), info_map.get('SAS_AF', -1),
-                         info_map.get('AFR_AF', -1), info_map.get('EUR_AF', -1))
+            return ThousandGInfo(True, float(info_map.get('AF', -1)), float(info_map.get('AMR_AF', -1)),
+                         float(info_map.get('EAS_AF', -1)), float(info_map.get('SAS_AF', -1)),
+                         float(info_map.get('AFR_AF', -1)), float(info_map.get('EUR_AF', -1)))
     return empty
 
 def get_geno2mp_ct(var):
@@ -805,13 +805,15 @@ def get_exac_info(var, empty=EXAC_EMPTY):
                 ac_list = ac.split(",")
                 afs[grp] = float(ac_list[allele_num]) / float(an)
 
-            num_hets = info_map.get("AC_Het", -1)
-            num_homs = info_map.get("AC_Hom", -1)
-            called_chroms = info_map.get('AN_Adj', -1)
+            num_hets = int(info_map.get("AC_Het", -1))
+            num_homs = int(info_map.get("AC_Hom", -1))
+            called_chroms = int(info_map.get('AN_Adj', -1))
 
-            return ExacInfo(True, aaf_ALL, afs['Adj'], afs['AFR'], afs['AMR'],
-                                afs['EAS'], afs['FIN'], afs['NFE'], afs['OTH'],
-                                afs['SAS'], num_hets, num_homs, called_chroms)
+            return ExacInfo(True, aaf_ALL, float(afs['Adj']), float(afs['AFR']),
+                            float(afs['AMR']), float(afs['EAS']), float(afs['FIN']),
+                            float(afs['NFE']), float(afs['OTH']),
+                            float(afs['SAS']), num_hets, num_homs,
+                            called_chroms)
 
     return empty
 

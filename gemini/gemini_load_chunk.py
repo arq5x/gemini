@@ -108,8 +108,11 @@ class GeminiLoader(object):
             self._effect_fields = []
             self._extra_effect_fields = []
         if not prepare_db:
+            self.c, self.metadata = database.get_session_metadata(args.db)
             return
-        self._create_db([x[0] for x  in self._extra_effect_fields])
+        self._create_db([x[0] for x in self._extra_effect_fields])
+
+        self._extra_empty = dict((x[0], None) for x in self._extra_effect_fields)
 
         if not self.args.no_genotypes and not self.args.no_load_genotypes:
             # load the sample info from the VCF file.
@@ -125,10 +128,6 @@ class GeminiLoader(object):
         self.buffer_size = buffer_size
         self._get_anno_version()
 
-        if not args.skip_gene_tables:
-            self._get_gene_detailed()
-            self._get_gene_summary()
-
     def store_vcf_header(self):
         """Store the raw VCF header.
         """
@@ -142,7 +141,7 @@ class GeminiLoader(object):
     def store_version(self):
         """Create table documenting which gemini version was used for this db.
         """
-        database.insert_version(self.c, self.metadata, version.__version__)
+        database.insert_version(self.c, self.metadata, version.__version__.strip())
 
     def _get_vid(self):
         if hasattr(self.args, 'offset'):
@@ -188,7 +187,6 @@ class GeminiLoader(object):
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(",
                                                                reader["CSQ"]["Description"].split(":", 1)[1].strip())]
                 anno_keys["CSQ"] = parts
-
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
@@ -485,7 +483,7 @@ class GeminiLoader(object):
         # and loaded as BLOB values (see compression.pack_blob)
         gt_phred_ll_homref = gt_phred_ll_het = gt_phred_ll_homalt = None
 
-        if not self.args.no_genotypes and not self.args.no_load_genotypes:
+        if not (self.args.no_genotypes or self.args.no_load_genotypes):
             gt_bases = var.gt_bases
             gt_types = var.gt_types
             gt_phases = var.gt_phases
@@ -520,7 +518,7 @@ class GeminiLoader(object):
                           is_splicing=impact.is_splicing,
                           exon=impact.exon, codon_change=impact.codon_change,
                           aa_change=impact.aa_change, aa_length=impact.aa_length,
-                          biotype=impact.biotype, impact=impact.consequence,
+                          biotype=impact.biotype, impact=impact.top_consequence,
                           impact_so=impact.so, impact_severity=impact.effect_severity,
                           polyphed_pred=impact.polyphen_pred, polyphen_score=impact.polyphen_score,
                           sift_pred=impact.sift_pred,
@@ -565,7 +563,6 @@ class GeminiLoader(object):
                    sv_mate_id=sv.get_mate_id(),
                    sv_strand=sv.get_strand(),
 
-
                    in_omim=bool(clinvar_info.clinvar_in_omim),
                    clinvar_sig=clinvar_info.clinvar_sig,
                    clinvar_disease_name=clinvar_info.clinvar_disease_name,
@@ -597,7 +594,7 @@ class GeminiLoader(object):
                    codon_change=top_impact.codon_change, aa_change=top_impact.aa_change,
                    aa_length=top_impact.aa_length, biotype=top_impact.biotype,
 
-                   impact=top_impact.consequence, impact_so=top_impact.so,
+                   impact=top_impact.top_consequence, impact_so=top_impact.so,
                    impact_severity=top_impact.effect_severity,
                    polyphen_pred=top_impact.polyphen_pred,
                    polyphen_score=top_impact.polyphen_score,
@@ -680,6 +677,7 @@ class GeminiLoader(object):
                                      variant['aaf_adj_exac_nfe'],
                                      variant['aaf_adj_exac_sas'])
 
+        variant.update(self._extra_empty)
         return variant, variant_impacts, extra_fields
 
     def _prepare_samples(self):
@@ -735,7 +733,7 @@ class GeminiLoader(object):
                                  table.transcript_start,table.transcript_end,
                                  table.strand,table.synonym,table.rvis,table.mam_phenotype]
                 table_contents.append(detailed_list)
-                if i % 500 == 0:
+                if i % 1000 == 0:
                     database.insert_gene_detailed(self.c, self.metadata, table_contents)
                     table_contents = []
         database.insert_gene_detailed(self.c, self.metadata, table_contents)
@@ -766,6 +764,10 @@ class GeminiLoader(object):
                                 table.synonym,table.rvis,table.mam_phenotype,
                                 cosmic_census]
                 contents.append(summary_list)
+                if i % 1000 == 0:
+                    database.insert_gene_summary(self.c, self.metadata, contents)
+                    contents = []
+
         database.insert_gene_summary(self.c, self.metadata, contents)
 
     def update_gene_table(self):
@@ -837,7 +839,7 @@ def load(parser, args):
             gemini_loader.store_vcf_header()
             gemini_loader.populate_from_vcf()
             gemini_loader.update_gene_table()
-            # gemini_loader.build_indices_and_disconnect()
+            gemini_loader.build_indices_and_disconnect()
 
             if not args.no_genotypes and not args.no_load_genotypes:
                 gemini_loader.store_sample_gt_counts()

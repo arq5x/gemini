@@ -171,13 +171,13 @@ def merge_db_chunks(args):
     if os.path.exists(args.db):
         os.remove(args.db)
 
+    gemini_db.create_tables(args.db, gemini_load_chunk.get_extra_effects_fields(args) if args.vcf else [])
+
     main_conn = sqlite3.connect(args.db)
     main_conn.isolation_level = None
     main_curr = main_conn.cursor()
     main_curr.execute('PRAGMA synchronous = OFF')
     main_curr.execute('PRAGMA journal_mode=MEMORY')
-    # create the gemini database tables for the new DB
-    gemini_db.create_tables(main_curr, gemini_load_chunk.get_extra_effects_fields(args) if args.vcf else [])
 
     databases = []
     for database in args.chunkdbs:

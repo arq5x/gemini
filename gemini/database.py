@@ -456,7 +456,7 @@ def insert_gene_summary(session, metadata, contents):
     cols = _get_cols(t)
 
     session.execute(t.insert(), list(gen_gene_vals(cols, contents)))
-    #session.commit()
+    session.commit()
 
 def insert_resources(session, metadata, resources):
     """Populate table of annotation resources used in this database.
@@ -465,12 +465,14 @@ def insert_resources(session, metadata, resources):
     cols = _get_cols(t)
 
     session.execute(t.insert(), [dict(zip(cols, r)) for r in resources])
+    session.commit()
 
 def insert_vcf_header(session, metadata, vcf_header):
     """Populate a table storing the original VCF header.
     """
-    t = metadata.tables['version']
-    session.execute(t.insert(), dict(vcf_header=vcf_header))
+    t = metadata.tables['vcf_header']
+    session.execute(t.insert(), dict(vcf_header=vcf_header.rstrip("\r\n")))
+    session.commit()
 
 
 def insert_version(session, metadata, version):
@@ -479,6 +481,7 @@ def insert_version(session, metadata, version):
     """
     t = metadata.tables['version']
     session.execute(t.insert(), dict(version=version))
+    session.commit()
 
 
 def close_and_commit(session):
@@ -488,11 +491,9 @@ def close_and_commit(session):
     session.commit()
     session.close()
 
-
 def empty_tables(cursor):
     cursor.execute('''delete * from variation''')
     cursor.execute('''delete * from samples''')
-
 
 def update_gene_summary_w_cancer_census(session, metadata, genes):
     tbl = metadata.tables['gene_summary']
@@ -500,14 +501,9 @@ def update_gene_summary_w_cancer_census(session, metadata, genes):
     stmt = tbl.update().where(sql.and_(tbl.c.gene == sql.bindparam("gene_"),
                                    tbl.c.chrom == sql.bindparam("chrom_"))
                               ).values(in_cosmic_census=sql.bindparam("in_cosmic_census_"))
-    def fn(d):
-        d['in_cosmic_census'] = bool(d.get('in_cosmic_census', False))
-        d['in_cosmic_census_'] = d['in_cosmic_census']
-        return d
-
     # need the trailing underscore for bindparam
     cols = ("in_cosmic_census_", "gene_", "chrom_")
-    session.execute(stmt, [fn(dict(zip(cols, g))) for g in genes])
+    session.execute(stmt, [dict(zip(cols, g)) for g in genes])
 
 
 def get_session_metadata(path):
