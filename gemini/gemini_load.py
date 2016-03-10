@@ -4,7 +4,6 @@
 import os.path
 import shutil
 import sys
-import sqlite3
 
 import annotations
 import subprocess

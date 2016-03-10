@@ -40,7 +40,6 @@ def index_variation(cursor):
     cursor.execute('''create index var_cadd_raw_idx on variants(cadd_raw)''')
     cursor.execute('''create index var_cadd_scaled_idx on variants(cadd_scaled)''')
     cursor.execute('''create index var_fitcons_idx on variants(fitcons)''')
-    cursor.execute('''create index var_sv_event_idx on variants(sv_event_id)''')
     cursor.execute('''create index chrom_varid_idx on variants(chrom,variant_id)''')
     cursor.execute('CREATE index max_aaf_all_idx on variants(max_aaf_all)')
 
@@ -108,7 +107,7 @@ def create_tables(path, effect_fields=None):
         effect_string = ""
 
     db = dict(variants="""
-    chrom text,
+    chrom varchar(15),
     start integer,
     end integer,
     vcf_id text,
@@ -118,7 +117,7 @@ def create_tables(path, effect_fields=None):
     alt text,
     qual float,
     filter text,
-    type text,
+    type varchar(15),
     sub_type text,
     gts blob,
     gt_types blob,
@@ -177,8 +176,8 @@ def create_tables(path, effect_fields=None):
     inbreeding_coeff decimal(2,7),
     pi decimal(2,7),
     recomb_rate decimal(2,7),
-    gene text,
-    transcript text,
+    gene varchar(60),
+    transcript varchar(60),
     is_exonic bool,
     is_coding bool,
     is_splicing bool,
@@ -188,9 +187,9 @@ def create_tables(path, effect_fields=None):
     aa_change text,
     aa_length text,
     biotype text,
-    impact text default NULL,
+    impact varchar(60) default NULL,
     impact_so text default NULL,
-    impact_severity text,
+    impact_severity varchar(15),
     polyphen_pred text,
     polyphen_score float,
     sift_pred text,
@@ -263,8 +262,8 @@ def create_tables(path, effect_fields=None):
     variant_impacts="""
     variant_id integer,
     anno_id integer,
-    gene text,
-    transcript text,
+    gene varchar(60),
+    transcript varchar(60),
     is_exonic bool,
     is_coding bool,
     is_lof bool,
@@ -273,9 +272,9 @@ def create_tables(path, effect_fields=None):
     aa_change text,
     aa_length text,
     biotype text,
-    impact text,
+    impact varchar(60),
     impact_so text,
-    impact_severity text,
+    impact_severity varchar(15),
     polyphen_pred text,
     polyphen_score float,
     sift_pred text,
@@ -299,14 +298,14 @@ def create_tables(path, effect_fields=None):
 
     gene_detailed="""
     uid integer,
-    chrom text,
-    gene text,
+    chrom varchar(60),
+    gene varchar(60),
     is_hgnc bool,
     ensembl_gene_id text,
-    transcript text,
+    transcript varchar(60),
     biotype text,
     transcript_status text,
-    ccds_id text,
+    ccds_id varchar(60),
     hgnc_id text,
     entrez_id text,
     cds_length text,
@@ -320,13 +319,13 @@ def create_tables(path, effect_fields=None):
 
     gene_summary="""
     uid integer,
-    chrom text,
-    gene text,
+    chrom varchar(60),
+    gene varchar(60),
     is_hgnc bool,
     ensembl_gene_id text,
     hgnc_id text,
-    transcript_min_start text,
-    transcript_max_end text,
+    transcript_min_start integer,
+    transcript_max_end integer,
     strand text,
     synonym text,
     rvis_pct float,
@@ -343,8 +342,10 @@ def create_tables(path, effect_fields=None):
               'text': sql.Text(),
               'bool': sql.Boolean(),
               'blob': sql.LargeBinary(),
-              'decimal(2,7)': sql.DECIMAL(precision=7, asdecimal=True),
+              'decimal(2,7)': sql.Float(), #sql.DECIMAL(precision=7, scale=2, asdecimal=False),
               'integer': sql.Integer(),
+              'varchar(15)': sql.String(20),
+              'varchar(60)': sql.String(60),
               'int': sql.Integer(),
               }
 
@@ -386,7 +387,10 @@ def create_sample_table(cursor, metadata, args):
                        "sex", "phenotype"]
     optional_fields += fields[NUM_BUILT_IN:]
     for field in optional_fields:
-        cols.append(sql.Column(field, sql.TEXT))
+        if field == "name":
+            cols.append(sql.Column(field, sql.String(50)))
+        else:
+            cols.append(sql.Column(field, sql.TEXT))
 
     t = sql.Table("samples", metadata, *cols)
     t.drop(checkfirst=True)
@@ -396,6 +400,7 @@ def insert_variation(session, metadata, buffer):
     """
     Populate the variants table with each variant in the buffer.
     """
+    if len(buffer) == 0: return
     tbl = metadata.tables['variants']
 
     cols = _get_cols(tbl)
@@ -413,6 +418,7 @@ def insert_variation_impacts(session, metadata, buffer):
     """
     Populate the variant_impacts table with each variant in the buffer.
     """
+    if len(buffer) == 0: return
     tbl = metadata.tables['variant_impacts']
     session.execute(tbl.insert(), buffer)
     session.commit()

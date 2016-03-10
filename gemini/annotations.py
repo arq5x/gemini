@@ -6,7 +6,6 @@ import sys
 import collections
 import re
 from unidecode import unidecode
-from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
 
 # dictionary of anno_type -> open Tabix file handles
@@ -187,6 +186,7 @@ def load_annos(args):
                 annos[anno] = pysam.Tabixfile(anno_files[anno])
             # .bw denotes BigWig files.
             elif anno_files[anno].endswith(".bw"):
+                from bx.bbi.bigwig_file import BigWigFile
                 annos[anno] = BigWigFile(open(anno_files[anno]))
 
         except IOError:
@@ -787,7 +787,7 @@ def get_exac_info(var, empty=EXAC_EMPTY):
 
             # Population independent raw (non-adjusted) allele frequencies given by AF
             if info_map.get('AF') is not None:
-                aaf_ALL = info_map['AF'].split(",")[allele_num]
+                aaf_ALL = float(info_map['AF'].split(",")[allele_num])
             else:
                 aaf_ALL = -1
 

@@ -244,7 +244,7 @@ def get_gtcounts_by_sample(c, args):
     c.execute(query)
     # count the number of each genotype type obs. for each sample.
     for row in c:
-        sample = idx_to_sample[row['sample_id']]
+        sample = idx_to_sample[row['sample_id'] -1]
         print "\t".join(str(s) for s in [sample,
                                          row['num_hom_ref'],
                                          row['num_het'],

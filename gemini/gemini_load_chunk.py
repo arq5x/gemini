@@ -4,7 +4,7 @@
 import os.path
 import re
 import sys
-import sqlite3
+import sqlalchemy as sql
 import numpy as np
 import shutil
 import uuid
@@ -204,14 +204,14 @@ class GeminiLoader(object):
             # add the core variant info to the variant buffer
             self.var_buffer.append(variant)
             # add each of the impact for this variant (1 per gene/transcript)
-            for var_impact in variant_impacts:
-                self.var_impacts_buffer.append(var_impact)
+            self.var_impacts_buffer.extend(variant_impacts)
 
             # buffer full - time to insert into DB
             if len(self.var_buffer) >= self.buffer_size:
+                database.insert_variation(self.c, self.metadata, self.var_buffer)
+
                 sys.stderr.write("pid " + str(os.getpid()) + ": " +
                                  str(self.counter) + " variants processed.\n")
-                database.insert_variation(self.c, self.metadata, self.var_buffer)
                 database.insert_variation_impacts(self.c, self.metadata,
                                                   self.var_impacts_buffer)
                 # binary.genotypes.append(var_buffer)
@@ -223,10 +223,11 @@ class GeminiLoader(object):
             self.counter += 1
         # final load to the database
         self.v_id -= 1
-        database.insert_variation(self.c, self.metadata, self.var_buffer)
-        database.insert_variation_impacts(self.c, self.metadata, self.var_impacts_buffer)
-        sys.stderr.write("pid " + str(os.getpid()) + ": " +
-                         str(self.counter) + " variants processed.\n")
+        if self.var_buffer:
+            database.insert_variation(self.c, self.metadata, self.var_buffer)
+            database.insert_variation_impacts(self.c, self.metadata, self.var_impacts_buffer)
+            sys.stderr.write("pid " + str(os.getpid()) + ": " +
+                             str(self.counter) + " variants processed.\n")
         if self.args.passonly:
             sys.stderr.write("pid " + str(os.getpid()) + ": " +
                              str(self.skipped) + " skipped due to having the "
@@ -415,10 +416,9 @@ class GeminiLoader(object):
             in_cpg = None
             in_segdup = None
             is_conserved = None
-            esp = annotations.ESPInfo(None, None, None, None, None)
-            thousandG = annotations.ThousandGInfo(None, None, None, None, None, None, None)
-            Exac = annotations.ExacInfo(None, None, None, None, None, None,
-                    None, None, None, None, None, None, None)
+            esp = annotations.ESPInfo(False, -1, -1, -1, 0)
+            thousandG = annotations.EMPTY_1000G
+            Exac = annotations.EXAC_EMPTY
             recomb_rate = None
             gms = annotations.GmsTechs(None, None, None)
             grc = None
@@ -507,6 +507,7 @@ class GeminiLoader(object):
         else:
             info = dict(var.INFO)
 
+        assert isinstance(thousandG.aaf_AMR, (int, float))
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
         variant_impacts = []
@@ -846,8 +847,8 @@ def load(parser, args):
             if try_count > 0:
                 shutil.move(args.tmp_db, args.db)
             break
-        except sqlite3.OperationalError, e:
-            sys.stderr.write("sqlite3.OperationalError: %s\n" % e)
+        except sql.exc.OperationalError, e:
+            sys.stderr.write("sqlalchemy.OperationalError: %s\n" % e)
     else:
         raise Exception(("Attempted workaround for SQLite locking issue on NFS "
             "drives has failed. One possible reason is that the temp directory "
