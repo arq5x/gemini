@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sqlite3
 from gemini_constants import *
 import gemini_subjects
 import GeminiQuery
@@ -81,7 +80,7 @@ def tag_somatic_mutations(args):
 
                tum_ref_depth = row['gt_ref_depths'][tum_idx]
                nrm_ref_depth = row['gt_ref_depths'][nrm_idx]
-               
+
                tum_alt_depth = row['gt_alt_depths'][tum_idx]
                nrm_alt_depth = row['gt_alt_depths'][nrm_idx]
 
@@ -114,24 +113,26 @@ def tag_somatic_mutations(args):
 
                somatic_counter += 1
                somatic_v_ids.append((1, row['variant_id']))
-               
+
                print'\t'.join(str(s) for s in [tumor.name,  tum_gt, tum_alt_freq, tum_alt_depth, tum_depth, \
                                    normal.name, nrm_gt, nrm_alt_freq, nrm_alt_depth, nrm_depth, \
                                    row['chrom'], row['start'], row['end'], row['ref'], row['alt'], row['gene']])
 
     if not args.dry_run:
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        c = conn.cursor()
+        import database
+        conn, metadata = database.get_session_metadata(args.db)
 
         # now set the identified mutations to True.
-        update_qry = "UPDATE variants SET is_somatic = ? "
-        update_qry += " WHERE variant_id = ?"
-        c.executemany(update_qry, somatic_v_ids)
+        update_qry = "UPDATE variants SET is_somatic = 1 "
+        update_qry += " WHERE variant_id IN (%s)"
+        update_qry %= ",".join(str(x[1]) for x in somatic_v_ids)
+        res = conn.execute(update_qry)
+        assert res.rowcount == somatic_counter
         print "Identified and set", somatic_counter, "somatic mutations"
+        conn.commit()
     else:
         print "Would have identified and set", somatic_counter, "somatic mutations"
 
 def set_somatic(parser, args):
-    
+
     tag_somatic_mutations(args)

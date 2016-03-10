@@ -3,63 +3,31 @@ import collections
 from collections import defaultdict
 from itertools import tee, ifilterfalse
 from gemini_subjects import Subject
+import sqlalchemy as sql
 
-try:
-    from cyordereddict import OrderedDict
-except ImportError:
-    from collections import OrderedDict
+def get_gt_cols(metadata):
+    return [c.name for c in metadata.tables["variants"].columns if
+            c.name.startswith("gt") and
+            c.type.__class__.__name__.upper() == "BLOB"]
 
-def get_gt_cols(cur):
-    keys = ('cid', 'name', 'type', '_', '_', '_')
-    gts = []
-    for row in cur.execute("pragma table_info(variants)"):
-        if not isinstance(row, dict):
-            d = dict(zip(keys, row))
-        else:
-            d = row
-        if d['name'][:2] == 'gt' and d['type'].lower() == 'blob':
-            gts.append(d['name'])
-    return gts
-
-def map_samples_to_indices(c):
-    """Return a dict mapping samples names (key)
-       to sample indices in the numpy genotype arrays (value).
-    """
-    c.execute("select sample_id, name from samples")
-    return {row['name']: row['sample_id'] - 1 for row in c}
-
-def map_indices_to_samples(c):
+def map_indices_to_samples(metadata):
     """Return a dict mapping samples indices in the
        numpy arrays (key) to sample names.
     """
-    d = {k: v.name for (k, v) in map_indices_to_sample_objects(c).items()}
-    assert sorted(d.keys()) == range(len(d))
+    samples = list(metadata.tables["samples"].select().execute())
+    d = {s['sample_id'] - 1: s['name'] for s in samples}
     return [d[i] for i in range(len(d))]
 
-def map_indices_to_sample_objects(c):
-    c.execute("select * from samples")
-    return {row['sample_id'] - 1: Subject(row) for row in c}
-
-def map_samples_to_sample_objects(c):
-    c.execute("select * from samples")
-    return {row['name']: Subject(row) for row in c}
-
-def get_col_names_and_indices(sqlite_description, ignore_gt_cols=False):
-    """Return a list of column namanes and a list of the row indices.
+def get_col_names_and_indices(tbl, ignore_gt_cols=False):
+    """Return a list of column names and a list of the row indices.
        Optionally exclude gt_* columns.
     """
-    col_indices = []
-    col_names = []
-    for idx, col_tup in enumerate(sqlite_description):
-        # e.g., each col in sqlite desc is a tuple like:
-        # ('variant_id', None, None, None, None, None, None)
-        col_name = col_tup[0]
-        if ((not ignore_gt_cols) or
-           (ignore_gt_cols and not col_name.startswith('gt'))):
-            col_indices.append(idx)
-            col_names.append(col_name)
-    return col_names, col_indices
+    inames = [(i, c) for i, c in enumerate(tbl.columns)]
+    if ignore_gt_cols:
+        inames = [x for x in inames if not (x[1].startswith("gt") and
+                  x[1].type.__class__.__name__.upper() == "BLOB")]
 
+    return [x[1].name for x in inames], [x[0] for x in inames]
 
 # http://code.activestate.com/recipes/576694/
 class OrderedSet(collections.MutableSet):

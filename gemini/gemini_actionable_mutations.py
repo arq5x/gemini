@@ -29,7 +29,7 @@ def get_actionable_mutations(parser, args):
 
     genes = defaultdict()
     for row in gq:
-      genes[row['gene']] = True
+        genes[row['gene']] = True
     # collect info from DGIdb
     dgidb_info = query_dgidb(genes)
 
@@ -40,7 +40,6 @@ def get_actionable_mutations(parser, args):
     print'\t'.join(['tum_name', 'chrom', 'start', 'end', 'ref', 'alt', \
                     'gene', 'impact', 'is_somatic', 'in_cosmic_census', 'dgidb_info'])
     for row in gq:
-
         for pair in t_n_pairs:
             samples = pair.subjects
             if len(samples) != 2:

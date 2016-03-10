@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import sys
-from copy import copy
-import re
 from collections import Counter, defaultdict
 import GeminiQuery
 import sql_utils
@@ -121,7 +119,7 @@ class GeminiInheritanceModel(object):
         Extract the relevant genotype filters, as well all labels
         for each family in the database.
         """
-        self.families = families = Family.from_cursor(self.gq.c).values()
+        self.families = families = Family.from_cursor(self.gq.conn).values()
         args = self.args
 
         self.family_ids = []
@@ -403,7 +401,7 @@ class CompoundHet(GeminiInheritanceModel):
         args = self.args
 
         self.gq._connect_to_database()
-        fams = self.fams = Family.from_cursor(self.gq.c)
+        fams = self.fams = Family.from_cursor(self.gq.conn)
 
         if args.families:
             fams = {f: fam for f, fam in fams.items() if f in set(args.families.split(","))}

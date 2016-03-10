@@ -1173,9 +1173,10 @@ def main():
     if len(sys.argv) > 2 and sys.argv[1] not in \
        ["load", "merge_chunks", "load_chunk"]:
         if hasattr(args, "db") and args.db is not None and not os.path.exists(args.db):
-            sys.stderr.write("Requested GEMINI database (%s) not found. "
-                             "Please confirm the provided filename.\n"
-                             % args.db)
+            if not "://" in args.db:
+                sys.stderr.write("Requested GEMINI database (%s) not found. "
+                                 "Please confirm the provided filename.\n"
+                                 % args.db)
     elif len(sys.argv) > 2 and sys.argv[1] == "load":
         if xor(args.scheduler, args.queue):
             parser.error("If you are using the IPython parallel loading, you "

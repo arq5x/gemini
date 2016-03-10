@@ -1,6 +1,5 @@
 import zlib
 import cPickle
-import sqlite3
 
 try:
     from cyordereddict import OrderedDict
@@ -9,7 +8,7 @@ except:
 
 
 def pack_blob(obj):
-    return sqlite3.Binary(zdumps(obj))
+    return zdumps(obj)
 
 def unpack_genotype_blob(blob):
     return cPickle.loads(zlib.decompress(blob))

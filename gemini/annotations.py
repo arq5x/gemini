@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import pysam
-import sqlite3
 import os
 import sys
 import collections
@@ -11,8 +10,8 @@ from gemini.config import read_gemini_config
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
 
-def get_anno_files( args ):
-    config = read_gemini_config( args = args )
+def get_anno_files(args):
+    config = read_gemini_config(args=args)
     anno_dirname = config["annotation_dir"]
     # Default annotations -- always found
     annos = {
@@ -257,11 +256,12 @@ def guess_contig_naming(anno):
 def _get_var_coords(var, naming):
     """Retrieve variant coordinates from multiple input objects.
     """
-    if isinstance(var, dict) or isinstance(var, sqlite3.Row):
+    try:
+        # todo: check isinstance resultproxy?
         chrom = var["chrom"]
         start = int(var["start"])
         end = int(var["end"])
-    else:
+    except TypeError:
         chrom = var.CHROM
         start = var.start
         end = var.end
@@ -277,10 +277,10 @@ def _get_var_ref_and_alt(var):
     if isinstance(var, basestring):
         # Assume var is a line from a VCF.
         ref, alt = var.split('\t')[3:5]
-    elif isinstance(var, dict) or isinstance(var, sqlite3.Row):
+    try:
         ref = var["ref"]
         alt = var["alt"]
-    else:
+    except (TypeError, AttributeError):
         try:
             ref = var.REF
             alt = var.ALT

@@ -1,17 +1,16 @@
 #!/usr/bin/env python
-import sqlite3
-import os
 import numpy as np
 import collections
 from collections import Counter
 import compression as Z
 
+import sqlalchemy as sql
 import gemini_utils as util
 from gemini_constants import *
 import GeminiQuery
 
 
-def get_tstv(c, args):
+def get_tstv(conn, metadata, args):
     """
     Report the transition / transversion ratio.
     """
@@ -24,20 +23,20 @@ def get_tstv(c, args):
           WHERE type = \'snp\' \
           AND   sub_type = \'tv\'"
     # get the number of transitions
-    c.execute(ts_cmd)
-    ts = c.fetchone()[0]
+    res = conn.execute(sql.text(ts_cmd))
+    ts = res.fetchone()[0]
     # get the number of transversions
-    c.execute(tv_cmd)
-    tv = c.fetchone()[0]
+    res = conn.execute(sql.text(tv_cmd))
+    tv = res.fetchone()[0]
     # report the transitions, transversions, and the ts/tv ratio
     print "ts" + '\t' + \
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(tstv(ts,tv))
+        str(tstv(ts, tv))
 
 
-def get_tstv_coding(c, args):
+def get_tstv_coding(conn, metadata, args):
     """
     Report the transition / transversion ratio in coding regions.
     """
@@ -52,22 +51,22 @@ def get_tstv_coding(c, args):
           AND v.sub_type = \'tv\' \
           AND v.is_coding = 1"
     # get the number of transitions
-    c.execute(ts_cmd)
-    ts = c.fetchone()[0]
+    res = conn.execute(ts_cmd)
+    ts = res.fetchone()[0]
 
     # get the number of transversions
-    c.execute(tv_cmd)
-    tv = c.fetchone()[0]
+    res = conn.execute(tv_cmd)
+    tv = res.fetchone()[0]
 
     # report the transitions, transversions, and the ts/tv ratio
     print "ts" + '\t' + \
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(tstv(ts,tv))
+        str(tstv(ts, tv))
 
 
-def get_tstv_noncoding(c, args):
+def get_tstv_noncoding(conn, metadata, args):
     """
     Report the transition / transversion ratio in non-coding regions.
     """
@@ -82,19 +81,19 @@ def get_tstv_noncoding(c, args):
           AND v.sub_type = \'tv\' \
           AND v.is_coding = 0"
     # get the number of transitions
-    c.execute(ts_cmd)
-    ts = c.fetchone()[0]
+    res = conn.execute(ts_cmd)
+    ts = res.fetchone()[0]
 
     # get the number of transversions
-    c.execute(tv_cmd)
-    tv = c.fetchone()[0]
+    res = conn.execute(tv_cmd)
+    tv = res.fetchone()[0]
 
     # report the transitions, transversions, and the ts/tv ratio
     print "ts" + '\t' + \
           "tv" + '\t' + "ts/tv"
     print str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(tstv(ts,tv))
+        str(tstv(ts, tv))
 
 
 def tstv(ts, tv):
@@ -106,7 +105,7 @@ def tstv(ts, tv):
     except ZeroDivisionError:
         return 0
 
-def get_snpcounts(c, args):
+def get_snpcounts(conn, metadata, args):
     """
     Report the count of each type of SNP.
     """
@@ -116,14 +115,14 @@ def get_snpcounts(c, args):
              GROUP BY ref, alt"
 
     # get the ref and alt alleles for all snps.
-    c.execute(query)
+    res = conn.execute(sql.text(query))
     print '\t'.join(['type', 'count'])
-    for row in c:
+    for row in res:
         print '\t'.join([str(row['ref']) + "->" + str(row['alt']),
                          str(row['count(1)'])])
 
 
-def get_sfs(c, args):
+def get_sfs(conn, metadata, args):
     """
     Report the site frequency spectrum
     """
@@ -132,30 +131,30 @@ def get_sfs(c, args):
              FROM variants \
              GROUP BY round(aaf," + str(precision) + ")"
 
-    c.execute(query)
+    res = conn.execute(sql.text(query))
     print '\t'.join(['aaf', 'count'])
-    for row in c:
+    for row in res:
         print '\t'.join([str(row[0]), str(row[1])])
 
 
-def get_mds(c, args):
+def get_mds(conn, metadata, args):
     """
     Compute the pairwise genetic distance between each sample.
     """
     idx_to_sample = {}
-    c.execute("select sample_id, name from samples")
-    for row in c:
+    res = conn.execute(sql.text("select sample_id, name from samples"))
+    for row in res:
         idx_to_sample[int(row['sample_id']) - 1] = row['name']
 
     query = "SELECT DISTINCT v.variant_id, v.gt_types\
     FROM variants v\
     WHERE v.type = 'snp'"
-    c.execute(query)
+    res = conn.execute(query)
 
     # keep a list of numeric genotype values
     # for each sample
     genotypes = collections.defaultdict(list)
-    for row in c:
+    for row in res:
 
         gt_types = Z.unpack_genotype_blob(row['gt_types'])
 
@@ -207,12 +206,12 @@ def get_mds(c, args):
         print "\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair], 4))])
 
 
-def get_variants_by_sample(c, args):
+def get_variants_by_sample(conn, metadata, args):
     """
     Report the number of variants observed for each sample
     where the sample had a non-ref genotype
     """
-    idx_to_sample = util.map_indices_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(metadata)
 
     # report.
     print '\t'.join(['sample', 'total'])
@@ -220,19 +219,19 @@ def get_variants_by_sample(c, args):
     query = "SELECT sample_id, \
              (num_het + num_hom_alt) as total \
              FROM sample_genotype_counts"
-    c.execute(query)
-    for row in c:
+    res = conn.execute(sql.text(query))
+    for row in res:
         sample = idx_to_sample[row['sample_id'] - 1]
         print "\t".join(str(s) for s in [sample,
                                          row['total']])
 
 
-def get_gtcounts_by_sample(c, args):
+def get_gtcounts_by_sample(conn, metadata, args):
     """
     Report the count of each genotype class
     observed for each sample.
     """
-    idx_to_sample = util.map_indices_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(metadata)
 
     # report.
     print '\t'.join(['sample', 'num_hom_ref', 'num_het',
@@ -241,9 +240,9 @@ def get_gtcounts_by_sample(c, args):
     query = "SELECT *, \
              (num_hom_ref + num_het + num_hom_alt + num_unknown) as total \
              FROM sample_genotype_counts"
-    c.execute(query)
+    res = conn.execute(query)
     # count the number of each genotype type obs. for each sample.
-    for row in c:
+    for row in res:
         sample = idx_to_sample[row['sample_id'] -1]
         print "\t".join(str(s) for s in [sample,
                                          row['num_hom_ref'],
@@ -274,27 +273,24 @@ def summarize_query_by_sample(args):
 
 def stats(parser, args):
 
-    if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
+    import database
+    conn, metadata = database.get_session_metadata(args.db)
 
-        if args.tstv:
-            get_tstv(c, args)
-        elif args.tstv_coding:
-            get_tstv_coding(c, args)
-        elif args.tstv_noncoding:
-            get_tstv_noncoding(c, args)
-        elif args.snp_counts:
-            get_snpcounts(c, args)
-        elif args.sfs:
-            get_sfs(c, args)
-        elif args.variants_by_sample:
-            get_variants_by_sample(c, args)
-        elif args.genotypes_by_sample:
-            get_gtcounts_by_sample(c, args)
-        elif args.mds:
-            get_mds(c, args)
-        elif args.query:
-            summarize_query_by_sample(args)
+    if args.tstv:
+        get_tstv(conn, metadata, args)
+    elif args.tstv_coding:
+        get_tstv_coding(conn, metadata, args)
+    elif args.tstv_noncoding:
+        get_tstv_noncoding(conn, metadata, args)
+    elif args.snp_counts:
+        get_snpcounts(conn, metadata, args)
+    elif args.sfs:
+        get_sfs(conn, metadata, args)
+    elif args.variants_by_sample:
+        get_variants_by_sample(conn, metadata, args)
+    elif args.genotypes_by_sample:
+        get_gtcounts_by_sample(conn, metadata, args)
+    elif args.mds:
+        get_mds(conn, metadata, args)
+    elif args.query:
+        summarize_query_by_sample(args)
