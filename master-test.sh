@@ -22,17 +22,18 @@ cd test
 #rm ./*.db
 
 # setup the testing databases from the testing VCF files
+set -e
 bash data-setup.sh
 
-bash test-vep-extra.sh
+bash test-vep-extra.sh || exit
 
-bash test-vcf-output.sh
+bash test-vcf-output.sh || exit
 
-bash test-mendel-error.sh
+bash test-mendel-error.sh || exit
 
-bash test-genotype-likelihoods.sh
+bash test-genotype-likelihoods.sh || exit
 
-bash test-t-all.sh
+bash test-t-all.sh || exit
 
 # Test gemini region
 bash test-region.sh
@@ -151,6 +152,8 @@ bash test-eff.sh
 
 bash test-geno2mp.sh
 
+bash test-genewise.sh
+
 # cleanup
-rm ./*.db
+#rm ./*.db
 rm -Rf *.gts
