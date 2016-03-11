@@ -691,6 +691,7 @@ With this tool, multiple `--gt-filter` s can be specified. Each filter can
 be any valid filter; often, it will make sense to have 1 filter for each
 family. For example, given this pedigree:
 
+
 .. image:: ../images/gene_wise_example.png
 
 Where only the orange samples are sequenced, we could devise a query::
@@ -731,6 +732,27 @@ As with the other tools, this tool orders by chromosome and gene and it applies 
  + The `variant_filters` column shows which filters were passed by the variant.
  + The `n_gene_variants` column shows how many variants in the gene are being reported.
  + The `gene_filter` column shows which filters in the gene passed by any variant.
+
+Multiple `--gt-filter-required` filters can also be specified. Each filter added
+to this argument is required to pass for each variant and it does not contribute
+to the `--min-filters` argument. This can be used with, or instead of `--gt-filter`
+E.g.
+
+::
+
+    gemini gene_wise  \
+        --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+        --gt-filter-required "((gt_depths).(*).(>10).(all))" \
+        --gt-filter "gt_types.fam1_kid == HET and gt_types.fam1_mom == HOM_REF and gt_types.fam1_dad == HOM_REF" \
+        --gt-filter "gt_types.fam2_kid == HET" \
+        --gt-filter "gt_types.fam3_kid == HET" \
+        --min-filters 2 \
+        test.db 
+
+
+will required that all samples meet the minimum depth filter and then keep
+the subset of those that meet 2 out of the 3 `--gt-filters`.
+
 
 ===========================================================================
 ``pathways``: Map genes and variants to KEGG pathways.

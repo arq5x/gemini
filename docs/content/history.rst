@@ -2,11 +2,15 @@
 Release History
 #############################
 
-0.19.0 (future)
+0.20.0 (future)
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
+
+0.19.0 (future)
+===============
 #. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
 #. X-linked recessive and dominant tools.
+#. x-linked inheritance models (TODO: expose in gemini and bump inheritance req)
 
 0.18.3
 ======
@@ -14,7 +18,7 @@ Release History
 #. fix handling of multiple values for list/uniq_list in gemini_annotate
 #. handle snpEff with unknown impact (TODO: bump geneimpacts req to 0.1.0)
 #. fix builtin browser and add support for puzzle browser
-#. x-linked inheritance models (TODO: expose in gemini and bump inheritance req)
+#. add --gt-filter-required to gemini gene_wise tool that must pass for each variant.
 
 0.18.2
 ======

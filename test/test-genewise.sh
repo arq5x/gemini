@@ -23,9 +23,9 @@ PEDIGREE
 echo "genewise.t1"
 
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_filters	n_gene_variants	gene_filters
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	1	2	1
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	1	2	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	1" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	1	2	1
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	1	2	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	1	1" > exp
 
 gemini gene_wise  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
@@ -46,9 +46,9 @@ rm obs exp
 
 echo "genewise.t3"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_filters	n_gene_variants	gene_filters
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	1,2	2	1,2
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	1,2	2	1,2
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1,2	1	1,2" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	1,2	2	1,2
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	1,2	2	1,2
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1,2	1	1,2" > exp
 gemini gene_wise  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
 	--gt-filter "(gt_types.2_dad == HOM_REF and gt_types.2_kid == HET and gt_types.2_mom == HET)" \
@@ -59,12 +59,39 @@ check obs exp
 
 echo "genewise.t4"
 echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_filters	n_gene_variants	gene_filters
-ASAH2C	chr10	48003991	48003992	C	T	non_syn_coding	MED	1	2	1
-ASAH2C	chr10	48004991	48004992	C	T	non_syn_coding	MED	1	2	1
-WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	2	1
-WDR37	chr10	1142208	1142209	T	C	stop_loss	HIGH	1	2	1" > exp
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	1	2	1
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	1	2	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	1	2	1
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	1	2	1" > exp
 gemini gene_wise  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+	--gt-filter  "((gt_types).(phenotype==1).(==HOM_ALT).(none))" \
+	--min-filters 1 \
+    test.auto_dom.db  > obs
+check obs exp
+
+
+echo "genewise.t5"
+echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_filters	n_gene_variants	gene_filters
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	required[1]	2	
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	required[1]	2	
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	required[1]	2	
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	required[1]	2	" > exp
+gemini gene_wise  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+	--gt-filter-required "((gt_types).(phenotype==1).(==HOM_ALT).(none))" \
+    test.auto_dom.db  > obs
+check obs exp
+
+echo "genewise.t6"
+echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_filters	n_gene_variants	gene_filters
+ASAH2C	chr10	48003991	48003992	C	T	missense_variant	MED	required[1],1	2	1
+ASAH2C	chr10	48004991	48004992	C	T	missense_variant	MED	required[1],1	2	1
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	required[1],1	2	1
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	required[1],1	2	1" > exp
+gemini gene_wise  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+	--gt-filter-required "((gt_types).(phenotype==1).(==HOM_ALT).(none))" \
 	--gt-filter  "((gt_types).(phenotype==1).(==HOM_ALT).(none))" \
 	--min-filters 1 \
     test.auto_dom.db  > obs

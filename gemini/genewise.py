@@ -11,7 +11,11 @@ def add_args(a=None):
     if a is None:
         a = ArgumentParser()
     a.add_argument("--min-filters", type=int, default=1)
-    a.add_argument("--gt-filter", required=True, default=[], action='append')
+    a.add_argument("--gt-filter", required=False, default=[], action='append')
+    a.add_argument("--gt-filter-required", required=False, default=[],
+            action='append', help="specify filter(s) that must be met."
+            "a variant passing this does filter is required and does not "
+            " contribute to '--min-filters")
     a.add_argument("--filter")
     a.add_argument("--columns", default="chrom,start,end,gene,impact,impact_severity,max_aaf_all")
     a.add_argument("db")
@@ -27,8 +31,8 @@ def add_cols(cols, gt_filter):
     return [x for x in all_cols if x in gt_filter and not x in cols]
 
 
-def gen_results(rows, gt_filters, min_filters, min_variants, columns,
-        user_dict=None):
+def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, columns,
+                user_dict=None):
     # we track the index of the passed filter in passed_filters.
     gene_passed_filters = {}
     if user_dict is None:
@@ -37,8 +41,18 @@ def gen_results(rows, gt_filters, min_filters, min_variants, columns,
     for row in rows:
         cols = {c: row[c] for c in columns}
         cols.update(user_dict)
-        # have to test all filters since 1 row can meet multiple fitlers.
+
         row_passed_filters = []
+        # check required filters first.
+        for i, gt_req in enumerate(gt_req_filters, start=1):
+            if not eval(gt_req, cols): continue
+            row_passed_filters.append("required[%d]" % i)
+
+        if len(row_passed_filters) < len(gt_req_filters): continue
+
+        # only test the other filters if we met the req'd filter.
+
+        # have to test all filters since 1 row can meet multiple fitlers.
         for i, gt_filter in enumerate(gt_filters, start=1):
             if eval(gt_filter, cols):
                 # track that this filter passed.
@@ -58,13 +72,15 @@ def gen_results(rows, gt_filters, min_filters, min_variants, columns,
         yield row
 
 
-def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
+def genewise(db, gt_filters, gt_req_filters, filter=None, columns=None, min_filters=None,
              min_variants=1,
              grouper="gene"):
     assert os.path.exists(db)
 
     orig_columns = [x.strip() for x in (columns or "").split(",")]
     added_cols = add_cols(orig_columns, "||".join(gt_filters))
+    req_cols = add_cols(added_cols, "||".join(gt_req_filters))
+    added_cols = added_cols + req_cols
     if grouper not in orig_columns:
         added_cols.append(grouper)
     columns = orig_columns + added_cols
@@ -74,7 +90,7 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
     query = "SELECT {columns} FROM variants WHERE (is_exonic = 1 AND impact_severity != 'LOW')"
     if filter:
         query += " AND  " + filter
-    query += " ORDER BY CHROM, gene"
+    query += (" ORDER BY CHROM, %s" % grouper)
 
     gq = GeminiQuery(db, include_gt_cols=True)
 
@@ -86,6 +102,12 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
         gt_filter = gq._correct_genotype_filter(gt_filter)
         cleaned_filters.append(compile(gt_filter, gt_filter, 'eval'))
 
+    cleaned_reqs = []
+    for gt_filter in gt_req_filters:
+        assert gq._is_gt_filter_safe(gt_filter)
+        gt_filter = gq._correct_genotype_filter(gt_filter)
+        cleaned_reqs.append(compile(gt_filter, gt_filter, 'eval'))
+
     gq.run(query.format(columns=", ".join(columns)))
 
     if isinstance(grouper, basestring):
@@ -95,10 +117,10 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
     header_printed = False
     for groupkey, grp in it.groupby(gq, grouper):
         grp = list(grp)
-        for x in gen_results(list(grp), cleaned_filters, min_filters or 0,
+        for x in gen_results(list(grp), cleaned_filters, cleaned_reqs, min_filters or 0,
                              min_variants, columns, user_dict=user_dict):
             for c in added_cols:
-                if c != 'gene':
+                if c != grouper:
                     del x.print_fields[c]
             if not header_printed:
                 print "\t".join(x.print_fields.keys())
@@ -108,7 +130,15 @@ def genewise(db, gt_filters, filter=None, columns=None, min_filters=None,
 
 def run(args):
     if args.min_filters > len(args.gt_filter):
-        sys.stderr.write("ERROR gene-wise: specified --min-filter > the number of --gt-filters\n")
+        if args.min_filters == 1 and len(args.gt_filter) == 0:
+            # only do this if they didn't specify args.gt_filter
+            args.min_filters = 0
+        else:
+            sys.stderr.write("ERROR gene-wise: specified --min-filter > the number of --gt-filters\n")
+            sys.exit(2)
+    if len(args.gt_filter) == 0 and len(args.gt_filter_required) == 0:
+        sys.stderr.write("ERROR gene-wise: specified neither --min-filter or --min-filter-required\n")
         sys.exit(2)
-    genewise(args.db, args.gt_filter, args.filter, args.columns,
+
+    genewise(args.db, args.gt_filter, args.gt_filter_required, args.filter, args.columns,
              args.min_filters)
