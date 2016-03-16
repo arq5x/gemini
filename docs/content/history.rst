@@ -19,6 +19,7 @@ Release History
 #. handle snpEff with unknown impact (TODO: bump geneimpacts req to 0.1.0)
 #. fix builtin browser and add support for puzzle browser
 #. add --gt-filter-required to gemini gene_wise tool that must pass for each variant.
+#. fix bug in lof_sieve when transcript pos is not specified. (thanks @mmoisse)
 
 0.18.2
 ======

@@ -60,6 +60,7 @@ gemini load -p test.fusions.ped -v test.fusions.vcf  --skip-gerp-bp --skip-cadd 
 gemini load --skip-gene-tables --test-mode -v test.exac.vcf --skip-gerp-bp --skip-cadd test.exac.db &
 gemini load -t VEP -v test.esp.zero.vcf test.esp.db --skip-gerp-bp --skip-gene-tables --test-mode
 gemini load --skip-gene-tables --test-mode -v test.dashes.vcf --skip-gerp-bp --skip-cadd -t snpEff test.dashes.db -p test.dashes.ped &
+gemini load --test-mode -t VEP -v test-lof.vcf --skip-gene-tables test-lof.db
 
 # test-phasing
 gemini load --skip-gene-tables --test-mode -v test.comp_het.unphase.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.ped test.comp_het.unphase.db
