@@ -48,8 +48,11 @@ def get_ind_lof(c, args):
                 if aa_length != 'None' and \
                         aa_length.split("/")[0] != "-":
                     transcript_pos = aa_length.split("/")[0] 
-        #transcript_pct for snpEff annotated VCF        
-        if aa_length != 'None' and "/" not in aa_length:
+        #handle non exonic variants 
+        if transcript_pos is None:
+            transcript_pct = '/'
+        #transcript_pct for snpEff annotated VCF  
+        elif aa_length != 'None' and "/" not in aa_length:
             transcript_pct = float(transcript_pos) / float(aa_length)
         #transcript_pct for VEP annotated VCF
         elif aa_length != 'None' and "/" in aa_length:
