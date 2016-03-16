@@ -1,0 +1,19 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##source=agg v0.3.0-develop-2-g942d857
+##INFO=<ID=PF,Number=A,Type=Float,Description="proportion of genotypes containing an ALT that passed the original single sample gvcf filter">
+##INFO=<ID=GN,Number=G,Type=Integer,Description="count of each genotype.">
+##INFO=<ID=AD,Number=R,Type=Integer,Description="sum of allele depths for ALL individuals">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="sum of depth  across all samples">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Filtered basecall depth used for site genotyping">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed.">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=PF,Number=A,Type=Integer,Description="variant was PASS filter in original sample gvcf">
+##contig=<ID=chr19,length=59128983>
+##VEP=v82 cache=. db=homo_sapiens_core_82_37@ensembldb.ensembl.org ClinVar=201507 ESP=20141103 genebuild=2011-04 polyphen=2.2.2 assembly=GRCh37.p13 COSMIC=71 gencode=GENCODE 19 HGMD-PUBLIC=20152 sift=sift5.2.2 dbSNP=144
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	LP6008126-DNA_A01	DNA_A02	DNA_A03	DNA_A04	DNA_A05	DNA_A07
+chr19	490040	.	G	A	233	.	AN=842;AC=15;PF=1;AD=10952,245;DP=11197;CSQ=splice_donor_variant|||ENSG00000099866|MADCAM1|ENST00000587541||||-/163|protein_coding,downstream_gene_variant|||ENSG00000266933|AC005775.2|ENST00000592413|||||antisense	GT:GQ:DP:AD:PF	0/0:40:19:.:.	0/1:211:36:19,17:1	0/0:80:30:.:.	0/0:30:17:.:.	0/0:60:26:.:.	0/0:40:21:.:.

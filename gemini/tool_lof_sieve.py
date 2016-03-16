@@ -9,7 +9,7 @@ import compression as Z
 
 
 def get_ind_lof(c, args):
-    
+
     idx_to_sample = util.map_indices_to_samples(c)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
@@ -47,11 +47,11 @@ def get_ind_lof(c, args):
                 #transcript_pos for VEP annotated VCF
                 if aa_length != 'None' and \
                         aa_length.split("/")[0] != "-":
-                    transcript_pos = aa_length.split("/")[0] 
-        #handle non exonic variants 
+                    transcript_pos = aa_length.split("/")[0]
+        #handle non exonic variants
         if transcript_pos is None:
             transcript_pct = '/'
-        #transcript_pct for snpEff annotated VCF  
+        #transcript_pct for snpEff annotated VCF
         elif aa_length != 'None' and "/" not in aa_length:
             transcript_pct = float(transcript_pos) / float(aa_length)
         #transcript_pct for VEP annotated VCF
