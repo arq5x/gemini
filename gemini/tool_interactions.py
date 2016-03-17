@@ -8,10 +8,9 @@
 
 import os
 import sys
-import sqlite3
 import compression as Z
-import cPickle
 from gemini.config import read_gemini_config
+import database
 import networkx as nx
 import gemini_utils as util
 from gemini_constants import *
@@ -21,9 +20,9 @@ import gzip
 def xopen(fname, mode='r'):
     return gzip.open(fname, mode) if fname.endswith(".gz") else open(fname, mode)
 
-def get_variant_genes(c, args, idx_to_sample):
+def get_variant_genes(res, args, idx_to_sample):
     samples = defaultdict(list)
-    for r in c:
+    for r in res:
         gt_types = Z.unpack_genotype_blob(r['gt_types'])
         gts      = Z.unpack_genotype_blob(r['gts'])
         var_id = str(r['variant_id'])
@@ -50,9 +49,9 @@ def get_variant_genes(c, args, idx_to_sample):
                     samples[idx_to_sample[idx]].append(value)
     return samples
 
-def get_lof_genes(c, args, idx_to_sample):
+def get_lof_genes(res, args, idx_to_sample):
     lof = defaultdict(list)
-    for r in c:
+    for r in res:
         gt_types = Z.unpack_genotype_blob(r['gt_types'])
         gts      = Z.unpack_genotype_blob(r['gts'])
         gene     = str(r['gene'])
@@ -64,9 +63,9 @@ def get_lof_genes(c, args, idx_to_sample):
                     lof[idx_to_sample[idx]].append(gene)
     return lof
 
-def sample_gene_interactions(c, args, idx_to_sample):
+def sample_gene_interactions(res, args, idx_to_sample):
     # fetch variant gene dict for all samples
-    samples = get_variant_genes(c, args, idx_to_sample)
+    samples = get_variant_genes(res, args, idx_to_sample)
     # file handle for fetching the hprd graph
     if args.edges is None:
         config = read_gemini_config(args=args)
@@ -137,8 +136,8 @@ def sample_gene_interactions(c, args, idx_to_sample):
                 variants = []
 
 
-def sample_lof_interactions(c, args, idx_to_sample, samples):
-    lof = get_lof_genes(c, args, idx_to_sample)
+def sample_lof_interactions(res, args, idx_to_sample, samples):
+    lof = get_lof_genes(res, args, idx_to_sample)
     if args.edges is None:
         config = read_gemini_config(args=args)
         path_dirname = config["annotation_dir"]
@@ -212,13 +211,13 @@ def sample_lof_interactions(c, args, idx_to_sample, samples):
                                            str(each[11])])
 
 
-def sample_variants(c, args):
-    idx_to_sample = util.map_indices_to_samples(c)
+def sample_variants(conn, metadata, args):
+    idx_to_sample = util.map_indices_to_samples(metadata)
     query = "SELECT variant_id, gt_types, gts, gene, impact, biotype, \
                     in_dbsnp, clinvar_sig, clinvar_disease_name, aaf_1kg_all, aaf_esp_all, chrom, \
                     start, end  \
              FROM variants"
-    c.execute(query)
+    res = conn.execute(query)
 
     if args.command == 'interactions':
         #header
@@ -232,20 +231,20 @@ def sample_variants(c, args):
         if (not args.var_mode):
             print "\t".join(['sample','gene','order_of_interaction', \
                      'interacting_gene'])
-        sample_gene_interactions(c, args, idx_to_sample)
+        sample_gene_interactions(res, args, idx_to_sample)
 
     elif args.command == 'lof_interactions':
-        samples = get_variant_genes(c, args, idx_to_sample)
+        samples = get_variant_genes(res, args, idx_to_sample)
         return samples
 
 
-def sample_lof_variants(c, args, samples):
-    idx_to_sample = util.map_indices_to_samples(c)
+def sample_lof_variants(conn, metadata, args, samples):
+    idx_to_sample = util.map_indices_to_samples(metadata)
     query = "SELECT chrom, start, end, \
                              gt_types, gts, gene \
              FROM variants \
              WHERE is_lof='1'"
-    c.execute(query)
+    res = conn.execute(query)
 
     #header
     if args.var_mode:
@@ -258,22 +257,13 @@ def sample_lof_variants(c, args, samples):
         print "\t".join(['sample','lof_gene','order_of_interaction', \
                          'interacting_gene'])
 
-    sample_lof_interactions(c, args, idx_to_sample, samples)
-
+    sample_lof_interactions(res, args, idx_to_sample, samples)
 
 def genequery(parser, args):
-    if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        sample_variants(c, args)
+    conn, metadata = database.get_session_metadata(args.db)
+    sample_variants(conn, metadata, args)
 
 def lofgenequery(parser, args):
-    if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        samples = sample_variants(c, args)
-        sample_lof_variants(c, args, samples)
+    conn, metadata = database.get_session_metadata(args.db)
+    samples = sample_variants(conn, metadata, args)
+    sample_lof_variants(conn, metadata, args, samples)

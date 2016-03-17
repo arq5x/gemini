@@ -9,7 +9,7 @@ hash tabix 2>/dev/null || { echo "skiping annotate tests since we can't find tab
 # make a dunnmy TABIX'ed annotation file
 echo "chr1	30547	30548
 chr1	30922	30923" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -41,7 +41,7 @@ rm *.gz*
 echo "chr1	30547	30548
 chr1	30920	30925
 chr1	30922	30923" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -74,7 +74,7 @@ rm *.gz*
 echo "chr1	30547	30548	a
 chr1	30920	30925	b
 chr1	30922	30923	c" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -106,7 +106,7 @@ rm *.gz*
 echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -139,7 +139,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	c	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -172,7 +172,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	c	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -205,7 +205,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	d	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -238,7 +238,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	d	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -270,7 +270,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	d	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -303,7 +303,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	d	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -336,7 +336,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	d	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -369,7 +369,7 @@ echo "chr1	30547	30548	a	0.23
 chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.4
 chr1	30922	30923	d	0.6" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -403,7 +403,7 @@ chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.3
 chr1	30922	30923	d	0.4
 chr1	30922	30923	e	0.5" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -437,7 +437,7 @@ chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.3
 chr1	30922	30923	d	0.3
 chr1	30922	30923	e	0.5" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -472,7 +472,7 @@ chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.3
 chr1	30922	30923	d	0.3
 chr1	30922	30923	e	0.5" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -495,7 +495,7 @@ chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.3
 chr1	30922	30923	d	0.3
 chr1	30922	30923	e	0.5" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
@@ -519,7 +519,7 @@ chr1	30920	30925	b	0.2
 chr1	30922	30923	c	0.3
 chr1	30922	30923	d	0.3
 chr1	30922	30923	e	0.5" > anno.bed
-bgzip anno.bed
+bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation

@@ -2,7 +2,7 @@
 
 import os
 import sys
-import sqlite3
+import sqlalchemy as sql
 import compression as Z
 from collections import defaultdict
 from gemini.config import read_gemini_config
@@ -65,11 +65,11 @@ def _get_pathways(gene, transcript, pathways, allow_none=True):
            pathways.remove(None)
     return pathways
 
-def _report_variant_pathways(c, args, idx_to_sample):
+def _report_variant_pathways(res, args, idx_to_sample):
 
     (agn_paths, hgnc_paths, ensembl_paths) = get_pathways(args)
 
-    for r in c:
+    for r in res:
         gt_types = Z.unpack_genotype_blob(r['gt_types'])
         gts      = Z.unpack_genotype_blob(r['gts'])
         gene     = str(r['gene'])
@@ -94,9 +94,9 @@ def _report_variant_pathways(c, args, idx_to_sample):
                                  idx_to_sample[idx], gts[idx], gene, trans, \
                                  pathlist])
 
-def get_ind_pathways(c, args):
+def get_ind_pathways(conn, metadata, args):
 
-    idx_to_sample = util.map_indices_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(metadata)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
                              i.impact, v.gt_types, v.gts, i.gene, \
@@ -104,19 +104,19 @@ def get_ind_pathways(c, args):
              FROM variants v, variant_impacts i \
              WHERE v.variant_id = i.variant_id"
 
-    c.execute(query)
+    res = conn.execute(sql.text(query))
 
     # header
     print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
                      'impact', 'sample', 'genotype', \
                      'gene', 'transcript', 'pathway'])
 
-    _report_variant_pathways(c, args, idx_to_sample)
+    _report_variant_pathways(res, args, idx_to_sample)
 
 
-def get_ind_lof_pathways(c, args):
+def get_ind_lof_pathways(conn, metadata, args):
 
-    idx_to_sample = util.map_indices_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(metadata)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
                              i.impact, v.gt_types, v.gts, i.gene, \
@@ -125,25 +125,23 @@ def get_ind_lof_pathways(c, args):
              WHERE v.variant_id = i.variant_id \
              AND i.is_lof='1'"
 
-    c.execute(query)
+    res = conn.execute(sql.text(query))
 
     # header
     print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
                      'impact', 'sample', 'genotype', \
                      'gene', 'transcript', 'pathway'])
 
-    _report_variant_pathways(c, args, idx_to_sample)
+    _report_variant_pathways(res, args, idx_to_sample)
 
 
 
 def pathways(parser, args):
-    if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
+    import database
 
-        if (not args.lof):
-            get_ind_pathways(c, args)
-        else:
-            get_ind_lof_pathways(c, args)
+    conn, metadata = database.get_session_metadata(args.db)
+
+    if (not args.lof):
+        get_ind_pathways(conn, metadata, args)
+    else:
+        get_ind_lof_pathways(conn, metadata, args)

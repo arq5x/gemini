@@ -2,7 +2,6 @@
 
 import os
 import sys
-import sqlite3
 import re
 import compiler
 import collections
@@ -11,12 +10,15 @@ import abc
 import numpy as np
 from itertools import chain
 flatten = chain.from_iterable
-import itertools as it
 
 # gemini imports
+import sqlalchemy as sql
 import gemini_utils as util
-from gemini_constants import *
-from gemini_utils import (OrderedSet, OrderedDict, itersubclasses)
+import database
+from gemini_constants import HOM_REF, HET, HOM_ALT, UNKNOWN
+
+from gemini_utils import (OrderedSet, itersubclasses)
+from gemini_subjects import Subject
 from .pdict import PDict
 import compression
 from sql_utils import ensure_columns, get_select_cols_and_rest
@@ -24,9 +26,6 @@ from gemini_subjects import get_subjects
 
 class GeminiError(Exception):
     pass
-
-def RowFactory(cursor, row):
-    return dict(it.izip((c[0] for c in cursor.description), row))
 
 class RowFormat:
     """A row formatter to output rows in a custom format.  To provide
@@ -519,19 +518,19 @@ class GeminiQuery(object):
     def __init__(self, db, include_gt_cols=False,
                  out_format=DefaultRowFormat(None),
                  variant_id_getter=None):
-        assert os.path.exists(db), "%s does not exist." % db
 
         self.db = db
         self.query_executed = False
         self.for_browser = False
         self.include_gt_cols = include_gt_cols
         self.variant_id_getter = variant_id_getter
+        self.result_proxy = None
 
         # try to connect to the provided database
         self._connect_to_database()
 
         # save the gt_cols in the database and don't hard-code them anywhere.
-        self.gt_cols = util.get_gt_cols(self.conn)
+        self.gt_cols = util.get_gt_cols(self.metadata)
 
         # extract the column names from the sample table.
         # needed for gt-filter wildcard support.
@@ -541,11 +540,12 @@ class GeminiQuery(object):
         self.sample_info = collections.defaultdict(list)
 
         # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323
-        self.sample_to_idx = util.map_samples_to_indices(self.c)
-        # and vice versa. e.g., self.idx_to_sample[323] ->  NA20814
-        self.idx_to_sample = util.map_indices_to_samples(self.c)
-        self.idx_to_sample_object = util.map_indices_to_sample_objects(self.c)
-        self.sample_to_sample_object = util.map_samples_to_sample_objects(self.c)
+        samples = list(self.metadata.tables["samples"].select().execute())
+        self.sample_to_idx = {s['name']: s['sample_id'] -1 for s in samples}
+        self.idx_to_sample = {s['sample_id'] -1: s['name'] for s in samples}
+        self.idx_to_sample_object = {s['sample_id'] -1: Subject(s) for s in samples}
+        self.sample_to_sample_object = {s['name']: Subject(s) for s in samples}
+
         self.formatter = out_format
         self.predicates = [self.formatter.predicate]
         self.sample_show_fields = ["variant_samples", "het_samples", "hom_alt_samples"]
@@ -623,8 +623,9 @@ class GeminiQuery(object):
         if self.gt_filter:
             self.gt_filter_compiled = compiler.compile(self.gt_filter, self.gt_filter, 'eval')
 
-        self._apply_query()
+        self.result_proxy = res = iter(self._apply_query())
         self.query_executed = True
+        return res
 
     def __iter__(self):
         return self
@@ -695,8 +696,8 @@ class GeminiQuery(object):
         # can quickly exceed the stack.
         while (1):
             try:
-                row = GeminiRow(self.c.next(), self)
-            except Exception:
+                row = GeminiRow(next(self.result_proxy), self)
+            except StopIteration:
                 self.conn.close()
                 raise StopIteration
 
@@ -799,22 +800,15 @@ class GeminiQuery(object):
         Establish a connection to the requested Gemini database.
         """
         # open up a new database
-        if os.path.exists(self.db):
-            self.conn = sqlite3.connect(self.db)
-            self.conn.text_factory = str
-            self.conn.isolation_level = None
-            # allow us to refer to columns by name
-            #self.conn.row_factory = RowFactory
-            self.conn.row_factory = sqlite3.Row
-            self.c = self.conn.cursor()
+        self.conn, self.metadata = database.get_session_metadata(self.db)
+        self.res = None
 
 
     def _collect_sample_table_columns(self):
         """
         extract the column names in the samples table into a list
         """
-        self.c.execute('select * from samples limit 1')
-        self.sample_column_names = [tup[0] for tup in self.c.description]
+        self.sample_column_names = [c.name for c in self.metadata.tables['samples'].columns]
 
     def _is_gt_filter_safe(self, gt_filter=None):
         """
@@ -847,12 +841,13 @@ class GeminiQuery(object):
 
     def _execute_query(self):
         try:
-            self.c.execute(self.query)
-        except sqlite3.OperationalError as e:
-            msg = "SQLite error: {0}\n".format(e)
+            res = self.conn.execute(sql.text(self.query))
+        except sql.exc.OperationalError as e:
+            msg = "SQL error: {0}\n".format(e)
             print msg
             sys.stderr.write(msg)
             sys.exit("The query issued (%s) has a syntax error." % self.query)
+        return res
 
     def _apply_query(self):
         """
@@ -874,10 +869,10 @@ class GeminiQuery(object):
             # we only need genotype information if the user is
             # querying the variants table
             self.query = self._add_gt_cols_to_query()
-            self._execute_query()
+            res = self._execute_query()
 
             self.all_query_cols = [
-                str(tuple[0]) for tuple in self.c.description
+                str(tuple[0]) for tuple in res.cursor.description
                 if not tuple[0][:2] == "gt" and ".gt" not in tuple[0]
                 ]
 
@@ -892,10 +887,12 @@ class GeminiQuery(object):
         # the query does not involve the variants table
         # and as such, we don't need to do anything fancy.
         else:
-            self._execute_query()
-            self.all_query_cols = [str(tuple[0]) for tuple in self.c.description
+            res = self._execute_query()
+            self.all_query_cols = [str(tuple[0]) for tuple in res.cursor.description
                     if not tuple[0][:2] == "gt"]
             self.report_cols = self.all_query_cols
+
+        return res
 
     def _correct_genotype_col(self, raw_col):
         """
@@ -926,13 +923,13 @@ class GeminiQuery(object):
         and sample names so that the wildcard
         query can be applied to the gt_* columns.
         """
-        query = 'SELECT sample_id, name FROM samples '
+        tbl = self.metadata.tables["samples"]
+        q = sql.select([tbl.c.sample_id, tbl.c.name])
         if wildcard.strip() != "*":
-           query += ' WHERE ' + wildcard
+            q = q.where(sql.text(wildcard))
 
         sample_info = [] # list of sample_id/name tuples
-        self.c.execute(query)
-        for row in self.c:
+        for row in q.execute():
             # sample_ids are 1-based but gt_* indices are 0-based
             sample_info.append((int(row['sample_id']) - 1, str(row['name'])))
         return sample_info

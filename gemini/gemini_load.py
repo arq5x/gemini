@@ -4,12 +4,10 @@
 import os.path
 import shutil
 import sys
-import sqlite3
 
 import annotations
 import subprocess
 from cluster_helper.cluster import cluster_view
-import database as gemini_db
 from gemini_load_chunk import GeminiLoader
 import uuid
 import time
@@ -43,31 +41,51 @@ def load(parser, args):
     # collect of the the add'l annotation files
     annotations.load_annos(args)
 
+    l = None
     if args.scheduler:
         load_ipython(args)
     elif args.cores > 1:
         load_multicore(args)
     else:
-        load_singlecore(args)
+        l = load_singlecore(args)
+    finish(args, l)
+
+def finish(args, loader=None):
+    """
+    all things that are performed by single core, multi, ipython
+    should be done here
+    """
+    if loader is None:
+        loader = GeminiLoader(args, prepare_db=False)
+
+    print "storing version, header, etc."
+    loader.store_resources()
+    loader.store_version()
+    loader.store_vcf_header()
+
+    if not args.skip_gene_tables:
+        print "storing gene-detailed"
+        loader._get_gene_detailed()
+        print "storing gene-summary"
+        loader._get_gene_summary()
+        if not args.test_mode:
+            print "updating gene-table"
+            loader.update_gene_table()
+    if not args.test_mode:
+        print "building indices"
+        loader.build_indices_and_disconnect()
+    else:
+        import database
+        database.close_and_commit(loader.c)
 
 def load_singlecore(args):
     # create a new gemini loader and populate
     # the gemini db and files from the VCF
-    gemini_loader = GeminiLoader(args)
-    gemini_loader.store_resources()
-    gemini_loader.store_version()
-    gemini_loader.store_vcf_header()
-    gemini_loader.populate_from_vcf()
-    gemini_db.add_max_aaf(gemini_loader.c)
-
-    if not args.skip_gene_tables and not args.test_mode:
-        gemini_loader.update_gene_table()
-    if not args.test_mode:
-        gemini_loader.build_indices_and_disconnect()
-
+    l = GeminiLoader(args)
+    l.populate_from_vcf()
     if not args.no_genotypes and not args.no_load_genotypes:
-        gemini_loader.store_sample_gt_counts()
-
+        l.store_sample_gt_counts()
+    return l
 
 def load_multicore(args):
     grabix_file = bgzip(args.vcf)
@@ -108,23 +126,11 @@ def get_merge_chunks_cmd(chunks, db, tempdir=None, vcf=None, anno_type=None):
 def finalize_merged_db(tmp_db, db):
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    print st, "indexing final database."
-
-    main_conn = sqlite3.connect(tmp_db)
-    main_conn.text_factory = str
-
-    main_conn.isolation_level = None
-    main_curr = main_conn.cursor()
-    main_curr.execute('PRAGMA synchronous = OFF')
-    main_curr.execute('PRAGMA journal_mode=MEMORY')
-
-    gemini_db.add_max_aaf(main_curr)
-    gemini_db.create_indices(main_curr)
-
-    main_conn.commit()
-    main_curr.close()
-
+    print st, "merged to final database....",
+    sys.stdout.flush()
     shutil.move(tmp_db, db)
+    print st, "moved."
+    sys.stdout.flush()
 
 def merge_chunks_ipython(chunks, args, view):
     if len(chunks) == 1:
@@ -367,7 +373,7 @@ def get_chunk_steps(grabix_file, args):
     stops = []
     for chunk in range(args.cores):
         start = (chunk * chunk_size) + 1
-        stop  = start + chunk_size - 1
+        stop = start + chunk_size - 1
         # make sure the last chunk covers the remaining lines
         if chunk >= (args.cores - 1) and stop < num_lines:
             stop = num_lines

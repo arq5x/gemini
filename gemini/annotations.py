@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 import pysam
-import sqlite3
 import os
 import sys
 import collections
 import re
 from unidecode import unidecode
-from bx.bbi.bigwig_file import BigWigFile
 from gemini.config import read_gemini_config
 
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
 
-def get_anno_files( args ):
-    config = read_gemini_config( args = args )
+def get_anno_files(args):
+    config = read_gemini_config(args=args)
     anno_dirname = config["annotation_dir"]
     # Default annotations -- always found
     annos = {
@@ -187,6 +185,7 @@ def load_annos(args):
                 annos[anno] = pysam.Tabixfile(anno_files[anno])
             # .bw denotes BigWig files.
             elif anno_files[anno].endswith(".bw"):
+                from bx.bbi.bigwig_file import BigWigFile
                 annos[anno] = BigWigFile(open(anno_files[anno]))
 
         except IOError:
@@ -257,11 +256,12 @@ def guess_contig_naming(anno):
 def _get_var_coords(var, naming):
     """Retrieve variant coordinates from multiple input objects.
     """
-    if isinstance(var, dict) or isinstance(var, sqlite3.Row):
+    try:
+        # todo: check isinstance resultproxy?
         chrom = var["chrom"]
         start = int(var["start"])
         end = int(var["end"])
-    else:
+    except TypeError:
         chrom = var.CHROM
         start = var.start
         end = var.end
@@ -277,10 +277,10 @@ def _get_var_ref_and_alt(var):
     if isinstance(var, basestring):
         # Assume var is a line from a VCF.
         ref, alt = var.split('\t')[3:5]
-    elif isinstance(var, dict) or isinstance(var, sqlite3.Row):
+    try:
         ref = var["ref"]
         alt = var["alt"]
-    else:
+    except (TypeError, AttributeError):
         try:
             ref = var.REF
             alt = var.ALT
@@ -740,9 +740,9 @@ def get_1000G_info(var, empty=EMPTY_1000G):
                     (key, value) = info.split("=", 1)
                     info_map[key] = value
 
-            return ThousandGInfo(True, info_map.get('AF', -1), info_map.get('AMR_AF', -1),
-                         info_map.get('EAS_AF', -1), info_map.get('SAS_AF', -1),
-                         info_map.get('AFR_AF', -1), info_map.get('EUR_AF', -1))
+            return ThousandGInfo(True, float(info_map.get('AF', -1)), float(info_map.get('AMR_AF', -1)),
+                         float(info_map.get('EAS_AF', -1)), float(info_map.get('SAS_AF', -1)),
+                         float(info_map.get('AFR_AF', -1)), float(info_map.get('EUR_AF', -1)))
     return empty
 
 def get_geno2mp_ct(var):
@@ -787,7 +787,7 @@ def get_exac_info(var, empty=EXAC_EMPTY):
 
             # Population independent raw (non-adjusted) allele frequencies given by AF
             if info_map.get('AF') is not None:
-                aaf_ALL = info_map['AF'].split(",")[allele_num]
+                aaf_ALL = float(info_map['AF'].split(",")[allele_num])
             else:
                 aaf_ALL = -1
 
@@ -805,13 +805,15 @@ def get_exac_info(var, empty=EXAC_EMPTY):
                 ac_list = ac.split(",")
                 afs[grp] = float(ac_list[allele_num]) / float(an)
 
-            num_hets = info_map.get("AC_Het", -1)
-            num_homs = info_map.get("AC_Hom", -1)
-            called_chroms = info_map.get('AN_Adj', -1)
+            num_hets = int(info_map.get("AC_Het", -1))
+            num_homs = int(info_map.get("AC_Hom", -1))
+            called_chroms = int(info_map.get('AN_Adj', -1))
 
-            return ExacInfo(True, aaf_ALL, afs['Adj'], afs['AFR'], afs['AMR'],
-                                afs['EAS'], afs['FIN'], afs['NFE'], afs['OTH'],
-                                afs['SAS'], num_hets, num_homs, called_chroms)
+            return ExacInfo(True, aaf_ALL, float(afs['Adj']), float(afs['AFR']),
+                            float(afs['AMR']), float(afs['EAS']), float(afs['FIN']),
+                            float(afs['NFE']), float(afs['OTH']),
+                            float(afs['SAS']), num_hets, num_homs,
+                            called_chroms)
 
     return empty
 

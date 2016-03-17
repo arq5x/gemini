@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-import os
 import re
-import sqlite3
+import sqlalchemy as sql
 import gemini_utils as util
 from gemini_constants import *
 import compression as Z
 
 
-def get_ind_lof(c, args):
+def get_ind_lof(conn, metadata, args):
 
-    idx_to_sample = util.map_indices_to_samples(c)
+    idx_to_sample = util.map_indices_to_samples(metadata)
 
     query = "SELECT v.chrom, v.start, v.end, v.ref, v.alt, \
                              v.impact, v.aa_change, v.aa_length, \
@@ -21,7 +20,7 @@ def get_ind_lof(c, args):
              AND i.is_lof='1' \
              AND v.type = 'snp'"
 
-    c.execute(query)
+    res = conn.execute(sql.text(query))
 
     # header
     print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt',
@@ -29,7 +28,7 @@ def get_ind_lof(c, args):
                      'trans_aa_length', 'var_trans_pct',
                      'sample', 'genotype', 'gene', 'transcript', 'trans_type'])
 
-    for r in c:
+    for r in res:
         gt_types = Z.unpack_genotype_blob(r['gt_types'])
         gts = Z.unpack_genotype_blob(r['gts'])
         gene = str(r['gene'])
@@ -72,10 +71,7 @@ def get_ind_lof(c, args):
 
 
 def lof_sieve(parser, args):
-    if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
 
-        get_ind_lof(c, args)
+    import database
+    conn, metadata = database.get_session_metadata(args.db)
+    get_ind_lof(conn, metadata, args)

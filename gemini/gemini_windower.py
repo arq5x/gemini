@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import os
 import subprocess
-import sqlite3
+import database
 
 import pybedtools as pbt
 
 
-def get_window_data(c, analysis_type, temp_file):
+def get_window_data(conn, analysis_type, temp_file):
     """
     Create a temp file of the requested statistic for each variant.
 
@@ -26,8 +26,7 @@ def get_window_data(c, analysis_type, temp_file):
     query = "SELECT chrom,start,end," + \
         column + \
         " FROM variants ORDER BY chrom,start"
-    c.execute(query)
-    for row in c:
+    for row in conn.execute(query):
         if row[column] is not None:
             t.write('%s\t%d\t%d\t%f\n' % (str(row['chrom']),
                                           int(row['start']),
@@ -39,7 +38,7 @@ def get_window_data(c, analysis_type, temp_file):
     return 4
 
 
-def make_windows(c, args, temp_file):
+def make_windows(conn, args, temp_file):
     """
     Compute the requested statistic for the user-defined windows.
     """
@@ -57,7 +56,7 @@ def make_windows(c, args, temp_file):
 
     # create a temp file ('.temp.pid') storing the requested stat
     # for each variant. Load this into a pybedtools BedTool
-    op_col = get_window_data(c, args.analysis_type, temp_file)
+    op_col = get_window_data(conn, args.analysis_type, temp_file)
     window_data = pbt.BedTool(temp_file)
 
     # Use bedtools map to summarize and report
@@ -77,15 +76,10 @@ def make_windows(c, args, temp_file):
 def windower(parser, args):
     check_dependencies("windower", [["bedtools", "--version"]])
 
-    if os.path.exists(args.db):
-        conn = sqlite3.connect(args.db)
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        # on y va
-        pid = os.getpid()
-        temp_file = ".".join(['.temp', str(pid)])
-        make_windows(c, args, temp_file)
+    conn, metadata = database.get_session_metadata(args.db)
+    pid = os.getpid()
+    temp_file = ".".join(['.temp', str(pid)])
+    make_windows(conn, args, temp_file)
 
 def check_dependencies(tool, deps):
     """Ensure required tools for installation are present.

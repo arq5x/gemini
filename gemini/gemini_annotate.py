@@ -2,18 +2,14 @@
 
 import os
 import sys
-import sqlite3
-from collections import defaultdict, namedtuple
-import atexit
-import json
-import subprocess
-import tempfile
+from collections import defaultdict
+import sqlalchemy as sql
 
 import numpy as np
 from scipy.stats import mode
 import pysam
-import cyvcf2 as vcf
 
+import database
 from gemini.annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
 from gemini_windower import check_dependencies
 from database import database_transaction
@@ -36,8 +32,8 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
                         + col_type \
                         + " " \
                         + "DEFAULT NULL"
-            update_cursor.execute(alter_qry)
-        except sqlite3.OperationalError:
+            update_cursor.execute(sql.text(alter_qry))
+        except sql.exc.OperationalError:
             sys.stderr.write("WARNING: Column \"("
                              + col_name
                              + ")\" already exists in variants table. Overwriting values.\n")
@@ -56,7 +52,7 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
                             + " " \
                             + "DEFAULT NULL"
                 update_cursor.execute(alter_qry)
-            except sqlite3.OperationalError:
+            except sql.exc.OperationalError:
                 sys.stderr.write("WARNING: Column \"("
                                  + col_name
                                  + ")\" already exists in variants table. Overwriting values.\n")
@@ -64,14 +60,14 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
         sys.exit("Unknown annotation type: %s\n" % args.anno_type)
 
 
-def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, col_ops=None):
+def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_types=None, col_ops=None):
     """Generalized annotation of variants with a new column.
 
     get_val_fn takes a list of annotations in a region and returns
     the value for that region to update the database with.
 
     Separates selection and identification of values from update,
-    to avoid concurrent database access errors from sqlite3, especially on
+    to avoid concurrent database access errors from sqlite, especially on
     NFS systems. The retained to_update list is small, but batching
     could help if memory issues emerge.
     """
@@ -79,9 +75,13 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
     # annotation file.  Update the variant row with T/F if overlaps found.
     anno = pysam.Tabixfile(args.anno_file)
     naming = guess_contig_naming(anno)
-    select_cursor = conn.cursor()
-    update_cursor = conn.cursor()
-    add_requested_columns(args, select_cursor, col_names, col_types)
+    cursor = conn.bind.connect()
+    add_requested_columns(args, cursor, col_names, col_types)
+    conn.commit()
+    cursor.close()
+
+    conn, metadata = database.get_session_metadata(str(conn.bind.url))
+    cursor = conn.bind.connect()
 
     last_id = 0
     current_id = 0
@@ -89,9 +89,9 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
     CHUNK_SIZE = 100000
     to_update = []
 
-    select_cursor.execute('''SELECT chrom, start, end, ref, alt, variant_id FROM variants''')
+    select_res = cursor.execution_options(stream_results=True).execute('''SELECT chrom, start, end, ref, alt, variant_id FROM variants''')
     while True:
-        for row in select_cursor.fetchmany(CHUNK_SIZE):
+        for row in select_res.fetchmany(CHUNK_SIZE):
 
             # update_data starts out as a list of the values that should
             # be used to populate the new columns for the current row.
@@ -114,23 +114,27 @@ def _annotate_variants(args, conn, get_val_fn, col_names=None, col_types=None, c
         if current_id <= last_id:
             break
         else:
-            update_cursor.execute("BEGIN TRANSACTION")
-            _update_variants(to_update, col_names, update_cursor)
-            update_cursor.execute("END TRANSACTION")
+            _update_variants(metadata, to_update, col_names, cursor)
 
             total += len(to_update)
             print "updated", total, "variants"
             last_id = current_id
         to_update = []
 
-def _update_variants(to_update, col_names, cursor):
-    update_qry = "UPDATE variants SET "
-    update_cols = ",".join(col_name + " = ?" for col_name in col_names)
-    update_qry += update_cols
-    update_qry += " WHERE variant_id = ?"
-    cursor.executemany(update_qry, to_update)
+def _update_variants(metadata, to_update, col_names, cursor):
+    tbl = metadata.tables["variants"]
+    bound = {c: sql.bindparam("_" + c) for c in col_names}
+    stmt = tbl.update().where(tbl.c.variant_id == sql.bindparam("_variant_id"))
+    stmt = stmt.values(**bound)
+    def mkdict(v):
+        d = {}
+        d["_variant_id"] = v[-1]
+        for i, val in enumerate(v[:-1]):
+            d["_" + col_names[i]] = val
+        return d
+    cursor.execute(stmt, [mkdict(v) for v in to_update])
 
-def annotate_variants_bool(args, conn, col_names):
+def annotate_variants_bool(args, conn, metadata, col_names):
     """
     Populate a new, user-defined column in the variants
     table with a BOOLEAN indicating whether or not
@@ -142,10 +146,10 @@ def annotate_variants_bool(args, conn, col_names):
             return [1]
         return [0]
 
-    return _annotate_variants(args, conn, has_hit, col_names)
+    return _annotate_variants(args, conn, metadata, has_hit, col_names)
 
 
-def annotate_variants_count(args, conn, col_names):
+def annotate_variants_count(args, conn, metadata, col_names):
     """
     Populate a new, user-defined column in the variants
     table with a INTEGER indicating the count of overlaps
@@ -155,7 +159,7 @@ def annotate_variants_count(args, conn, col_names):
     def get_hit_count(hits):
         return [len(list(hits))]
 
-    return _annotate_variants(args, conn, get_hit_count, col_names)
+    return _annotate_variants(args, conn, metadata, get_hit_count, col_names)
 
 
 def _map_list_types(hit_list, col_type):
@@ -249,7 +253,7 @@ def get_hit_list(hits, col_idxs, args, _count={}):
                           "annotation file.\n")
     return hit_list
 
-def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs):
+def annotate_variants_extract(args, conn, metadata, col_names, col_types, col_ops, col_idxs):
     """
     Populate a new, user-defined column in the variants
     table based on the value(s) from a specific column.
@@ -273,7 +277,7 @@ def annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idx
 
         return vals
 
-    return _annotate_variants(args, conn, summarize_hits,
+    return _annotate_variants(args, conn, metadata, summarize_hits,
                               col_names, col_types, col_ops)
 
 def annotate(parser, args):
@@ -335,30 +339,25 @@ def annotate(parser, args):
     if (args.db is None):
         parser.print_help()
         exit(1)
-    if not os.path.exists(args.db):
-        sys.stderr.write("Error: cannot find database file.")
-        exit(1)
     if not os.path.exists(args.anno_file):
         sys.stderr.write("Error: cannot find annotation file.")
         exit(1)
 
-    conn = sqlite3.connect(args.db)
-    conn.row_factory = sqlite3.Row  # allow us to refer to columns by name
-    conn.isolation_level = None
+    conn, metadata = database.get_session_metadata(args.db)
 
     if args.anno_type == "boolean":
         col_names = _validate_args(args)
-        annotate_variants_bool(args, conn, col_names)
+        annotate_variants_bool(args, conn, metadata, col_names)
     elif args.anno_type == "count":
         col_names = _validate_args(args)
-        annotate_variants_count(args, conn, col_names)
+        annotate_variants_count(args, conn, metadata, col_names)
     elif args.anno_type == "extract":
         if args.col_extracts is None and not args.anno_file.endswith('.vcf.gz'):
             sys.exit("You must specify which column to "
                      "extract from your annotation file.")
         else:
             col_names, col_types, col_ops, col_idxs = _validate_extract_args(args)
-            annotate_variants_extract(args, conn, col_names, col_types, col_ops, col_idxs)
+            annotate_variants_extract(args, conn, metadata, col_names, col_types, col_ops, col_idxs)
     else:
         sys.exit("Unknown column type requested. Exiting.")
 

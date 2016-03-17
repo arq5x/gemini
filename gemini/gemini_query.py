@@ -161,8 +161,7 @@ def query(parser, args):
     if (args.db is None):
         parser.print_help()
 
-    if os.path.exists(args.db):
-        run_query(args)
+    run_query(args)
 
 if __name__ == "__main__":
     main()

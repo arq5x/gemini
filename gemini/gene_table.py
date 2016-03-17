@@ -52,13 +52,13 @@ class gene_summary:
         return ",".join([self.chrom, self.gene, self.is_hgnc, self.ensembl_gene_id, self.hgnc_id, self.synonym, self.rvis,
                          self.strand, self.transcript_min_start, self.transcript_max_end, self.mam_phenotype])
 
-def update_cosmic_census_genes( cursor, args ):
+def update_cosmic_census_genes(session, metadata, args):
     """
     Update the gene summary table with
     whether or not a given gene is in the
     COSMIC cancer gene census
     """
-    config = read_gemini_config( args= args )
+    config = read_gemini_config(args=args)
     path_dirname = config["annotation_dir"]
     file = os.path.join(path_dirname, 'cancer_gene_census.20140120.tsv')
 
@@ -67,6 +67,6 @@ def update_cosmic_census_genes( cursor, args ):
         fields = line.strip().split("\t")
         gene = fields[0]
         chrom = "chr" + fields[3]
-        cosmic_census_genes.append((1,gene,chrom))
+        cosmic_census_genes.append((1, gene, chrom))
 
-    database.update_gene_summary_w_cancer_census(cursor, cosmic_census_genes)
+    database.update_gene_summary_w_cancer_census(session, metadata, cosmic_census_genes)

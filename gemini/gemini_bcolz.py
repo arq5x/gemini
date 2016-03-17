@@ -21,7 +21,6 @@ samples on ext3. These limits are not an issue for ext4.
 import os
 import sys
 sys.setrecursionlimit(8192)
-import sqlite3
 import time
 import re
 import shutil
@@ -31,22 +30,25 @@ import bcolz
 import numexpr as ne
 bcolz.blosc_set_nthreads(2)
 ne.set_num_threads(2)
+import sqlalchemy as sql
+import database
 
 import compression
 from gemini_utils import get_gt_cols
 decomp = compression.unpack_genotype_blob
 
-def get_samples(cur):
-    samples = list(cur.execute("select sample_id, name from samples order by sample_id"))
-    for i, (sid, name) in enumerate(samples):
-        assert i == sid - 1, (i, sid)
-    return [x[1] for x in samples]
+def get_samples(metadata):
+    return [x['name'] for x in metadata.tables['samples'].select().order_by("sample_id").execute()]
 
 def get_n_variants(cur):
-    return next(cur.execute("select count(*) from variants"))[0]
+    return next(iter(cur.execute(sql.text("select count(*) from variants"))))[0]
 
 def get_bcolz_dir(db):
-    return db + ".gts"
+    if not "://" in db:
+        return db + ".gts"
+    else:
+        base = os.environ.get("gemini_bcolz_path", os.path.expand("~/.bcolz/"))
+        return os.path.join(base, db.split("/")[-1])
 
 gt_cols_types = (
     ('gts', np.object),
@@ -75,15 +77,14 @@ def create(db, cols=None):
                 "indexing all columns except 'gts'; to index that column, "
                 "run gemini bcolz_index %s --cols gts" % db)
 
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    gt_cols = [x for x in get_gt_cols(cur) if x in cols]
-    samples = get_samples(cur)
+    conn, metadata = database.get_session_metadata(db)
+    gt_cols = [x for x in get_gt_cols(metadata) if x in cols]
+    samples = get_samples(metadata)
     bcpath = get_bcolz_dir(db)
 
     mkdir(bcpath)
 
-    nv = get_n_variants(cur)
+    nv = get_n_variants(conn)
 
     sys.stderr.write("loading %i variants for %i samples into bcolz\n"
                      % (nv, len(samples)))
@@ -115,7 +116,7 @@ def create(db, cols=None):
         del gtc
 
         empty = [-1] * len(samples)
-        for i, row in enumerate(cur.execute("select %s from variants" % ", ".join(gt_cols))):
+        for i, row in enumerate(conn.execute(sql.text("select %s from variants" % ", ".join(gt_cols)))):
             for j, gt_col in enumerate(gt_cols):
                 vals = decomp(row[j])
                 if vals is None or len(vals) == 0:  # empty gt_phred_ll
@@ -151,13 +152,13 @@ class NoGTIndexException(Exception):
 # TODO: since we call this from query, we can improve speed by only loading
 # samples that appear in the query with an optional query=None arg to load.
 def load(db, query=None):
+    import database
 
     t0 = time.time()
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
+    conn, metadata = database.get_session_metadata(db)
 
-    gt_cols = get_gt_cols(cur)
-    samples = get_samples(cur)
+    gt_cols = get_gt_cols(metadata)
+    samples = get_samples(metadata)
     bcpath = get_bcolz_dir(db)
 
     carrays = {}
@@ -205,9 +206,9 @@ def filter(db, query, user_dict):
     query = " & ".join("(%s)" % token for token in query.split(" and "))
     query = " | ".join("(%s)" % token for token in query.split(" or "))
 
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    samples = get_samples(cur)
+    import database
+    conn, metadata = database.get_session_metadata(db)
+    samples = get_samples(metadata)
     # convert gt_col[index] to gt_col__sample_name
     patt = "(%s)\[(\d+)\]" % "|".join((g[0] for g in gt_cols_types))
 
@@ -266,7 +267,7 @@ if __name__ == "__main__":
     db = sys.argv[1]
     #create(sys.argv[1])
     carrays = load(db)
-    conn = sqlite3.connect(db)
+    conn, metadata = database.get_session_metadata(db)
     if len(sys.argv) > 2:
         q = sys.argv[2]
     else:
