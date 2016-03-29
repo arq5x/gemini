@@ -366,14 +366,16 @@ def create_tables(path, effect_fields=None):
         db[table] = cols
 
     e = sql.create_engine(get_path(path), isolation_level=None)
+    e.connect().connection.connection.text_factory = str
     metadata = sql.MetaData(bind=e)
 
     session = create_session(bind=e, autocommit=False, autoflush=False)
     mapped = {}
-    for tbl in ['variants'] + [x for x in sorted(db) if x != 'variants']:
-        t = sql.Table(tbl, metadata, *db[tbl])
-        t.drop(checkfirst=True)
-        mapped[tbl] = t
+    tables = ['variants'] + [x for x in sorted(db) if x != 'variants']
+    otables = [sql.Table(tbl, metadata, *db[tbl]) for tbl in tables]
+    metadata.drop_all(tables=otables)
+    for t in otables:
+        mapped[t.name] = t
     session.commit()
 
     metadata.create_all()
@@ -516,6 +518,7 @@ def update_gene_summary_w_cancer_census(session, metadata, genes):
 def get_session_metadata(path):
     """return an engine"""
     engine = sqlalchemy.create_engine(get_path(path), isolation_level=None)
+    engine.connect().connection.connection.text_factory = str
     metadata = sql.MetaData(bind=engine)
     metadata.reflect(bind=engine)
     session = create_session(bind=engine, autocommit=False, autoflush=False)
