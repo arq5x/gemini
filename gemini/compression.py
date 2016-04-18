@@ -8,7 +8,7 @@ except:
 
 
 def pack_blob(obj):
-    return zdumps(obj)
+    return buffer(zdumps(obj))
 
 def unpack_genotype_blob(blob):
     return cPickle.loads(zlib.decompress(blob))
