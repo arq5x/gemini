@@ -2,6 +2,7 @@
 
 import os
 import contextlib
+import sys
 
 import sqlalchemy as sql
 from sqlalchemy.orm import mapper, create_session
@@ -412,8 +413,17 @@ def insert_variation(session, metadata, buffer):
     left = set(buffer[0].keys()) - set(cols)
     assert len(left) == 0, left
 
-    session.execute(tbl.insert(), buffer)
-    session.commit()
+    try:
+        session.execute(tbl.insert(), buffer)
+        session.commit()
+    except:
+        sys.stderr.write("insert error trying 1 at a time:\n")
+        session.rollback()
+        stmt = tbl.insert()
+        with session.bind.begin() as trans:
+            for b in buffer:
+                trans.execute(stmt, b)
+        raise
 
 
 def insert_variation_impacts(session, metadata, buffer):
@@ -519,9 +529,12 @@ def get_session_metadata(path):
     """return an engine"""
     engine = sqlalchemy.create_engine(get_path(path), isolation_level=None)
     engine.connect().connection.connection.text_factory = str
+    engine.raw_connection().connection.text_factory = str
     metadata = sql.MetaData(bind=engine)
     metadata.reflect(bind=engine)
     session = create_session(bind=engine, autocommit=False, autoflush=False)
+    session.bind.connect().connection.connection.text_factory = str
+    session.bind.raw_connection().connection.text_factory = str
     return session, metadata
 
 

@@ -69,7 +69,7 @@ def load_clinvar(cpath):
         info = v.INFO
         gene = info.get('GENEINFO')
         if gene is None: continue
-        diseases = [x for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
+        diseases = [x.decode('utf8', 'ignore').encode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
         if diseases == []: continue
 
         genes = [x.split(":")[0] for x in gene.split("|")]
