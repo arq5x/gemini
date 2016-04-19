@@ -95,7 +95,8 @@ class ClinVarInfo(object):
                              '255': 'other'}
 
     def __repr__(self):
-        return '\t'.join([self.clinvar_dbsource,
+        return '\t'.join(map(str, [
+                          self.clinvar_dbsource,
                           self.clinvar_dbsource_id,
                           self.clinvar_origin,
                           self.clinvar_sig,
@@ -106,7 +107,7 @@ class ClinVarInfo(object):
                           str(self.clinvar_in_omim),
                           str(self.clinvar_in_locus_spec_db),
                           str(self.clinvar_on_diag_assay),
-                          str(self.clinvar_causal_allele)])
+                          str(self.clinvar_causal_allele)]))
 
     def lookup_clinvar_origin(self, origin_code):
         try:
@@ -602,7 +603,7 @@ def get_clinvar_info(var):
 
         raw_dbsource = info_map['CLNSRC'] or None
         #interpret 8-bit strings and convert to plain text
-        clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf-8'))
+        clinvar.clinvar_dbsource = raw_dbsource.decode('utf8', 'ignore').encode('ascii', 'ignore')
         clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
             clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
@@ -612,9 +613,8 @@ def get_clinvar_info(var):
         clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
         # Remap all unicode characters into plain text string replacements
         raw_disease_name = info_map['CLNDBN'] or None
-        clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8'))
+        clinvar.clinvar_disease_name = raw_disease_name.decode('utf8', 'ignore').encode('ascii', 'ignore')
         # Clinvar represents commas as \x2c.  Make them commas.
-        clinvar.clinvar_disease_name = clinvar.clinvar_disease_name.decode('string_escape')
 
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
         clinvar.clinvar_in_omim = 1 if 'OM' in info_map else 0
@@ -645,6 +645,7 @@ def get_clinvar_info(var):
                     clinvar_causal_allele += hit.alt.split(',')[causal_allele_number - 1]
 
             clinvar.clinvar_causal_allele = clinvar_causal_allele
+    print(repr(clinvar))
     return clinvar
 
 
