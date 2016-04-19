@@ -278,17 +278,18 @@ def _get_var_ref_and_alt(var):
     if isinstance(var, basestring):
         # Assume var is a line from a VCF.
         ref, alt = var.split('\t')[3:5]
-    try:
-        ref = var["ref"]
-        alt = var["alt"]
-    except (TypeError, AttributeError):
+    else:
         try:
-            ref = var.REF
-            alt = var.ALT
-        except KeyError:
-            # For Pysam reader:
-            ref = var.ref
-            alt = var.alt
+            ref = var["ref"]
+            alt = var["alt"]
+        except (TypeError, AttributeError):
+            try:
+                ref = var.REF
+                alt = var.ALT
+            except KeyError:
+                # For Pysam reader:
+                ref = var.ref
+                alt = var.alt
 
     if isinstance(alt, basestring):
         alt = alt.split(",")
