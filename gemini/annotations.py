@@ -645,7 +645,6 @@ def get_clinvar_info(var):
                     clinvar_causal_allele += hit.alt.split(',')[causal_allele_number - 1]
 
             clinvar.clinvar_causal_allele = clinvar_causal_allele
-    print(repr(clinvar))
     return clinvar
 
 
