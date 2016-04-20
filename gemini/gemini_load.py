@@ -160,7 +160,7 @@ def merge_chunks_multicore(chunks, args):
         for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
             cmd = get_merge_chunks_cmd(sub_merge, tmp_db, tempdir=args.tempdir, vcf=args.vcf,
                                        anno_type=args.anno_type)
-            procs.append(subprocess.Popen(cmd, shell=True))
+            procs.append(subprocess.Popen(cmd, shell=True, stderr=sys.stderr))
         wait_until_finished(procs)
         cleanup_temp_db_files(chunks)
         merge_chunks_multicore(tmp_dbs, args)
@@ -249,7 +249,7 @@ def load_chunks_multicore(grabix_file, args):
         if os.environ.get('GEMINI_DEBUG') == "TRUE":
             print >>sys.stderr, gemini_load
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
-                                      shell=True))
+                                      shell=True, stderr=sys.stderr))
 
         chunk_vcf = chunk_dir + vcf + ".chunk" + str(chunk_num)
         chunk_vcfs.append(chunk_vcf)
@@ -337,7 +337,7 @@ def load_chunk(chunk_step, kwargs):
     start, stop = chunk
     args = combine_dicts(locals(), kwargs)
     gemini_load = gemini_pipe_load_cmd().format(**args)
-    subprocess.check_call(gemini_load, shell=True)
+    subprocess.check_call(gemini_load, shell=True, stderr=sys.stderr)
     chunk_db = kwargs["chunk_dir"] + args["vcf"] + ".chunk" + str(chunk_num) + ".db"
     return chunk_db
 
