@@ -51,8 +51,18 @@ def get_genotypes(conn, metadata, args):
 
     if args.use_header:
         print args.separator.join(col for col in col_names)
+
+    unpack = Z.unpack_genotype_blob
+    import zlib
+
+
     for row in res:
-        gts = Z.unpack_genotype_blob(row['gts'])
+        try:
+            gts = unpack(row['gts'])
+        except zlib.error:
+            unpack = Z.snappy_unpack_blob
+            gts = unpack(row['gts'])
+
         for idx, gt in enumerate(gts):
             # xrange(len(row)-1) to avoid printing v.gts
             a = args.separator.join(str(row[i]) for i in xrange(len(row)-1))

@@ -154,9 +154,16 @@ def get_mds(conn, metadata, args):
     # keep a list of numeric genotype values
     # for each sample
     genotypes = collections.defaultdict(list)
+    import zlib
+    unpack = Z.unpack_genotype_blob
+
     for row in res:
 
-        gt_types = Z.unpack_genotype_blob(row['gt_types'])
+        try:
+            gt_types = unpack(row['gt_types'])
+        except zlib.error:
+            unpack = Z.snappy_unpack_blob
+            gt_types = unpack(row['gt_types'])
 
         # at this point, gt_types is a numpy array
         # idx:  0 1 2 3 4 5 6 .. #samples

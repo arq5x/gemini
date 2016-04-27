@@ -28,9 +28,16 @@ def get_ind_lof(conn, metadata, args):
                      'trans_aa_length', 'var_trans_pct',
                      'sample', 'genotype', 'gene', 'transcript', 'trans_type'])
 
+    unpack = Z.unpack_genotype_blob
     for r in res:
-        gt_types = Z.unpack_genotype_blob(r['gt_types'])
-        gts = Z.unpack_genotype_blob(r['gts'])
+        try:
+            gt_types = unpack(r['gt_types'])
+            gts = unpack(r['gts'])
+        except:
+            unpack = Z.snappy_unpack_blob
+            gt_types = unpack(r['gt_types'])
+            gts = unpack(r['gts'])
+
         gene = str(r['gene'])
         trans = str(r['transcript'])
 
