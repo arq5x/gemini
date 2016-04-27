@@ -44,13 +44,22 @@ class GeminiInheritanceModel(object):
         if self.args.filter:
             query += " WHERE " + self.args.filter
 
+        if hasattr(self.args, 'X'):
+            if self.args.X == []:
+                self.args.X = ['chrX', 'X']
+            part = "chrom IN (%s)" % ", ".join("'%s'" % x for x in self.args.X)
+            if " WHERE " in query:
+                query += " AND " + part
+            else:
+                query += " WHERE " + part
+
         # auto_rec and auto_dom candidates should be limited to
         # variants affecting genes.
         if self.model in ("auto_rec", "auto_dom", "comp_het") or \
            (self.model == "de_novo" and self.args.min_kindreds is not None):
 
             # we require the "gene" column for the auto_* tools
-            if self.args.filter:
+            if " WHERE " in query:
                 query += " AND gene is not NULL"
             else:
                 query += " WHERE gene is not NULL"
@@ -129,16 +138,22 @@ class GeminiInheritanceModel(object):
         if self.model == "mendel_violations":
             kwargs = {'only_affected': self.args.only_affected}
         if self.model != "comp_het" and self.model != "mendel_violations":
-            kwargs['strict'] = not self.args.lenient
+            if hasattr(self.args, 'lenient'):
+                kwargs['strict'] = not self.args.lenient
         elif self.model == "comp_het":
             kwargs['pattern_only'] = self.args.pattern_only
+        if hasattr(self.args, 'gt_phred_ll'):
+            kwargs['gt_ll'] = self.args.gt_phred_ll
+
+        if self.model in ('x_rec', 'x_dom'):
+            kwargs.pop('only_affected')
 
         requested_fams = None if not args.families else set(args.families.split(","))
 
         for family in families:
             if requested_fams is None or family.family_id in requested_fams:
                 # e.g. family.auto_rec(gt_ll, min_depth)
-                family_filter = getattr(family, self.model)(gt_ll=self.args.gt_phred_ll,
+                family_filter = getattr(family, self.model)(
                                     min_depth=self.args.min_sample_depth,
                                     **kwargs)
             else:
@@ -152,7 +167,7 @@ class GeminiInheritanceModel(object):
         req_cols = ['gt_types', 'gts']
         if args.min_sample_depth and self.args.min_sample_depth > 0:
             req_cols.append('gt_depths')
-        if args.gt_phred_ll or self.model == "mendel_violations":
+        if getattr(args, 'gt_phred_ll', False) or self.model == "mendel_violations":
 
             for col in ['gt_phred_ll_homref', 'gt_phred_ll_het',
                         'gt_phred_ll_homalt']:
@@ -286,6 +301,20 @@ class GeminiInheritanceModel(object):
                     s[col] = str(s[col]).replace('\n', '')
             print "\t".join(map(str, s.values()))
 
+
+class XRec(GeminiInheritanceModel):
+    model = "x_rec"
+
+    def candidates(self):
+        for g, li in self.gen_candidates('gene'):
+            yield g, li
+
+class XDom(GeminiInheritanceModel):
+    model = "x_dom"
+
+    def candidates(self):
+        for g, li in self.gen_candidates('gene'):
+            yield g, li
 
 class AutoDom(GeminiInheritanceModel):
     model = "auto_dom"

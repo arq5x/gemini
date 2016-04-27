@@ -678,6 +678,38 @@ are not):
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	2_dad(dad;unaffected),2_mom(mom;affected),2_kid(child;affected)	T/T,T/C,T/C	2_mom,2_kid	2
     WDR37	chr10	1142207	1142208	T	C	stop_loss	HIGH	1	1	3_dad(dad;affected),3_mom(mom;unknown),3_kid(child;affected)	T/C,T/T,T/C	3_dad,3_kid	2
 
+===========================================================================
+``x_linked_recessive``: x-linked recessive inheritance
+===========================================================================
+
+Note that as of version 0.19.0, we do not account for the pseudo autosomal regions.
+The 'X' chromosome can be specifing using --X (defaults to 'chrX' and 'X')
+
+---------------------
+Genotype Requirements
+---------------------
+
+- Affected females must be HOM_ALT
+- Unaffected females are HET or HOM_REF
+- Affected males are not HOM_REF
+- Unaffected males are HOM_REF
+
+===========================================================================
+``x_linked_dominant``: x-linked dominant inheritance
+===========================================================================
+
+Note that as of version 0.19.0, we do not account for the pseudo autosomal regions.
+The 'X' chromosome can be specifing using --X (defaults to 'chrX' and 'X')
+
+---------------------
+Genotype Requirements
+---------------------
+
+- Affected males are HET or HOM_REF
+- Affected females must be HET
+- Unaffecteds must be HOM_REF
+- girls of affected dad must be affected
+- boys of affected dad must be unaffected
 
 ===========================================================================
 ``gene_wise``: Custom genotype filtering by gene. 

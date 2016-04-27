@@ -6,11 +6,11 @@ Release History
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
 
-0.19.0 (future)
-===============
-#. Use SQLAlchemy for table definitions in an effort to support different RDBMS backends.
+0.19.0 (development)
+====================
+#. Use SQLAlchemy for table definitions to support different RDBMS backends.
+#. Several optimizations to loading.
 #. X-linked recessive and dominant tools.
-#. x-linked inheritance models (TODO: expose in gemini and bump inheritance req)
 
 0.18.3
 ======
