@@ -10,7 +10,7 @@ Release History
 ====================
 #. Use SQLAlchemy for table definitions to support different RDBMS backends.
 #. Several optimizations to loading.
-#. X-linked recessive and dominant tools.
+#. X-linked recessive and dominant and de novo tools.
 
 0.18.3
 ======

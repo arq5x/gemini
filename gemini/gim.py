@@ -145,7 +145,7 @@ class GeminiInheritanceModel(object):
         if hasattr(self.args, 'gt_phred_ll'):
             kwargs['gt_ll'] = self.args.gt_phred_ll
 
-        if self.model in ('x_rec', 'x_dom'):
+        if self.model in ('x_rec', 'x_dom', 'x_denovo'):
             kwargs.pop('only_affected')
 
         requested_fams = None if not args.families else set(args.families.split(","))
@@ -309,12 +309,12 @@ class XRec(GeminiInheritanceModel):
         for g, li in self.gen_candidates('gene'):
             yield g, li
 
-class XDom(GeminiInheritanceModel):
+class XDenovo(XRec):
+    model = "x_denovo"
+
+class XDom(XRec):
     model = "x_dom"
 
-    def candidates(self):
-        for g, li in self.gen_candidates('gene'):
-            yield g, li
 
 class AutoDom(GeminiInheritanceModel):
     model = "auto_dom"
