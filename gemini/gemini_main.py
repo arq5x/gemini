@@ -684,7 +684,6 @@ def main():
              + ' or higher to include pairs that are less likely true comp-hets',
             default=1)
 
-
     def comp_hets_fn(parser, args):
         from .gim import CompoundHet
         CompoundHet(args).run()
@@ -695,7 +694,7 @@ def main():
     #########################################
     parser_xr = subparsers.add_parser('x_linked_recessive', help='X-linked recessive variants')
     parser_xd = subparsers.add_parser('x_linked_dominant', help='X-linked dominant variants')
-
+    parser_xdn = subparsers.add_parser('x_linked_de_novo', help='X-linked de novo variants')
 
     parser_xr.add_argument("-X", dest='X',
                            help="name of X chrom (if not default 'chrX' or 'X')",
@@ -704,8 +703,13 @@ def main():
                            help="name of X chrom (if not default 'chrX' or 'X')",
                            default=[], action='append')
 
+    parser_xdn.add_argument("-X", dest='X',
+                            help="name of X chrom (if not default 'chrX' or 'X')",
+                            default=[], action='append')
+
     add_inheritance_args(parser_xr, lenient=False, gt_ll=False)
     add_inheritance_args(parser_xd, lenient=False, gt_ll=False)
+    add_inheritance_args(parser_xdn, lenient=False, gt_ll=False)
 
     def x_rec_fn(parser, args):
         from .gim import XRec
@@ -717,6 +721,10 @@ def main():
         XDom(args).run()
     parser_xd.set_defaults(func=x_dom_fn)
 
+    def x_denovo_fn(parser, args):
+        from .gim import XDenovo
+        XDenovo(args).run()
+    parser_xdn.set_defaults(func=x_denovo_fn)
 
     #########################################
     # $ gemini pathways
