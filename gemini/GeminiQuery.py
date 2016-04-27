@@ -341,7 +341,7 @@ class VCFRowFormat(RowFormat):
             self.gq.run('select vcf_header from vcf_header')
             return str(self.gq.next()).strip()
         except:
-            sys.exit("Your database does not contain the vcf_header table. Therefore, you cannot use --header.\n")
+            raise ValueError("Your database does not contain the vcf_header table. Therefore, you cannot use --header.\n")
 
 class SampleDetailRowFormat(RowFormat):
     """Retrieve queries with flattened sample information for samples present.
@@ -567,7 +567,7 @@ class GeminiQuery(object):
         self.query = self.formatter.format_query(query)
         self.gt_filter = gt_filter
         if self._is_gt_filter_safe() is False:
-            sys.exit("ERROR: invalid --gt-filter command.")
+            raise ValueError("ERROR: invalid --gt-filter command.")
 
         self.show_variant_samples = show_variant_samples
         self.variant_samples_delim = variant_samples_delim
@@ -846,7 +846,7 @@ class GeminiQuery(object):
             msg = "SQL error: {0}\n".format(e)
             print msg
             sys.stderr.write(msg)
-            sys.exit("The query issued (%s) has a syntax error." % self.query)
+            raise ValueError("The query issued (%s) has a syntax error." % self.query)
         return res
 
     def _apply_query(self):
@@ -1008,7 +1008,7 @@ class GeminiQuery(object):
                 if token.count('.') != 3 or \
                    token.count('(') != 4 or \
                    token.count(')') != 4:
-                    sys.exit("Wildcard filter should consist of 4 elements. Exiting.")
+                    raise ValueError("Wildcard filter should consist of 4 elements. Exiting.")
 
                 (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
 
@@ -1052,7 +1052,7 @@ class GeminiQuery(object):
                     else:
                         rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
                 else:
-                    sys.exit("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
+                    raise ValueError("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
 
                 corrected_gt_filter.append(rule)
             else:
@@ -1080,7 +1080,7 @@ class GeminiQuery(object):
         the gts, gt_types and gt_phases columns.
         """
         if "from" not in self.query.lower():
-            sys.exit("Malformed query: expected a FROM keyword.")
+            raise ValueError("Malformed query: expected a FROM keyword.")
 
         (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
@@ -1109,7 +1109,7 @@ class GeminiQuery(object):
         in a query.
         """
         if "from" not in self.query.lower():
-            sys.exit("Malformed query: expected a FROM keyword.")
+            raise ValueError("Malformed query: expected a FROM keyword.")
 
         (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
@@ -1130,7 +1130,7 @@ class GeminiQuery(object):
         NOTE: Should only be called if using VCFRowFormat()
         """
         if "from" not in self.query.lower():
-            sys.exit("Malformed query: expected a FROM keyword.")
+            raise ValueError("Malformed query: expected a FROM keyword.")
 
         (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
@@ -1168,7 +1168,7 @@ class GeminiQuery(object):
         # iterate through all of the select columns andclear
         # distinguish the genotype-specific columns from the base columns
         if "from" not in self.query.lower():
-            sys.exit("Malformed query: expected a FROM keyword.")
+            raise ValueError("Malformed query: expected a FROM keyword.")
 
         (select_tokens, rest_of_query) = get_select_cols_and_rest(self.query)
 
