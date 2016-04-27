@@ -691,6 +691,34 @@ def main():
     parser_comp_hets.set_defaults(func=comp_hets_fn)
 
     #########################################
+    # x-linked-recessive / dominant
+    #########################################
+    parser_xr = subparsers.add_parser('x_linked_recessive', help='X-linked recessive variants')
+    parser_xd = subparsers.add_parser('x_linked_dominant', help='X-linked dominant variants')
+
+
+    parser_xr.add_argument("-X", dest='X',
+                           help="name of X chrom (if not default 'chrX' or 'X')",
+                           default=[], action='append')
+    parser_xd.add_argument("-X", dest='X',
+                           help="name of X chrom (if not default 'chrX' or 'X')",
+                           default=[], action='append')
+
+    add_inheritance_args(parser_xr, lenient=False, gt_ll=False)
+    add_inheritance_args(parser_xd, lenient=False, gt_ll=False)
+
+    def x_rec_fn(parser, args):
+        from .gim import XRec
+        XRec(args).run()
+    parser_xr.set_defaults(func=x_rec_fn)
+
+    def x_dom_fn(parser, args):
+        from .gim import XDom
+        XDom(args).run()
+    parser_xd.set_defaults(func=x_dom_fn)
+
+
+    #########################################
     # $ gemini pathways
     #########################################
     parser_pathway = subparsers.add_parser('pathways',
