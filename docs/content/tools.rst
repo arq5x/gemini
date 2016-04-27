@@ -712,6 +712,21 @@ Genotype Requirements
 - boys of affected dad must be unaffected
 
 ===========================================================================
+``x_linked_de_novo``: x-linked de novo
+===========================================================================
+
+Note that as of version 0.19.0, we do not account for the pseudo autosomal regions.
+The 'X' chromosome can be specifing using --X (defaults to 'chrX' and 'X')
+
+---------------------
+Genotype Requirements
+---------------------
+
+- affected female child must be het
+- affected male child must be hom_alt (or het)
+- parents should be unaffected and hom_ref
+
+===========================================================================
 ``gene_wise``: Custom genotype filtering by gene. 
 ===========================================================================
 The gemini query tool allows querying by variant and the inheritance tools
