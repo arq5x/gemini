@@ -112,7 +112,7 @@ def get_families(db, selected_families=None):
     if selected_families is not None:
         for family in selected_families.split(','):
             if family not in families_dict:
-                sys.exit("ERROR: family \"%s\" is not a valid family_id\n" % family)
+                raise ValueError("Family \"%s\" is not a valid family_id\n" % family)
 
     families = []
     for fam in families_dict:
