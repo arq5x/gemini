@@ -279,7 +279,7 @@ class GeminiLoader(object):
             except KeyError:
                 error = ("\nWARNING: VCF is not annotated with snpEff, check documentation at:\n"\
                 "http://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-snpeff\n")
-                sys.exit(error)
+                raise KeyError(error)
 
             # e.g., "SnpEff 3.0a (build 2012-07-08), by Pablo Cingolani"
             # or "3.3c (build XXXX), by Pablo Cingolani"
@@ -313,11 +313,12 @@ class GeminiLoader(object):
             if all_found:
                 return parts
         except KeyError:
-            # Did not find expected fields
-            pass
+            print("VEP: KeyError, did not find expected fields")
+
+        # Should not reach this point, badly formatted VEP-VCF annotation
         error = "\nERROR: Check gemini docs for the recommended VCF annotation with VEP"\
                 "\nhttp://gemini.readthedocs.org/en/latest/content/functional_annotation.html#stepwise-installation-and-usage-of-vep"
-        sys.exit(error)
+        raise ValueError(error)
 
     def _create_db(self, effect_fields=None):
         """
@@ -702,8 +703,8 @@ class GeminiLoader(object):
                 fields = self.ped_hash[sample]
                 sample_list = [i] + fields
             elif len(self.ped_hash) > 0:
-                sys.exit("EXITING: sample %s found in the VCF but "
-                         "not in the PED file.\n" % (sample))
+                raise ValueError("Sample %s found in the VCF but "
+                                 "not in the PED file.\n" % (sample))
             else:
                 # if there is no ped file given, just fill in the name and
                 # sample_id and set the other required fields to None

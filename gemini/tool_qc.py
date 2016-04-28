@@ -66,7 +66,7 @@ def check_sex(args):
     chr_start, chr_end = _get_variant_range(args)
 
     if chr_start is None or chr_end is None:
-        sys.exit("ERROR: cannot find variant offsets for chrom %s\n" % args.chrom)
+        raise ValueError("Cannot find variant offsets for chrom %s\n" % args.chrom)
 
     bcpath = bc.get_bcolz_dir(args.db)
     print '\t'.join(['sample', 'sex',
@@ -77,7 +77,7 @@ def check_sex(args):
         if os.path.exists(path):
             gt_types_carray = bc.bcolz.open(path, mode="r")
         else:
-            sys.exit("ERROR: cannot find bcolz indices for sample %s\n" % sample)
+            raise ValueError("Cannot find bcolz indices for sample %s\n" % sample)
 
         # retrieve the subset of genotype types for this sample
         # that are from the X chromosome

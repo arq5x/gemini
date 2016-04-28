@@ -24,7 +24,7 @@ def get_pathways(args):
         path_file = os.path.join(path_dirname, version_dic[args.version])
 
     else:
-        sys.exit("Unsupported Ensembl gene version.\n")
+        raise NotImplementedError("Unsupported Ensembl gene version.\n")
 
     agn_paths = defaultdict(list)
     hgnc_paths = defaultdict(list)

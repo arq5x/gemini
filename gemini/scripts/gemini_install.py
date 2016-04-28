@@ -70,7 +70,7 @@ def main(args, remotes=remotes):
         try:
             urllib2.urlopen(requirements_conda)
         except:
-            sys.exit('Gemini version %s could not be found. Try the latest version.' % args.gemini_version)
+            raise ValueError('Gemini version %s could not be found. Try the latest version.' % args.gemini_version)
         remotes.update({'requirements_conda': requirements_conda})
 
     print("Installing isolated base python installation")

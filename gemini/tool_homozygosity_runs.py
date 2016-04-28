@@ -140,7 +140,7 @@ def get_homozygosity_runs(args):
             try:
                 idx = smp2idx[sample]
             except:
-                sys.exit("ERROR: Sample %s could not be found. Exiting.\n" \
+                raise ValueError("Sample %s could not be found.\n" \
                     % (sample))
             sm_index.append(smp2idx[sample])
     else:

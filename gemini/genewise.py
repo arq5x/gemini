@@ -134,11 +134,9 @@ def run(args):
             # only do this if they didn't specify args.gt_filter
             args.min_filters = 0
         else:
-            sys.stderr.write("ERROR gene-wise: specified --min-filter > the number of --gt-filters\n")
-            sys.exit(2)
+            raise RuntimeError("gene-wise: specified --min-filter > the number of --gt-filters\n")
     if len(args.gt_filter) == 0 and len(args.gt_filter_required) == 0:
-        sys.stderr.write("ERROR gene-wise: specified neither --min-filter or --min-filter-required\n")
-        sys.exit(2)
+        raise RuntimeError("ERROR gene-wise: specified neither --min-filter or --min-filter-required\n")
 
     genewise(args.db, args.gt_filter, args.gt_filter_required, args.filter, args.columns,
              args.min_filters)
