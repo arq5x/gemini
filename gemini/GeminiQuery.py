@@ -386,9 +386,10 @@ class SampleDetailRowFormat(RowFormat):
 
 class GeminiRow(object):
     __slots__ = ('cache', 'genotype_dict', 'row', 'formatter', 'query',
-                 'print_fields')
+                 'print_fields', 'unpack')
 
-    def __init__(self, row, query, formatter=DefaultRowFormat(None), print_fields=None):
+    def __init__(self, row, query, formatter=DefaultRowFormat(None),
+                 print_fields=None, unpacker=None):
         # row can be a dict() from the database or another GeminiRow (from the
         # same db entry). we try to re-use the cached stuff if possible.
         self.cache = {}
@@ -396,6 +397,8 @@ class GeminiRow(object):
         self.row = getattr(row, "row", row)
         self.cache = getattr(row, "cache", {})
         self.genotype_dict = getattr(row, "genotype_dict", {})
+
+        self.unpack = unpacker or compression.unpack_genotype_blob
 
         # for the eval.
         #self.cache['sample_info'] = dict(query.sample_info)
@@ -433,7 +436,7 @@ class GeminiRow(object):
             return self.row[key]
         elif key in self.query.gt_cols:
             if key not in self.cache:
-                self.cache[key] = compression.unpack_genotype_blob(self.row[key])
+                self.cache[key] = self.unpack(self.row[key])
             return self.cache[key]
         raise KeyError(key)
 
@@ -545,6 +548,12 @@ class GeminiQuery(object):
         self.idx_to_sample = {s['sample_id'] -1: s['name'] for s in samples}
         self.idx_to_sample_object = {s['sample_id'] -1: Subject(s) for s in samples}
         self.sample_to_sample_object = {s['name']: Subject(s) for s in samples}
+
+        self.unpacker = compression.unpack_genotype_blob
+        if "features" in self.metadata.tables:
+            features = [x['feature'] for x in self.metadata.tables['features'].select().execute()]
+            if "snappy_compression" in features:
+                self.unpacker = compression.snappy_unpack_blob
 
         self.formatter = out_format
         self.predicates = [self.formatter.predicate]
@@ -696,7 +705,8 @@ class GeminiQuery(object):
         # can quickly exceed the stack.
         while (1):
             try:
-                row = GeminiRow(next(self.result_proxy), self)
+                row = GeminiRow(next(self.result_proxy), self,
+                        unpacker=self.unpacker)
             except StopIteration:
                 self.conn.close()
                 raise StopIteration
@@ -772,7 +782,8 @@ class GeminiQuery(object):
 
             if not self.for_browser:
                 # need to use new row for formatter.
-                return GeminiRow(row, self, formatter=self.formatter, print_fields=fields)
+                return GeminiRow(row, self, formatter=self.formatter,
+                        print_fields=fields, unpacker=self.unpacker)
             else:
                 return fields
 
