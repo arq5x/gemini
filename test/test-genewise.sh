@@ -35,13 +35,13 @@ check obs exp
 rm obs exp
 
 echo "genewise.t2"
-echo "ERROR gene-wise: specified --min-filter > the number of --gt-filters" > exp
+echo "RuntimeError: gene-wise: specified --min-filter > the number of --gt-filters" > exp
 gemini gene_wise  \
     --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
 	--gt-filter "(gt_types.1_dad == HOM_REF and gt_types.1_kid == HET and gt_types.1_mom == HOM_REF)" \
 	--min-filters 2 \
     test.auto_dom.db  &> obs
-check obs exp
+check <(tail -n2 obs | grep -v ^$) <(tail -n2 exp | grep -v ^$) obs exp
 rm obs exp
 
 echo "genewise.t3"
