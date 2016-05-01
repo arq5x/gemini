@@ -129,17 +129,15 @@ on your system:
 
 Running unit tests
 -------------------------------------------------
-If successfully installed, you should be able to change
-directories into the ``gemini`` directory within the 
-directory into which you installed the GEMINI source code
-and run a script of unit tests that will ensure that GEMINI
-is running appropriately on your system. For example, if, as 
-above, you installed the GEMINI executables to ``~/gemini``, you
-would issue the following commands to run the unit tests:
+
+gemini only installs the software itself, not the source
+repository with the tests. To run the tests, do:
 
 .. code-block:: bash
-
-   $ cd ~/gemini/gemini
+   
+   $ git clone https://github.com/arq5x/gemini
+   $ git checkout v0.18.3 # or the current version that you installed
+   $ cd gemini
    $ bash master-test.sh 
 
 Updating the GEMINI executables and annotations

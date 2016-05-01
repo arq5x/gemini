@@ -1,6 +1,7 @@
 *.py[cod]
 *.ipynb*
 *.swp
+*.db
 
 test/exp*
 test/obs*

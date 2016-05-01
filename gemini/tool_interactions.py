@@ -16,15 +16,25 @@ import gemini_utils as util
 from gemini_constants import *
 from collections import defaultdict
 import gzip
+import zlib
 
 def xopen(fname, mode='r'):
     return gzip.open(fname, mode) if fname.endswith(".gz") else open(fname, mode)
 
 def get_variant_genes(res, args, idx_to_sample):
     samples = defaultdict(list)
+
+    unpack = Z.unpack_genotype_blob
+
     for r in res:
-        gt_types = Z.unpack_genotype_blob(r['gt_types'])
-        gts      = Z.unpack_genotype_blob(r['gts'])
+        try:
+            gt_types = unpack(r['gt_types'])
+            gts      = unpack(r['gts'])
+        except zlib.error:
+            unpack = Z.snappy_unpack_blob
+            gt_types = unpack(r['gt_types'])
+            gts      = unpack(r['gts'])
+
         var_id = str(r['variant_id'])
         chrom = str(r['chrom'])
         start = str(r['start'])
@@ -51,9 +61,16 @@ def get_variant_genes(res, args, idx_to_sample):
 
 def get_lof_genes(res, args, idx_to_sample):
     lof = defaultdict(list)
+    unpack = Z.unpack_genotype_blob
+
     for r in res:
-        gt_types = Z.unpack_genotype_blob(r['gt_types'])
-        gts      = Z.unpack_genotype_blob(r['gts'])
+        try:
+            gt_types = unpack(r['gt_types'])
+            gts      = unpack(r['gts'])
+        except zlib.error:
+            gt_types = unpack(r['gt_types'])
+            gts      = unpack(r['gts'])
+
         gene     = str(r['gene'])
 
         for idx, gt_type in enumerate(gt_types):

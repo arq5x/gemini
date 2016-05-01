@@ -154,6 +154,7 @@ bash test-geno2mp.sh
 
 bash test-genewise.sh
 
+bash test-x-linked.sh
 # cleanup
 #rm ./*.db
 rm -Rf *.gts

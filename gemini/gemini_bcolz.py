@@ -24,6 +24,7 @@ sys.setrecursionlimit(8192)
 import time
 import re
 import shutil
+import zlib
 
 import numpy as np
 import bcolz
@@ -35,7 +36,6 @@ import database
 
 import compression
 from gemini_utils import get_gt_cols
-decomp = compression.unpack_genotype_blob
 
 def get_samples(metadata):
     return [x['name'] for x in metadata.tables['samples'].select().order_by("sample_id").execute()]
@@ -114,9 +114,16 @@ def create(db, cols=None):
         step = max(100, 2000000 / len(samples))
         sys.stderr.write("step-size: %i\n" % step)
         del gtc
+        decomp = compression.unpack_genotype_blob
 
         empty = [-1] * len(samples)
         for i, row in enumerate(conn.execute(sql.text("select %s from variants" % ", ".join(gt_cols)))):
+            if i == 0:
+                try:
+                    decomp(row[0])
+                except zlib.error:
+                    decomp = compression.snappy_unpack_blob
+
             for j, gt_col in enumerate(gt_cols):
                 vals = decomp(row[j])
                 if vals is None or len(vals) == 0:  # empty gt_phred_ll
