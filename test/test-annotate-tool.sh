@@ -476,11 +476,11 @@ bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-echo $'EXITING: The number of column names, numbers, types, and operations must match: [anno23], [4,5], [text,float], [last,mode]\n' > exp
+echo $'ValueError: The number of column names, numbers, types, and operations must match: [anno23], [4,5], [text,float], [last,mode]\n' > exp
 
 gemini annotate -f anno.bed.gz -a extract -c anno23 -e 4,5 -t text,float -o last,mode  test.snpeff.vcf.db 2> obs
 
-check obs exp annotate-tool.t15
+check <(tail -n2 obs | grep -v ^$) <(tail -n2 exp | grep -v ^$) annotate-tool.t15
 rm obs exp
 rm *.gz*
 
@@ -523,10 +523,10 @@ bgzip -f anno.bed
 tabix -p bed anno.bed.gz
 
 # create a new column in the database using the new annotation
-echo $'EXITING: Column operation [model] not supported.\n' > exp
+echo $'ValueError: Column operation [model] not supported.\n' > exp
 
 gemini annotate -f anno.bed.gz -a extract -c anno27,anno28 -e 4,5 -t text,float -o last,model  test.snpeff.vcf.db 2> obs
 
-check obs exp annotate-tool.t17
-#rm obs exp
+check <(tail -n2 obs | grep -v ^$) <(tail -n2 exp | grep -v ^$) annotate-tool.t17
+rm obs exp
 rm *.gz*

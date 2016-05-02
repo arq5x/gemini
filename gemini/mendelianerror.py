@@ -195,7 +195,6 @@ def main(fh, father, mother, child):
 
 def test():
     from random import randint
-    sys.exit()
 
     def gen3():
         return [randint(-70, 1) / 10. for i in range(3)]

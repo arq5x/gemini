@@ -95,7 +95,7 @@ def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
         if not os.path.exists(anno_dir):
             os.makedirs(anno_dir)
         if not os.path.isdir(anno_dir):
-            sys.exit(anno_dir + " is not a valid directory.")
+            raise IOError(anno_dir + " is not a valid directory.")
         to_dl = anno_files[:]
         if extra:
             to_dl += [extra_anno_files[x] for x in extra]

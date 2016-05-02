@@ -190,13 +190,13 @@ def load_annos(args):
                 annos[anno] = BigWigFile(open(anno_files[anno]))
 
         except IOError:
-            sys.exit("Gemini cannot open this annotation file: %s. \n"
-                     "Have you installed the annotation files?  If so, "
-                     "have they been moved or deleted? Exiting...\n\n"
-                     "For more details:\n\t"
-                     "http://gemini.readthedocs.org/en/latest/content/"
-                     "#installation.html\#installing-annotation-files\n"
-                     % anno_files[anno])
+            raise IOError("Gemini cannot open this annotation file: %s. \n"
+                          "Have you installed the annotation files?  If so, "
+                          "have they been moved or deleted? Exiting...\n\n"
+                          "For more details:\n\t"
+                          "http://gemini.readthedocs.org/en/latest/content/"
+                          "#installation.html\#installing-annotation-files\n"
+                          % anno_files[anno])
 
 # ## Standard access to Tabix indexed files
 
@@ -604,7 +604,7 @@ def get_clinvar_info(var):
 
         raw_dbsource = info_map['CLNSRC'] or None
         #interpret 8-bit strings and convert to plain text
-        clinvar.clinvar_dbsource = raw_dbsource.decode('utf8', 'ignore').encode('ascii', 'ignore')
+        clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf8'))
         clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
             clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
@@ -614,7 +614,7 @@ def get_clinvar_info(var):
         clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
         # Remap all unicode characters into plain text string replacements
         raw_disease_name = info_map['CLNDBN'] or None
-        clinvar.clinvar_disease_name = raw_disease_name.decode('utf8', 'ignore').encode('ascii', 'ignore')
+        clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf8')).decode('string_escape')
         # Clinvar represents commas as \x2c.  Make them commas.
 
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None

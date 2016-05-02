@@ -22,10 +22,10 @@ def get_region(args, gq):
     try:
         region = region_regex.findall(args.region)[0]
     except IndexError:
-        sys.exit("Malformed region (--reg) string")
+        raise IndexError("Malformed region (--reg) string")
 
     if len(region) != 3:
-        sys.exit("Malformed region (--reg) string")
+        raise IndexError("Malformed region (--reg) string")
 
     chrom = region[0]
     start = region[1]
@@ -76,10 +76,10 @@ def add_region_to_query(args):
     try:
         region = region_regex.findall(args.region)[0]
     except IndexError:
-        sys.exit("Malformed region (--reg) string")
+        raise IndexError("Malformed region (--reg) string")
 
     if len(region) != 3:
-        sys.exit("Malformed region (--reg) string")
+        raise IndexError("Malformed region (--reg) string")
 
     chrom = region[0]
     start = region[1]
@@ -112,7 +112,7 @@ def region(parser, args):
         gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter)
 
         if args.region is not None and args.gene is not None:
-            sys.exit('EXITING: Choose either --reg or --gene, not both.\n')
+            raise ValueError('Choose either --reg or --gene, not both.\n')
         elif args.region is not None:
             get_region(args, gq)
         elif args.gene is not None:

@@ -57,7 +57,7 @@ def add_requested_columns(args, update_cursor, col_names, col_types=None):
                                  + col_name
                                  + ")\" already exists in variants table. Overwriting values.\n")
     else:
-        sys.exit("Unknown annotation type: %s\n" % args.anno_type)
+        raise ValueError("Unknown annotation type: %s\n" % args.anno_type)
 
 
 def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_types=None, col_ops=None):
@@ -170,7 +170,7 @@ def _map_list_types(hit_list, col_type):
         elif col_type == "float":
             return [float(h) for h in hit_list if not h in (None, 'nan')]
     except ValueError:
-        sys.exit('Non-numeric value found in annotation file: %s\n' % (','.join(hit_list)))
+        raise ValueError('Non-numeric value found in annotation file: %s\n' % (','.join(hit_list)))
 
 
 def gemops_mean(li, col_type):
@@ -217,7 +217,7 @@ def fix_val(val, type):
     try:
         return fn(val)
     except ValueError:
-        sys.exit('Non %s value found in annotation file: %s\n' % (type, val))
+        raise ValueError('Non %s value found in annotation file: %s\n' % (type, val))
 
 def get_hit_list(hits, col_idxs, args, _count={}):
     hits = list(hits)
@@ -248,9 +248,9 @@ def get_hit_list(hits, col_idxs, args, _count={}):
                 for idx, col_idx in enumerate(col_idxs):
                     hit_list[idx].append(hit[int(col_idx) - 1])
             except IndexError:
-                sys.exit("EXITING: Column " + args.col_extracts + " exceeds "
-                          "the number of columns in your "
-                          "annotation file.\n")
+                raise IndexError("Column " + args.col_extracts + " exceeds "
+                                 "the number of columns in your "
+                                 "annotation file.\n")
     return hit_list
 
 def annotate_variants_extract(args, conn, metadata, col_names, col_types, col_ops, col_idxs):
@@ -285,16 +285,16 @@ def annotate(parser, args):
                                     ["bgzip", "-h"]])
     def _validate_args(args):
         if (args.col_operations or args.col_types or args.col_extracts):
-            sys.exit('EXITING: You may only specify a column name (-c) when '
+            raise ValueError('You may only specify a column name (-c) when '
                      'using \"-a boolean\" or \"-a count\".\n')
 
         col_names = args.col_names.split(',')
         if len(col_names) > 1:
-            sys.exit('EXITING: You may only specify a single column name (-c) '
+            raise ValueError('You may only specify a single column name (-c) '
                      'when using \"-a boolean\" or \"-a count\".\n')
 
         if not args.anno_file.endswith(('.vcf', '.vcf.gz')) and args.region_only and parser is not None:
-            sys.exit('EXITING: You may only specify --region-only when annotation is a VCF.')
+            raise ValueError('You may only specify --region-only when annotation is a VCF.')
 
         return col_names
 
@@ -305,10 +305,10 @@ def annotate(parser, args):
             elif not args.col_extracts:
                 args.col_extracts = args.col_names
         elif args.region_only and parser is not None:
-            sys.exit('EXITING: You may only specify --region-only when annotation is a VCF.1')
+            raise ValueError('You may only specify --region-only when annotation is a VCF.1')
 
         if not args.col_types:
-            sys.exit('EXITING: need to give column types ("-t")\n')
+            raise ValueError('need to give column types ("-t")\n')
         col_ops = args.col_operations.split(',')
         col_idxs = args.col_extracts.split(',')
 
@@ -318,19 +318,19 @@ def annotate(parser, args):
         supported_types = ['text', 'float', 'integer']
         for col_type in col_types:
             if col_type not in supported_types:
-                sys.exit('EXITING: Column type [%s] not supported.\n' %
+                raise ValueError('Column type [%s] not supported.\n' %
                          (col_type))
 
         supported_ops = op_funcs.keys()
 
         for col_op in col_ops:
             if col_op not in supported_ops:
-                sys.exit('EXITING: Column operation [%s] not supported.\n' %
+                raise ValueError('Column operation [%s] not supported.\n' %
                          (col_op))
 
         if not (len(col_ops) == len(col_names) ==
                 len(col_types) == len(col_idxs)):
-            sys.exit('EXITING: The number of column names, numbers, types, and '
+            raise ValueError('The number of column names, numbers, types, and '
                      'operations must match: [%s], [%s], [%s], [%s]\n' %
                      (args.col_names, args.col_extracts, args.col_types, args.col_operations))
 
@@ -353,13 +353,13 @@ def annotate(parser, args):
         annotate_variants_count(args, conn, metadata, col_names)
     elif args.anno_type == "extract":
         if args.col_extracts is None and not args.anno_file.endswith('.vcf.gz'):
-            sys.exit("You must specify which column to "
-                     "extract from your annotation file.")
+            raise RuntimeError("You must specify which column to "
+                               "extract from your annotation file.")
         else:
             col_names, col_types, col_ops, col_idxs = _validate_extract_args(args)
             annotate_variants_extract(args, conn, metadata, col_names, col_types, col_ops, col_idxs)
     else:
-        sys.exit("Unknown column type requested. Exiting.")
+        raise RuntimeError("Unknown column type requested. Exiting.")
 
     conn.close()
 

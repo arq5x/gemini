@@ -19,7 +19,7 @@ fi
 echo "Using gemini found at: $SCRIPT_PATH" 1>&2
 
 cd test
-#rm ./*.db
+rm ./*.db
 
 # setup the testing databases from the testing VCF files
 set -e
