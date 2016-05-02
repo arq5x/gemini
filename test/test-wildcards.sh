@@ -236,7 +236,7 @@ echo "    wildcard.t16...\c"
 echo "ValueError: Unsupported wildcard operation: (). Exiting." > exp
 gemini query --header -q "select chrom, start, end, ref, alt, (gts).(*) from variants" \
              --gt-filter "(gt_types).(*).(==HOM_ALT).()" extended_ped.db 2> obs
-check <(tail -1 obs) exp
+check <(tail -n1 obs | grep -v ^$) <(tail -n1 exp | grep -v ^$) obs exp
 rm obs exp
 
 ########################################################################
@@ -246,7 +246,7 @@ echo "    wildcard.t17...\c"
 echo "ValueError: Unsupported wildcard operation: (amy). Exiting." > exp
 gemini query --header -q "select chrom, start, end, ref, alt, (gts).(*) from variants" \
              --gt-filter "(gt_types).(*).(==HOM_ALT).(amy)" extended_ped.db 2> obs
-check <(tail -1 obs) exp
+check <(tail -n1 obs | grep -v ^$) <(tail -n1 exp | grep -v ^$) obs exp
 rm obs exp
 
 ########################################################################
@@ -256,7 +256,7 @@ echo "    wildcard.t18...\c"
 echo "ValueError: Wildcard filter should consist of 4 elements. Exiting." > exp
 gemini query --header -q "select chrom, start, end, ref, alt, (gts).(*) from variants" \
              --gt-filter "(gt_types).(*).(==HOM_ALT)" extended_ped.db 2> obs
-check <(tail -1 obs) exp
+check <(tail -n1 obs | grep -v ^$) <(tail -n1 exp | grep -v ^$) obs exp
 rm obs exp
 
 ########################################################################
