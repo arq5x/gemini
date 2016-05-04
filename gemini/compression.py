@@ -59,15 +59,16 @@ def zloads(obj):
     return cPickle.loads(zlib.decompress(obj))
 
 try:
-    import numpy as np
     import snappy
 except ImportError:
     pass
 
+import numpy as np
+
 # we use the numpy type char as the first item we save to know the dtype when we
 # decompress.
 lookup = {dt(1).dtype.char: dt for dt in (np.uint8, np.uint32, np.int32,
-    np.float32, np.int64, np.float64, np.bool_)}
+          np.float32, np.int64, np.float64, np.bool_)}
 
 SEP = '\0'
 
