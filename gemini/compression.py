@@ -59,8 +59,8 @@ def zloads(obj):
     return cPickle.loads(zlib.decompress(obj))
 
 try:
-    import snappy
     import numpy as np
+    import snappy
 except ImportError:
     pass
 
