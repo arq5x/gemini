@@ -74,7 +74,7 @@ class DefaultRowFormat(RowFormat):
 
     def format(self, row):
         r = row.print_fields
-        return '\t'.join(str(v) if not isinstance(v, np.ndarray) else ",".join(map(str, v)) for v in r._vals)
+        return '\t'.join(str(v.encode('utf-8')) if not isinstance(v, np.ndarray) else ",".join(map(str, v)) for v in r._vals)
 
     def format_query(self, query):
         return query
@@ -543,11 +543,14 @@ class GeminiQuery(object):
         self.sample_info = collections.defaultdict(list)
 
         # map sample names to indices. e.g. self.sample_to_idx[NA20814] -> 323
-        samples = list(self.metadata.tables["samples"].select().execute())
-        self.sample_to_idx = {s['name']: s['sample_id'] -1 for s in samples}
-        self.idx_to_sample = {s['sample_id'] -1: s['name'] for s in samples}
-        self.idx_to_sample_object = {s['sample_id'] -1: Subject(s) for s in samples}
-        self.sample_to_sample_object = {s['name']: Subject(s) for s in samples}
+        try:
+            samples = list(self.metadata.tables["samples"].select().execute())
+            self.sample_to_idx = {s['name']: s['sample_id'] -1 for s in samples}
+            self.idx_to_sample = {s['sample_id'] -1: s['name'] for s in samples}
+            self.idx_to_sample_object = {s['sample_id'] -1: Subject(s) for s in samples}
+            self.sample_to_sample_object = {s['name']: Subject(s) for s in samples}
+        except KeyError:
+            pass
 
         self.unpacker = compression.unpack_genotype_blob
         if "features" in self.metadata.tables:
@@ -819,7 +822,11 @@ class GeminiQuery(object):
         """
         extract the column names in the samples table into a list
         """
-        self.sample_column_names = [c.name for c in self.metadata.tables['samples'].columns]
+        try:
+            self.sample_column_names = [c.name for c in self.metadata.tables['samples'].columns]
+        except KeyError:
+
+            self.sample_column_names = []
 
     def _is_gt_filter_safe(self, gt_filter=None):
         """
