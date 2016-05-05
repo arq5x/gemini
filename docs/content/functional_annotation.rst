@@ -50,11 +50,12 @@ This will create the variant_effect_predictor directory. Now do the following fo
 By default this would install the API's, bioperl-1.2.3 and the cache files (in 
 the $HOME/.vep directory).
 
-Homebrew VEP installation
--------------------------
+Homebrew or Anaconda VEP installation
+-------------------------------------
 
-If you are a `Homebrew <http://brew.sh/>`_ or `Linuxbrew <http://brew.sh/linuxbrew/>`_
-user, there is an automated recipe to install the main VEP script and plugins in
+If you are a `Homebrew <http://brew.sh/>`_, `Linuxbrew <http://brew.sh/linuxbrew/>`_
+or `Anaconda <http://conda.pydata.org/miniconda.html>`_ user, there is an
+automated recipe to install the main VEP script and plugins in
 the `CloudBioLinux homebrew repository <https://github.com/chapmanb/homebrew-cbl>`_:
 
 .. code-block:: bash
@@ -62,6 +63,12 @@ the `CloudBioLinux homebrew repository <https://github.com/chapmanb/homebrew-cbl
     $ brew tap chapmanb/cbl
     $ brew update
     $ brew install vep
+
+For Anaconda/Miniconda, just make sure you are pointing to the **bioconda** channel:
+
+.. code-block:: bash
+
+    $ conda install variant-effect-predictor -c bioconda
 
 Manual installation of VEP
 --------------------------
