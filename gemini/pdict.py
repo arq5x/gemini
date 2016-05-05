@@ -9,7 +9,7 @@ will have 'variant_id' twice.
 We use it in GeminiQuery to keep the fields in the desired order.
 """
 import itertools as it
-import sys
+from unidecode import unidecode
 
 def to_json(obj):
     return dict(obj.items())
@@ -80,7 +80,16 @@ class PDict(object):
         return "{%s}" % ", ".join("%r: %r" % p for p in it.izip(self._keys, self._vals))
 
     def __str__(self):
-        return "\t".join(map(str, self._vals))
+        try:
+            return "\t".join(map(str, self._vals))
+        except:
+            vals = []
+            for v in self._vals:
+                if isinstance(v, unicode):
+                    vals.append(unidecode(v))
+                else:
+                    vals.append(str(v))
+            return "\t".join(vals)
 
     def add(self, key, val):
         self._keys.append(key)
