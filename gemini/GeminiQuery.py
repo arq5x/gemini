@@ -74,7 +74,7 @@ class DefaultRowFormat(RowFormat):
 
     def format(self, row):
         r = row.print_fields
-        return '\t'.join(str(v.encode('utf-8')) if not isinstance(v, np.ndarray) else ",".join(map(str, v)) for v in r._vals)
+        return '\t'.join(str(v.encode('utf-8') if isinstance(v, (str, unicode)) else v) if not isinstance(v, np.ndarray) else ",".join(map(str, v)) for v in r._vals)
 
     def format_query(self, query):
         return query
