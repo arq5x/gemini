@@ -1159,7 +1159,7 @@ class GeminiQuery(object):
                 cols_to_add.append(col)
 
         select_clause = ",".join(select_tokens + cols_to_add)
-        self.query = "select " + select_clause + rest_of_query
+        self.query = "select %s %s" % (select_clause, rest_of_query)
         return self.query
 
     def _split_select(self):
