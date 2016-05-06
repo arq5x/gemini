@@ -181,16 +181,16 @@ check obs exp
 
 echo "comp_het.t13"
 echo "chrom	start	end	ref	alt	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
-chr1	100001	100002	A	G	1	1	dad(dad;unknown),mom(mom;unknown),akid(akid;unknown),bkid(bkid;unknown)	A/A,A/G,G|A,A/A		1	1_1_2	1
-chr1	100002	100003	A	G	2	1	dad(dad;unknown),mom(mom;unknown),akid(akid;unknown),bkid(bkid;unknown)	A/G,A/A,A|G,A/A		1	1_1_2	1" > exp
+chr1	100001	100002	A	G	1	1	dad(dad;unknown;male),mom(mom;unknown;female),akid(akid;unknown;male),bkid(bkid;unknown;male)	A/A,A/G,G|A,A/A		1	1_1_2	1
+chr1	100002	100003	A	G	2	1	dad(dad;unknown;male),mom(mom;unknown;female),akid(akid;unknown;male),bkid(bkid;unknown;male)	A/G,A/A,A|G,A/A		1	1_1_2	1" > exp
 gemini comp_hets --columns "chrom, start, end, ref, alt" --pattern-only from_inheritance.db > obs
 check obs exp
 
 
 echo "comp_het.t14"
 echo "start	end	ref	alt	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
-100001	100002	A	G	1	1	dad(dad;unknown),mom(mom;unknown),akid(akid;unknown),bkid(bkid;unknown)	A/A,A/G,G|A,A/A		1	1_1_2	1
-100002	100003	A	G	2	1	dad(dad;unknown),mom(mom;unknown),akid(akid;unknown),bkid(bkid;unknown)	A/G,A/A,A|G,A/A		1	1_1_2	1" > exp
+100001	100002	A	G	1	1	dad(dad;unknown;male),mom(mom;unknown;female),akid(akid;unknown;male),bkid(bkid;unknown;male)	A/A,A/G,G|A,A/A		1	1_1_2	1
+100002	100003	A	G	2	1	dad(dad;unknown;male),mom(mom;unknown;female),akid(akid;unknown;male),bkid(bkid;unknown;male)	A/G,A/A,A|G,A/A		1	1_1_2	1" > exp
 gemini comp_hets --columns "start, end, ref, alt" --pattern-only from_inheritance.db > obs
 check obs exp
 
