@@ -11,7 +11,8 @@ Release History
 #. Use SQLAlchemy for table definitions to support different RDBMS backends.
 #. Several optimizations to loading.
 #. X-linked recessive and dominant and de novo tools.
-#. Raise Exceptions rathern than sys.exit() to facilitate use as library. (thanks @brainstorm .
+#. Raise Exceptions rathern than sys.exit() to facilitate use as library. (thanks @brainstorm).
+#. the compound het tool is as much as 20X faster for large cohorts.
 
 0.18.3
 ======

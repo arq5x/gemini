@@ -437,18 +437,27 @@ class CompoundHet(GeminiInheritanceModel):
 
         for grp, li in self.gen_candidates('gene'):
             samples_w_hetpair = defaultdict(list)
-            sites = []
+            sites, strs = [], []
             for row in li:
 
                 gt_types, gt_bases, gt_phases = row['gt_types'], row['gts'], row['gt_phases']
                 site = Site(row)
                 site.gt_phases, site.gt_bases, site.gt_types = gt_phases, gt_bases, gt_types
-                sites.append(site)
+                sites.append((str(site), site))
 
-            for i, site1 in enumerate(sites[:-1], start=1):
-                for site2 in sites[i:]:
 
-                    for family_id, fam in fams.items():
+
+            for family_id, fam in fams.items():
+                # if a site has been deemed "impossible", we store and then
+                # skip it to avoid compuational overhead on it multiple times.
+                impossible_sites = {}
+                for i, (strsite1, site1) in enumerate(sites[:-1], start=1):
+                    if strsite1 in impossible_sites:
+                        continue
+
+                    for (strsite2, site2) in sites[i:]:
+                        if strsite2 in impossible_sites:
+                            continue
 
                         ch = fam.comp_het_pair(site1.gt_types, site1.gt_bases,
                                                site2.gt_types, site2.gt_bases,
@@ -460,6 +469,12 @@ class CompoundHet(GeminiInheritanceModel):
                                                allow_unaffected=args.allow_unaffected,
                                                fast_mode=True,
                                                pattern_only=args.pattern_only)
+
+                        if ch.get('impossible') == 'site1':
+                            impossible_sites[strsite1] = True
+                            break
+                        if ch.get('impossible') == 'site2':
+                            impossible_sites[strsite2] = True
 
                         if not ch['candidate']: continue
 
@@ -478,10 +493,13 @@ class Site(object):
         return self.row['chrom'] == other.row['chrom'] and \
                self.row['start'] == other.row['start']
 
-    def __repr__(self):
-        return ",".join([self.row['chrom'],
+    def __str__(self):
+        return ",".join((self.row['chrom'],
                          str(self.row['start']),
-                         str(self.row['end'])])
+                         #str(self.row['end']),
+                         self.row['ref'],
+                         self.row['alt']))
+    __repr__ = __str__
 
     def __hash__(self):
         "hash the site based on chrom+start"
