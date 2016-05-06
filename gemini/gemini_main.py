@@ -1203,6 +1203,11 @@ def main():
     #######################################################
     # parse the args and call the selected function
     #######################################################
+    import operator
+    subparsers._choices_actions.sort(key=operator.attrgetter('dest'))
+    for k in sorted(subparsers.choices):
+        subparsers.choices[k] = subparsers.choices.pop(k)
+
     args = parser.parse_args()
 
     # make sure database is found if provided
