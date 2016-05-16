@@ -10,6 +10,7 @@ from .mendelianerror import mendelian_error
 import itertools as it
 import operator as op
 from inheritance import Family
+from unidecode import unidecode
 
 
 class GeminiInheritanceModel(object):
@@ -299,7 +300,16 @@ class GeminiInheritanceModel(object):
             if has_gts:
                 for col in has_gts:
                     s[col] = str(s[col]).replace('\n', '')
-            print "\t".join(map(str, s.values()))
+            try:
+                print("\t".join(map(str, s.values())))
+            except UnicodeEncodeError:
+                vals = []
+                for v in s.values():
+                    if isinstance(v, unicode):
+                        vals.append(unidecode(v))
+                    else:
+                        vals.append(str(v))
+                print("\t".join(vals))
 
 
 class XRec(GeminiInheritanceModel):
