@@ -172,6 +172,9 @@ fields, like this:
 This will add the extra columns to the ``samples`` table and allow for you to
 use those extra columns during queries.
 
+Missing values for `family_id`, `paternal_id` and `maternal_id` can be specified
+by any of `0`, `-9` or `None` and GEMINI will translate them to `0` in the
+database.
 
 =======================================
 Load GERP base pair conservation scores
