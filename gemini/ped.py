@@ -32,9 +32,21 @@ def load_ped_file(ped_file):
         if line.startswith("#") or len(line) == 0:
             continue
         parts = line.rstrip().split("\t") if line.count("\t") > 1 else line.split()
-        fields = _fix_ped_family_fields(parts)
+        fields = [x.strip() for x in _fix_ped_family_fields(parts)]
+        fields = _fix_ped_affected(fields)
+        fields = _fix_ped_sex(fields)
         ped_dict[fields[1]] = fields
     return ped_dict
+
+def _fix_ped_sex(fields):
+    l = {'male': '1', 'female': '2'}
+    fields[4] = l.get(fields[4].lower(), fields[4])
+    return fields
+
+def _fix_ped_affected(fields):
+    l = {'affected': '2', 'unaffected': '1'}
+    fields[5] = l.get(fields[5].lower(), fields[5])
+    return fields
 
 def _fix_ped_family_fields(fields):
     """
