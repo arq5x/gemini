@@ -118,7 +118,10 @@ def run_query(args):
     formatter = select_formatter(args)
     genotypes_needed = needs_genotypes(args)
     gene_needed = needs_gene(args)
-    subjects = get_subjects(args)
+    try:
+        subjects = get_subjects(args)
+    except KeyError:
+        subjects = []
     kwargs = {}
     if args.bcolz:
         import gemini_bcolz
