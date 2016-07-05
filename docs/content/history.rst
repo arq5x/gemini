@@ -6,13 +6,13 @@ Release History
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
 
-0.19.0 (development)
+0.19.0
 ====================
-#. Use SQLAlchemy for table definitions to support different RDBMS backends.
+#. Use SQLAlchemy for table definitions to support different RDBMS back-ends.
 #. Several optimizations to loading.
-#. X-linked recessive and dominant and de novo tools.
-#. Raise Exceptions rathern than sys.exit() to facilitate use as library. (thanks @brainstorm).
-#. the compound het tool is as much as 20X faster for large cohorts.
+#. X-linked recessive, dominant, and de novo tools.
+#. Raise exceptions rather than sys.exit() to facilitate use as library. (thanks @brainstorm).
+#. The ``comp_het`` tool is as much as 20X faster for large cohorts.
 
 0.18.3
 ======
