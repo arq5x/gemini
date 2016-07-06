@@ -16,7 +16,7 @@ Unidecode==0.04.16
 cyordereddict==0.2.2
 bcolz===0.10.0
 numexpr>=2.4.3
-cyvcf2>=0.4.1
+cyvcf2>=0.4.2
 inheritance>=0.0.8
 geneimpacts>=0.1.2
 networkx>=1.10

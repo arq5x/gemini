@@ -3,7 +3,7 @@
 # platform: linux-64
 gemini=0.19.0=py27_2
 bx-python=0.7.3=py27_0
-cyvcf2>=0.4.1
+cyvcf2>=0.4.2
 conda=3.5.5=py27_0
 cython=0.22.1=py27_0
 dateutil=2.1=py27_2
