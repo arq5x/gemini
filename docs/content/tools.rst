@@ -163,6 +163,7 @@ Genotype Requirements
 
 - All affected individuals must be heterozygous at both sites.
 - No unaffected can be homozygous alterate at either site.
+- Neither parent of an affected sample can be homozygous reference at both sites.
 - If any unphased-unaffected is het at both sites, the site will be give lower priority
 - No phased-unaffected can be heterozygous at both sites.
 
@@ -174,7 +175,8 @@ Genotype Requirements
 - Sites are automatically phased by transmission when parents are present in order to remove false positive candidates.
   
   a. If data from one or both parents are unavailable and the child's data was not phased prior to loading into GEMINI,
-     all comp_het variant pairs will automatically be given priority == 2
+     all comp_het variant pairs will automatically be given at most priority == 2. If there's only a single parent and
+     both the parent and the affected are HET at both sites, the candidate will have priority 3.
   
   b. `--max-priority x` can be used to set the maximum allowed priority level at which candidate pairs are included in the output.
 
@@ -188,6 +190,7 @@ R-H   H-R      H-H       both        1          both sites phaseable and alts on
 n/a   n/a      H-H       NO          2          singleton (unphaseable) HETs have priority 2.
 R-H   H-H      H-H       one         3          should be a rare occurrence
 H-H   H-H      H-H       NO          3          should be a rare occurrence
+H-H   UNK      H-H       NO          3          missing parent and all hets.
 A-R   H-H      H-H       both        NA         exclude hom-alts from un-affecteds
 R-R   H-H      H-H       both        NA         phaseable, but alts are on the same chroms.
 ===   ===      ====      =========   ========   ================================================
