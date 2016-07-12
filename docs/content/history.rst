@@ -6,8 +6,12 @@ Release History
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
 
+0.19.1
+======
+#. Fix bug in comp-hets where candidates were not removed when either parent was homozygous at both sites. (inheritance v0.1.0)
+
 0.19.0
-====================
+======
 #. Use SQLAlchemy for table definitions to support different RDBMS back-ends.
 #. Several optimizations to loading.
 #. X-linked recessive, dominant, and de novo tools.
