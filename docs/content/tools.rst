@@ -708,7 +708,7 @@ The 'X' chromosome can be specifing using --X (defaults to 'chrX' and 'X')
 Genotype Requirements
 ---------------------
 
-- Affected males are HET or HOM_REF
+- Affected males are HET or HOM_ALT
 - Affected females must be HET
 - Unaffecteds must be HOM_REF
 - girls of affected dad must be affected
