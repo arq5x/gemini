@@ -713,6 +713,8 @@ Genotype Requirements
 - Unaffecteds must be HOM_REF
 - girls of affected dad must be affected
 - boys of affected dad must be unaffected
+- mothers of affected males must be het (and affected) [added in 0.19.1]
+- at least 1 parent of affected females must be het (and affected). [added in 0.19.1]
 
 ===========================================================================
 ``x_linked_de_novo``: x-linked de novo
