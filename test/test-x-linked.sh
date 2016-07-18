@@ -35,9 +35,10 @@ gemini x_linked_recessive  \
 check obs exp
 
 echo "    x_linked_dom.t1...\c"
-echo "gene	chrom	start	end	ref	alt	variant_id	family_id	family_members	family_genotypes	samples	family_count
-	chrX	135336655	135336656	G	A	3	1	1_dad(1_dad;unaffected;male),1_mom(1_mom;unaffected;female),1_kid(1_kid;affected;female)	G/G,G/G,G/A	1_kid	1" > exp
-
+rm exp; touch exp
+#echo "gene	chrom	start	end	ref	alt	variant_id	family_id	family_members	family_genotypes	samples	family_count
+#	chrX	135336655	135336656	G	A	3	1	1_dad(1_dad;unaffected;male),1_mom(1_mom;unaffected;female),1_kid(1_kid;affected;female)	G/G,G/G,G/A	1_kid	1" > exp
+# de novo is not x-linked dominant
 gemini x_linked_dominant  \
     --columns "gene, chrom, start, end, ref, alt" \
     test.x_linked.db > obs
