@@ -13,6 +13,7 @@ Release History
 #. Update x-linked-dominant with the following rules (thanks Jessica Chong):
    + mothers of affected males must be het (and affected)
    + at least 1 parent of affected females must be het (and affected).
+#. Store extra vep fields for each transcript in variant_impacts.
 
 
 0.19.0

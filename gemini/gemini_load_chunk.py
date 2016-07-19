@@ -200,6 +200,7 @@ class GeminiLoader(object):
                 continue
             (variant, variant_impacts, extra_fields) = self._prepare_variation(var, anno_keys)
             variant.update(extra_fields)
+            [v_.update(extra_fields) for v_ in variant_impacts]
             obj_buffer.append(var)
             # add the core variant info to the variant buffer
             self.var_buffer.append(variant)
@@ -535,7 +536,8 @@ class GeminiLoader(object):
         if top_impact is not empty:
             for dbkey, infokey in self._extra_effect_fields:
                 extra_fields[dbkey] = top_impact.effects[infokey]
-
+                if dbkey.endswith("_num"):
+                    extra_fields[dbkey] = float(extra_fields[dbkey])
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         variant = dict(chrom=chrom, start=var.start, end=var.end,
