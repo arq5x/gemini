@@ -103,7 +103,7 @@ def create_tables(path, effect_fields=None):
     Create our master DB tables
     """
     if effect_fields:
-        effect_string = "".join(e + " TEXT,\n" for e in effect_fields)
+        effect_string = "".join(e + (" float,\n" if e.endswith("_num") else " TEXT,\n") for e in effect_fields)
     else:
         effect_string = ""
 
@@ -279,7 +279,9 @@ def create_tables(path, effect_fields=None):
     polyphen_pred text,
     polyphen_score float,
     sift_pred text,
-    sift_score float""",
+    sift_score float,
+    %s""" % effect_string.rstrip(","),
+
     sample_genotypes="""
     sample_id integer,
     gt_types BLOB""",
