@@ -3,6 +3,8 @@
 *.swp
 *.db
 
+test/err
+test/_err
 test/exp*
 test/obs*
 test/*.gbi
