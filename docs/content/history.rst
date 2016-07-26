@@ -14,7 +14,8 @@ Release History
    + mothers of affected males must be het (and affected)
    + at least 1 parent of affected females must be het (and affected).
 #. Store extra vep fields for each transcript in variant_impacts.
-
+#. Update geneimpacts module to handle new snpEff annotations of SVs (Brad Chapman).
+#. Update to dbsnp 147.
 
 0.19.0
 ======

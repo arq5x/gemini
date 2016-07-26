@@ -86,8 +86,6 @@ def main(args, remotes=remotes):
     if args.install_data:
         print(" Data installed in:\n  %s" % args.datadir)
         print(" NOTE: Install data files for GERP_bp & CADD_scores (not installed by default).\n ")
-    print(" Run tests with:\n  cd %s && bash master-test.sh" %
-          (os.path.join(os.path.dirname(anaconda["dir"]), "github_gemini")))
 
     shutil.rmtree(work_dir)
 

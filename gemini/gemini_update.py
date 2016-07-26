@@ -41,7 +41,6 @@ def release(parser, args):
         test_dir = os.path.join(os.path.dirname(os.path.dirname(base)), "github_gemini")
         if not os.path.exists(test_dir) or os.path.isdir(test_dir):
             _update_testbase(test_dir, repo, gemini_cmd)
-        print "Run test suite with: cd %s && bash master-test.sh" % test_dir
 
 def _get_install_script():
     try:
