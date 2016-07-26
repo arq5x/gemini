@@ -6,9 +6,13 @@ from gemini_subjects import Subject
 import sqlalchemy as sql
 
 def get_gt_cols(metadata):
-    return [c.name for c in metadata.tables["variants"].columns if
-            c.name.startswith("gt") and
-            c.type.__class__.__name__.upper() == "BLOB"]
+    try:
+        return [c.name for c in metadata.tables["variants"].columns if
+                c.name.startswith("gt") and
+                c.type.__class__.__name__.upper() == "BLOB"]
+    except KeyError:
+        # if there's no variants table, there are no gt_cols.
+        return []
 
 def map_indices_to_samples(metadata):
     """Return a dict mapping samples indices in the
