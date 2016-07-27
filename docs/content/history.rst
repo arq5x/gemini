@@ -8,9 +8,9 @@ Release History
 
 0.19.1
 ======
-#. Fix bug in comp-hets where candidates were not removed when either parent
+#. Fix bug in ``comp_het`` where candidates were not removed when either parent
    was homozygous at both sites (thanks Jessica Chong). (inheritance v0.1.0)
-#. Update x-linked-dominant with the following rules (thanks Jessica Chong):
+#. Update ``x-linked-dominant`` with the following rules (thanks Jessica Chong):
    + mothers of affected males must be het (and affected)
    + at least 1 parent of affected females must be het (and affected).
 #. Store extra vep fields for each transcript in variant_impacts.
