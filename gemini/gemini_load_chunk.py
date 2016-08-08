@@ -537,7 +537,11 @@ class GeminiLoader(object):
             for dbkey, infokey in self._extra_effect_fields:
                 extra_fields[dbkey] = top_impact.effects[infokey]
                 if dbkey.endswith("_num"):
-                    extra_fields[dbkey] = float(extra_fields[dbkey])
+                    try:
+                        extra_fields[dbkey] = float(extra_fields[dbkey])
+                    except ValueError:
+                        # sometimes the field is empty.
+                        extra_fields[dbkey] = None
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         variant = dict(chrom=chrom, start=var.start, end=var.end,
