@@ -33,6 +33,10 @@ def add_cols(cols, gt_filter):
 
 def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, columns,
                 user_dict=None):
+    """
+    gen_results is called on rows from the same group (e.g. gene).
+    it does filtering and aggregation.
+    """
     # we track the index of the passed filter in passed_filters.
     gene_passed_filters = {}
     if user_dict is None:
@@ -117,7 +121,7 @@ def genewise(db, gt_filters, gt_req_filters, filter=None, columns=None, min_filt
     header_printed = False
     for groupkey, grp in it.groupby(gq, grouper):
         grp = list(grp)
-        for x in gen_results(list(grp), cleaned_filters, cleaned_reqs, min_filters or 0,
+        for x in gen_results(grp, cleaned_filters, cleaned_reqs, min_filters or 0,
                              min_variants, columns, user_dict=user_dict):
             for c in added_cols:
                 if c != grouper:
