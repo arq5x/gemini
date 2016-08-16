@@ -110,12 +110,11 @@ A workflow for the above steps is given below.
 
   # decompose, normalize and annotate VCF with snpEff.
   # NOTE: can also swap snpEff with VEP
-  #NOTE: -classic and -formatEff flags needed with snpEff >= v4.1
   zless $VCF \
      | sed 's/ID=AD,Number=./ID=AD,Number=R/' \
      | vt decompose -s - \
      | vt normalize -r $REF - \
-     | java -Xmx4G -jar $SNPEFFJAR GRCh37.75 -formatEff -classic \
+     | java -Xmx4G -jar $SNPEFFJAR GRCh37.75 \
      | bgzip -c > $NORMVCF
   tabix -p vcf $NORMVCF
 
