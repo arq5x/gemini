@@ -113,7 +113,7 @@ def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_typ
 
         if current_id <= last_id:
             break
-        else:
+        elif len(to_update) > 0:
             _update_variants(metadata, to_update, col_names, cursor)
 
             total += len(to_update)

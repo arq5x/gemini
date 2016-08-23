@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 
 version_py = os.path.join(os.path.dirname(__file__), 'gemini', 'version.py')
-version = open(version_py).read().strip().split('=')[-1].replace('"', '')
+version = open(version_py).read().strip().split('=')[-1].replace('"', '').strip()
 long_description = """
 ``gemini`` is a database framework for exploring genetic variation'
 """
