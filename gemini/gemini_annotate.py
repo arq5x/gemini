@@ -285,7 +285,7 @@ def annotate(parser, args):
                                     ["bgzip", "-h"]])
     def _validate_args(args):
         if (args.col_operations or args.col_types or args.col_extracts):
-            raise ValueError('You may only specify a column name (-c) when '
+            raise ValueError('You must not specify a column type (-t), op (-o) or extract (-e) when '
                      'using \"-a boolean\" or \"-a count\".\n')
 
         col_names = args.col_names.split(',')
