@@ -1,3 +1,13 @@
+check()
+{
+	if diff $1 $2; then
+    	echo ok
+	else
+    	echo fail
+	fi
+}
+export -f check
+
 ####################################################################
 # 1. Test variant_impacts table for the impact columns (snpEff)
 ####################################################################
@@ -156,16 +166,15 @@ SAMD11	upstream_gene_variant	LOW	retained_intron	0	0	0
 WASH7P	upstream_gene_variant	LOW	unprocessed_pseudogene	0	0	0
 WASH7P	upstream_gene_variant	LOW	unprocessed_pseudogene	0	0	0
 WASH7P	upstream_gene_variant	LOW	unprocessed_pseudogene	0	0	0
-WASH7P	upstream_gene_variant	LOW	unprocessed_pseudogene	0	0	0
-gene	impact	impact_severity	biotype	is_exonic	is_coding	is_lof" > exp
+WASH7P	upstream_gene_variant	LOW	unprocessed_pseudogene	0	0	0" > exp
 
 gemini query -q "select gene, impact, impact_severity, biotype, \
                     is_exonic, is_coding, is_lof from variant_impacts" \
                     --header \
                     test1.vep.db \
-					| sort -k1,1 -k2,2 > obs
+					| grep -v ^gene \
+          | sort -k1,1 -k2,2 > obs
 check obs exp
-exit
 rm obs exp
 
 #########################################################################
