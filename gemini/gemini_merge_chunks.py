@@ -1,12 +1,14 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
+
 import os
 import shutil
 import sqlite3
 import sys
 import uuid
 
-import database as gemini_db
-import gemini_load_chunk
+import gemini.database as gemini_db
+from gemini import gemini_load_chunk
 
 
 def append_variant_info(main_curr, chunk_db):
@@ -229,7 +231,7 @@ def merge_chunks(parser, args):
                 for tmp_db in tmp_dbs:
                     os.remove(tmp_db)
             break
-        except sqlite3.OperationalError, e:
+        except sqlite3.OperationalError as e:
             errors.append(str(e))
             sys.stderr.write("sqlite3.OperationalError: %s\n" % e)
     else:

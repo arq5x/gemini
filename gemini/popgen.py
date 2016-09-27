@@ -1,4 +1,4 @@
-import stats
+from gemini import stats
 
 
 def get_hwe_likelihood(obs_hom_ref, obs_het, obs_hom_alt, aaf):

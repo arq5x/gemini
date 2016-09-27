@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-import compression as Z
+from __future__ import absolute_import
+from gemini import compression as Z
 
-import database
-import gemini_utils as util
-from GeminiQuery import GeminiQuery
+from gemini import database
+import gemini.gemini_utils as util
+from gemini.GeminiQuery import GeminiQuery
 import sqlalchemy as sql
 
 
@@ -22,9 +23,12 @@ def get_variants(conn, metadata, args):
         util.get_col_names_and_indices(metadata.tables["variants"], ignore_gt_cols=True)
 
     if args.use_header:
-        print args.separator.join(col for col in col_names)
+        print(args.separator.join(col for col in col_names))
     for row in res:
-        print args.separator.join('.' if (row[i] is None) else row[i].encode('utf-8') if type(row[i]) is unicode else str(row[i]) for i in non_gt_idxs)
+        print(args.separator.join('.' if (row[i] is None) else
+                                  row[i].encode('utf-8') if type(row[i]) is
+                                  unicode else str(row[i]) for i in
+                                  non_gt_idxs))
 
 
 def get_genotypes(conn, metadata, args):
@@ -50,7 +54,7 @@ def get_genotypes(conn, metadata, args):
     col_names.append('genotype')
 
     if args.use_header:
-        print args.separator.join(col for col in col_names)
+        print(args.separator.join(col for col in col_names))
 
     unpack = Z.unpack_genotype_blob
     import zlib
@@ -67,7 +71,7 @@ def get_genotypes(conn, metadata, args):
             # xrange(len(row)-1) to avoid printing v.gts
             a = args.separator.join(str(row[i]) for i in xrange(len(row)-1))
             b = args.separator.join([idx_to_sample[idx], gt])
-            print args.separator.join((a, b))
+            print(args.separator.join((a, b)))
 
 def get_samples(conn, metadata, args):
     """
@@ -78,10 +82,10 @@ def get_samples(conn, metadata, args):
 
     (col_names, col_idxs) = util.get_col_names_and_indices(metadata.tables["samples"])
     if args.use_header:
-        print args.separator.join(col_names)
+        print(args.separator.join(col_names))
     for row in res:
-        print args.separator.join(str(row[i]) if row[i] is not None else "." \
-                                              for i in xrange(len(row)) )
+        print(args.separator.join(str(row[i]) if row[i] is not None else "." \
+                                              for i in xrange(len(row)) ))
 
 
 def tfam(args):
@@ -95,8 +99,8 @@ def tfam(args):
     gq = GeminiQuery(args.db)
     gq.run(query)
     for row in gq:
-        print " ".join(map(str, [row['family_id'], row['name'], row['paternal_id'],
-                        row['maternal_id'], row['sex'], row['phenotype']]))
+        print(" ".join(map(str, [row['family_id'], row['name'], row['paternal_id'],
+                        row['maternal_id'], row['sex'], row['phenotype']])))
 
 
 def dump(parser, args):

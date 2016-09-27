@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 
 import os
 import contextlib
@@ -8,7 +9,7 @@ import sqlalchemy as sql
 from sqlalchemy.orm import mapper, create_session
 import sqlalchemy
 
-from ped import get_ped_fields
+from gemini.ped import get_ped_fields
 
 
 def index_variation(cursor):

@@ -14,16 +14,16 @@ import geneimpacts
 import cyvcf2 as vcf
 
 # gemini modules
-import version
-from ped import load_ped_file
-import gene_table
-import infotag
-import database
-import annotations
-import popgen
-import structural_variants as svs
-from gemini_constants import *
-from compression import pack_blob
+from gemini import version
+from gemini.ped import load_ped_file
+from gemini import gene_table
+from gemini import infotag
+from gemini import database
+from gemini import annotations
+from gemini import popgen
+from gemini import structural_variants as svs
+from gemini.gemini_constants import *
+from gemini.compression import pack_blob
 from gemini.config import read_gemini_config
 
 class empty(object):
@@ -181,7 +181,7 @@ class GeminiLoader(object):
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(", reader["EFF"]["Description"].split(":", 1)[1].strip())]
                 anno_keys["EFF"] = parts
             else:
-                print "snpEff header not found"
+                print("snpEff header not found")
         if self.args.anno_type in ("VEP", "all"):
             if "CSQ" in reader:
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(",
@@ -854,7 +854,7 @@ def load(parser, args):
             if try_count > 0:
                 shutil.move(args.tmp_db, args.db)
             break
-        except sql.exc.OperationalError, e:
+        except sql.exc.OperationalError as e:
             sys.stderr.write("sqlalchemy.OperationalError: %s\n" % e)
     else:
         raise Exception(("Attempted workaround for SQLite locking issue on NFS "

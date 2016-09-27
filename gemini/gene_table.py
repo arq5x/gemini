@@ -1,5 +1,5 @@
 import os
-import database
+from gemini import database
 from gemini.config import read_gemini_config
 
 class gene_detailed:

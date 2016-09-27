@@ -1,10 +1,13 @@
 import sys
 import os
-from compiler import compile
+try:
+    from compiler import compile
+except ImportError:
+    pass
 import operator
 import itertools as it
 from argparse import ArgumentParser
-from GeminiQuery import GeminiQuery
+from gemini.GeminiQuery import GeminiQuery
 
 
 def add_args(a=None):
@@ -127,9 +130,9 @@ def genewise(db, gt_filters, gt_req_filters, filter=None, columns=None, min_filt
                 if c != grouper:
                     del x.print_fields[c]
             if not header_printed:
-                print "\t".join(x.print_fields.keys())
+                print("\t".join(x.print_fields.keys()))
                 header_printed = True
-            print x
+            print(x)
 
 
 def run(args):

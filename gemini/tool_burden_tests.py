@@ -58,7 +58,7 @@ def get_calpha(args):
 
     variants_in_gene, variants = _calculate_counts(ns, samples)
     header = ["gene", "T", "c", "Z", "p_value"]
-    print "\t".join(header)
+    print("\t".join(header))
 
     if args.permutations > 0:
         perms = permute_cases(samples, args.permutations, case)
@@ -100,7 +100,7 @@ def get_calpha(args):
         if c == 0:
             Z = np.NaN
             p_value = np.NaN
-            print "\t".join([gene, str(T), str(c), str(Z), str(p_value)])
+            print("\t".join([gene, str(T), str(c), str(Z), str(p_value)]))
             continue
         else:
             Z = T / math.sqrt(c)
@@ -126,7 +126,7 @@ def get_calpha(args):
             # http://www.degruyter.com/view/j/sagmb.2010.9.1/sagmb.2010.9.1.1585/sagmb.2010.9.1.1585.xml
             p_value = (float(false_hits) + 1) / (float(args.permutations + 1))
 
-        print "\t".join([gene, str(T), str(c), str(Z), str(p_value)])
+        print("\t".join([gene, str(T), str(c), str(Z), str(p_value)]))
 
 
 def permute_cases(samples, permutations, case):

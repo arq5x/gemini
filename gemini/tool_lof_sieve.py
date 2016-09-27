@@ -23,10 +23,11 @@ def get_ind_lof(conn, metadata, args):
     res = conn.execute(sql.text(query))
 
     # header
-    print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt',
+    print('\t'.join(['chrom', 'start', 'end', 'ref', 'alt',
                      'highest_impact', 'aa_change', 'var_trans_pos',
                      'trans_aa_length', 'var_trans_pct',
-                     'sample', 'genotype', 'gene', 'transcript', 'trans_type'])
+                     'sample', 'genotype', 'gene', 'transcript',
+                     'trans_type']))
 
     unpack = Z.unpack_genotype_blob
     for r in res:
@@ -66,7 +67,7 @@ def get_ind_lof(conn, metadata, args):
 
         for idx, gt_type in enumerate(gt_types):
             if gt_type == HET or gt_type == HOM_ALT:
-                print "\t".join([r['chrom'], str(r['start']),
+                print("\t".join([r['chrom'], str(r['start']),
                                  str(r['end']), r['ref'], r['alt'],
                                  r['impact'],
                                  r['aa_change'] or 'None',
@@ -74,7 +75,8 @@ def get_ind_lof(conn, metadata, args):
                                  r['aa_length'] or 'None',
                                  str(transcript_pct) or 'None',
                                  idx_to_sample[idx],
-                                 gts[idx], gene, trans, r['biotype'] or 'None'])
+                                 gts[idx], gene, trans, r['biotype'] or
+                                 'None']))
 
 
 def lof_sieve(parser, args):

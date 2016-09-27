@@ -97,10 +97,10 @@ def _report_variant_pathways(res, args, idx_to_sample):
         for idx, gt_type in enumerate(gt_types):
             if (gt_type == HET or gt_type == HOM_ALT) and \
                 len(pathways) > 0:
-                print "\t".join([r['chrom'], str(r['start']), str(r['end']), \
+                print("\t".join([r['chrom'], str(r['start']), str(r['end']), \
                                  r['ref'], r['alt'], r['impact'], \
                                  idx_to_sample[idx], gts[idx], gene, trans, \
-                                 pathlist])
+                                 pathlist]))
 
 def get_ind_pathways(conn, metadata, args):
 
@@ -115,9 +115,9 @@ def get_ind_pathways(conn, metadata, args):
     res = conn.execute(sql.text(query))
 
     # header
-    print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
+    print('\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
                      'impact', 'sample', 'genotype', \
-                     'gene', 'transcript', 'pathway'])
+                     'gene', 'transcript', 'pathway']))
 
     _report_variant_pathways(res, args, idx_to_sample)
 
@@ -136,9 +136,9 @@ def get_ind_lof_pathways(conn, metadata, args):
     res = conn.execute(sql.text(query))
 
     # header
-    print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
+    print('\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
                      'impact', 'sample', 'genotype', \
-                     'gene', 'transcript', 'pathway'])
+                     'gene', 'transcript', 'pathway']))
 
     _report_variant_pathways(res, args, idx_to_sample)
 

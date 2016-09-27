@@ -1,4 +1,5 @@
-    #!/usr/bin/env python
+#!/usr/bin/env python
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -9,10 +10,10 @@ import numpy as np
 from scipy.stats import mode
 import pysam
 
-import database
-from gemini.annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
-from gemini_windower import check_dependencies
-from database import database_transaction
+from . import database
+from .annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
+from .gemini_windower import check_dependencies
+from .database import database_transaction
 
 def add_requested_columns(args, update_cursor, col_names, col_types=None):
     """
@@ -117,7 +118,7 @@ def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_typ
             _update_variants(metadata, to_update, col_names, cursor)
 
             total += len(to_update)
-            print "updated", total, "variants"
+            print("updated", total, "variants")
             last_id = current_id
         to_update = []
 

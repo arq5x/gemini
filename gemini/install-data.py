@@ -124,7 +124,7 @@ def _download_to_dir(url, out_fname, dirname, version, cur_version):
     """
     Grab an annotation file and place in /usr/share/gemini/data
     """
-    print "* downloading " + url + " to " + dirname + "\n"
+    print("* downloading " + url + " to " + dirname + "\n")
     dest = os.path.join(dirname, out_fname)
     if not os.path.exists(dest) or version > cur_version:
         # download data file to staging directory instead of current
@@ -143,7 +143,8 @@ def _download_to_dir(url, out_fname, dirname, version, cur_version):
             if retcode == 0:
                 break
             else:
-                print "wget failed with non-zero exit code %s. Retrying" % retcode
+                print("wget failed with non-zero exit code %s. Retrying" %
+                      retcode)
                 if retries >= max_retries:
                     raise ValueError("Failed to download with wget")
                 time.sleep(10)

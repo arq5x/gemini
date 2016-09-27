@@ -65,9 +65,9 @@ def make_windows(conn, args, temp_file):
     for window in windowed_analysis:
         each = str(window).strip().split("\t")
         if args.op_type == "collapse" or each[3] is ".":
-            print "\t".join(each[0:])
+            print("\t".join(each[0:]))
         else:
-            print "\t".join(each[0:3])+"\t"+str(round(float(each[3]),4))
+            print("\t".join(each[0:3])+"\t"+str(round(float(each[3]),4)))
 
     # cleanup
     os.remove(temp_file)

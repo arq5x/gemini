@@ -146,9 +146,9 @@ simpleSQL.ignore( sqlLiteComment )
 def parse_sql(str):
     try:
         return simpleSQL.parseString( str )
-    except ParseException, err:
-        print " "*err.loc + "^\n" + err.msg
-        print err
+    except ParseException as err:
+        print(" "*err.loc + "^\n" + err.msg)
+        print(err)
 
 
 # tests = """\

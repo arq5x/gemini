@@ -8,8 +8,20 @@ will have 'variant_id' twice.
 
 We use it in GeminiQuery to keep the fields in the desired order.
 """
-import itertools as it
+try:
+    from itertools import izip as zip
+except ImportError:
+    pass
+
 from unidecode import unidecode
+import locale
+
+from .gemini_utils import to_str
+import numpy as np
+
+import sys
+PY3 = sys.version_info[0] ==  3
+ENC = locale.getpreferredencoding()
 
 def to_json(obj):
     return dict(obj.items())
@@ -77,19 +89,34 @@ class PDict(object):
                 raise NotImplemented
 
     def __repr__(self):
-        return "{%s}" % ", ".join("%r: %r" % p for p in it.izip(self._keys, self._vals))
+        return "{%s}" % ", ".join("%r: %r" % p for p in zip(self._keys, self._vals))
 
     def __str__(self):
         try:
-            return "\t".join(map(str, self._vals))
+            return "\t".join(map(str, [",".join(map(str, v)) if isinstance(v,
+                                                                           np.ndarray)
+                                       else v for v in self._vals]))
         except:
             vals = []
             for v in self._vals:
                 if isinstance(v, unicode):
                     vals.append(unidecode(v))
                 else:
-                    vals.append(str(v))
+                    vals.append(",".join(map(str, v)) if isinstance(v, np.ndarray) else str(v))
             return "\t".join(vals)
+
+    if PY3:
+        def __str__(self):
+            try:
+                return "\t".join(to_str(v) for v in self._vals)
+            except:
+                vals = []
+                for v in self._vals:
+                    if isinstance(v, np.ndarray):
+                        vals.append(",".join(str(to_str(vv)) for vv in v))
+                    else:
+                        vals.append(to_str(v) if isinstance(v, bytes) else str(v))
+                return "\t".join(vals)
 
     def add(self, key, val):
         self._keys.append(key)
@@ -100,6 +127,8 @@ class PDict(object):
             idx = self._keys.index(key)
         except ValueError:
             return None
+        if PY3:
+            return to_str(self._vals[idx])
         return self._vals[idx]
 
     def __getitem__(self, key):
@@ -107,7 +136,10 @@ class PDict(object):
             idx = self._keys.index(key)
         except ValueError:
             raise KeyError(key)
-        return self._vals[idx]
+        if PY3:
+            return to_str(self._vals[idx])
+        else:
+            return self._vals[idx]
 
     def __setitem__(self, key, val):
         try:
@@ -137,7 +169,7 @@ class PDict(object):
         self._vals = self._vals[:idx] + self._vals[idx + 1:]
 
     def items(self):
-        return it.izip(self._keys, self._vals)
+        return zip(self._keys, self._vals)
 
 if __name__ == "__main__":
     import doctest

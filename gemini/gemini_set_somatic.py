@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-from gemini_constants import *
-import gemini_subjects
-import GeminiQuery
+from __future__ import absolute_import, print_function
+from .gemini_constants import *
+from . import gemini_subjects
+from . import GeminiQuery
 
 def tag_somatic_mutations(args):
 
@@ -38,9 +39,9 @@ def tag_somatic_mutations(args):
     somatic_v_ids = []
 
     if args.dry_run:
-        print'\t'.join(['tum_name', 'tum_gt', 'tum_alt_freq', 'tum_alt_depth', 'tum_depth', \
+        print('\t'.join(['tum_name', 'tum_gt', 'tum_alt_freq', 'tum_alt_depth', 'tum_depth', \
                         'nrm_name', 'nrm_gt', 'nrm_alt_freq', 'nrm_alt_depth', 'nrm_depth',
-                        'chrom', 'start', 'end', 'ref', 'alt', 'gene'])
+                        'chrom', 'start', 'end', 'ref', 'alt', 'gene']))
 
     for row in gq:
         # we can skip variants where all genotypes are identical
@@ -114,12 +115,14 @@ def tag_somatic_mutations(args):
                somatic_counter += 1
                somatic_v_ids.append((1, row['variant_id']))
 
-               print'\t'.join(str(s) for s in [tumor.name,  tum_gt, tum_alt_freq, tum_alt_depth, tum_depth, \
+               print('\t'.join(str(s) for s in [tumor.name,  tum_gt, tum_alt_freq, tum_alt_depth, tum_depth, \
                                    normal.name, nrm_gt, nrm_alt_freq, nrm_alt_depth, nrm_depth, \
-                                   row['chrom'], row['start'], row['end'], row['ref'], row['alt'], row['gene']])
+                                   row['chrom'], row['start'], row['end'],
+                                                row['ref'], row['alt'],
+                                                row['gene']]))
 
     if not args.dry_run:
-        import database
+        from . import database
         conn, metadata = database.get_session_metadata(args.db)
 
         # now set the identified mutations to True.
@@ -128,10 +131,10 @@ def tag_somatic_mutations(args):
         update_qry %= ",".join(str(x[1]) for x in somatic_v_ids)
         res = conn.execute(update_qry)
         assert res.rowcount == somatic_counter
-        print "Identified and set", somatic_counter, "somatic mutations"
+        print("Identified and set", somatic_counter, "somatic mutations")
         conn.commit()
     else:
-        print "Would have identified and set", somatic_counter, "somatic mutations"
+        print("Would have identified and set", somatic_counter, "somatic mutations")
 
 def set_somatic(parser, args):
 

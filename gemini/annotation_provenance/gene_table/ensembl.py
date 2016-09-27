@@ -44,7 +44,7 @@ for line in open("ensembl75_1", 'r'):
                 protein_len = each[1]
             string = [chrom,hgnc,ens_geneid,ens_transid,trans_biotype,status,ccds_id,hgnc_id,cds_len,protein_len,transcript_start,transcript_end,strand]
         else:
-            print "line fail"
+            print("line fail")
         out.write("\t".join(string))
         out.write("\n")
         

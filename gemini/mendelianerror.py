@@ -1,6 +1,7 @@
 """
 Calculate the probability of a mendelian error given the genotype likelihoods
 from a trio."""
+from __future__ import print_function
 
 import sys
 from math import log10
@@ -149,15 +150,15 @@ def main(fh, father, mother, child):
 
     for line in fh:
         if line.startswith("##"):
-            print line,
+            print(line, end="")
             continue
         elif line.startswith("#CHROM"):
-            print "##INFO=<ID=MEP,Number=1,Type=Float,Description=\"probability of mendelian error\">"
-            print "##INFO=<ID=MER,Number=1,Type=Float,Description=\"log10 ratio of mendelian error\">"
+            print("##INFO=<ID=MEP,Number=1,Type=Float,Description=\"probability of mendelian error\">")
+            print("##INFO=<ID=MER,Number=1,Type=Float,Description=\"log10 ratio of mendelian error\">")
             fields = line.rstrip().split("\t")
             samples = fields[9:]
             idxs = [9 + samples.index(s) for s in (father, mother, child)]
-            print line,
+            print(line, end="")
             continue
 
         fields = line.rstrip().split("\t")
@@ -191,7 +192,7 @@ def main(fh, father, mother, child):
 
         fields[7] += ";MEP=%.8g" % (nan if p is None else p)
         fields[7] += ";MER=%.8g" % (nan if p is None else mer)
-        print "\t".join(fields)
+        print("\t".join(fields))
 
 def test():
     from random import randint
@@ -204,9 +205,9 @@ def test():
         a, b, c = gen3(), gen3(), gen3()
         ps.append(mendelian_error(a, b, c))
         if ps[-1] > 0.999999:
-            print "mendelian error:", tuple(a), tuple(b), tuple(c)
+            print("mendelian error:", tuple(a), tuple(b), tuple(c))
         elif ps[-1] < 0.00001:
-            print "expected       :", tuple(a), tuple(b), tuple(c)
+            print("expected       :", tuple(a), tuple(b), tuple(c))
     try:
         import pylab as pl
         pl.hist(ps, 50)
@@ -219,8 +220,9 @@ def _main():
         sys.exit(test())
 
     elif len(sys.argv) != 5:
-        print __doc__
-        print "\nUsage: %s some.vcf father_id mother_id child_id > new.vcf\n" % sys.argv[0]
+        print(__doc__)
+        print("\nUsage: %s some.vcf father_id mother_id child_id > new.vcf\n" %
+              sys.argv[0])
         sys.exit()
 
     father, mother, child = sys.argv[2:]
