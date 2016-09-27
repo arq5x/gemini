@@ -175,10 +175,10 @@ def get_chunks_to_merge(chunks):
 
 def list_to_sublists(l, n):
     """ convert list l to sublists of length n """
-    return [l[i:i+n] for i in xrange(0, len(l), n)]
+    return [l[i:i+n] for i in range(0, len(l), n)]
 
 def get_temp_dbs(n, tmp_dir):
-    return [os.path.join(tmp_dir, str(uuid.uuid4())) + ".db" for _ in xrange(n)]
+    return [os.path.join(tmp_dir, str(uuid.uuid4())) + ".db" for _ in range(n)]
 
 def get_chunk_name(chunk):
     return "--chunkdb " + chunk

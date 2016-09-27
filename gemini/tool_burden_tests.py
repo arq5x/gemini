@@ -1,3 +1,4 @@
+from __future__ import print_function, absolute_import
 import math
 from collections import Counter, defaultdict
 import numpy as np
@@ -9,7 +10,7 @@ from itertools import islice
 from scipy.misc import comb
 
 
-import GeminiQuery
+from . import GeminiQuery
 
 
 def burden_by_gene(args):
@@ -78,7 +79,7 @@ def get_calpha(args):
 
         # y_i is a list reflecting the total number of __cases__
         # having each variant
-        y_i = [len(filter(lambda a: a in case, x)) for x in vig.values()]
+        y_i = [sum(1 for _ in filter(lambda a: a in case, x)) for x in vig.values()]
 
         # "The C-alpha test statistic T contrasts the variance of each observed
         # count with the expected variance, assuming the binomial distribution."
@@ -113,13 +114,13 @@ def get_calpha(args):
             # calculating an exact p-value
             T_scores = []
             for perm_case in perms:
-                y_i = [len(filter(lambda a: a in perm_case, x)) for x in vig.values()]
+                y_i = [sum(1 for _ in filter(lambda a: a in perm_case, x)) for x in vig.values()]
                 T_permuted = _calculate_T(m, p_0, n_i, y_i)
                 T_scores.append(T_permuted)
             if args.save_tscores:
                 with open("permutated_t_scores.txt", "a") as out_handle:
                     out_handle.write("\t".join([gene] + map(str, T_scores)) + "\n")
-            false_hits = sum([x >= T for x in T_scores])
+            false_hits = sum(x >= T for x in T_scores)
             # the + 1 to make it an unbiased estimator
             # Permutation P-values Should Never Be Zero: Calculating Exact
             # P-values When Permutations Are Randomly Drawn
@@ -178,10 +179,10 @@ def _calculate_c(n_i, p_0):
         if n < 2:
             singleton_n += n
             continue
-        for u in xrange(n + 1):
+        for u in range(n + 1):
             c += _C_term(u, n, p_0)
     if singleton_n >= 2:
-        for u in xrange(singleton_n + 1):
+        for u in range(singleton_n + 1):
             c += _C_term(u, singleton_n, p_0)
     return c
 

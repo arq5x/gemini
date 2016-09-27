@@ -470,7 +470,7 @@ def insert_gene_detailed(session, metadata, table_contents):
     cols = _get_cols(t)
 
     n = 1000
-    for chunk in (table_contents[i:i+n] for i in xrange(0, len(table_contents), n)):
+    for chunk in (table_contents[i:i+n] for i in range(0, len(table_contents), n)):
         session.execute(t.insert(), list(gen_gene_vals(cols, chunk)))
 
 def insert_gene_summary(session, metadata, contents):

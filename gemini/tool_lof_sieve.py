@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+from __future__ import absolute_import, print_function
 
 import re
 import sqlalchemy as sql
-import gemini_utils as util
-from gemini_constants import *
-import compression as Z
+from . import gemini_utils as util
+from .gemini_constants import *
+from . import compression as Z
 
 
 def get_ind_lof(conn, metadata, args):
@@ -81,6 +82,6 @@ def get_ind_lof(conn, metadata, args):
 
 def lof_sieve(parser, args):
 
-    import database
+    from . import database
     conn, metadata = database.get_session_metadata(args.db)
     get_ind_lof(conn, metadata, args)

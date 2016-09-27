@@ -5,15 +5,16 @@
 #2. For a root fixed to a lof gene in each sample, get the interacting partners
 #3. a network graph of mutated genes for each sample, a subnetwork for any gene in that list (not executed here)
 ###########################################################################################################################################
+from __future__ import absolute_import, print_function
 
 import os
 import sys
-import compression as Z
-from gemini.config import read_gemini_config
-import database
+from . import compression as Z
+from .config import read_gemini_config
+from . import database
 import networkx as nx
-import gemini_utils as util
-from gemini_constants import *
+from . import gemini_utils as util
+from .gemini_constants import *
 from collections import defaultdict
 import gzip
 import zlib

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
 
-from gemini import database
+from . import database
 
 
 def get_table_info(metadata, table_name, out_template):

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
-from gemini import compression as Z
+from . import compression as Z
 
-from gemini import database
-import gemini.gemini_utils as util
-from gemini.GeminiQuery import GeminiQuery
+from . import database
+from . import gemini_utils as util
+from .GeminiQuery import GeminiQuery
 import sqlalchemy as sql
 
 
@@ -68,8 +68,8 @@ def get_genotypes(conn, metadata, args):
             gts = unpack(row['gts'])
 
         for idx, gt in enumerate(gts):
-            # xrange(len(row)-1) to avoid printing v.gts
-            a = args.separator.join(str(row[i]) for i in xrange(len(row)-1))
+            # range(len(row)-1) to avoid printing v.gts
+            a = args.separator.join(str(row[i]) for i in range(len(row)-1))
             b = args.separator.join([idx_to_sample[idx], gt])
             print(args.separator.join((a, b)))
 
@@ -85,7 +85,7 @@ def get_samples(conn, metadata, args):
         print(args.separator.join(col_names))
     for row in res:
         print(args.separator.join(str(row[i]) if row[i] is not None else "." \
-                                              for i in xrange(len(row)) ))
+                                              for i in range(len(row)) ))
 
 
 def tfam(args):

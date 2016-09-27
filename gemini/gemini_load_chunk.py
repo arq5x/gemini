@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function, absolute_import
 
 # native Python imports
 import os.path
@@ -14,17 +15,17 @@ import geneimpacts
 import cyvcf2 as vcf
 
 # gemini modules
-from gemini import version
-from gemini.ped import load_ped_file
-from gemini import gene_table
-from gemini import infotag
-from gemini import database
-from gemini import annotations
-from gemini import popgen
-from gemini import structural_variants as svs
-from gemini.gemini_constants import *
-from gemini.compression import pack_blob
-from gemini.config import read_gemini_config
+from . import version
+from .ped import load_ped_file
+from . import gene_table
+from . import infotag
+from . import database
+from . import annotations
+from . import popgen
+from . import structural_variants as svs
+from .gemini_constants import *
+from .compression import pack_blob
+from .config import read_gemini_config
 
 class empty(object):
     def __getattr__(self, key):

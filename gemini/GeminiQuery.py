@@ -184,14 +184,14 @@ class TPEDRowFormat(RowFormat):
         self.samples = [gq.idx_to_sample_object[x] for x in range(len(subjects))]
 
     def format(self, row):
-        VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
+        VALID_CHROMOSOMES = list(map(str, range(1, 23))) + ["X", "Y", "XY", "MT"]
         chrom = row['chrom'].split("chr")[1]
         chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
         start = str(row.row['start'])
         end = str(row.row['end'])
         ref = row['ref']
         alt = row['alt']
-        geno = [re.split('\||/', x) for x in row['gts']]
+        geno = [re.split('\||/', util.to_str(x)) for x in row['gts']]
         geno = [self._fix_genotype(chrom, start, genotype, self.samples[i].sex)
                 for i, genotype in enumerate(geno)]
         genotypes = " ".join(list(flatten(geno)))
@@ -204,7 +204,10 @@ class TPEDRowFormat(RowFormat):
 
 
     def predicate(self, row, _splitter=re.compile("\||/")):
-        geno = [_splitter.split(x) for x in row['gts']]
+        if PY3:
+            geno = [_splitter.split(util.to_str(x)) for x in row['gts']]
+        else:
+            geno = [_splitter.split(x) for x in row['gts']]
         geno = list(flatten(geno))
         num_alleles = len(set(geno).difference(self.NULL_GENOTYPES))
         return num_alleles > 0 and num_alleles <= 2 and row['type'] != "sv"
@@ -444,6 +447,8 @@ class GeminiRow(object):
         elif key in self.query.gt_cols:
             if key not in self.cache:
                 self.cache[key] = self.unpack(self.row[key])
+                if PY3 and key == 'gts':
+                    self.cache[key] = self.cache[key].astype(str)
             return self.cache[key]
         raise KeyError(key)
 

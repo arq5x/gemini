@@ -1,14 +1,14 @@
 #!/usr/bin/env python
+from __future__ import print_function, absolute_import
 
 import os
 import sys
 import sqlalchemy as sql
-import compression as Z
+from . import compression as Z
 from collections import defaultdict
-from gemini.config import read_gemini_config
-import gemini_utils as util
-from gemini_constants import *
-
+from .config import read_gemini_config
+from . import gemini_utils as util
+from .gemini_constants import *
 
 
 def get_pathways(args):
@@ -145,7 +145,7 @@ def get_ind_lof_pathways(conn, metadata, args):
 
 
 def pathways(parser, args):
-    import database
+    from . import database
 
     conn, metadata = database.get_session_metadata(args.db)
 

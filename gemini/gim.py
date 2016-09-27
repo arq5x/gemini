@@ -257,7 +257,7 @@ class GeminiInheritanceModel(object):
                     pdict["family_id"] = fam.family_id
                     pdict["family_members"] = ",".join("%s" % m for m in fam.subjects)
                     if PY3:
-                        pdict["family_genotypes"] = to_str(b",".join(eval(str(to_str(s)), cols) for s in fam.gts))
+                        pdict["family_genotypes"] = to_str(",".join(eval(str(to_str(s)), cols) for s in fam.gts))
                     else:
                         pdict["family_genotypes"] = ",".join(eval(str(s), cols) for s in fam.gts)
 

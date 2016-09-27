@@ -47,7 +47,7 @@ except:
 def pack_blob(obj):
     return buffer(zdumps(obj))
 
-if sys.version[0] == 3:
+if sys.version_info[0] == 3:
     def unpack_genotype_blob(blob):
         return pickle.loads(zlib.decompress(blob), encoding='latin1')
     def zdumps(obj):

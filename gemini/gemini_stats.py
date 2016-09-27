@@ -2,12 +2,12 @@
 import numpy as np
 import collections
 from collections import Counter
-import compression as Z
+from . import compression as Z
 
 import sqlalchemy as sql
-import gemini_utils as util
-from gemini_constants import *
-import GeminiQuery
+from . import gemini_utils as util
+from .gemini_constants import *
+from . import GeminiQuery
 
 
 def get_tstv(conn, metadata, args):

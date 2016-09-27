@@ -201,7 +201,7 @@ def test():
         return [randint(-70, 1) / 10. for i in range(3)]
 
     ps = []
-    for i in xrange(100000):
+    for i in range(100000):
         a, b, c = gen3(), gen3(), gen3()
         ps.append(mendelian_error(a, b, c))
         if ps[-1] > 0.999999:
