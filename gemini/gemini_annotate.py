@@ -10,6 +10,11 @@ import numpy as np
 from scipy.stats import mode
 import pysam
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 from . import database
 from .annotations import annotations_in_region, annotations_in_vcf, guess_contig_naming
 from .gemini_windower import check_dependencies

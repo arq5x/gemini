@@ -44,20 +44,21 @@ try:
 except:
     from collections import OrderedDict
 
-def pack_blob(obj):
-    return buffer(zdumps(obj))
 
 if sys.version_info[0] == 3:
+    buffer = memoryview
     def unpack_genotype_blob(blob):
         return pickle.loads(zlib.decompress(blob), encoding='latin1')
     def zdumps(obj):
-        return zlib.compress(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL, encoding='latin1'), 9)
+        return zlib.compress(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL), 9)
 else:
     def unpack_genotype_blob(blob):
         return pickle.loads(zlib.decompress(blob))
     def zdumps(obj):
         return zlib.compress(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL), 9)
 
+def pack_blob(obj):
+    return buffer(zdumps(obj))
 
 def unpack_ordereddict_blob(blob):
     blob_val = pickle.loads(zlib.decompress(blob))

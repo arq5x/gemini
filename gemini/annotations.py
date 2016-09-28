@@ -7,7 +7,12 @@ import sys
 import collections
 import re
 from unidecode import unidecode
-from gemini.config import read_gemini_config
+from .config import read_gemini_config
+from . import gemini_utils as util
+try:
+    basestring
+except NameError:
+    basestring = str
 
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
@@ -185,7 +190,11 @@ def load_annos(args):
         try:
             # .gz denotes Tabix files.
             if anno_files[anno].endswith(".gz"):
-                annos[anno] = pysam.Tabixfile(anno_files[anno])
+                if anno == "clinvar":
+                    annos[anno] = pysam.Tabixfile(anno_files[anno],
+                                                  encoding='utf8')
+                else:
+                    annos[anno] = pysam.Tabixfile(anno_files[anno])
             # .bw denotes BigWig files.
             elif anno_files[anno].endswith(".bw"):
                 from bx.bbi.bigwig_file import BigWigFile
@@ -500,11 +509,11 @@ def get_vista_enhancers(var):
     return ",".join(vista_enhancers) if len(vista_enhancers) > 0 else None
 
 def get_fitcons(var):
-    hmax = None
+    hmax = float('nan')
     for hit in annotations_in_region(var, "fitcons", None, "ucsc"):
         _, val = hit.rsplit("\t", 1)
         v = float(val)
-        if v > hmax:
+        if not hmax > v:
             hmax = v
     return hmax
 
@@ -597,16 +606,18 @@ def get_clinvar_info(var):
     for hit in annotations_in_vcf(var, "clinvar", "vcf", "grch37"):
         # load each VCF INFO key/value pair into a DICT
         info_map = {}
-        for info in hit.info.split(";"):
+        vals = hit.info.split(';')
+
+        for info in vals:
             if info.find("=") > 0:
                 (key, value) = info.split("=")
                 info_map[key] = value
             else:
                 info_map[info] = True
 
-        raw_dbsource = info_map['CLNSRC'] or None
+        raw_dbsource = info_map['CLNSRC']
         #interpret 8-bit strings and convert to plain text
-        clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf8'))
+        clinvar.clinvar_dbsource = unidecode(raw_dbsource)
         clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
             clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
@@ -615,8 +626,11 @@ def get_clinvar_info(var):
         clinvar.clinvar_dsdb = info_map['CLNDSDB'] or None
         clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
         # Remap all unicode characters into plain text string replacements
-        raw_disease_name = info_map['CLNDBN'] or None
-        clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf8')).decode('string_escape')
+        raw_disease_name = info_map['CLNDBN']
+        try:
+            clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8')).decode('string_escape')
+        except:
+            clinvar.clinvar_disease_name = unidecode(raw_disease_name.encode('utf-8').decode())
         # Clinvar represents commas as \x2c.  Make them commas.
 
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
@@ -899,8 +913,7 @@ def get_gms(var):
     hit = _get_first_vcf_hit(
         annotations_in_vcf(var, "gms", "vcf", "grch37"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
-    return apply(GmsTechs,
-                 [attr_map.get("GMS_{0}".format(x), None) for x in techs])
+    return GmsTechs(*[attr_map.get("GMS_{0}".format(x), None) for x in techs])
 
 
 def get_grc(var):

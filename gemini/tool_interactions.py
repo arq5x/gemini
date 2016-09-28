@@ -93,9 +93,14 @@ def sample_gene_interactions(res, args, idx_to_sample):
         file_graph = args.edges
 
     gr = nx.DiGraph()
-    for e in xopen(file_graph):
-        pair = e.strip().split("|")
-        gr.add_edge(*pair)
+    if util.PY3:
+        for e in xopen(file_graph):
+            pair = util.to_str(e).strip().split("|")
+            gr.add_edge(*pair)
+    else:
+        for e in xopen(file_graph):
+            pair = e.strip().split("|")
+            gr.add_edge(*pair)
 
     k = []
     variants = []
@@ -109,7 +114,7 @@ def sample_gene_interactions(res, args, idx_to_sample):
                                                       cutoff=args.radius)
 
         if args.var_mode:
-            for sample in samples.iterkeys():
+            for sample in samples:
                 var = samples[str(sample)]
                 #for each level return interacting genes if they are
                 # variants in the sample.
@@ -117,7 +122,7 @@ def sample_gene_interactions(res, args, idx_to_sample):
                 # gene is a variant in the sample
                 for radius in range(0, (args.radius+1)):
                     for each in var:
-                        for key, dist in genes.iteritems():
+                        for key, dist in genes.items():
                             if dist == radius and key == each[0]:
                                 print("\t".join([str(sample), str(args.gene), \
                                           str(radius), \
@@ -134,11 +139,11 @@ def sample_gene_interactions(res, args, idx_to_sample):
                                           str(each[10]), \
                                           str(each[11])]))
         elif (not args.var_mode):
-            for sample in samples.iterkeys():
+            for sample in samples:
                 for each in samples[str(sample)]:
                     variants.append(each[0])
                 for x in range(0, (args.radius+1)):
-                    for key, value in genes.iteritems():
+                    for key, value in genes.items():
                         if value == x and key in set(variants):
                             k.append(key)
                     if k:
@@ -173,7 +178,7 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
     variants = []
 
     if (not args.var_mode):
-        for sample in lof.iterkeys():
+        for sample in lof:
             lofvariants = list(set(lof[str(sample)]))
             for each in samples[str(sample)]:
                 variants.append(each[0])
@@ -182,7 +187,7 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
                 genes = nx.single_source_shortest_path_length(gr, gene,
                                                               cutoff=args.radius)
                 for rad in range(1, (args.radius+1)):
-                    for key, value in genes.iteritems():
+                    for key, value in genes.items():
                         if (value == rad) and key in set(variants):
                             k.append(key)
                     if k:
@@ -200,7 +205,7 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
             #initialize variants list for next iteration
             variants = []
     elif args.var_mode:
-        for sample in lof.iterkeys():
+        for sample in lof:
             lofvariants = list(set(lof[str(sample)]))
             var = samples[str(sample)]
             for gene in lofvariants:
@@ -210,7 +215,7 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
 
                 for rad in range(1, (args.radius+1)):
                     for each in var:
-                        for key, value in genes.iteritems():
+                        for key, value in genes.items():
                             if value == rad and key == each[0]:
                                 print("\t".join([str(sample),
                                            str(gene),
