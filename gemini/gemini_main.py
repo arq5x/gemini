@@ -906,7 +906,7 @@ def main():
     parser_de_novo = subparsers.add_parser('de_novo',
             help='Identify candidate de novo mutations')
 
-    add_inheritance_args(parser_de_novo, min_kindreds=None, gt_ll=True)
+    add_inheritance_args(parser_de_novo, min_kindreds=1, gt_ll=True)
 
     def de_novo_fn(parser, args):
         from gemini.gim import DeNovo
@@ -963,55 +963,55 @@ def main():
     parser_set_somatic.add_argument('--min-depth',
             dest='min_depth',
             type=float,
-            default=None,
+            default=0,
             help='The min combined depth for tumor + normal (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-qual',
             dest='min_qual',
             type=float,
-            default=None,
+            default=0,
             help='The min variant quality (VCF QUAL) (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-somatic-score',
             dest='min_somatic_score',
             type=float,
-            default=None,
+            default=0,
             help='The min somatic score (SSC) (def: %(default)s).')
 
     parser_set_somatic.add_argument('--max-norm-alt-freq',
             dest='max_norm_alt_freq',
             type=float,
-            default=None,
+            default=0,
             help='The max freq. of the alt. allele in the normal sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--max-norm-alt-count',
             dest='max_norm_alt_count',
             type=int,
-            default=None,
+            default=0,
             help='The max count. of the alt. allele in the normal sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-norm-depth',
             dest='min_norm_depth',
             type=int,
-            default=None,
+            default=0,
             help='The minimum depth allowed in the normal sample to believe somatic (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-alt-freq',
             dest='min_tumor_alt_freq',
             type=float,
-            default=None,
+            default=0,
             help='The min freq. of the alt. allele in the tumor sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-alt-count',
             dest='min_tumor_alt_count',
             type=int,
-            default=None,
+            default=0,
             help='The min count. of the alt. allele in the tumor sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-depth',
             dest='min_tumor_depth',
             type=int,
-            default=None,
+            default=0,
             help='The minimum depth allowed in the tumor sample to believe somatic (def: %(default)s).')
 
     parser_set_somatic.add_argument('--chrom',

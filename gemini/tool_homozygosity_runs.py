@@ -97,8 +97,8 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
                     curr_run.append(site)
                     unk_count += 1
                 try:
-                    site = sites.next()
-                except:
+                    site = next(sites)
+                except StopIteration:
                     break
 
             # skip the current run unless it contains enough sites.

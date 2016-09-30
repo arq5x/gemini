@@ -617,7 +617,6 @@ def get_clinvar_info(var):
 
         raw_dbsource = info_map['CLNSRC']
         #interpret 8-bit strings and convert to plain text
-        clinvar.clinvar_dbsource = unidecode(raw_dbsource)
         clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
             clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
@@ -629,8 +628,10 @@ def get_clinvar_info(var):
         raw_disease_name = info_map['CLNDBN']
         try:
             clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8')).decode('string_escape')
+            clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf-8'))
         except:
             clinvar.clinvar_disease_name = unidecode(raw_disease_name.encode('utf-8').decode())
+            clinvar.clinvar_dbsource = unidecode(raw_dbsource.encode('utf-8').decode())
         # Clinvar represents commas as \x2c.  Make them commas.
 
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None

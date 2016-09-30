@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 
 # native Python imports
 import os.path
@@ -366,7 +367,7 @@ def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
     args.cores = min(int(args.cores), num_lines)
-    chunk_size = int(num_lines) / args.cores
+    chunk_size = int(num_lines) // args.cores
     print("Breaking {0} into {1} chunks.".format(grabix_file, args.cores))
 
     starts = []
@@ -383,8 +384,8 @@ def get_chunk_steps(grabix_file, args):
 
 def get_num_lines(index_file):
     with open(index_file) as index_handle:
-        index_handle.next()
-        num_lines = int(index_handle.next().strip())
+        next(index_handle)
+        num_lines = int(next(index_handle).strip())
     print("Loading %d variants." % (num_lines))
     return num_lines
 

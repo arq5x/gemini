@@ -349,7 +349,7 @@ class VCFRowFormat(RowFormat):
         """
         try:
             self.gq.run('select vcf_header from vcf_header')
-            return str(self.gq.next()).strip()
+            return str(next(self.gq)).strip()
         except:
             raise ValueError("Your database does not contain the vcf_header table. Therefore, you cannot use --header.\n")
 
@@ -719,7 +719,7 @@ class GeminiQuery(object):
         # we use a while loop since we may skip records based upon
         # genotype filters.  if we need to skip a record, we just
         # throw a continue and keep trying. the alternative is to just
-        # recursively call self.next() if we need to skip, but this
+        # recursively call next(self) if we need to skip, but this
         # can quickly exceed the stack.
         while (1):
             try:

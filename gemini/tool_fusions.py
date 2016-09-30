@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+from __future__ import print_function, absolute_import
 import os
 
-import GeminiQuery
-from gemini_constants import *
-import gemini_subjects as subjects
+from . import GeminiQuery
+from .gemini_constants import *
+from . import gemini_subjects as subjects
 
 def report_fusion(event, subjects_dict, args):
     """

@@ -1,14 +1,15 @@
+from __future__ import print_function, absolute_import
 import sys
 import os
 try:
     from compiler import compile
 except ImportError:
+    basestring = str
     pass
 import operator
 import itertools as it
 from argparse import ArgumentParser
-from gemini.GeminiQuery import GeminiQuery
-
+from .GeminiQuery import GeminiQuery
 
 def add_args(a=None):
     if a is None:

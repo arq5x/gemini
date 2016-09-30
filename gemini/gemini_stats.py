@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import, print_function
 import numpy as np
 import collections
 from collections import Counter
@@ -281,7 +282,7 @@ def summarize_query_by_sample(args):
 
 def stats(parser, args):
 
-    import database
+    from . import database
     conn, metadata = database.get_session_metadata(args.db)
 
     if args.tstv:
