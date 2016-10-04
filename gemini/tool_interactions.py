@@ -169,9 +169,14 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
         file_graph = args.edges
 
     gr = nx.DiGraph()
-    for e in xopen(file_graph):
-        pair = e.strip().split("|")
-        gr.add_edge(*pair)
+    if util.PY3:
+        for e in xopen(file_graph):
+            pair = util.to_str(e).strip().split("|")
+            gr.add_edge(*pair)
+    else:
+        for e in xopen(file_graph):
+            pair = e.strip().split("|")
+            gr.add_edge(*pair)
 
     #initialize keys
     k = []

@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 import os
 import sys
 from collections import defaultdict
-from gemini_constants import *
-import GeminiQuery
+from .gemini_constants import *
+from . import GeminiQuery
 
 class Site(object):
     def __init__(self, row):
