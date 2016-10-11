@@ -97,7 +97,7 @@ is_splicing               BOOL          Does the variant affect a canonical or p
 exon                      STRING        Exon information for the severely affected transcript
 codon_change              STRING        What is the codon change?
 aa_change                 STRING        What is the amino acid change (for a snp)?
-aa_length                 STRING        The length of CDS in terms of number of amino acids (``only SnpEff``)
+aa_length                 STRING        Has the format pos/len when biotype=protein_coding, is empty otherwise. len=protein length. pos = position of the amino acid change when is_coding=1 and is_exonic=1, '-' otherwise.
 biotype                   STRING        The 'type' of the severely affected transcript (e.g., protein-coding, pseudogene, rRNA etc.) (``only SnpEff``)
 impact                    STRING        The consequence of the most severely affected transcript
 impact_so                 STRING        The Sequence ontology term for the most severe consequence
