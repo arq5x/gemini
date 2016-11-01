@@ -2,7 +2,7 @@
 check()
 {
 	echo $3
-    if diff $1 $2; then
+    if diff <(sort $1) <(sort $2); then
         echo ok
     else
         echo fail
