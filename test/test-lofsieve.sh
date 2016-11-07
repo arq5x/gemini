@@ -1,3 +1,13 @@
+check()
+{
+	if diff $1 $2; then
+    	echo ok
+	else
+    	echo fail
+	fi
+}
+export -f check
+
 ################################################
 # Test the LOF sieve tool with snpEff
 ################################################

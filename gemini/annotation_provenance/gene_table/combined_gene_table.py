@@ -200,12 +200,12 @@ for each in open("raw_gene_table", 'r'):
                 summary_out.write(line)
                 summary_out.write("\n")
                 lines_seen.add(line)
-            
+
             # probably we still want to print these lines where gene is none since ensembl gene id has value
             detailed_out.write("\t".join([chrom,gene_name,hgnc_flag,ens_geneid,ens_transid,trans_biotype,status,
                                           ccds_id,is_hgnc_id,cds_len,protein_len,transcript_start,transcript_end,
                                           strand,other_names,str(rvis),entrez,str(phenotype)]))
             detailed_out.write("\n")
-            
+
 detailed_out.close()
 summary_out.close()

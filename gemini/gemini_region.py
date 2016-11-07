@@ -1,19 +1,20 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import re
 import os
 import sys
 
-import GeminiQuery
-from GeminiQuery import select_formatter
+from . import GeminiQuery
+from .GeminiQuery import select_formatter
 
 def _report_results(args, query, gq):
     # report the results of the region query
     gq.run(query, show_variant_samples=args.show_variant_samples)
     if args.use_header and gq.header:
-        print gq.header
+        print(gq.header)
 
     for row in gq:
-        print row
+        print(row)
 
 
 def get_region(args, gq):

@@ -1,6 +1,6 @@
 check()
 {
-    if diff $1 $2; then
+    if diff <(sort $1) <(sort $2); then
         echo ok
     else
         echo fail
@@ -15,8 +15,8 @@ export -f check
 echo "    de_novo.t1...\c"
 echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 WDR37	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	1
-ASAH2C	C	T	missense_variant	MED	2	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/C,C/C,C/T	2_kid	1
-ASAH2C	C	T	missense_variant	MED	3	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	C/C,C/C,C/T	3_kid	1
+ASAH2C	C	T	missense_variant	MED	2	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/C,C/C,C/T	2_kid	2
+ASAH2C	C	T	missense_variant	MED	3	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	C/C,C/C,C/T	3_kid	2
 SPRN	G	A	intron_variant	LOW	4	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	G/G,G/G,G/A	1_kid	2
 SPRN	G	A	intron_variant	LOW	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	G/G,G/G,G/A	2_kid	2
 SYCE1	T	C	missense_variant	MED	5	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid(1_kid;affected)	T/T,T/T,T/C	1_kid	3
@@ -140,8 +140,8 @@ rm obs exp
 echo "    de_novo.t8...\c"
 echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
 WDR37	T	C	stop_lost	HIGH	1	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid1(1_kid1;unaffected),1_kid2(1_kid2;affected)	T/T,T/T,T/C,T/C	1_kid2	1
-ASAH2C	C	T	missense_variant	MED	2	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/C,C/C,C/T	2_kid	1
-ASAH2C	C	T	missense_variant	MED	3	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	C/C,C/C,C/T	3_kid	1
+ASAH2C	C	T	missense_variant	MED	2	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/C,C/C,C/T	2_kid	2
+ASAH2C	C	T	missense_variant	MED	3	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	C/C,C/C,C/T	3_kid	2
 SPRN	G	A	intron_variant	LOW	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	G/G,G/G,G/A	2_kid	1
 SYCE1	T	C	missense_variant	MED	5	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid1(1_kid1;unaffected),1_kid2(1_kid2;affected)	T/T,T/T,T/T,T/C	1_kid2	3
 SYCE1	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/T,T/T,T/C	3_kid	3
@@ -158,8 +158,8 @@ rm obs exp
 ###################################################################
 echo "    de_novo.t9...\c"
 echo "gene	ref	alt	impact	impact_severity	variant_id	family_id	family_members	family_genotypes	samples	family_count
-ASAH2C	C	T	missense_variant	MED	2	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/C,C/C,C/T	2_kid	1
-ASAH2C	C	T	missense_variant	MED	3	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	C/C,C/C,C/T	3_kid	1
+ASAH2C	C	T	missense_variant	MED	2	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	C/C,C/C,C/T	2_kid	2
+ASAH2C	C	T	missense_variant	MED	3	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	C/C,C/C,C/T	3_kid	2
 SPRN	G	A	intron_variant	LOW	4	2	2_dad(2_dad;unaffected),2_mom(2_mom;unaffected),2_kid(2_kid;affected)	G/G,G/G,G/A	2_kid	1
 SYCE1	T	C	missense_variant	MED	5	1	1_dad(1_dad;unaffected),1_mom(1_mom;unaffected),1_kid1(1_kid1;unaffected),1_kid2(1_kid2;affected)	T/T,T/T,T/T,T/C	1_kid2	3
 SYCE1	T	C	missense_variant	MED	5	3	3_dad(3_dad;unaffected),3_mom(3_mom;unaffected),3_kid(3_kid;affected)	T/T,T/T,T/C	3_kid	3

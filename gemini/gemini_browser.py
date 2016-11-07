@@ -1,11 +1,10 @@
+from __future__ import absolute_import
 import os
 import warnings
 import webbrowser
 from collections import namedtuple
 
-import GeminiQuery
-
-import GeminiQuery
+from gemini import GeminiQuery
 from gemini.gim import (AutoDom, AutoRec, DeNovo, MendelViolations, CompoundHet)
 
 database = None

@@ -21,7 +21,10 @@ import os
 import shutil
 import subprocess
 import sys
-import urllib2
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 import urllib
 
 remotes = {"requirements_conda": "",
@@ -68,7 +71,7 @@ def main(args, remotes=remotes):
         requirements_conda = os.path.join(remotes['versioned_installations'],
                                           args.gemini_version, 'requirements_conda.txt')
         try:
-            urllib2.urlopen(requirements_conda)
+            urlopen(requirements_conda)
         except:
             raise ValueError('Gemini version %s could not be found. Try the latest version.' % args.gemini_version)
         remotes.update({'requirements_conda': requirements_conda})

@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 import os
 import sys
 from collections import defaultdict
-from gemini_constants import *
-import GeminiQuery
+from .gemini_constants import *
+from . import GeminiQuery
 
 class Site(object):
     def __init__(self, row):
@@ -97,8 +98,8 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
                     curr_run.append(site)
                     unk_count += 1
                 try:
-                    site = sites.next()
-                except:
+                    site = next(sites)
+                except StopIteration:
                     break
 
             # skip the current run unless it contains enough sites.
@@ -111,10 +112,10 @@ def sweep_genotypes_for_rohs(args, chrom, samples):
                 # report the run if it is long enough.
                 if run_length >= args.min_size:
                     density_per_kb = float(len(curr_run) * 1000) / float(run_length)
-                    print "\t".join(str(s) for s in [chrom,
+                    print("\t".join(str(s) for s in [chrom,
                         run_start, run_end, sample,
                         hom_count, round(density_per_kb, 4),
-                        run_length])
+                        run_length]))
             else:
                 curr_run = []
                 hom_count = 0
@@ -160,10 +161,10 @@ def get_homozygosity_runs(args):
     sys.stderr.write("LOG: Querying and ordering variants by chromosomal position.\n")
     gq.run(query, needs_genotypes=True)
 
-    print "\t".join(['chrom',
+    print("\t".join(['chrom',
         'start', 'end', 'sample',
         'num_of_snps','density_per_kb',
-        'run_length_in_bp'])
+        'run_length_in_bp']))
 
     variants_seen = 0
     samples = defaultdict(list)

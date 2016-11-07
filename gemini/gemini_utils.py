@@ -1,8 +1,28 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
+
+import numpy as np
 import collections
 from collections import defaultdict
-from itertools import tee, ifilterfalse
-from gemini_subjects import Subject
+try:
+    from itertools import tee, ifilterfalse
+    PY3 = False
+except ImportError:
+    from itertools import tee, filterfalse as ifilterfalse
+    basestring = str
+    PY3 = True
+
+import locale
+ENC = locale.getpreferredencoding()
+
+def to_str(s, enc=ENC):
+    if hasattr(s, "decode"):
+        return s.decode(enc)
+    if isinstance(s, np.str_):
+        return str(s)
+    return s
+
+from .gemini_subjects import Subject
 import sqlalchemy as sql
 
 def get_gt_cols(metadata):
@@ -95,7 +115,10 @@ class OrderedSet(collections.MutableSet):
 try:
     from thread import get_ident as _get_ident
 except ImportError:
-    from dummy_thread import get_ident as _get_ident
+    try:
+        from threading import get_ident as _get_ident
+    except ImportError:
+        from dummy_thread import get_ident as _get_ident
 
 try:
     from _abcoll import KeysView, ValuesView, ItemsView

@@ -1,14 +1,15 @@
 #!/usr/bin/env python
+from __future__ import division
 
 # native Python imports
 import os.path
 import shutil
 import sys
 
-import annotations
+from gemini import annotations
 import subprocess
 from cluster_helper.cluster import cluster_view
-from gemini_load_chunk import GeminiLoader
+from gemini.gemini_load_chunk import GeminiLoader
 import uuid
 import time
 import datetime
@@ -58,24 +59,24 @@ def finish(args, loader=None):
     if loader is None:
         loader = GeminiLoader(args, prepare_db=False)
 
-    print "storing version, header, etc."
+    print("storing version, header, etc.")
     loader.store_resources()
     loader.store_version()
     loader.store_vcf_header()
 
     if not args.skip_gene_tables:
-        print "storing gene-detailed"
+        print("storing gene-detailed")
         loader._get_gene_detailed()
-        print "storing gene-summary"
+        print("storing gene-summary")
         loader._get_gene_summary()
         if not args.test_mode:
-            print "updating gene-table"
+            print("updating gene-table")
             loader.update_gene_table()
     if not args.test_mode:
-        print "building indices"
+        print("building indices")
         loader.build_indices_and_disconnect()
     else:
-        import database
+        from gemini import database
         database.close_and_commit(loader.c)
 
 def load_singlecore(args):
@@ -101,7 +102,7 @@ def load_ipython(args):
 def merge_chunks(chunks, db, kwargs):
     cmd = get_merge_chunks_cmd(chunks, db, tempdir=kwargs.get("tempdir"),
                                vcf=kwargs.get("vcf"), anno_type=kwargs.get("anno_type"))
-    print "Merging chunks."
+    print("Merging chunks.")
     subprocess.check_call(cmd, shell=True)
     cleanup_temp_db_files(chunks)
     return db
@@ -126,10 +127,10 @@ def get_merge_chunks_cmd(chunks, db, tempdir=None, vcf=None, anno_type=None):
 def finalize_merged_db(tmp_db, db):
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    print st, "merged to final database....",
+    print(st, "merged to final database....")
     sys.stdout.flush()
     shutil.move(tmp_db, db)
-    print st, "moved."
+    print(st, "moved.")
     sys.stdout.flush()
 
 def merge_chunks_ipython(chunks, args, view):
@@ -139,7 +140,7 @@ def merge_chunks_ipython(chunks, args, view):
     else:
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        print st, "merging", len(chunks), "chunks."
+        print(st, "merging", len(chunks), "chunks.")
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.getcwd())
         merge_args = {"tempdir": args.tempdir, "vcf": args.vcf, "anno_type": args.anno_type}
@@ -153,7 +154,7 @@ def merge_chunks_multicore(chunks, args):
     else:
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        print st, "merging", len(chunks), "chunks."
+        print(st, "merging", len(chunks), "chunks.")
         procs = []
         sub_merges = get_chunks_to_merge(chunks)
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
@@ -175,10 +176,10 @@ def get_chunks_to_merge(chunks):
 
 def list_to_sublists(l, n):
     """ convert list l to sublists of length n """
-    return [l[i:i+n] for i in xrange(0, len(l), n)]
+    return [l[i:i+n] for i in range(0, len(l), n)]
 
 def get_temp_dbs(n, tmp_dir):
-    return [os.path.join(tmp_dir, str(uuid.uuid4())) + ".db" for _ in xrange(n)]
+    return [os.path.join(tmp_dir, str(uuid.uuid4())) + ".db" for _ in range(n)]
 
 def get_chunk_name(chunk):
     return "--chunkdb " + chunk
@@ -244,10 +245,10 @@ def load_chunks_multicore(grabix_file, args):
 
     for chunk_num, chunk in chunk_steps:
         start, stop = chunk
-        print "Loading chunk " + str(chunk_num) + "."
+        print("Loading chunk " + str(chunk_num) + ".")
         gemini_load = gemini_pipe_load_cmd().format(**locals())
         if os.environ.get('GEMINI_DEBUG') == "TRUE":
-            print >>sys.stderr, gemini_load
+            sys.stderr.write(gemini_load + "\n")
         procs.append(subprocess.Popen(submit_command.format(cmd=gemini_load),
                                       shell=True, stderr=sys.stderr))
 
@@ -256,7 +257,7 @@ def load_chunks_multicore(grabix_file, args):
         chunk_dbs.append(chunk_vcf + ".db")
 
     wait_until_finished(procs)
-    print "Done loading {0} variants in {1} chunks.".format(stop, chunk_num+1)
+    print("Done loading {0} variants in {1} chunks.".format(stop, chunk_num+1))
     return chunk_dbs
 
 def load_chunks_ipython(grabix_file, args, view):
@@ -329,7 +330,7 @@ def load_chunks_ipython(grabix_file, args, view):
                  "skip_info_string": skip_info_string}
     chunk_dbs = view.map(load_chunk, chunk_steps, [load_args] * total_chunks)
 
-    print "Done loading variants in {0} chunks.".format(total_chunks)
+    print("Done loading variants in {0} chunks.".format(total_chunks))
     return chunk_dbs
 
 def load_chunk(chunk_step, kwargs):
@@ -366,8 +367,8 @@ def get_chunk_steps(grabix_file, args):
     index_file = grabix_index(grabix_file)
     num_lines = get_num_lines(index_file)
     args.cores = min(int(args.cores), num_lines)
-    chunk_size = int(num_lines) / args.cores
-    print "Breaking {0} into {1} chunks.".format(grabix_file, args.cores)
+    chunk_size = int(num_lines) // args.cores
+    print("Breaking {0} into {1} chunks.".format(grabix_file, args.cores))
 
     starts = []
     stops = []
@@ -383,9 +384,9 @@ def get_chunk_steps(grabix_file, args):
 
 def get_num_lines(index_file):
     with open(index_file) as index_handle:
-        index_handle.next()
-        num_lines = int(index_handle.next().strip())
-    print "Loading %d variants." % (num_lines)
+        next(index_handle)
+        num_lines = int(next(index_handle).strip())
+    print("Loading %d variants." % (num_lines))
     return num_lines
 
 def grabix_index(fname):
@@ -394,7 +395,7 @@ def grabix_index(fname):
     index_file = fname + ".gbi"
     if file_exists(index_file) and os.path.getmtime(index_file) > os.path.getmtime(fname):
         return index_file
-    print "Indexing {0} with grabix.".format(fname)
+    print("Indexing {0} with grabix.".format(fname))
     subprocess.check_call("grabix index {fname}".format(fname=fname), shell=True)
     return index_file
 
@@ -411,12 +412,12 @@ def bgzip(fname):
 
     if not file_exists(bgzip_file) or \
        (file_exists(bgzip_file) and os.path.getmtime(bgzip_file) < vcf_time):
-        print "Bgzipping {0} into {1}.".format(fname, fname + ".gz")
+        print("Bgzipping {0} into {1}.".format(fname, fname + ".gz"))
         subprocess.check_call("bgzip -c {fname} > \
                               {fname}.gz".format(fname=fname),
                               shell=True)
     elif file_exists(bgzip_file) and os.path.getmtime(bgzip_file) > vcf_time:
-        print "Loading with existing bgzip ({0}) version of {1}.".format(fname + ".gz", fname)
+        print("Loading with existing bgzip ({0}) version of {1}.".format(fname + ".gz", fname))
 
     return bgzip_file
 

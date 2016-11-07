@@ -1,13 +1,17 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
+
 import sys
 from collections import defaultdict
-from compiler import compile
+try:
+    from compiler import compile
+except ImportError:
+    pass
 
 from inheritance import Family
 import sqlalchemy as sql
-import database
-from gemini_constants import *
-import GeminiQuery
+from . import database
+from .gemini_constants import *
 
 from functools import wraps
 
@@ -133,7 +137,8 @@ def get_subjects(args, skip_filter=False):
     return a dictionary of subjects, optionally using the
     subjects_query argument to filter them.
     """
-    gq = GeminiQuery.GeminiQuery(args.db)
+    from .GeminiQuery import GeminiQuery
+    gq = GeminiQuery(args.db)
 
     #query = "SELECT * FROM samples"
     query = ""

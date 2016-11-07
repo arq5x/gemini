@@ -1,6 +1,16 @@
 #################################################################
 # 1. Test pathway tool for VEP (75) annotations
 #################################################################
+check()
+{
+	if diff $1 $2; then
+    	echo ok
+	else
+    	echo fail
+	fi
+}
+export -f check
+
 echo "    path.t01...\c"
 echo "chrom	start	end	ref	alt	impact	sample	genotype	gene	transcript	pathway
 chr10	52004314	52004315	T	C	intron_variant	M10500	C/C	ASAH2	ENST00000329428	hsa00600:Sphingolipid_metabolism,hsa01100:Metabolic_pathways

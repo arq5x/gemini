@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 After decompose has split (and before normalize), we still need to adjust the CLN* fields based
 on the CLNALLE field.
@@ -10,10 +11,10 @@ from collections import OrderedDict as dict
 
 for line in sys.stdin:
     if line.startswith('#'):
-        print line,
+        print(line, end="")
         continue
 
-        print line,
+        print(line, end="")
         continue
 
     fields = line.rstrip('\n').split('\t')
@@ -32,7 +33,7 @@ for line in sys.stdin:
             # the same logic below.
             alleles = [[ref, alt][i] for i in idxs]
         else:
-            print line,
+            print(line, end="")
             continue
 
 
@@ -76,4 +77,4 @@ for line in sys.stdin:
         
 
     fields[7] = ";".join(kv[0] + (('=' + kv[1]) if kv[1] is not None else '') for kv in info.items())
-    print "\t".join(fields)
+    print("\t".join(fields))

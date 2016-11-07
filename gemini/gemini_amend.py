@@ -1,7 +1,8 @@
-from gemini_subjects import get_subjects
-from ped import load_ped_file, get_ped_fields
-from gemini_utils import quote_string
-from database import database_transaction
+from __future__ import absolute_import
+from gemini.gemini_subjects import get_subjects
+from gemini.ped import load_ped_file, get_ped_fields
+from gemini.gemini_utils import quote_string
+from gemini.database import database_transaction
 
 def amend(parser, args):
     if args.db is None:

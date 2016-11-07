@@ -1,6 +1,6 @@
 check()
 {
-    if diff $1 $2; then
+    if diff <(sort $1) <(sort $2); then
         echo ok
     else
         echo fail
@@ -46,7 +46,7 @@ WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	2	3	3_dad(3_dad;affected),3_mom(3
 gemini autosomal_dominant \
 	--columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
 	--lenient \
-	--min-kindreds 2 test.auto_dom.db > obs
+	--min-kindreds 2 test.auto_dom.db | sort -k9,9 -k10,10 > obs
 check obs exp
 rm obs exp
 

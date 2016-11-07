@@ -65,23 +65,23 @@ simpleSQL.ignore( sqlLiteComment )
 def parse_sql(str):
     try:
         return simpleSQL.parseString( str )
-    except ParseException, err:
-        print " "*err.loc + "^\n" + err.msg
-        print err
+    except ParseException as err:
+        print(" "*err.loc + "^\n" + err.msg)
+        print(err)
 
 
 def test( str ):
-    print str,"->"
+    print(str,"->")
     try:
         tokens = simpleSQL.parseString( str )
-        print "tokens = ", tokens
-        print "tokens.columns =", tokens.columns
-        print "tokens.tables =", tokens.tables
-        print "tokens.where =", tokens.where
-    except ParseException, err:
-        print " "*err.loc + "^\n" + err.msg
-        print err
-    print
+        print("tokens = ", tokens)
+        print("tokens.columns =", tokens.columns)
+        print("tokens.tables =", tokens.tables)
+        print("tokens.where =", tokens.where)
+    except ParseException as err:
+        print(" "*err.loc + "^\n" + err.msg)
+        print(err)
+    print("")
 
 # test( "SELECT * from XYZZY, ABC" )
 # test( "select * from SYS.XYZZY" )

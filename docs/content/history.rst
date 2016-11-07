@@ -2,9 +2,13 @@
 Release History
 #############################
 
-0.20.0 (future)
+0.21.0 (future)
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
+
+0.20.0
+======
+#. Initial support for python 3.
 
 0.19.1
 ======

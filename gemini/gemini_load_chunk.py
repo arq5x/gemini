@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function, absolute_import
 
 # native Python imports
 import os.path
@@ -14,17 +15,17 @@ import geneimpacts
 import cyvcf2 as vcf
 
 # gemini modules
-import version
-from ped import load_ped_file
-import gene_table
-import infotag
-import database
-import annotations
-import popgen
-import structural_variants as svs
-from gemini_constants import *
-from compression import pack_blob
-from gemini.config import read_gemini_config
+from . import version
+from .ped import load_ped_file
+from . import gene_table
+from . import infotag
+from . import database
+from . import annotations
+from . import popgen
+from . import structural_variants as svs
+from .gemini_constants import *
+from .compression import pack_blob
+from .config import read_gemini_config
 
 class empty(object):
     def __getattr__(self, key):
@@ -69,7 +70,8 @@ def load_clinvar(cpath):
         info = v.INFO
         gene = info.get('GENEINFO')
         if gene is None: continue
-        diseases = [x.decode('utf8', 'ignore').encode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
+        #diseases = [x.decode('utf8', 'ignore').encode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
+        diseases = [x.encode('ascii', 'ignore').decode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
         if diseases == []: continue
 
         genes = [x.split(":")[0] for x in gene.split("|")]
@@ -181,7 +183,7 @@ class GeminiLoader(object):
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(", reader["EFF"]["Description"].split(":", 1)[1].strip())]
                 anno_keys["EFF"] = parts
             else:
-                print "snpEff header not found"
+                print("snpEff header not found")
         if self.args.anno_type in ("VEP", "all"):
             if "CSQ" in reader:
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(",
@@ -854,7 +856,7 @@ def load(parser, args):
             if try_count > 0:
                 shutil.move(args.tmp_db, args.db)
             break
-        except sql.exc.OperationalError, e:
+        except sql.exc.OperationalError as e:
             sys.stderr.write("sqlalchemy.OperationalError: %s\n" % e)
     else:
         raise Exception(("Attempted workaround for SQLite locking issue on NFS "

@@ -9,6 +9,7 @@ Provide Gemini configuration files in alternative locations:
 Prefer installer based or global if you have system level permissions for
 installation since it will work for all system users.
 """
+from __future__ import absolute_import
 import os
 import yaml
 
