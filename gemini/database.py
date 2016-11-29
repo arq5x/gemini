@@ -421,7 +421,10 @@ def insert_variation(session, metadata, buffer):
         session.commit()
     except:
         sys.stderr.write("insert error trying 1 at a time:\n")
-        session.rollback()
+        try:
+            session.rollback()
+        except sql.exc.OperationalError:
+            pass
         stmt = tbl.insert()
         with session.bind.begin() as trans:
             for b in buffer:
