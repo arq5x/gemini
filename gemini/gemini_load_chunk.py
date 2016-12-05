@@ -189,6 +189,11 @@ class GeminiLoader(object):
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(",
                                                                reader["CSQ"]["Description"].split(":", 1)[1].strip())]
                 anno_keys["CSQ"] = parts
+        if self.args.anno_type in ("BCFT", "all"):
+            if "BCSQ" in reader:
+                desc = reader["BCSQ"]["Description"]
+                parts = desc.split(']', 1)[1].split(']')[0].replace('[','').split("|")
+                anno_keys['BCSQ'] = parts
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
@@ -296,6 +301,14 @@ class GeminiLoader(object):
                 self.args.raw_version = toks[0]  # *version*, etc
             # e.g., 3.0a -> 3
             self.args.maj_version = int(self.args.raw_version.split('.')[0])
+        elif self.args.anno_type == "BCFT":
+            ##bcftools/csqVersion=1.3.1-179-gd7f6692+htslib-1.3.2-138-g4811eab
+            lines = self.vcf_reader.raw_header.split("\n")
+            try:
+                x = next(l for l in lines if l.startswith("##bcftools/csqVersion"))
+                self.args.raw_version = x[len("##bcftools/csqVersion="):]
+            except StopIteration:
+                pass
 
         elif self.args.anno_type == "VEP":
             pass
@@ -450,6 +463,12 @@ class GeminiLoader(object):
                         impacts += [geneimpacts.OldSnpEff(e, anno_keys["EFF"]) for e in var.INFO["EFF"].split(",")]
                     elif "ANN" in anno_keys:
                         impacts += [geneimpacts.SnpEff(e, anno_keys["ANN"]) for e in var.INFO["ANN"].split(",")]
+                except KeyError:
+                    pass
+
+            if self.args.anno_type in ("all", "BCFT"):
+                try:
+                    impacts += [geneimpacts.BCFT(e, anno_keys["BCSQ"]) for e in var.INFO["BCSQ"].split(",")]
                 except KeyError:
                     pass
 
@@ -828,7 +847,7 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
-    if args.anno_type not in ['snpEff', 'VEP', None, "all"]:
+    if args.anno_type not in ['snpEff', 'VEP', 'BCFT', None, "all"]:
         parser.print_help()
         exit("\nERROR: Unsupported selection for -t\n")
 

@@ -136,7 +136,7 @@ def main():
     parser_load.add_argument('-v', dest='vcf',
                              help='The VCF file to be loaded.')
     parser_load.add_argument('-t', dest='anno_type',
-                             default=None, choices=["snpEff", "VEP",  "all"],
+                             default=None, choices=["snpEff", "VEP",  "BCFT", "all"],
                              help="The annotations to be used with the input vcf.")
     parser_load.add_argument('-p', dest='ped_file',
                              help='Sample information file in PED+ format.',
@@ -238,6 +238,7 @@ def main():
                                   metavar='STRING',
                                   help="The annotations to be used with the input vcf. Options are:\n"
                                   "  snpEff  - Annotations as reported by snpEff.\n"
+                                  "  BCFT  - Annotations as reported by bcftools.\n"
                                   "  VEP     - Annotations as reported by VEP.\n"
                                   )
     parser_loadchunk.add_argument('-o',
@@ -310,7 +311,7 @@ def main():
             dest='vcf',
             help='Original VCF file, for retrieving extra annotation fields.')
     parser_mergechunks.add_argument('-t', dest='anno_type',
-            default=None, choices=["snpEff", "VEP", "all"],
+            default=None, choices=["snpEff", "VEP",  "BCFT", "all"],
             help="The annotations to be used with the input vcf.")
     parser_mergechunks.add_argument('--chunkdb',
             nargs='*',
