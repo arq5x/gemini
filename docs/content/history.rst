@@ -9,6 +9,7 @@ Release History
 0.20.0
 ======
 #. Initial support for python 3.
+#. Support annotating with bcftools BCSQ (http://biorxiv.org/content/early/2016/12/01/090811) in addition to VEP and SnpEff.
 
 0.19.1
 ======
