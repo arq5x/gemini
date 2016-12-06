@@ -195,6 +195,8 @@ def main():
                          default=False)
     def load_fn(parser, args):
         from gemini import gemini_load
+        if args.vcf != "-":
+            args.vcf = os.path.abspath(args.vcf)
         gemini_load.load(parser, args)
 
     parser_load.set_defaults(func=load_fn)
@@ -296,6 +298,8 @@ def main():
 
     def loadchunk_fn(parser, args):
         from gemini import gemini_load_chunk
+        if args.vcf != "-":
+            args.vcf = os.path.abspath(args.vcf)
         gemini_load_chunk.load(parser, args)
     parser_loadchunk.set_defaults(func=loadchunk_fn)
 

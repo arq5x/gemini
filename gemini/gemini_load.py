@@ -337,8 +337,9 @@ def load_chunk(chunk_step, kwargs):
     chunk_num, chunk = chunk_step
     start, stop = chunk
     args = combine_dicts(locals(), kwargs)
+    args["vcf"] = os.path.abspath(args["vcf"])
     gemini_load = gemini_pipe_load_cmd().format(**args)
-    subprocess.check_call(gemini_load, shell=True, stderr=sys.stderr)
+    subprocess.check_call(gemini_load, shell=True)
     chunk_db = kwargs["chunk_dir"] + args["vcf"] + ".chunk" + str(chunk_num) + ".db"
     return chunk_db
 
