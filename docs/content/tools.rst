@@ -142,6 +142,8 @@ Where possible, `comp_hets` will phase by transmission. Once this has been
 done, the `comp_hets` tool will provide a report of candidate compound
 heterozygotes for each sample/gene.
 
+Non-exonic/non-coding analyses: `comp_hets` excludes intronic/non-coding variants for which `impact_severity == 'LOW' AND is_exonic == FALSE`. Therefore, `comp_hets` will not retrieve most pairs of variants that are downstream or upstream of a gene or are intronic unless otherwise annotated with medium or high `impact_severity`.
+
 .. note::
 
   As of version 0.16.0 the ``comp_het`` tool will perform family-based phasing
