@@ -11,6 +11,7 @@ Release History
 #. Initial support for python 3.
 #. Support annotating with bcftools BCSQ (http://biorxiv.org/content/early/2016/12/01/090811) in addition to VEP and SnpEff.
 #. Fix bug that resulted in the message: `UnsupportedOperation: IOStream has no fileno.` when loading. (Thanks Andrew O. and Ryan R.)
+#. Fix bug where gemini annotate would never finish (see: arq5x/gemini#809 (Thanks @mmoisse)
 
 0.19.1
 ======
