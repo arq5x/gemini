@@ -97,6 +97,7 @@ def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_typ
 
     select_res = cursor.execution_options(stream_results=True).execute('''SELECT chrom, start, end, ref, alt, variant_id FROM variants''')
     while True:
+
         for row in select_res.fetchmany(CHUNK_SIZE):
 
             # update_data starts out as a list of the values that should
@@ -124,8 +125,9 @@ def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_typ
 
             total += len(to_update)
             print("updated", total, "variants")
-            last_id = current_id
+        last_id = current_id
         to_update = []
+    print("finished updating", total, "variants")
 
 def _update_variants(metadata, to_update, col_names, cursor):
     tbl = metadata.tables["variants"]
