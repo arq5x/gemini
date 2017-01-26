@@ -19,7 +19,8 @@ def release(parser, args):
     if not args.dataonly:
         if not os.path.exists(conda_bin):
             raise NotImplementedError("Can only upgrade gemini installed with anaconda")
-        subprocess.check_call([conda_bin, "install", "-y", "-c", "bioconda", "gemini", "pip"])
+        subprocess.check_call([conda_bin, "install", "-y", "-c", "conda-forget", "-c", "bioconda",
+                               "gemini", "cyvcf2", "pip"])
         if args.devel:
             subprocess.check_call([pip_bin, "install", "--upgrade", "--no-deps",
                                    "git+%s" % repo])
