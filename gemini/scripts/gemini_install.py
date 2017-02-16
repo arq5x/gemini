@@ -29,7 +29,7 @@ import urllib
 
 remotes = {"requirements_conda": "",
            "versioned_installations": "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
-           "anaconda": "http://repo.continuum.io/miniconda/Miniconda-latest-%s-x86%s.sh"}
+           "anaconda": "http://repo.continuum.io/miniconda/Miniconda2-latest-%s-x86%s.sh"}
 
 remotes_dev = remotes.copy()
 remotes_dev.update({
