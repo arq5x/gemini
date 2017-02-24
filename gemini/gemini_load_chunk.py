@@ -100,11 +100,22 @@ class GeminiLoader(object):
         self.vcf_reader = self._get_vcf_reader()
         # load sample information
         expected = "consequence,codons,amino_acids,gene,symbol,feature,exon,polyphen,sift,protein_position,biotype,warning".split(",")
+        self._effect_fields = []
+        self._extra_effect_fields = []
 
         if self.args.anno_type == "VEP":
             self._effect_fields = self._get_vep_csq(self.vcf_reader)
             # tuples of (db_column, CSQ name)
             self._extra_effect_fields = [("vep_%s" % x.lower(), x) for x in self._effect_fields if not x.lower() in expected]
+        elif self.args.anno_type == "all":
+            try:
+                self.vcf_reader["CSQ"]
+            except KeyError:
+                pass
+            else:
+                self._effect_fields = self._get_vep_csq(self.vcf_reader)
+                # tuples of (db_column, CSQ name)
+                self._extra_effect_fields = [("vep_%s" % x.lower(), x) for x in self._effect_fields if not x.lower() in expected]
 
         else:
             self._effect_fields = []
@@ -556,6 +567,9 @@ class GeminiLoader(object):
 
         if top_impact is not empty:
             for dbkey, infokey in self._extra_effect_fields:
+                # if we had -t all, then some impacts wont have the extras
+                if not infokey in top_impact.effects:
+                    continue
                 extra_fields[dbkey] = top_impact.effects[infokey]
                 if dbkey.endswith("_num"):
                     try:
