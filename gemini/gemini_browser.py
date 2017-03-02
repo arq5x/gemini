@@ -145,11 +145,9 @@ def query():
         tmp_file = '/tmp.txt'
         tmp = open(_static_folder + tmp_file, 'w')
         
-        print_header = use_header
-        for row in gq:
-            if print_header:
+        for i, row in enumerate(gq):
+            if i == 0 and use_header:
                 tmp.write('\t'.join([str(key) for key in row.keys()]) + '\n')
-                print_header = False
                 
             tmp.write('\t'.join([str(row[key]) for key in row.keys()]) + '\n')
 
