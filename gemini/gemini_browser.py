@@ -144,8 +144,15 @@ def query():
         # the user.
         tmp_file = '/tmp.txt'
         tmp = open(_static_folder + tmp_file, 'w')
+        
+        print_header = use_header
         for row in gq:
-            tmp.write('\t'.join(str(c) for c in row) + '\n')
+            if print_header:
+                tmp.write('\t'.join([str(key) for key in row.keys()]) + '\n')
+                print_header = False
+                
+            tmp.write('\t'.join([str(row[key]) for key in row.keys()]) + '\n')
+
         tmp.close()
 
         return template('query.j2', dbfile=database,
