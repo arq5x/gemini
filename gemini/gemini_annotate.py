@@ -89,44 +89,38 @@ def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_typ
     conn, metadata = database.get_session_metadata(str(conn.bind.url))
     cursor = conn.bind.connect()
 
-    last_id = 0
-    current_id = 0
     total = 0
-    CHUNK_SIZE = 100000
+    update_size = 5000
     to_update = []
 
     select_res = cursor.execution_options(stream_results=True).execute('''SELECT chrom, start, end, ref, alt, variant_id FROM variants''')
-    while True:
+    for row in select_res:
 
-        for row in select_res.fetchmany(CHUNK_SIZE):
+        # update_data starts out as a list of the values that should
+        # be used to populate the new columns for the current row.
+        # Prefer no pysam parsing over tuple parsing to work around bug in pysam 0.8.0
+        # https://github.com/pysam-developers/pysam/pull/44
+        if args.anno_file.endswith(('.vcf', '.vcf.gz')):
+            update_data = get_val_fn(annotations_in_vcf(row, anno, None, naming, args.region_only, True))
+        else:
+            update_data = get_val_fn(annotations_in_region(row, anno, None, naming))
+        #update_data = get_val_fn(annotations_in_region(row, anno, "tuple", naming))
+        # were there any hits for this row?
+        if len(update_data) > 0:
+            # we add the primary key to update_data for the
+            # where clause in the SQL UPDATE statement.
+            update_data.append(str(row["variant_id"]))
+            to_update.append(tuple(update_data))
 
-            # update_data starts out as a list of the values that should
-            # be used to populate the new columns for the current row.
-            # Prefer no pysam parsing over tuple parsing to work around bug in pysam 0.8.0
-            # https://github.com/pysam-developers/pysam/pull/44
-            if args.anno_file.endswith(('.vcf', '.vcf.gz')):
-                update_data = get_val_fn(annotations_in_vcf(row, anno, None, naming, args.region_only, True))
-            else:
-                update_data = get_val_fn(annotations_in_region(row, anno, None, naming))
-            #update_data = get_val_fn(annotations_in_region(row, anno, "tuple", naming))
-            # were there any hits for this row?
-            if len(update_data) > 0:
-                # we add the primary key to update_data for the
-                # where clause in the SQL UPDATE statement.
-                update_data.append(str(row["variant_id"]))
-                to_update.append(tuple(update_data))
-
-            current_id = row["variant_id"]
-
-        if current_id <= last_id:
-            break
-        elif len(to_update) > 0:
+        if len(to_update) > update_size:
             _update_variants(metadata, to_update, col_names, cursor)
-
             total += len(to_update)
+            to_update = []
             print("updated", total, "variants")
-        last_id = current_id
-        to_update = []
+    if len(to_update):
+        _update_variants(metadata, to_update, col_names, cursor)
+        total += len(to_update)
+
     print("finished updating", total, "variants")
 
 def _update_variants(metadata, to_update, col_names, cursor):
