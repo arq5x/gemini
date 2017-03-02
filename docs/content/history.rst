@@ -13,6 +13,8 @@ Release History
 #. Fix bug that resulted in the message: `UnsupportedOperation: IOStream has no fileno.` when loading. (Thanks Andrew O. and Ryan R.)
 #. Fix bug where gemini annotate would never finish (see: arq5x/gemini#809 (Thanks @mmoisse)
 #. Add extra columns from VEP when -t all is used (previously extra VEP columns were ignored under -t all. thanks @hoppman #816).
+#. Fix gemini annotate (would stop after updating 100K variants)
+#. Fix browser query report (thanks @Nmael see #818).
 
 0.19.1
 ======
