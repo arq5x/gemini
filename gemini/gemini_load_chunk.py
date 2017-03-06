@@ -737,7 +737,15 @@ class GeminiLoader(object):
                                      variant['aaf_adj_exac_amr'],
                                      variant['aaf_adj_exac_eas'],
                                      variant['aaf_adj_exac_nfe'],
-                                     variant['aaf_adj_exac_sas'])
+                                     variant['aaf_adj_exac_sas'],
+
+                                     variant['aaf_gnomad_afr'],
+                                     variant['aaf_gnomad_amr'],
+                                     variant['aaf_gnomad_eas'],
+                                     variant['aaf_gnomad_nfe'],
+                                     variant['aaf_gnomad_sas'],
+                                     
+                                     )
 
         variant.update(self._extra_empty)
         return variant, variant_impacts, extra_fields
