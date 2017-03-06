@@ -807,6 +807,20 @@ E.g.
 will required that all samples meet the minimum depth filter and then keep
 the subset of those that meet 2 out of the 3 `--gt-filters`.
 
+---------------
+``--where``
+---------------
+
+By default `gene_wise` limits to variants passing the clause: 
+
+`is_exonic = 1 AND impact_severity != 'LOW'`
+
+but this can be changed with the --where clause, e.g.:
+
+::
+
+    --where "(is_exonic = 1 or is_splicing = 1) AND impact_severity != 'LOW'"
+
 
 ===========================================================================
 ``pathways``: Map genes and variants to KEGG pathways.
