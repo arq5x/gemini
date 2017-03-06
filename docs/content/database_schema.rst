@@ -169,6 +169,20 @@ max_aaf_all               FLOAT         the maximum of aaf_esp_ea, aaf_esp_aa, a
 exac_num_het              INTEGER       The number of heterozygote genotypes observed in ExAC. Pulled from the ExAC ``AC_Het`` INFO field.
 exac_num_hom_alt          INTEGER       The number of homozygous alt. genotypes observed in ExAC. Pulled from the ExAC ``AC_Het`` INFO field.
 exac_num_chroms           INTEGER       The number of chromosomes underlying the ExAC variant call. Pulled from the ExAC ``AN_Adj`` INFO field.
+
+aaf_gnomad_all            FLOAT         Allele frequency (population independent) of the variant in gnomad, 
+aaf_gnomad_afr            FLOAT         Allele frequency (AFR population) of the variant in gnomad
+aaf_gnomad_amr            FLOAT         Allele frequency (AMR population) of the variant in gnomad 
+aaf_gnomad_asj            FLOAT         Allele frequency (ASJ population) of the variant in gnomad 
+aaf_gnomad_eas            FLOAT         Allele frequency (EAS population) of the variant in gnomad 
+aaf_gnomad_fin            FLOAT         Allele frequency (FIN population) of the variant in gnomad 
+aaf_gnomad_nfe            FLOAT         Allele frequency (NFE population) of the variant in gnomad 
+aaf_gnomad_oth            FLOAT         Allele frequency (OTH population) of the variant in gnomad 
+aaf_gnomad_sas            FLOAT         Allele frequency (SAS population) of the variant in gnomad 
+gnomad_num_het            INTEGER       Number of het genotypes observed in gnomad
+gnomad_num_hom_alt        INTEGER       Number of hom_alt genotypes observed in gnomad
+gnomad_num_chroms         INTEGER       Number of chromosomes genotyped in gnomad
+
 ========================  =========     =================================================================================================
 
 
