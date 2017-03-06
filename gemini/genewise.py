@@ -15,6 +15,8 @@ def add_args(a=None):
     if a is None:
         a = ArgumentParser()
     a.add_argument("--min-filters", type=int, default=1)
+    a.add_argument("--where", default="is_exonic = 1 AND impact_severity != 'LOW'",
+            help="where clause to subset variants. [default \"%(default)s\"]")
     a.add_argument("--gt-filter", required=False, default=[], action='append')
     a.add_argument("--gt-filter-required", required=False, default=[],
             action='append', help="specify filter(s) that must be met."
@@ -82,6 +84,7 @@ def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, col
 
 def genewise(db, gt_filters, gt_req_filters, filter=None, columns=None, min_filters=None,
              min_variants=1,
+             where=None,
              grouper="gene"):
     assert os.path.exists(db)
 
@@ -95,7 +98,7 @@ def genewise(db, gt_filters, gt_req_filters, filter=None, columns=None, min_filt
     assert not any(';' in c for c in columns)
 
     # NOTE: we could make the WHERE part customizable.
-    query = "SELECT {columns} FROM variants WHERE (is_exonic = 1 AND impact_severity != 'LOW')"
+    query = "SELECT {columns} FROM variants WHERE (%s)" % where
     if filter:
         query += " AND  " + filter
     query += (" ORDER BY CHROM, %s" % grouper)
@@ -147,4 +150,4 @@ def run(args):
         raise RuntimeError("ERROR gene-wise: specified neither --min-filter or --min-filter-required\n")
 
     genewise(args.db, args.gt_filter, args.gt_filter_required, args.filter, args.columns,
-             args.min_filters)
+             args.min_filters, where=args.where)
