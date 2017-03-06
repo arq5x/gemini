@@ -52,6 +52,7 @@ anno_files = \
 'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv',
 'ExAC.r0.3.sites.vep.tidy.vcf.gz',
+'gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz',
 'geno2mp.variants.tidy.vcf.gz',
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}

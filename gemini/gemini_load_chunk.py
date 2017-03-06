@@ -422,6 +422,7 @@ class GeminiLoader(object):
             cosmic_ids = annotations.get_cosmic_info(var)
             fitcons = annotations.get_fitcons(var)
             Exac = annotations.get_exac_info(var)
+            gnomad = annotations.get_gnomad_info(var)
 
             #load CADD scores by default
             if self.args.skip_cadd is False:
@@ -447,6 +448,7 @@ class GeminiLoader(object):
             esp = annotations.ESPInfo(False, -1, -1, -1, 0)
             thousandG = annotations.EMPTY_1000G
             Exac = annotations.EXAC_EMPTY
+            gnomad = annotations.GNOMAD_EMPTY
             recomb_rate = None
             gms = annotations.GmsTechs(None, None, None)
             grc = None
@@ -704,7 +706,24 @@ class GeminiLoader(object):
                    aaf_adj_exac_sas=Exac.aaf_SAS,
                    exac_num_het=Exac.num_het,
                    exac_num_hom_alt=Exac.num_hom_alt,
-                   exac_num_chroms=Exac.num_chroms)
+                   exac_num_chroms=Exac.num_chroms,
+
+                   aaf_gnomad_all=gnomad.aaf_ALL,
+                   aaf_gnomad_afr=gnomad.aaf_AFR,
+                   aaf_gnomad_amr=gnomad.aaf_AMR,
+                   aaf_gnomad_asj=gnomad.aaf_ASJ,
+                   aaf_gnomad_eas=gnomad.aaf_EAS,
+                   aaf_gnomad_fin=gnomad.aaf_FIN,
+                   aaf_gnomad_nfe=gnomad.aaf_NFE,
+                   aaf_gnomad_oth=gnomad.aaf_OTH,
+                   aaf_gnomad_sas=gnomad.aaf_SAS,
+
+                   gnomad_num_het=gnomad.num_het,
+                   gnomad_num_hom_alt=gnomad.num_hom_alt,
+                   gnomad_num_chroms=gnomad.num_chroms,
+
+
+                   )
 
         variant['max_aaf_all'] = max(-1,
                                      variant['aaf_esp_ea'],

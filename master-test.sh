@@ -70,6 +70,7 @@ bash test-clinvar.sh
 
 # Test Exac
 bash test-exac.sh
+bash test-gnomad.sh
 
 # Test population_gen metrics
 bash test-pop.sh

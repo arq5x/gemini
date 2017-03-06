@@ -53,6 +53,7 @@ def get_anno_files(args):
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bed.gz"),
      'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
      'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz'),
+     'gnomad': os.path.join(anno_dirname, 'gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz'),
      'geno2mp': os.path.join(anno_dirname, 'geno2mp.variants.tidy.vcf.gz'),
     }
     # optional annotations
@@ -174,6 +175,23 @@ ExacInfo = collections.namedtuple("ExacInfo",
 
 EXAC_EMPTY = ExacInfo(False, -1, -1, -1, -1, -1,
                      -1, -1, -1, -1, -1, -1, -1)
+
+GnomadInfo = collections.namedtuple('GnomadInfo',
+                                   "aaf_ALL \
+                                   aaf_AFR \
+                                   aaf_AMR \
+                                   aaf_ASJ \
+                                   aaf_EAS \
+                                   aaf_FIN \
+                                   aaf_NFE \
+                                   aaf_OTH \
+                                   aaf_SAS \
+                                   num_het \
+                                   num_hom_alt \
+                                   num_chroms")
+
+GNOMAD_EMPTY = GnomadInfo(-1, -1, -1, -1, -1, -1,
+                          -1, -1, -1, -1, -1, -1)
 
 def load_annos(args):
     """
@@ -775,6 +793,68 @@ def get_geno2mp_ct(var):
         return val
     # missing is -1
     return -1
+
+def get_gnomad_info(var, empty=GNOMAD_EMPTY):
+    info_map = {}
+    afs = {}
+    for hit in annotations_in_vcf(var, "gnomad", "vcf", "grch37"):
+        # Does not handle anything beyond var.ALT[0] in the VCF (in case of multi-allelic variants)
+        # var.start is used since the chromosomal pos in pysam.asVCF is zero based (hit.pos)
+        # and would be equivalent to (POS-1) i.e var.start
+        if var.start != hit.pos or var.REF != hit.ref:
+            continue
+
+        # This would look for var.ALT[0] matches to
+        # any of the multiple alt alleles represented in the EXAC file
+        ALT = hit.alt.split(",")
+        for allele_num, each in enumerate(ALT):
+            if each != var.ALT[0]:
+                continue
+
+            # Store the allele index of the match to retrieve the right frequencies
+            for info in hit.info.split(";"):
+                if "=" in info:
+                    (key, value) = info.split("=", 1)
+                    info_map[key] = value
+
+            # Population independent raw (non-adjusted) allele frequencies given by AF
+            if info_map.get('AF', '.') != '.':
+                aaf_ALL = float(info_map['AF'].split(",")[allele_num])
+            else:
+                aaf_ALL = -1
+
+            for grp in ('_AFR', '_AMR', '_ASJ', '_EAS', '_FIN', '_NFE', '_OTH', '_SAS'):
+                ac = info_map.get('AC' + grp)
+                if ac is None: continue
+
+                an = info_map.get('AN' + grp)
+                if an is None: continue
+
+                if an == '0':
+                    afs[grp] = 0
+                    continue
+
+                ac_list = ac.split(",")
+                afs[grp] = float(ac_list[allele_num]) / float(an)
+
+            nhm = sum(map(int, info_map.get('GC_Male', '').split(",")[1:-1]))
+            nhf = sum(map(int, info_map.get('GC_Female', '').split(",")[1:-1]))
+
+            num_hets = nhm + nhf
+            num_homs = int(info_map.get("Hom", -1))
+        
+            called_chroms = int(info_map.get('AN', -1))
+
+            return GnomadInfo(aaf_ALL, float(afs['_AFR']),
+                              float(afs['_AMR']), float(afs['_ASJ']),
+                              float(afs['_EAS']), float(afs['_FIN']),
+                              float(afs['_NFE']), float(afs['_OTH']),
+                              float(afs['_SAS']), num_hets, num_homs,
+                              called_chroms)
+
+    return empty
+
+
 
 def get_exac_info(var, empty=EXAC_EMPTY):
     """

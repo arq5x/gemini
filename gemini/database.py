@@ -259,6 +259,20 @@ def create_tables(path, effect_fields=None):
     exac_num_het int,
     exac_num_hom_alt int,
     exac_num_chroms int,
+
+    aaf_gnomad_all decimal(2,7),
+    aaf_gnomad_afr decimal(2,7),
+    aaf_gnomad_amr decimal(2,7),
+    aaf_gnomad_asj decimal(2,7),
+    aaf_gnomad_eas decimal(2,7),
+    aaf_gnomad_fin decimal(2,7),
+    aaf_gnomad_nfe decimal(2,7),
+    aaf_gnomad_oth decimal(2,7),
+    aaf_gnomad_sas decimal(2,7),
+
+    gnomad_num_het int,
+    gnomad_num_hom_alt int,
+    gnomad_num_chroms int,
     %s""" % effect_string.rstrip(","),
 
     variant_impacts="""
