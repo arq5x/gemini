@@ -216,9 +216,7 @@ class GeminiLoader(object):
             if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
                 self.skipped += 1
                 continue
-            (variant, variant_impacts, extra_fields) = self._prepare_variation(var, anno_keys)
-            variant.update(extra_fields)
-            [v_.update(extra_fields) for v_ in variant_impacts]
+            (variant, variant_impacts) = self._prepare_variation(var, anno_keys)
             obj_buffer.append(var)
             # add the core variant info to the variant buffer
             self.var_buffer.append(variant)
@@ -546,39 +544,12 @@ class GeminiLoader(object):
         assert isinstance(thousandG.aaf_AMR, (int, float))
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
-        variant_impacts = []
-        for idx, impact in enumerate(impacts or [], start=1):
-
-            var_impact = dict(variant_id=self.v_id, anno_id=idx, gene=impact.gene,
-                          transcript=impact.transcript, is_exonic=impact.is_exonic,
-                          is_coding=impact.is_coding, is_lof=impact.is_lof,
-                          is_splicing=impact.is_splicing,
-                          exon=impact.exon, codon_change=impact.codon_change,
-                          aa_change=impact.aa_change, aa_length=impact.aa_length,
-                          biotype=impact.biotype, impact=impact.top_consequence,
-                          impact_so=impact.so, impact_severity=impact.effect_severity,
-                          polyphed_pred=impact.polyphen_pred, polyphen_score=impact.polyphen_score,
-                          sift_pred=impact.sift_pred,
-                          sift_score=impact.sift_score)
-            variant_impacts.append(var_impact)
 
         # extract structural variants
         sv = svs.StructuralVariant(var)
         ci_left = sv.get_ci_left()
         ci_right = sv.get_ci_right()
 
-        if top_impact is not empty:
-            for dbkey, infokey in self._extra_effect_fields:
-                # if we had -t all, then some impacts wont have the extras
-                if not infokey in top_impact.effects:
-                    continue
-                extra_fields[dbkey] = top_impact.effects[infokey]
-                if dbkey.endswith("_num"):
-                    try:
-                        extra_fields[dbkey] = float(extra_fields[dbkey])
-                    except ValueError:
-                        # sometimes the field is empty.
-                        extra_fields[dbkey] = None
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         variant = dict(chrom=chrom, start=var.start, end=var.end,
@@ -744,11 +715,41 @@ class GeminiLoader(object):
                                      variant['aaf_gnomad_eas'],
                                      variant['aaf_gnomad_nfe'],
                                      variant['aaf_gnomad_sas'],
-                                     
                                      )
 
         variant.update(self._extra_empty)
-        return variant, variant_impacts, extra_fields
+
+        variant_impacts = []
+        for idx, impact in enumerate(impacts or [], start=1):
+            is_top = impact == top_impact
+
+            var_impact = dict(variant_id=self.v_id, anno_id=idx, gene=impact.gene,
+                          transcript=impact.transcript, is_exonic=impact.is_exonic,
+                          is_coding=impact.is_coding, is_lof=impact.is_lof,
+                          is_splicing=impact.is_splicing,
+                          exon=impact.exon, codon_change=impact.codon_change,
+                          aa_change=impact.aa_change, aa_length=impact.aa_length,
+                          biotype=impact.biotype, impact=impact.top_consequence,
+                          impact_so=impact.so, impact_severity=impact.effect_severity,
+                          polyphed_pred=impact.polyphen_pred, polyphen_score=impact.polyphen_score,
+                          sift_pred=impact.sift_pred,
+                          sift_score=impact.sift_score)
+            for dbkey, infokey in self._extra_effect_fields:
+                if not infokey in impact.effects: continue
+                if dbkey[-1] == "m" and dbkey.endswith("_num"):
+                    try:
+                        var_impact[dbkey] = float(impact.effects[infokey])
+                        if is_top: variant[dbkey] = float(impact.effects[infokey])
+                    except ValueError:
+                        var_impact[dbkey] = None
+                        if is_top: variant[dbkey] = None
+                else:
+                    var_impact[dbkey] = impact.effects[infokey]
+                    if is_top: variant[dbkey] = impact.effects[infokey]
+
+            variant_impacts.append(var_impact)
+
+        return variant, variant_impacts
 
     def _prepare_samples(self):
         """
