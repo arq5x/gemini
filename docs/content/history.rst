@@ -18,6 +18,7 @@ Release History
 #. Fix browser query report (thanks @Nmael see #818).
 #. Allow specifying a --where clause for `gene_wise` to filter considered variants. (Thanks Uma for suggestion).
 #. Fix bug in propagating vep-extras to variant_impacts table (Thanks Sergey for reporting).
+#. Update clinvar annotation.
 
 0.19.1
 ======
