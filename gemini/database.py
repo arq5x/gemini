@@ -99,10 +99,18 @@ def get_path(path):
 
     return path
 
-def create_tables(path, effect_fields=None):
+def create_tables(path, effect_fields=None, pls=True):
     """
     Create our master DB tables
     """
+    if pls:
+        pls = """\
+    gt_phred_ll_homref blob,
+    gt_phred_ll_het blob,
+    gt_phred_ll_homalt blob,
+"""
+    else:
+        pls = ""
     if effect_fields:
         effect_string = "".join(e + (" float,\n" if e.endswith("_num") else " TEXT,\n") for e in effect_fields)
     else:
@@ -129,9 +137,7 @@ def create_tables(path, effect_fields=None):
     gt_alt_depths blob,
     gt_quals blob,
     gt_copy_numbers blob,
-    gt_phred_ll_homref blob,
-    gt_phred_ll_het blob,
-    gt_phred_ll_homalt blob,
+    %s,
     call_rate float,
     max_aaf_all float,
     in_dbsnp bool,
@@ -273,7 +279,7 @@ def create_tables(path, effect_fields=None):
     gnomad_num_het int,
     gnomad_num_hom_alt int,
     gnomad_num_chroms int,
-    %s""" % effect_string.rstrip(","),
+    %s""" % (pls, effect_string.rstrip(",")),
 
     variant_impacts="""
     variant_id integer,
@@ -371,7 +377,7 @@ def create_tables(path, effect_fields=None):
     for table in db:
 
         db[table] = db[table].strip().strip(",").split(",\n")
-        db[table] = [x.strip().split() for x in db[table]]
+        db[table] = [x.strip().split() for x in db[table] if x.strip()]
         cols = [sql.Column(c[0], lookup[c[1].lower()]) for c in db[table]]
 
         if table != "variant_impacts":

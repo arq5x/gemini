@@ -19,6 +19,8 @@ Release History
 #. Allow specifying a --where clause for `gene_wise` to filter considered variants. (Thanks Uma for suggestion).
 #. Fix bug in propagating vep-extras to variant_impacts table (Thanks Sergey for reporting).
 #. Update clinvar annotation.
+#. Add new `gemini load` flag `--skip-pls` which can give size reductions for the database and speed Improvements
+   for querying and loading. If you never use `gt_phred_ll_homalt/het/homref` then you can load with this flag.
 
 0.19.1
 ======

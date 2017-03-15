@@ -173,7 +173,9 @@ def merge_db_chunks(args):
     if os.path.exists(args.db):
         os.remove(args.db)
 
-    gemini_db.create_tables(args.db, gemini_load_chunk.get_extra_effects_fields(args) if args.vcf else [])
+    gemini_db.create_tables(args.db,
+            gemini_load_chunk.get_extra_effects_fields(args) if args.vcf else
+            [], not args.skip_pls)
 
     main_conn = sqlite3.connect(args.db)
     main_conn.isolation_level = None

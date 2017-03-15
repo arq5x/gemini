@@ -193,6 +193,10 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
+    parser_load.add_argument('--skip-pls',
+                         action='store_true',
+                         help='dont create columns for phred-scaled genotype likelihoods',
+                         default=False)
     def load_fn(parser, args):
         from gemini import gemini_load
         if args.vcf != "-":
@@ -291,6 +295,10 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
+    parser_loadchunk.add_argument('--skip-pls',
+                         action='store_true',
+                         help='dont create columns for phred-scaled genotype likelihoods',
+                         default=False)
     parser_loadchunk.add_argument('--tempdir', dest='tempdir',
                                   default=tempfile.gettempdir(),
                                   help='Local (non-NFS) temp directory to use for working around SQLite locking issues '
@@ -328,6 +336,10 @@ def main():
             action='store_true',
             help='Create all database indexes. If multiple merges are used to create a database, only the last merge '
                  'should create the indexes.')
+    parser_mergechunks.add_argument('--skip-pls',
+                         action='store_true',
+                         help='dont create columns for phred-scaled genotype likelihoods',
+                         default=False)
 
     def mergechunk_fn(parser, args):
         from gemini import gemini_merge_chunks

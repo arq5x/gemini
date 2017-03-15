@@ -1,5 +1,6 @@
 set -eo pipefail
 gemini load -v test.auto_rec.vcf tt.db --no-genotypes && rm tt.db
+gemini load --cores 2 --skip-gene-tables --test-mode --skip-pls -v test.x-linked.vcf --skip-gerp-bp --skip-cadd -t VEP -p test.x-linked.ped test.x_linked.db
 gemini load --skip-gene-tables --test-mode -v test.x-linked.vcf --skip-gerp-bp --skip-cadd -t VEP -p test.x-linked.ped test.x_linked.db
 gemini load --skip-gene-tables --test-mode -t VEP -v test-vep-extra.vcf test.vep.extra.db &
 gemini load --skip-gene-tables --test-mode --skip-gerp --skip-cadd -v test.PLs.vcf  test.PLs.db &
