@@ -58,6 +58,7 @@ gt_cols_types = (
     ('gt_depths', np.int32),
     ('gt_ref_depths', np.int32),
     ('gt_alt_depths', np.int32),
+    ('gt_alt_freqs', np.float32),
     ('gt_quals', np.float32),
     ('gt_copy_numbers', np.int32),
     ('gt_phred_ll_homref', np.int32),

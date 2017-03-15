@@ -524,6 +524,7 @@ class GeminiLoader(object):
             gt_depths = var.gt_depths
             gt_ref_depths = var.gt_ref_depths
             gt_alt_depths = var.gt_alt_depths
+            gt_alt_freqs = var.gt_alt_freqs
             gt_quals = var.gt_quals
             #gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
             gt_copy_numbers = None
@@ -535,7 +536,7 @@ class GeminiLoader(object):
             self._update_sample_gt_counts(gt_types)
         else:
             gt_bases = gt_types = gt_phases = gt_depths = gt_ref_depths = None
-            gt_alt_depths = gt_quals = gt_copy_numbers = None
+            gt_alt_freqs = gt_alt_depths = gt_quals = gt_copy_numbers = None
 
         if self.args.skip_info_string:
             info = None
@@ -561,6 +562,7 @@ class GeminiLoader(object):
                    gt_types=pack_blob(gt_types),
                    gt_phases=pack_blob(gt_phases), gt_depths=pack_blob(gt_depths),
                    gt_ref_depths=pack_blob(gt_ref_depths), gt_alt_depths=pack_blob(gt_alt_depths),
+                   gt_alt_freqs=pack_blob(gt_alt_freqs),
                    gt_quals=pack_blob(gt_quals), gt_copy_numbers=pack_blob(gt_copy_numbers),
                    call_rate=call_rate, in_dbsnp=bool(in_dbsnp),
                    rs_ids=rs_ids,
