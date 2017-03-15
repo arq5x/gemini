@@ -95,6 +95,9 @@ variants. By default GEMINI will leave these variants in the database during
 loading but they can be filtered out during the loading step by passing the
 ``--passonly`` flag to load.
 
+You can create a smaller, faster database if you dont need the genotype likelihoods format
+each sample by passing the `--skip-pls` flag.
+
 
 ================================
 Using multiple CPUs for loading

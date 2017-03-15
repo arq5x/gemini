@@ -354,7 +354,7 @@ class GeminiLoader(object):
         db_path = self.args.db if not hasattr(self.args, 'tmp_db') else self.args.tmp_db
         if os.path.exists(db_path):
             os.remove(db_path)
-        self.c, self.metadata = database.create_tables(db_path, effect_fields or [])
+        self.c, self.metadata = database.create_tables(db_path, effect_fields or [], not self.args.skip_pls)
         session = self.c
         if session.bind.name == "sqlite":
             self.c.execute('PRAGMA synchronous=OFF')
@@ -527,9 +527,10 @@ class GeminiLoader(object):
             gt_quals = var.gt_quals
             #gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
             gt_copy_numbers = None
-            gt_phred_ll_homref = var.gt_phred_ll_homref
-            gt_phred_ll_het = var.gt_phred_ll_het
-            gt_phred_ll_homalt = var.gt_phred_ll_homalt
+            if not self.args.skip_pls:
+                gt_phred_ll_homref = var.gt_phred_ll_homref
+                gt_phred_ll_het = var.gt_phred_ll_het
+                gt_phred_ll_homalt = var.gt_phred_ll_homalt
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
         else:
@@ -561,9 +562,6 @@ class GeminiLoader(object):
                    gt_phases=pack_blob(gt_phases), gt_depths=pack_blob(gt_depths),
                    gt_ref_depths=pack_blob(gt_ref_depths), gt_alt_depths=pack_blob(gt_alt_depths),
                    gt_quals=pack_blob(gt_quals), gt_copy_numbers=pack_blob(gt_copy_numbers),
-                   gt_phred_ll_homref=pack_blob(gt_phred_ll_homref),
-                   gt_phred_ll_het=pack_blob(gt_phred_ll_het),
-                   gt_phred_ll_homalt=pack_blob(gt_phred_ll_homalt),
                    call_rate=call_rate, in_dbsnp=bool(in_dbsnp),
                    rs_ids=rs_ids,
 
@@ -695,6 +693,10 @@ class GeminiLoader(object):
 
 
                    )
+        if not self.args.skip_pls:
+           variant['gt_phred_ll_homref'] = pack_blob(gt_phred_ll_homref)
+           variant['gt_phred_ll_het'] = pack_blob(gt_phred_ll_het)
+           variant['gt_phred_ll_homalt'] = pack_blob(gt_phred_ll_homalt)
 
         variant['max_aaf_all'] = max(-1,
                                      variant['aaf_esp_ea'],

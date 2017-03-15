@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import division
+from __future__ import division, print_function
 
 # native Python imports
 import os.path
@@ -107,21 +107,24 @@ def merge_chunks(chunks, db, kwargs):
     cleanup_temp_db_files(chunks)
     return db
 
-def get_merge_chunks_cmd(chunks, db, tempdir=None, vcf=None, anno_type=None):
+def get_merge_chunks_cmd(chunks, db, tempdir=None, vcf=None, anno_type=None, skip_pls=False):
     chunk_names = ""
     for chunk in chunks:
         chunk_names += " --chunkdb  " + chunk
 
     tempdir_string, vcf_string, annotype_string = "", "", ""
+    skip_pls_string = ""
     if tempdir is not None:
         tempdir_string = " --tempdir " + tempdir
     if vcf is not None:
         vcf_string = " --vcf " + vcf
     if anno_type is not None:
         annotype_string = " -t " + anno_type
+    if skip_pls:
+        skip_pls_string = "--skip-pls"
 
     return ("gemini merge_chunks {chunk_names} {tempdir_string} "
-            "{vcf_string} {annotype_string} --db {db}").format(**locals())
+            "{vcf_string} {annotype_string} {skip_pls_string} --db {db}").format(**locals())
 
 
 def finalize_merged_db(tmp_db, db):
@@ -160,7 +163,7 @@ def merge_chunks_multicore(chunks, args):
         tmp_dbs = get_temp_dbs(len(sub_merges), os.path.dirname(sub_merges[0][0]))
         for sub_merge, tmp_db in zip(sub_merges, tmp_dbs):
             cmd = get_merge_chunks_cmd(sub_merge, tmp_db, tempdir=args.tempdir, vcf=args.vcf,
-                                       anno_type=args.anno_type)
+                                       anno_type=args.anno_type, skip_pls=args.skip_pls)
             procs.append(subprocess.Popen(cmd, shell=True, stderr=sys.stderr))
         wait_until_finished(procs)
         cleanup_temp_db_files(chunks)
@@ -231,6 +234,8 @@ def load_chunks_multicore(grabix_file, args):
     passonly = ""
     if args.passonly is True:
         passonly = "--passonly"
+
+    skip_pls = "--skip-pls" if args.skip_pls else ""
 
     skip_info_string = ""
     if args.skip_info_string is True:
@@ -310,6 +315,8 @@ def load_chunks_ipython(grabix_file, args, view):
     if args.skip_info_string is True:
         skip_info_string = "--skip-info-string"
 
+    skip_pls = "--skip-pls" if args.skip_pls else ""
+
     vcf, _ = os.path.splitext(os.path.basename(grabix_file))
     chunk_steps = get_chunk_steps(grabix_file, args)
     total_chunks = len(chunk_steps)
@@ -320,6 +327,7 @@ def load_chunks_ipython(grabix_file, args, view):
                  "chunk_dir": chunk_dir,
                  "vcf": vcf,
                  "grabix_file": grabix_file,
+                 "skip_pls": skip_pls,
                  "no_genotypes": no_genotypes,
                  "no_load_genotypes": no_load_genotypes,
                  "skip_gerp_bp": skip_gerp_bp,
@@ -358,7 +366,7 @@ def cleanup_temp_db_files(chunk_dbs):
 def gemini_pipe_load_cmd():
     grabix_cmd = "grabix grab {grabix_file} {start} {stop}"
     gemini_load_cmd = ("gemini load_chunk -v - {anno_type} {ped_file}"
-                       " {no_load_genotypes} {no_genotypes}"
+                       " {no_load_genotypes} {no_genotypes} {skip_pls}"
                        " {skip_gerp_bp} {skip_gene_tables} {skip_cadd}"
                        " {passonly} {skip_info_string} {test_mode} {tempdir}"
                        " -o {start} {chunk_dir}{vcf}.chunk{chunk_num}.db")
