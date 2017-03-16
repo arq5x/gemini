@@ -135,6 +135,7 @@ def create_tables(path, effect_fields=None, pls=True):
     gt_depths blob,
     gt_ref_depths blob,
     gt_alt_depths blob,
+    gt_alt_freqs blob,
     gt_quals blob,
     gt_copy_numbers blob,
     %s,

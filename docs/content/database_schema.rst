@@ -67,6 +67,8 @@ gt_ref_depths             BLOB          | A compressed binary vector of the dept
                                         | - Extracted from the VCF ``AD`` genotype tag.
 gt_alt_depths             BLOB          | A compressed binary vector of the depth of alternate alleles observed for each sample
                                         | - Extracted from the VCF ``AD`` genotype tag.
+gt_alt_freqs             BLOB           | A compressed binary (float) vector of the frequency of alternate alleles observed for each sample
+                                        | - equivalent to gt_alt_depths / (gt_alt_depths + gt_ref_depths)
 gt_quals                  BLOB          | A compressed binary vector of the genotype quality (PHRED scale) estimates for each sample
                                         | - Extracted from the VCF ``GQ`` genotype tag.
 gt_phred_ll_homref        BLOB          | A compressed binary vector of the phred-scaled genotype likelihood of the 0/0 genotype estimates for each sample
