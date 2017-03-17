@@ -73,6 +73,7 @@ anno_versions = {
     "ESP6500SI.all.snps_indels.tidy.v2.vcf.gz": 2,
     'ExAC.r0.3.sites.vep.tidy.vcf.gz': 4,
     'geno2mp.variants.tidy.vcf.gz': 1,
+    "whole_genome_SNVs.tsv.compressed.gz": 2,
     }
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
