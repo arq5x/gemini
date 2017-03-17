@@ -22,6 +22,7 @@ Release History
 #. Add new `gemini load` flag `--skip-pls` which can give size reductions for the database and speed Improvements
    for querying and loading. If you never use `gt_phred_ll_homalt/het/homref` then you can load with this flag.
 #. Add new `gt_alt_freqs` column which is `gt_alt_dephts / (gt_ref_depths + gt_alt_depths)`.
+#. Update CADD to v1.3
 
 0.19.1
 ======
