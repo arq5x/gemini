@@ -47,7 +47,8 @@ named my.db, whose structure is described `here <http://gemini.readthedocs.org/e
 While loading the database, `gemini` computes many additional population genetics 
 statistics that support downstream analyses. It also stores the genotypes for 
 each sample at each variant in an efficient data structure that minimizes the 
-database size.
+database size.  Gemini will look for a corresponding bgzip compressed my.vcf.gz and 
+if it exists, will import from the compressed file over my.vcf.
 
 Loading is by far the slowest aspect of GEMINI.  Using multiple CPUs can
 greatly speed up this process.
