@@ -380,7 +380,7 @@ If `--allow-unaffected` is specified, then the item prefixed [affected] is not
 required.
 
 
-`Example PED file format for GEMINI`
+`Example PED file format for GEMINI (individuals with no parents in the VCF should have maternal and paternal IDs set to -9, NOT 0).`
 
 .. code-block:: bash
 
