@@ -273,6 +273,14 @@ We may also specify the families of interest:
     $ gemini comp_hets --families 1 my.db
     $ gemini comp_hets --families 1,7 my.db
 
+----------
+gene-where
+----------
+
+The default selection of genes is by the clause: `"is_exonic = 1 or impact_severity != 'LOW'"`
+This can be specified to limit to a different subset, e.g.  `"gene != ''`
+
+
 ===========================================================================
 ``mendelian_error``: Identify non-mendelian transmission.
 ===========================================================================

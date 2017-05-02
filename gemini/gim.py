@@ -376,14 +376,14 @@ class CompoundHet(GeminiInheritanceModel):
             custom_columns = self._add_necessary_columns(str(args.columns))
             query = "SELECT " + custom_columns + \
                     " FROM variants " + \
-                    " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+                    " WHERE (%s) " % args.where
         else:
             # report the kitchen sink
             query = "SELECT *" + \
                     ", gts, gt_types, gt_phases, gt_depths, \
                     gt_ref_depths, gt_alt_depths, gt_quals" + \
                     " FROM variants " + \
-                    " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+                    " WHERE (%s) " % args.where
         if args.filter: query += " AND " + args.filter
         # we need to order results by gene so that we can sweep through the results
         return query + " ORDER BY chrom, gene"

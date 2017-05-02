@@ -8,8 +8,8 @@ Release History
 
 0.20.1
 ======
-#. Allow `--gt-filter` to specify the gt_type, e.g. `(gt_quals).(=HET).(<20).(all)`
-
+#. Allow `--gt-filter` to specify the gt_type, e.g. `(gt_quals).(=HET).(<20).(all)` (thanks Jessica for suggesting)
+#. Add `--gene-where` argument to `comp_hets` tool to dictate how variants are restricted to genes. (thanks Jessica for suggesting)
 
 0.20.0
 ======
