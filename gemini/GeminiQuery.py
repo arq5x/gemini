@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -734,7 +734,8 @@ class GeminiQuery(object):
             if self.gt_filter:
                 try:
                     if 'False' == self.gt_filter: continue
-                    unpacked = {'sample_info': self.sample_info}
+                    unpacked = {'sample_info': self.sample_info, 'HET': HET,
+                            'HOM_REF': HOM_REF, 'HOM_ALT': HOM_ALT}
                     for col in self.gt_cols:
                         if col in self.gt_filter:
                             unpacked[col] = row[col]
@@ -1042,21 +1043,29 @@ class GeminiQuery(object):
                 if token.count('.') != 3 or \
                    token.count('(') != 4 or \
                    token.count(')') != 4:
+                    toks = token.split(".")
                     raise ValueError("Wildcard filter should consist of 4 elements. Exiting.")
-
                 (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
 
                 # remove the syntactic parentheses
                 column = column.strip('(').strip(')').strip()
+                # allow commands like (gt_quals).(=HET).(>=20).(all)
                 wildcard = wildcard.strip('(').strip(')').strip()
+                is_gt_expression = "=HET" == wildcard or "=HOM_REF" == wildcard or "=HOM_ALT" == wildcard
+
                 wildcard_rule = wildcard_rule.strip('(').strip(')').strip()
                 wildcard_op = wildcard_op.strip('(').strip(')').strip()
+                extra_filter = None
 
                 # collect and save all of the samples that meet the wildcard criteria
                 # for each clause.
                 # these will be used in the list comprehension for the eval expression
                 # constructed below.
-                self.sample_info[token_idx] = self._get_matching_sample_ids(wildcard)
+                if is_gt_expression:
+                    self.sample_info[token_idx] = self._get_matching_sample_ids("*")
+                    extra_filter = " if gt_types[sample[0]] == %s" % wildcard[1:]
+                else:
+                    self.sample_info[token_idx] = self._get_matching_sample_ids(wildcard)
 
                 # Replace HET, etc. with 1, et.c to avoid eval() issues.
                 wildcard_rule = _swap_genotype_for_number(wildcard_rule)
@@ -1065,16 +1074,19 @@ class GeminiQuery(object):
                 if wildcard_op in ["all", "any"]:
                     if self.variant_id_getter:
                         joiner = " and " if wildcard_op == "all" else " or "
-                        rule = joiner.join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = joiner.join("{column}[{sample}]{rule}".format(column=column, sample=s[0],
+                                                                             rule=wildcard_rule) for s in self.sample_info[token_idx])
                         rule = "(" + rule + ")"
                     else:
-                        rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
+                        rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "]%s)"
+                        rule %= (extra_filter or "")
                 elif wildcard_op == "none":
                     if self.variant_id_getter:
                         rule = " or ".join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
                         rule = "~ ((" + rule + "))"
                     else:
-                        rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
+                        rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "]%s)"
+                        rule %= (extra_filter or "")
                 elif "count" in wildcard_op:
                     # break "count>=2" into ['', '>=2']
                     tokens = wildcard_op.split('count')
@@ -1084,7 +1096,8 @@ class GeminiQuery(object):
                         rule = "%s|count|%s" % (rule, count_comp.strip())
                         seen_count = True
                     else:
-                        rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
+                        rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "]%s)" + count_comp
+                        rule %= (extra_filter or "")
                 else:
                     raise ValueError("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
 
