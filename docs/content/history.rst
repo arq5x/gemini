@@ -6,6 +6,11 @@ Release History
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
 
+0.20.1
+======
+#. Allow `--gt-filter` to specify the gt_type, e.g. `(gt_quals).(=HET).(<20).(all)`
+
+
 0.20.0
 ======
 #. Include gnomad exome allele frequencies for all populations and include these in calc of max_aaf_all.

@@ -258,6 +258,7 @@ gemini query -q "select chrom, start, end, ref, alt, gene, gts.1094PC0018, gts.1
                  where gene == 'SCNN1D' limit 5" \
              --gt-filter "gt_types.1094PC0018 == HET or gt_types.1094PC0019 == HOM_REF" test.query.db \
        > obs
+
 check obs exp
 rm obs exp
 
@@ -784,5 +785,14 @@ gemini query -q "select max_aaf_all,aaf_esp_ea, aaf_esp_aa, aaf_1kg_amr, aaf_1kg
                  aaf_1kg_sas,aaf_1kg_afr,aaf_1kg_eur,aaf_adj_exac_afr,aaf_adj_exac_amr,aaf_adj_exac_eas, \
                  aaf_adj_exac_nfe,aaf_adj_exac_sas from variants limit 10" test.query.db > obs
 
+check obs exp
+rm obs exp
+
+echo "    query.t43..."
+echo "chr1	1219381	1219382	C	G	SCNN1D	C/C	C/C" > exp
+gemini query -q "select chrom, start, end, ref, alt, gene, gts.1094PC0018, gts.1094PC0019 \
+                 from variants \
+                 where gene == 'SCNN1D' limit 5" \
+                 --gt-filter "(gt_quals).(=HET).(>20).(all)" test.query.db > obs
 check obs exp
 rm obs exp
