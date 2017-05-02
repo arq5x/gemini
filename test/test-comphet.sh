@@ -232,3 +232,20 @@ gemini comp_hets \
 	test.comp_het.singleton.db > obs
 check obs exp
 rm obs exp
+
+
+# CHANGE: no longer include dad_4 in output since he is unaffected.
+echo "    comp_het.t18...\c"
+echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
+chr1	16976	16977	DDX11L1	G	A	downstream_gene_variant	1	3	child_3(child_3;affected;male),dad_3(dad_3;unaffected;male),mom_3(mom_3;unaffected;female)	G/A,G/A,G/A	child_3	1	2_1_4	2
+chr1	17562	17563	DDX11L1	G	A	downstream_gene_variant	4	3	child_3(child_3;affected;male),dad_3(dad_3;unaffected;male),mom_3(mom_3;unaffected;female)	G/A,G/G,G/G	child_3	1	2_1_4	2
+chr1	17562	17563	DDX11L1	G	A	downstream_gene_variant	4	3	child_3(child_3;affected;male),dad_3(dad_3;unaffected;male),mom_3(mom_3;unaffected;female)	G/A,G/G,G/G	child_3	1	3_4_8	2
+chr1	17745	17746	DDX11L1	A	G	downstream_gene_variant	8	3	child_3(child_3;affected;male),dad_3(dad_3;unaffected;male),mom_3(mom_3;unaffected;female)	A/G,A/G,A/G	child_3	1	3_4_8	2" > exp
+gemini comp_hets \
+    --column "chrom,start,end,gene,ref,alt,impact" \
+	--max-priority 2 \
+    --families 3 \
+    --gene-where 'gene != ""' \
+     test.comp_het.db > obs
+check obs exp
+rm obs exp

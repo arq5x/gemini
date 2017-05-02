@@ -690,6 +690,10 @@ def main():
             help='Identify compound heterozygotes')
     add_inheritance_args(parser_comp_hets, gt_ll=True, lenient=False)
 
+    parser_comp_hets.add_argument('--gene-where', dest="where",
+            default="is_exonic = 1 or impact_severity != 'LOW'",
+            help="""SQL clause to limit variants to genes. a reasonable alternative could be "gene != ''" """)
+
     parser_comp_hets.add_argument('--pattern-only',
             action='store_true',
             help='find compound hets by inheritance pattern, without regard to affection',
