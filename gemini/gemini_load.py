@@ -359,8 +359,10 @@ def wait_until_finished(procs):
         raise ValueError("Processing failed on GEMINI chunk load")
 
 def cleanup_temp_db_files(chunk_dbs):
+    print "Cleaning up temp db files."
     for chunk_db in chunk_dbs:
         if os.path.exists(chunk_db):
+            print "Deleting temp db file: %s" % chunk_db
             os.remove(chunk_db)
 
 def gemini_pipe_load_cmd():
