@@ -136,11 +136,7 @@ def install_anaconda_python(args, remotes):
 def install_rest(gemini, args):
     """Install biological data and tests used by gemini.
     """
-    if os.path.exists(os.path.join(args.datadir, "data")):
-        annotation_dir = os.path.join(args.datadir, "data")
-    else:
-        annotation_dir = os.path.join(args.datadir, "gemini_data")
-    cmd = [gemini, "--annotation-dir", annotation_dir, "update", "--dataonly"]
+    cmd = [gemini,  "update", "--dataonly"]
     if not args.install_data:
         cmd += ["--nodata"]
     if args.tooldir:
