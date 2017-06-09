@@ -100,7 +100,7 @@ def install_conda_pkgs(anaconda, remotes, args):
     else:
         req_file = None
         pkgs = ["gemini"]
-    channels = ["-c", "bioconda"]
+    channels = ["-c", "conda-forge", "-c", "bioconda"]
     print(" ".join([anaconda["conda"], "install", "--yes"] + channels + pkgs))
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
     if req_file and os.path.exists(req_file):
