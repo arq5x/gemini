@@ -68,7 +68,9 @@ def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, col
                 # track that this filter passed.
                 gene_passed_filters[i] = True
                 row_passed_filters.append(i)
-        if row_passed_filters:
+        # make sure that some non-required filters passed in order to display
+        # the row.
+        if row_passed_filters and sum(isinstance(f, int) for f in row_passed_filters) >= (min_filters - len(gt_req_filters)):
             row.print_fields['variant_filters'] = ",".join(map(str, row_passed_filters))
             subset.append(row)
     if len(gene_passed_filters) < min_filters or len(subset) < min_variants:
