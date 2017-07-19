@@ -6,4 +6,4 @@ zcat gnomad.exomes.r2.0.1.sites.no-VEP.vcf.gz \
     | vt normalize -r ~/bcbio/genomes/Hsapiens/g1k_v37_decoy/seq/g1k_v37_decoy.fa - \
     | bgzip -c > gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz
 
-tabix -f gnomad.exomes.r2.0.1.sites.no-VEP.nohist.vcf.gz
+tabix -f gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz

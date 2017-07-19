@@ -11,6 +11,7 @@ Release History
 #. Allow `--gt-filter` to specify the gt_type, e.g. `(gt_quals).(=HET).(<20).(all)` (thanks Jessica for suggesting)
 #. Add `--gene-where` argument to `comp_hets` tool to dictate how variants are restricted to genes. (thanks Jessica for suggesting)
 #. genewise: don't show any variants that don't meet the required number of optional filters.
+#. Fix AF for decomposed gnomad variants (thanks @mbootwalla).
 
 0.20.0
 ======
