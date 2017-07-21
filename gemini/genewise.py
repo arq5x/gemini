@@ -70,7 +70,7 @@ def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, col
                 row_passed_filters.append(i)
         # make sure that some non-required filters passed in order to display
         # the row.
-        if row_passed_filters and sum(isinstance(f, int) for f in row_passed_filters) >= min_filters:
+        if row_passed_filters and sum(isinstance(f, int) for f in row_passed_filters) > 0:
             row.print_fields['variant_filters'] = ",".join(map(str, row_passed_filters))
             subset.append(row)
     if len(gene_passed_filters) < min_filters or len(subset) < min_variants:
