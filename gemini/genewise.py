@@ -55,7 +55,7 @@ def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, col
         row_passed_filters = []
         # check required filters first.
         for i, gt_req in enumerate(gt_req_filters, start=1):
-            if not eval(gt_req, cols): continue
+            if not eval(gt_req, cols): break
             row_passed_filters.append("required[%d]" % i)
 
         if len(row_passed_filters) < len(gt_req_filters): continue
@@ -70,7 +70,7 @@ def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, col
                 row_passed_filters.append(i)
         # make sure that some non-required filters passed in order to display
         # the row.
-        if row_passed_filters and sum(isinstance(f, int) for f in row_passed_filters) >= (min_filters - len(gt_req_filters)):
+        if row_passed_filters and sum(isinstance(f, int) for f in row_passed_filters) >= min_filters:
             row.print_fields['variant_filters'] = ",".join(map(str, row_passed_filters))
             subset.append(row)
     if len(gene_passed_filters) < min_filters or len(subset) < min_variants:
