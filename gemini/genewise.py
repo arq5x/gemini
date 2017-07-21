@@ -121,12 +121,17 @@ def genewise(db, gt_filters, gt_req_filters, filter=None, columns=None, min_filt
         gt_filter = gq._correct_genotype_filter(gt_filter)
         cleaned_reqs.append(compile(gt_filter, gt_filter, 'eval'))
 
-    gq.run(query.format(columns=", ".join(columns)))
+
+    if not "gt_types" in columns:
+        columns.append("gt_types")
+        added_cols.append("gt_types")
+    gq.run(query.format(columns=", ".join(columns)), needs_genotypes=True)
 
     if isinstance(grouper, basestring):
         grouper = operator.itemgetter(grouper)
 
-    user_dict = dict(sample_info=gq.sample_info)
+    user_dict = dict(sample_info=gq.sample_info, HOM_REF=0, HET=1, UNKNOWN=2,
+            HOM_ALT=3, MISSING=None, UNAFFECTED=1, AFFECTED=2)
     header_printed = False
     for groupkey, grp in it.groupby(gq, grouper):
         grp = list(grp)
