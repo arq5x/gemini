@@ -70,7 +70,7 @@ def gen_results(rows, gt_filters, gt_req_filters, min_filters, min_variants, col
                 row_passed_filters.append(i)
         # make sure that some non-required filters passed in order to display
         # the row.
-        if row_passed_filters and sum(isinstance(f, int) for f in row_passed_filters) > 0:
+        if row_passed_filters and (len(gt_filters) == 0 or sum(isinstance(f, int) for f in row_passed_filters) > 0):
             row.print_fields['variant_filters'] = ",".join(map(str, row_passed_filters))
             subset.append(row)
     if len(gene_passed_filters) < min_filters or len(subset) < min_variants:
@@ -125,7 +125,9 @@ def genewise(db, gt_filters, gt_req_filters, filter=None, columns=None, min_filt
     if not "gt_types" in columns:
         columns.append("gt_types")
         added_cols.append("gt_types")
+
     gq.run(query.format(columns=", ".join(columns)), needs_genotypes=True)
+    columns = [c for c in columns if not c in gq.gt_name_to_idx_map or (gq.gt_name_to_idx_map.get(c) == c)]
 
     if isinstance(grouper, basestring):
         grouper = operator.itemgetter(grouper)
