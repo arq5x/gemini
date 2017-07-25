@@ -115,7 +115,7 @@ check obs exp
 echo "genewise.t8"
 
 gemini gene_wise \
- --columns "start" \
+ --columns "start, gt_quals.1_dad" \
  --gt-filter "(gt_quals).(=HET).(>=20).(any) or (gt_quals).(=HOM_ALT).(>=20).(any)" \
   --min-filters 1 \
  test.auto_dom.db > obs
