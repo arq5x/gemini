@@ -1,4 +1,8 @@
-import urllib2
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
+
 import json
 
 def query_dgidb(genes):
@@ -27,7 +31,7 @@ def query_dgidb(genes):
     if len(genes) > 1:
         query = dgidb_url + ','.join(genes.keys())
         
-        response = urllib2.urlopen(query)
+        response = urlopen(query)
         data = convert(json.load(response))
         matches = data['matchedTerms']
 

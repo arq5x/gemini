@@ -67,6 +67,8 @@ gt_ref_depths             BLOB          | A compressed binary vector of the dept
                                         | - Extracted from the VCF ``AD`` genotype tag.
 gt_alt_depths             BLOB          | A compressed binary vector of the depth of alternate alleles observed for each sample
                                         | - Extracted from the VCF ``AD`` genotype tag.
+gt_alt_freqs              BLOB          | A compressed binary (float) vector of the frequency of alternate alleles observed for each sample
+                                        | - equivalent to gt_alt_depths / (gt_alt_depths + gt_ref_depths)
 gt_quals                  BLOB          | A compressed binary vector of the genotype quality (PHRED scale) estimates for each sample
                                         | - Extracted from the VCF ``GQ`` genotype tag.
 gt_phred_ll_homref        BLOB          | A compressed binary vector of the phred-scaled genotype likelihood of the 0/0 genotype estimates for each sample
@@ -97,7 +99,7 @@ is_splicing               BOOL          Does the variant affect a canonical or p
 exon                      STRING        Exon information for the severely affected transcript
 codon_change              STRING        What is the codon change?
 aa_change                 STRING        What is the amino acid change (for a snp)?
-aa_length                 STRING        The length of CDS in terms of number of amino acids (``only SnpEff``)
+aa_length                 STRING        Has the format pos/len when biotype=protein_coding, is empty otherwise. len=protein length. pos = position of the amino acid change when is_coding=1 and is_exonic=1, '-' otherwise.
 biotype                   STRING        The 'type' of the severely affected transcript (e.g., protein-coding, pseudogene, rRNA etc.) (``only SnpEff``)
 impact                    STRING        The consequence of the most severely affected transcript
 impact_so                 STRING        The Sequence ontology term for the most severe consequence
@@ -169,6 +171,20 @@ max_aaf_all               FLOAT         the maximum of aaf_esp_ea, aaf_esp_aa, a
 exac_num_het              INTEGER       The number of heterozygote genotypes observed in ExAC. Pulled from the ExAC ``AC_Het`` INFO field.
 exac_num_hom_alt          INTEGER       The number of homozygous alt. genotypes observed in ExAC. Pulled from the ExAC ``AC_Het`` INFO field.
 exac_num_chroms           INTEGER       The number of chromosomes underlying the ExAC variant call. Pulled from the ExAC ``AN_Adj`` INFO field.
+
+aaf_gnomad_all            FLOAT         Allele frequency (population independent) of the variant in gnomad, 
+aaf_gnomad_afr            FLOAT         Allele frequency (AFR population) of the variant in gnomad
+aaf_gnomad_amr            FLOAT         Allele frequency (AMR population) of the variant in gnomad 
+aaf_gnomad_asj            FLOAT         Allele frequency (ASJ population) of the variant in gnomad 
+aaf_gnomad_eas            FLOAT         Allele frequency (EAS population) of the variant in gnomad 
+aaf_gnomad_fin            FLOAT         Allele frequency (FIN population) of the variant in gnomad 
+aaf_gnomad_nfe            FLOAT         Allele frequency (NFE population) of the variant in gnomad 
+aaf_gnomad_oth            FLOAT         Allele frequency (OTH population) of the variant in gnomad 
+aaf_gnomad_sas            FLOAT         Allele frequency (SAS population) of the variant in gnomad 
+gnomad_num_het            INTEGER       Number of het genotypes observed in gnomad
+gnomad_num_hom_alt        INTEGER       Number of hom_alt genotypes observed in gnomad
+gnomad_num_chroms         INTEGER       Number of chromosomes genotyped in gnomad
+
 ========================  =========     =================================================================================================
 
 

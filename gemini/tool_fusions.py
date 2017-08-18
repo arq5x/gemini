@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+from __future__ import print_function, absolute_import
 import os
 
-import GeminiQuery
-from gemini_constants import *
-import gemini_subjects as subjects
+from . import GeminiQuery
+from .gemini_constants import *
+from . import gemini_subjects as subjects
 
 def report_fusion(event, subjects_dict, args):
     """
@@ -99,7 +100,7 @@ def report_fusion(event, subjects_dict, args):
         end2_end = end2['sv_cipos_end_right']
 
     # fusion passes all filters, print
-    print '\t'.join(map(str,
+    print('\t'.join(map(str,
                          [end1['chrom'],
                           end1['sv_cipos_start_left'] - 1,
                           end1['sv_cipos_end_left'],
@@ -118,7 +119,7 @@ def report_fusion(event, subjects_dict, args):
                           end1['sv_is_precise'],
                           ','.join(end1['variant_samples'])
                           ])
-                     )
+                     ))
     return
 
 def get_fusions(args):

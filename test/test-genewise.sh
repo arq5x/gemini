@@ -96,3 +96,27 @@ gemini gene_wise  \
 	--min-filters 1 \
     test.auto_dom.db  > obs
 check obs exp
+
+echo "genewise.t7"
+echo "gene	chrom	start	end	ref	alt	impact	impact_severity	variant_filters	n_gene_variants	gene_filters
+WDR37	chr10	1142207	1142208	T	C	stop_lost	HIGH	required[1],1	2	1
+WDR37	chr10	1142208	1142209	T	C	stop_lost	HIGH	required[1],1	2	1" > exp
+
+gemini gene_wise  \
+    --columns "gene, chrom, start, end, ref, alt, impact, impact_severity" \
+	--gt-filter-required "((gt_types).(phenotype==1).(==HOM_ALT).(none))" \
+	--gt-filter  "((gt_types).(phenotype==1).(==HOM_ALT).(none))" \
+    --where "is_exonic = 1 AND impact_severity == 'HIGH'" \
+	--min-filters 1 \
+    test.auto_dom.db  > obs
+check obs exp
+
+
+echo "genewise.t8"
+
+gemini gene_wise \
+ --columns "start, gt_quals.1_dad" \
+ --gt-filter "(gt_quals).(=HET).(>=20).(any) or (gt_quals).(=HOM_ALT).(>=20).(any)" \
+  --min-filters 1 \
+ test.auto_dom.db > obs
+

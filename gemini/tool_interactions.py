@@ -5,15 +5,16 @@
 #2. For a root fixed to a lof gene in each sample, get the interacting partners
 #3. a network graph of mutated genes for each sample, a subnetwork for any gene in that list (not executed here)
 ###########################################################################################################################################
+from __future__ import absolute_import, print_function
 
 import os
 import sys
-import compression as Z
-from gemini.config import read_gemini_config
-import database
+from . import compression as Z
+from .config import read_gemini_config
+from . import database
 import networkx as nx
-import gemini_utils as util
-from gemini_constants import *
+from . import gemini_utils as util
+from .gemini_constants import *
 from collections import defaultdict
 import gzip
 import zlib
@@ -92,9 +93,14 @@ def sample_gene_interactions(res, args, idx_to_sample):
         file_graph = args.edges
 
     gr = nx.DiGraph()
-    for e in xopen(file_graph):
-        pair = e.strip().split("|")
-        gr.add_edge(*pair)
+    if util.PY3:
+        for e in xopen(file_graph):
+            pair = util.to_str(e).strip().split("|")
+            gr.add_edge(*pair)
+    else:
+        for e in xopen(file_graph):
+            pair = e.strip().split("|")
+            gr.add_edge(*pair)
 
     k = []
     variants = []
@@ -108,7 +114,7 @@ def sample_gene_interactions(res, args, idx_to_sample):
                                                       cutoff=args.radius)
 
         if args.var_mode:
-            for sample in samples.iterkeys():
+            for sample in samples:
                 var = samples[str(sample)]
                 #for each level return interacting genes if they are
                 # variants in the sample.
@@ -116,9 +122,9 @@ def sample_gene_interactions(res, args, idx_to_sample):
                 # gene is a variant in the sample
                 for radius in range(0, (args.radius+1)):
                     for each in var:
-                        for key, dist in genes.iteritems():
+                        for key, dist in genes.items():
                             if dist == radius and key == each[0]:
-                                print "\t".join([str(sample), str(args.gene), \
+                                print("\t".join([str(sample), str(args.gene), \
                                           str(radius), \
                                           str(key), \
                                           str(each[1]), \
@@ -131,22 +137,22 @@ def sample_gene_interactions(res, args, idx_to_sample):
                                           str(each[8]), \
                                           str(each[9]), \
                                           str(each[10]), \
-                                          str(each[11])])
+                                          str(each[11])]))
         elif (not args.var_mode):
-            for sample in samples.iterkeys():
+            for sample in samples:
                 for each in samples[str(sample)]:
                     variants.append(each[0])
                 for x in range(0, (args.radius+1)):
-                    for key, value in genes.iteritems():
+                    for key, value in genes.items():
                         if value == x and key in set(variants):
                             k.append(key)
                     if k:
-                        print "\t".join([str(sample), str(args.gene), \
+                        print("\t".join([str(sample), str(args.gene), \
                                  str(x)+"_order:",
-                                 ",".join(k)])
+                                 ",".join(k)]))
                     else:
-                        print "\t".join([str(sample), str(args.gene), \
-                                         str(x)+"_order:", "none"])
+                        print("\t".join([str(sample), str(args.gene), \
+                                         str(x)+"_order:", "none"]))
                     #initialize keys for next iteration
                     k = []
                 #initialize variants list for next iteration
@@ -163,16 +169,21 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
         file_graph = args.edges
 
     gr = nx.DiGraph()
-    for e in xopen(file_graph):
-        pair = e.strip().split("|")
-        gr.add_edge(*pair)
+    if util.PY3:
+        for e in xopen(file_graph):
+            pair = util.to_str(e).strip().split("|")
+            gr.add_edge(*pair)
+    else:
+        for e in xopen(file_graph):
+            pair = e.strip().split("|")
+            gr.add_edge(*pair)
 
     #initialize keys
     k = []
     variants = []
 
     if (not args.var_mode):
-        for sample in lof.iterkeys():
+        for sample in lof:
             lofvariants = list(set(lof[str(sample)]))
             for each in samples[str(sample)]:
                 variants.append(each[0])
@@ -181,25 +192,25 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
                 genes = nx.single_source_shortest_path_length(gr, gene,
                                                               cutoff=args.radius)
                 for rad in range(1, (args.radius+1)):
-                    for key, value in genes.iteritems():
+                    for key, value in genes.items():
                         if (value == rad) and key in set(variants):
                             k.append(key)
                     if k:
-                        print "\t".join([str(sample),
+                        print("\t".join([str(sample),
                                    str(gene),
                                    str(rad)+"_order:",
-                                   ",".join(k)])
+                                   ",".join(k)]))
                     else:
-                        print "\t".join([str(sample),
+                        print("\t".join([str(sample),
                                    str(gene),
                                    str(rad)+"_order:",
-                                   "none"])
+                                   "none"]))
                     #initialize k
                     k = []
             #initialize variants list for next iteration
             variants = []
     elif args.var_mode:
-        for sample in lof.iterkeys():
+        for sample in lof:
             lofvariants = list(set(lof[str(sample)]))
             var = samples[str(sample)]
             for gene in lofvariants:
@@ -209,9 +220,9 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
 
                 for rad in range(1, (args.radius+1)):
                     for each in var:
-                        for key, value in genes.iteritems():
+                        for key, value in genes.items():
                             if value == rad and key == each[0]:
-                                print "\t".join([str(sample),
+                                print("\t".join([str(sample),
                                            str(gene),
                                            str(rad),
                                            str(key),
@@ -225,7 +236,7 @@ def sample_lof_interactions(res, args, idx_to_sample, samples):
                                            str(each[8]),
                                            str(each[9]),
                                            str(each[10]),
-                                           str(each[11])])
+                                           str(each[11])]))
 
 
 def sample_variants(conn, metadata, args):
@@ -239,15 +250,15 @@ def sample_variants(conn, metadata, args):
     if args.command == 'interactions':
         #header
         if args.var_mode:
-            print "\t".join(['sample','gene','order_of_interaction', \
+            print("\t".join(['sample','gene','order_of_interaction', \
                              'interacting_gene', 'var_id', 'chrom', 'start', \
                              'end', 'impact', 'biotype', 'in_dbsnp', \
                              'clinvar_sig', 'clinvar_disease_name', 'aaf_1kg_all', \
-                             'aaf_esp_all'])
+                             'aaf_esp_all']))
 
         if (not args.var_mode):
-            print "\t".join(['sample','gene','order_of_interaction', \
-                     'interacting_gene'])
+            print("\t".join(['sample','gene','order_of_interaction', \
+                     'interacting_gene']))
         sample_gene_interactions(res, args, idx_to_sample)
 
     elif args.command == 'lof_interactions':
@@ -265,14 +276,14 @@ def sample_lof_variants(conn, metadata, args, samples):
 
     #header
     if args.var_mode:
-        print "\t".join(['sample','lof_gene','order_of_interaction', \
+        print("\t".join(['sample','lof_gene','order_of_interaction', \
                     'interacting_gene', 'var_id', 'chrom', 'start', \
                     'end', 'impact','biotype','in_dbsnp', 'clinvar_sig', \
-                    'clinvar_disease_name', 'aaf_1kg_all','aaf_esp_all'])
+                    'clinvar_disease_name', 'aaf_1kg_all','aaf_esp_all']))
 
     elif (not args.var_mode):
-        print "\t".join(['sample','lof_gene','order_of_interaction', \
-                         'interacting_gene'])
+        print("\t".join(['sample','lof_gene','order_of_interaction', \
+                         'interacting_gene']))
 
     sample_lof_interactions(res, args, idx_to_sample, samples)
 

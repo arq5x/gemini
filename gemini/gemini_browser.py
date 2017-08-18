@@ -1,11 +1,10 @@
+from __future__ import absolute_import
 import os
 import warnings
 import webbrowser
 from collections import namedtuple
 
-import GeminiQuery
-
-import GeminiQuery
+from gemini import GeminiQuery
 from gemini.gim import (AutoDom, AutoRec, DeNovo, MendelViolations, CompoundHet)
 
 database = None
@@ -145,8 +144,13 @@ def query():
         # the user.
         tmp_file = '/tmp.txt'
         tmp = open(_static_folder + tmp_file, 'w')
-        for row in gq:
-            tmp.write('\t'.join(str(c) for c in row) + '\n')
+        
+        for i, row in enumerate(gq):
+            if i == 0 and use_header:
+                tmp.write('\t'.join([str(key) for key in row.keys()]) + '\n')
+                
+            tmp.write('\t'.join([str(row[key]) for key in row.keys()]) + '\n')
+
         tmp.close()
 
         return template('query.j2', dbfile=database,

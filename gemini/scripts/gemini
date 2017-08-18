@@ -1,6 +1,7 @@
 #!/usr/bin/env python -Es
+from __future__ import absolute_import
 
-import gemini.scripts
-import gemini.gemini_main
+from gemini import scripts
+from gemini import gemini_main
 from gemini.gemini_constants import *
-gemini.gemini_main.main()
+gemini_main.main()

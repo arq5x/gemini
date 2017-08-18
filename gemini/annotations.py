@@ -1,11 +1,18 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
+
 import pysam
 import os
 import sys
 import collections
 import re
 from unidecode import unidecode
-from gemini.config import read_gemini_config
+from .config import read_gemini_config
+from . import gemini_utils as util
+try:
+    basestring
+except NameError:
+    basestring = str
 
 # dictionary of anno_type -> open Tabix file handles
 annos = {}
@@ -18,7 +25,7 @@ def get_anno_files(args):
      'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
      'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
      'dbsnp': os.path.join(anno_dirname, 'dbsnp.b147.20160601.tidy.vcf.gz'),
-     'clinvar': os.path.join(anno_dirname, 'clinvar_20160203.tidy.vcf.gz'),
+     'clinvar': os.path.join(anno_dirname, 'clinvar_20170130.tidy.vcf.gz'),
      'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
      'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
      'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
@@ -46,6 +53,7 @@ def get_anno_files(args):
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bed.gz"),
      'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
      'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz'),
+     'gnomad': os.path.join(anno_dirname, 'gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz'),
      'geno2mp': os.path.join(anno_dirname, 'geno2mp.variants.tidy.vcf.gz'),
     }
     # optional annotations
@@ -168,6 +176,23 @@ ExacInfo = collections.namedtuple("ExacInfo",
 EXAC_EMPTY = ExacInfo(False, -1, -1, -1, -1, -1,
                      -1, -1, -1, -1, -1, -1, -1)
 
+GnomadInfo = collections.namedtuple('GnomadInfo',
+                                   "aaf_ALL \
+                                   aaf_AFR \
+                                   aaf_AMR \
+                                   aaf_ASJ \
+                                   aaf_EAS \
+                                   aaf_FIN \
+                                   aaf_NFE \
+                                   aaf_OTH \
+                                   aaf_SAS \
+                                   num_het \
+                                   num_hom_alt \
+                                   num_chroms")
+
+GNOMAD_EMPTY = GnomadInfo(-1, -1, -1, -1, -1, -1,
+                          -1, -1, -1, -1, -1, -1)
+
 def load_annos(args):
     """
     Populate a dictionary of Tabixfile handles for
@@ -183,7 +208,11 @@ def load_annos(args):
         try:
             # .gz denotes Tabix files.
             if anno_files[anno].endswith(".gz"):
-                annos[anno] = pysam.Tabixfile(anno_files[anno])
+                if anno == "clinvar":
+                    annos[anno] = pysam.Tabixfile(anno_files[anno],
+                                                  encoding='utf8')
+                else:
+                    annos[anno] = pysam.Tabixfile(anno_files[anno])
             # .bw denotes BigWig files.
             elif anno_files[anno].endswith(".bw"):
                 from bx.bbi.bigwig_file import BigWigFile
@@ -498,11 +527,11 @@ def get_vista_enhancers(var):
     return ",".join(vista_enhancers) if len(vista_enhancers) > 0 else None
 
 def get_fitcons(var):
-    hmax = None
+    hmax = float('nan')
     for hit in annotations_in_region(var, "fitcons", None, "ucsc"):
         _, val = hit.rsplit("\t", 1)
         v = float(val)
-        if v > hmax:
+        if not hmax > v:
             hmax = v
     return hmax
 
@@ -595,16 +624,17 @@ def get_clinvar_info(var):
     for hit in annotations_in_vcf(var, "clinvar", "vcf", "grch37"):
         # load each VCF INFO key/value pair into a DICT
         info_map = {}
-        for info in hit.info.split(";"):
+        vals = hit.info.split(';')
+
+        for info in vals:
             if info.find("=") > 0:
                 (key, value) = info.split("=")
                 info_map[key] = value
             else:
                 info_map[info] = True
 
-        raw_dbsource = info_map['CLNSRC'] or None
+        raw_dbsource = info_map['CLNSRC']
         #interpret 8-bit strings and convert to plain text
-        clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf8'))
         clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
         clinvar.clinvar_origin           = \
             clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
@@ -613,8 +643,13 @@ def get_clinvar_info(var):
         clinvar.clinvar_dsdb = info_map['CLNDSDB'] or None
         clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
         # Remap all unicode characters into plain text string replacements
-        raw_disease_name = info_map['CLNDBN'] or None
-        clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf8')).decode('string_escape')
+        raw_disease_name = info_map['CLNDBN']
+        try:
+            clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8')).decode('string_escape')
+            clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf-8'))
+        except:
+            clinvar.clinvar_disease_name = unidecode(raw_disease_name.encode('utf-8').decode())
+            clinvar.clinvar_dbsource = unidecode(raw_dbsource.encode('utf-8').decode())
         # Clinvar represents commas as \x2c.  Make them commas.
 
         clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
@@ -759,6 +794,68 @@ def get_geno2mp_ct(var):
     # missing is -1
     return -1
 
+def get_gnomad_info(var, empty=GNOMAD_EMPTY):
+    info_map = {}
+    afs = {}
+    for hit in annotations_in_vcf(var, "gnomad", "vcf", "grch37"):
+        # Does not handle anything beyond var.ALT[0] in the VCF (in case of multi-allelic variants)
+        # var.start is used since the chromosomal pos in pysam.asVCF is zero based (hit.pos)
+        # and would be equivalent to (POS-1) i.e var.start
+        if var.start != hit.pos or var.REF != hit.ref:
+            continue
+
+        # This would look for var.ALT[0] matches to
+        # any of the multiple alt alleles represented in the EXAC file
+        ALT = hit.alt.split(",")
+        for allele_num, each in enumerate(ALT):
+            if each != var.ALT[0]:
+                continue
+
+            # Store the allele index of the match to retrieve the right frequencies
+            for info in hit.info.split(";"):
+                if "=" in info:
+                    (key, value) = info.split("=", 1)
+                    info_map[key] = value
+
+            # Population independent raw (non-adjusted) allele frequencies given by AF
+            if info_map.get('AF', '.') != '.':
+                aaf_ALL = float(info_map['AF'].split(",")[allele_num])
+            else:
+                aaf_ALL = -1
+
+            for grp in ('_AFR', '_AMR', '_ASJ', '_EAS', '_FIN', '_NFE', '_OTH', '_SAS'):
+                ac = info_map.get('AC' + grp)
+                if ac is None: continue
+
+                an = info_map.get('AN' + grp)
+                if an is None: continue
+
+                if an == '0':
+                    afs[grp] = 0
+                    continue
+
+                ac_list = ac.split(",")
+                afs[grp] = float(ac_list[allele_num]) / float(an)
+
+            nhm = sum(map(int, info_map.get('GC_Male', '').split(",")[1:-1]))
+            nhf = sum(map(int, info_map.get('GC_Female', '').split(",")[1:-1]))
+
+            num_hets = nhm + nhf
+            num_homs = int(info_map.get("Hom", -1))
+        
+            called_chroms = int(info_map.get('AN', -1))
+
+            return GnomadInfo(aaf_ALL, float(afs['_AFR']),
+                              float(afs['_AMR']), float(afs['_ASJ']),
+                              float(afs['_EAS']), float(afs['_FIN']),
+                              float(afs['_NFE']), float(afs['_OTH']),
+                              float(afs['_SAS']), num_hets, num_homs,
+                              called_chroms)
+
+    return empty
+
+
+
 def get_exac_info(var, empty=EXAC_EMPTY):
     """
     Returns the allele frequencies from the Exac data (Broad)
@@ -897,8 +994,7 @@ def get_gms(var):
     hit = _get_first_vcf_hit(
         annotations_in_vcf(var, "gms", "vcf", "grch37"))
     attr_map = _get_vcf_info_attrs(hit) if hit is not None else {}
-    return apply(GmsTechs,
-                 [attr_map.get("GMS_{0}".format(x), None) for x in techs])
+    return GmsTechs(*[attr_map.get("GMS_{0}".format(x), None) for x in techs])
 
 
 def get_grc(var):

@@ -72,7 +72,7 @@ for line in open("ensembl_genes66", 'r'):
     
     hsa = [(uniprot, agn, hgnc, ens_geneid, ens_transid, v) for k, v in map.iteritems() if (k[1] == agn and k[0] == uniprot) or (k[1] == hgnc and k[0] == uniprot)]
     if not hsa:
-        print uniprot + "\t" + agn + "\t" + hgnc + "\t" + ens_geneid + "\t" + ens_transid + "\t" + "None" + "\t" + "None"   
+        print(uniprot + "\t" + agn + "\t" + hgnc + "\t" + ens_geneid + "\t" + ens_transid + "\t" + "None" + "\t" + "None")
     
     elif hsa: # if list is not empty
         for each in hsa:
@@ -80,6 +80,11 @@ for line in open("ensembl_genes66", 'r'):
                 if keggid in add:
                     for eachvalue in add[keggid]:
                         pathstring = ";".join(eachvalue)
-                        print str(each[0]) + "\t" + str(each[1]) + "\t" + str(each[2]) + "\t" + str(each[3]) + "\t" + str(each[4]) + "\t" + str(keggid) + "\t" + pathstring
+                        print(str(each[0]) + "\t" + str(each[1]) + "\t" +
+                              str(each[2]) + "\t" + str(each[3]) + "\t" +
+                              str(each[4]) + "\t" + str(keggid) + "\t" +
+                              pathstring)
                 else:
-                    print str(each[0]) + "\t" + str(each[1]) + "\t" + str(each[2]) + "\t" + str(each[3]) + "\t" + str(each[4]) + "\t" + str(keggid) + "\tNone"
+                    print(str(each[0]) + "\t" + str(each[1]) + "\t" +
+                          str(each[2]) + "\t" + str(each[3]) + "\t" +
+                          str(each[4]) + "\t" + str(keggid) + "\tNone")

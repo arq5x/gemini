@@ -31,8 +31,13 @@ True
 >>> b = snappy_unpack_blob(snappy_pack_blob(np.array([False, True, False, True])))
 >>> b[2] = True
 """
+from __future__ import absolute_import
+import sys
 import zlib
-import cPickle
+try:
+    import pickle as pickle
+except ImportError:
+    import pickle
 
 try:
     from cyordereddict import OrderedDict
@@ -40,23 +45,27 @@ except:
     from collections import OrderedDict
 
 
+if sys.version_info[0] == 3:
+    buffer = memoryview
+    def unpack_genotype_blob(blob):
+        return pickle.loads(zlib.decompress(blob), encoding='latin1')
+    def zdumps(obj):
+        return zlib.compress(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL), 9)
+else:
+    def unpack_genotype_blob(blob):
+        return pickle.loads(zlib.decompress(blob))
+    def zdumps(obj):
+        return zlib.compress(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL), 9)
+
 def pack_blob(obj):
     return buffer(zdumps(obj))
 
-def unpack_genotype_blob(blob):
-    return cPickle.loads(zlib.decompress(blob))
-
 def unpack_ordereddict_blob(blob):
-    blob_val = cPickle.loads(zlib.decompress(blob))
+    blob_val = pickle.loads(zlib.decompress(blob))
     if blob_val is not None:
         return OrderedDict(blob_val)
     return None
 
-def zdumps(obj):
-    return zlib.compress(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL), 9)
-
-def zloads(obj):
-    return cPickle.loads(zlib.decompress(obj))
 
 try:
     import snappy

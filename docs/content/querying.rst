@@ -510,6 +510,18 @@ One can also base the wildcard on multiple criteria (in this case, brown hair an
                  --gt-filter "(gt_types).(hair_color=='brown' and phenotype==2).(!= HET).(all)" \
                  extended_ped.db
 
+There is a special case when we want to select samples based on their genotypes. For example,
+to show only sites where HET samples have a genotype quality above 20.
+
+.. code-block:: bash
+
+  $ gemini query -q "SELECT chrom, start, end, ref, alt, gene FROM variants \
+                 where gene == 'SCNN1D' limit 5" \
+                  --gt-filter "(gt_quals).(=HET).(<20).(all)" test/test.query.db 
+
+In this case, the 2nd value must be one of `=HET`, `=HOM_REF` or `=HOM_ALT`
+
+
 Lastly, wildcards can, of course, be combined with non-wildcard criteria:
 
 .. code-block:: bash

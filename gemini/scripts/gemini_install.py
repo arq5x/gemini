@@ -21,12 +21,15 @@ import os
 import shutil
 import subprocess
 import sys
-import urllib2
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 import urllib
 
 remotes = {"requirements_conda": "",
            "versioned_installations": "https://raw.githubusercontent.com/arq5x/gemini/master/versioning/",
-           "anaconda": "http://repo.continuum.io/miniconda/Miniconda-latest-%s-x86%s.sh"}
+           "anaconda": "http://repo.continuum.io/miniconda/Miniconda2-latest-%s-x86%s.sh"}
 
 remotes_dev = remotes.copy()
 remotes_dev.update({
@@ -68,7 +71,7 @@ def main(args, remotes=remotes):
         requirements_conda = os.path.join(remotes['versioned_installations'],
                                           args.gemini_version, 'requirements_conda.txt')
         try:
-            urllib2.urlopen(requirements_conda)
+            urlopen(requirements_conda)
         except:
             raise ValueError('Gemini version %s could not be found. Try the latest version.' % args.gemini_version)
         remotes.update({'requirements_conda': requirements_conda})
@@ -97,7 +100,7 @@ def install_conda_pkgs(anaconda, remotes, args):
     else:
         req_file = None
         pkgs = ["gemini"]
-    channels = ["-c", "bioconda"]
+    channels = ["-c", "conda-forge", "-c", "bioconda"]
     print(" ".join([anaconda["conda"], "install", "--yes"] + channels + pkgs))
     subprocess.check_call([anaconda["conda"], "install", "--yes"] + channels + pkgs)
     if req_file and os.path.exists(req_file):
@@ -124,7 +127,7 @@ def install_anaconda_python(args, remotes):
             shutil.rmtree(anaconda_dir)
         url = remotes["anaconda"] % ("MacOSX" if distribution == "macosx" else "Linux", arch)
         if not os.path.exists(os.path.basename(url)):
-            subprocess.check_call(["wget", "--continue", url])
+            subprocess.check_call(["wget", "--continue", "--no-check-certificate", url])
         subprocess.check_call("bash %s -b -p %s" %
                               (os.path.basename(url), anaconda_dir), shell=True)
     return {"conda": conda,

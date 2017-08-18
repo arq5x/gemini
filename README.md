@@ -1,6 +1,8 @@
 GEMINI - integrative exploration of genetic variation and genome annotations.
 =============================================================================
 
+![overview](https://github.com/arq5x/gemini/blob/master/docs/images/overview.png)
+
 Overview
 ========
 The intent of ``GEMINI`` (GEnome MINIing) is to provide a simple, flexible, and 

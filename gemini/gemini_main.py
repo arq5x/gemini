@@ -68,41 +68,41 @@ def add_inheritance_args(parser, min_kindreds=1, depth=True, gt_ll=False,
 
 def examples(parser, args):
 
-    print
-    print "[load] - load a VCF file into a gemini database:"
-    print "   gemini load -v my.vcf my.db"
-    print "   gemini load -v my.vcf -t snpEff my.db"
-    print "   gemini load -v my.vcf -t VEP my.db"
-    print
+    print("")
+    print( "[load] - load a VCF file into a gemini database:")
+    print( "   gemini load -v my.vcf my.db")
+    print( "   gemini load -v my.vcf -t snpEff my.db")
+    print( "   gemini load -v my.vcf -t VEP my.db")
+    print("")
 
-    print "[stats] - report basic statistics about your variants:"
-    print "   gemini stats --tstv my.db"
-    print "   gemini stats --tstv-coding my.db"
-    print "   gemini stats --sfs my.db"
-    print "   gemini stats --snp-counts my.db"
-    print
+    print( "[stats] - report basic statistics about your variants:")
+    print( "   gemini stats --tstv my.db")
+    print( "   gemini stats --tstv-coding my.db")
+    print( "   gemini stats --sfs my.db")
+    print( "   gemini stats --snp-counts my.db")
+    print("")
 
-    print "[query] - explore the database with ad hoc queries:"
-    print "   gemini query -q \"select * from variants where is_lof = 1 and aaf <= 0.01\" my.db"
-    print "   gemini query -q \"select chrom, pos, gt_bases.NA12878 from variants\" my.db"
-    print "   gemini query -q \"select chrom, pos, in_omim, clin_sigs from variants\" my.db"
-    print
+    print( "[query] - explore the database with ad hoc queries:")
+    print( "   gemini query -q \"select * from variants where is_lof = 1 and aaf <= 0.01\" my.db")
+    print( "   gemini query -q \"select chrom, pos, gt_bases.NA12878 from variants\" my.db")
+    print( "   gemini query -q \"select chrom, pos, in_omim, clin_sigs from variants\" my.db")
+    print("")
 
-    print "[dump] - convenient \"data dumps\":"
-    print "   gemini dump --variants my.db"
-    print "   gemini dump --genotypes my.db"
-    print "   gemini dump --samples my.db"
-    print
+    print( "[dump] - convenient \"data dumps\":")
+    print( "   gemini dump --variants my.db")
+    print( "   gemini dump --genotypes my.db")
+    print( "   gemini dump --samples my.db")
+    print("")
 
-    print "[region] - access variants in specific genomic regions:"
-    print "   gemini region --reg chr1:100-200 my.db"
-    print "   gemini region --gene TP53 my.db"
-    print
+    print( "[region] - access variants in specific genomic regions:")
+    print( "   gemini region --reg chr1:100-200 my.db")
+    print( "   gemini region --gene TP53 my.db")
+    print("")
 
-    print "[tools] - there are also many specific tools available"
-    print "   1. Find compound heterozygotes."
-    print "     gemini comp_hets my.db"
-    print
+    print( "[tools] - there are also many specific tools available")
+    print( "   1. Find compound heterozygotes.")
+    print( "     gemini comp_hets my.db")
+    print("")
 
     exit()
 
@@ -136,7 +136,7 @@ def main():
     parser_load.add_argument('-v', dest='vcf',
                              help='The VCF file to be loaded.')
     parser_load.add_argument('-t', dest='anno_type',
-                             default=None, choices=["snpEff", "VEP",  "all"],
+                             default=None, choices=["snpEff", "VEP",  "BCFT", "all"],
                              help="The annotations to be used with the input vcf.")
     parser_load.add_argument('-p', dest='ped_file',
                              help='Sample information file in PED+ format.',
@@ -193,8 +193,14 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
+    parser_load.add_argument('--skip-pls',
+                         action='store_true',
+                         help='dont create columns for phred-scaled genotype likelihoods',
+                         default=False)
     def load_fn(parser, args):
-        import gemini_load
+        from gemini import gemini_load
+        if args.vcf != "-":
+            args.vcf = os.path.abspath(args.vcf)
         gemini_load.load(parser, args)
 
     parser_load.set_defaults(func=load_fn)
@@ -217,7 +223,7 @@ def main():
                               help='Set all values in this column to NULL before loading.')
 
     def amend_fn(parser, args):
-        import gemini_amend
+        from gemini import gemini_amend
         gemini_amend.amend(parser, args)
     parser_amend.set_defaults(func=amend_fn)
 
@@ -238,6 +244,7 @@ def main():
                                   metavar='STRING',
                                   help="The annotations to be used with the input vcf. Options are:\n"
                                   "  snpEff  - Annotations as reported by snpEff.\n"
+                                  "  BCFT  - Annotations as reported by bcftools.\n"
                                   "  VEP     - Annotations as reported by VEP.\n"
                                   )
     parser_loadchunk.add_argument('-o',
@@ -288,13 +295,19 @@ def main():
                          action='store_true',
                          help='Load in test mode (faster)',
                          default=False)
+    parser_loadchunk.add_argument('--skip-pls',
+                         action='store_true',
+                         help='dont create columns for phred-scaled genotype likelihoods',
+                         default=False)
     parser_loadchunk.add_argument('--tempdir', dest='tempdir',
                                   default=tempfile.gettempdir(),
                                   help='Local (non-NFS) temp directory to use for working around SQLite locking issues '
                                        'on NFS drives.')
 
     def loadchunk_fn(parser, args):
-        import gemini_load_chunk
+        from gemini import gemini_load_chunk
+        if args.vcf != "-":
+            args.vcf = os.path.abspath(args.vcf)
         gemini_load_chunk.load(parser, args)
     parser_loadchunk.set_defaults(func=loadchunk_fn)
 
@@ -310,7 +323,7 @@ def main():
             dest='vcf',
             help='Original VCF file, for retrieving extra annotation fields.')
     parser_mergechunks.add_argument('-t', dest='anno_type',
-            default=None, choices=["snpEff", "VEP", "all"],
+            default=None, choices=["snpEff", "VEP",  "BCFT", "all"],
             help="The annotations to be used with the input vcf.")
     parser_mergechunks.add_argument('--chunkdb',
             nargs='*',
@@ -323,9 +336,13 @@ def main():
             action='store_true',
             help='Create all database indexes. If multiple merges are used to create a database, only the last merge '
                  'should create the indexes.')
+    parser_mergechunks.add_argument('--skip-pls',
+                         action='store_true',
+                         help='dont create columns for phred-scaled genotype likelihoods',
+                         default=False)
 
     def mergechunk_fn(parser, args):
-        import gemini_merge_chunks
+        from gemini import gemini_merge_chunks
         gemini_merge_chunks.merge_chunks(parser, args)
     parser_mergechunks.set_defaults(func=mergechunk_fn)
 
@@ -418,7 +435,7 @@ def main():
                               default=False)
 
     def query_fn(parser, args):
-        import gemini_query
+        from gemini import gemini_query
         gemini_query.query(parser, args)
 
     parser_query.set_defaults(func=query_fn)
@@ -462,7 +479,7 @@ def main():
                              default=False,
                              help='Output sample information to TFAM format.')
     def dump_fn(parser, args):
-        import gemini_dump
+        from gemini import gemini_dump
         gemini_dump.dump(parser, args)
     parser_dump.set_defaults(func=dump_fn)
 
@@ -507,7 +524,7 @@ def main():
                               default='default',
                               help='Format of output (JSON, TPED or default)')
     def region_fn(parser, args):
-        import gemini_region
+        from gemini import gemini_region
         gemini_region.region(parser, args)
     parser_region.set_defaults(func=region_fn)
 
@@ -569,7 +586,7 @@ def main():
             metavar='STRING',
             help='Restrictions to apply to genotype values')
     def stats_fn(parser, args):
-        import gemini_stats
+        from gemini import gemini_stats
         gemini_stats.stats(parser, args)
     parser_stats.set_defaults(func=stats_fn)
 
@@ -616,7 +633,7 @@ def main():
                  'The default is to annotate using region coordinates as well as REF and ALT variant values'
                  'This option is only valid if annotation is a VCF file')
     def annotate_fn(parser, args):
-        import gemini_annotate
+        from gemini import gemini_annotate
         gemini_annotate.annotate(parser, args)
     parser_get.set_defaults(func=annotate_fn)
 
@@ -649,7 +666,7 @@ def main():
             choices=['mean', 'median', 'min', 'max', 'collapse'],
             default='mean')
     def windower_fn(parser, args):
-        import gemini_windower
+        from gemini import gemini_windower
         gemini_windower.windower(parser, args)
     parser_get.set_defaults(func=windower_fn)
 
@@ -662,7 +679,7 @@ def main():
             metavar='db',
             help='The name of the database to be updated.')
     def dbinfo_fn(parser, args):
-        import gemini_dbinfo
+        from gemini import gemini_dbinfo
         gemini_dbinfo.db_info(parser, args)
     parser_get.set_defaults(func=dbinfo_fn)
 
@@ -672,6 +689,10 @@ def main():
     parser_comp_hets = subparsers.add_parser('comp_hets',
             help='Identify compound heterozygotes')
     add_inheritance_args(parser_comp_hets, gt_ll=True, lenient=False)
+
+    parser_comp_hets.add_argument('--gene-where', dest="where",
+            default="is_exonic = 1 or impact_severity != 'LOW'",
+            help="""SQL clause to limit variants to genes. a reasonable alternative could be "gene != ''" """)
 
     parser_comp_hets.add_argument('--pattern-only',
             action='store_true',
@@ -685,7 +706,7 @@ def main():
             default=1)
 
     def comp_hets_fn(parser, args):
-        from .gim import CompoundHet
+        from gemini.gim import CompoundHet
         CompoundHet(args).run()
     parser_comp_hets.set_defaults(func=comp_hets_fn)
 
@@ -712,17 +733,17 @@ def main():
     add_inheritance_args(parser_xdn, lenient=False, gt_ll=False)
 
     def x_rec_fn(parser, args):
-        from .gim import XRec
+        from gemini.gim import XRec
         XRec(args).run()
     parser_xr.set_defaults(func=x_rec_fn)
 
     def x_dom_fn(parser, args):
-        from .gim import XDom
+        from gemini.gim import XDom
         XDom(args).run()
     parser_xd.set_defaults(func=x_dom_fn)
 
     def x_denovo_fn(parser, args):
-        from .gim import XDenovo
+        from gemini.gim import XDenovo
         XDenovo(args).run()
     parser_xdn.set_defaults(func=x_denovo_fn)
 
@@ -747,7 +768,7 @@ def main():
             help='Report pathways for indivs/genes/sites with LoF variants',
             default=False)
     def pathway_fn(parser, args):
-        import tool_pathways
+        from gemini import tool_pathways
         tool_pathways.pathways(parser, args)
     parser_pathway.set_defaults(func=pathway_fn)
 
@@ -760,7 +781,7 @@ def main():
             metavar='db',
             help='The name of the database to be queried')
     def lof_sieve_fn(parser, args):
-        import tool_lof_sieve
+        from gemini import tool_lof_sieve
         tool_lof_sieve.lof_sieve(parser, args)
     parser_lof_sieve.set_defaults(func=lof_sieve_fn)
 
@@ -816,7 +837,7 @@ def main():
                                help='The name of the database to be queried.')
 
     def burden_fn(parser, args):
-        import tool_burden_tests
+        from gemini import tool_burden_tests
         tool_burden_tests.burden(parser, args)
     parser_burden.set_defaults(func=burden_fn)
 
@@ -845,7 +866,7 @@ def main():
             action='store_true',
             default=False)
     def interactions_fn(parser, args):
-        import tool_interactions
+        from gemini import tool_interactions
         tool_interactions.genequery(parser, args)
     parser_interaction.set_defaults(func=interactions_fn)
 
@@ -869,7 +890,7 @@ def main():
             action='store_true',
             default=False)
     def lof_interactions_fn(parser, args):
-        import tool_interactions
+        from gemini import tool_interactions
         tool_interactions.lofgenequery(parser, args)
     parser_interaction.set_defaults(func=lof_interactions_fn)
 
@@ -883,7 +904,7 @@ def main():
 
 
     def autosomal_recessive_fn(parser, args):
-        from .gim import AutoRec
+        from gemini.gim import AutoRec
         AutoRec(args).run()
     parser_auto_rec.set_defaults(func=autosomal_recessive_fn)
 
@@ -896,7 +917,7 @@ def main():
     add_inheritance_args(parser_auto_dom, gt_ll=True)
 
     def autosomal_dominant_fn(parser, args):
-        from .gim import AutoDom
+        from gemini.gim import AutoDom
         AutoDom(args).run()
     parser_auto_dom.set_defaults(func=autosomal_dominant_fn)
 
@@ -906,10 +927,10 @@ def main():
     parser_de_novo = subparsers.add_parser('de_novo',
             help='Identify candidate de novo mutations')
 
-    add_inheritance_args(parser_de_novo, min_kindreds=None, gt_ll=True)
+    add_inheritance_args(parser_de_novo, min_kindreds=1, gt_ll=True)
 
     def de_novo_fn(parser, args):
-        from .gim import DeNovo
+        from gemini.gim import DeNovo
         DeNovo(args).run()
     parser_de_novo.set_defaults(func=de_novo_fn)
 
@@ -926,7 +947,7 @@ def main():
                 default=False)
 
     def mendel_fn(parser, args):
-        from .gim import MendelViolations
+        from gemini.gim import MendelViolations
         MendelViolations(args).run()
     parser_mendel.set_defaults(func=mendel_fn)
 
@@ -947,7 +968,7 @@ def main():
 
 
     def browser_fn(parser, args):
-        import gemini_browser
+        from gemini import gemini_browser
         gemini_browser.browser_main(parser, args)
     parser_browser.set_defaults(func=browser_fn)
 
@@ -963,55 +984,55 @@ def main():
     parser_set_somatic.add_argument('--min-depth',
             dest='min_depth',
             type=float,
-            default=None,
+            default=0,
             help='The min combined depth for tumor + normal (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-qual',
             dest='min_qual',
             type=float,
-            default=None,
+            default=0,
             help='The min variant quality (VCF QUAL) (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-somatic-score',
             dest='min_somatic_score',
             type=float,
-            default=None,
+            default=0,
             help='The min somatic score (SSC) (def: %(default)s).')
 
     parser_set_somatic.add_argument('--max-norm-alt-freq',
             dest='max_norm_alt_freq',
             type=float,
-            default=None,
+            default=0,
             help='The max freq. of the alt. allele in the normal sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--max-norm-alt-count',
             dest='max_norm_alt_count',
             type=int,
-            default=None,
+            default=0,
             help='The max count. of the alt. allele in the normal sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-norm-depth',
             dest='min_norm_depth',
             type=int,
-            default=None,
+            default=0,
             help='The minimum depth allowed in the normal sample to believe somatic (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-alt-freq',
             dest='min_tumor_alt_freq',
             type=float,
-            default=None,
+            default=0,
             help='The min freq. of the alt. allele in the tumor sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-alt-count',
             dest='min_tumor_alt_count',
             type=int,
-            default=None,
+            default=0,
             help='The min count. of the alt. allele in the tumor sample (def: %(default)s).')
 
     parser_set_somatic.add_argument('--min-tumor-depth',
             dest='min_tumor_depth',
             type=int,
-            default=None,
+            default=0,
             help='The minimum depth allowed in the tumor sample to believe somatic (def: %(default)s).')
 
     parser_set_somatic.add_argument('--chrom',
@@ -1028,7 +1049,7 @@ def main():
             default=False)
 
     def set_somatic_fn(parser, args):
-        import gemini_set_somatic
+        from gemini import gemini_set_somatic
         gemini_set_somatic.set_somatic(parser, args)
     parser_set_somatic.set_defaults(func=set_somatic_fn)
 
@@ -1040,7 +1061,7 @@ def main():
     parser_actionable_mut.add_argument('db', metavar='db',
             help='The name of the database to be queried.')
     def get_actionable_mut_fn(parser, args):
-        import gemini_actionable_mutations
+        from gemini import gemini_actionable_mutations
         gemini_actionable_mutations.get_actionable_mutations(parser, args)
     parser_actionable_mut.set_defaults(func=get_actionable_mut_fn)
 
@@ -1059,7 +1080,7 @@ def main():
                                action="append", default=[], choices=["gerp_bp","cadd_score"])
     parser_update.add_argument("--tooldir", help="Directory for third party tools (ie /usr/local) update")
     def update_fn(parser, args):
-        import gemini_update
+        from gemini import gemini_update
         gemini_update.release(parser, args)
     parser_update.set_defaults(func=update_fn)
 
@@ -1115,7 +1136,7 @@ def main():
             default=None,
             help='Comma separated list of samples to screen for ROHs. e.g S120,S450')
     def homozygosity_runs_fn(parser, args):
-        from tool_homozygosity_runs import run
+        from gemini.tool_homozygosity_runs import run
         run(parser, args)
     parser_hom_run.set_defaults(func=homozygosity_runs_fn)
 
@@ -1129,7 +1150,7 @@ def main():
     bci.add_argument('--cols', help='list of gt columns to index. default is all')
 
     def bci_fn(parser, args):
-        from gemini_bcolz import create
+        from gemini.gemini_bcolz import create
         if args.cols:
             create(args.db, [x.strip() for x in args.cols.split(",")])
         else:
@@ -1161,7 +1182,7 @@ def main():
                                 help='The supporting evidence types for the variant ("PE", "SR", or "PE,SR").')
 
     def fusions_fn(parser, args):
-        from tool_fusions import run
+        from gemini.tool_fusions import run
         run(parser, args)
     parser_fusions.set_defaults(func=fusions_fn)
 
@@ -1169,11 +1190,11 @@ def main():
     # genewise
     #########################################
 
-    from .genewise import add_args
+    from gemini.genewise import add_args
     parser_genewise = subparsers.add_parser('gene_wise')
     add_args(parser_genewise)
     def genewise_run(parser, args):
-        from .genewise import run
+        from gemini.genewise import run
         run(args)
     parser_genewise.set_defaults(func=genewise_run)
 
@@ -1196,7 +1217,7 @@ def main():
             default='chrX',
             help='Which chromosome should the sex test be applied to? [chrX]')
     def qc_fn(parser, args):
-        from tool_qc import run
+        from gemini.tool_qc import run
         run(parser, args)
     parser_qc.set_defaults(func=qc_fn)
 
@@ -1225,7 +1246,7 @@ def main():
                          "queue to use with --queue.")
     try:
         args.func(parser, args)
-    except IOError, e:
+    except IOError as e:
         if e.errno != 32:  # ignore SIGPIPE
             raise
 

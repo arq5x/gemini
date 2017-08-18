@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 from collections import OrderedDict
 
@@ -12,7 +13,7 @@ for line in sys.stdin:
         elif line.startswith("##INFO=<ID=GTS,"):
             line = line.replace(",Number=.", ",Number=G")
             assert "Number=G" in line
-        print line,
+        print(line, end="")
         continue
     j += 1
     # in body, need to adjust GTS, TAC, AA_AC, EA_AC since ESP stores ref last
@@ -47,4 +48,4 @@ for line in sys.stdin:
         #info[field] = ",".join(vals[-1:] + vals[:-1])
 
     fields[7] = ";".join("%s=%s" % kv for kv in info.items())
-    print "\t".join(fields),
+    print("\t".join(fields), end="")

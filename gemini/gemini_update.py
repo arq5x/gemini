@@ -19,13 +19,14 @@ def release(parser, args):
     if not args.dataonly:
         if not os.path.exists(conda_bin):
             raise NotImplementedError("Can only upgrade gemini installed with anaconda")
-        subprocess.check_call([conda_bin, "install", "-y", "-c", "bioconda", "gemini", "pip"])
+        subprocess.check_call([conda_bin, "install", "-y", "-c", "conda-forge", "-c", "bioconda",
+                               "gemini", "cyvcf2", "pip"])
         if args.devel:
             subprocess.check_call([pip_bin, "install", "--upgrade", "--no-deps",
                                    "git+%s" % repo])
-        print "Gemini upgraded to latest version"
+        print("Gemini upgraded to latest version")
     if args.tooldir:
-        print "Upgrading associated tools..."
+        print("Upgrading associated tools...")
         if os.path.exists(conda_bin):
             anaconda_dir = os.path.dirname(os.path.dirname(conda_bin))
             link_tools(args.tooldir, anaconda_dir)
@@ -35,7 +36,7 @@ def release(parser, args):
     if args.install_data:
         extra_args = ["--extra=%s" % x for x in args.extra]
         subprocess.check_call([sys.executable, _get_install_script(), config["annotation_dir"]] + extra_args)
-        print "Gemini data files updated"
+        print("Gemini data files updated")
     # update tests
     if not args.dataonly:
         test_dir = os.path.join(os.path.dirname(os.path.dirname(base)), "github_gemini")
@@ -61,12 +62,12 @@ def _update_testbase(repo_dir, repo, gemini_cmd):
             os.chdir(cur_dir)
             shutil.rmtree(repo_dir)
     if needs_git:
-        print "cloning %s to %s" % (repo, repo_dir)
+        print("cloning %s to %s" % (repo, repo_dir))
         subprocess.check_call(["git", "clone", repo, repo_dir])
     os.chdir(repo_dir)
     try:
         _update_testdir_revision(gemini_cmd)
-    except Exception, msg:
+    except Exception as msg:
         print("Unable to update to revision, skipping: %s" % msg)
     os.chdir(cur_dir)
 

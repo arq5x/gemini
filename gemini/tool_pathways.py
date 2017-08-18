@@ -1,14 +1,14 @@
 #!/usr/bin/env python
+from __future__ import print_function, absolute_import
 
 import os
 import sys
 import sqlalchemy as sql
-import compression as Z
+from . import compression as Z
 from collections import defaultdict
-from gemini.config import read_gemini_config
-import gemini_utils as util
-from gemini_constants import *
-
+from .config import read_gemini_config
+from . import gemini_utils as util
+from .gemini_constants import *
 
 
 def get_pathways(args):
@@ -97,10 +97,10 @@ def _report_variant_pathways(res, args, idx_to_sample):
         for idx, gt_type in enumerate(gt_types):
             if (gt_type == HET or gt_type == HOM_ALT) and \
                 len(pathways) > 0:
-                print "\t".join([r['chrom'], str(r['start']), str(r['end']), \
+                print("\t".join([r['chrom'], str(r['start']), str(r['end']), \
                                  r['ref'], r['alt'], r['impact'], \
                                  idx_to_sample[idx], gts[idx], gene, trans, \
-                                 pathlist])
+                                 pathlist]))
 
 def get_ind_pathways(conn, metadata, args):
 
@@ -115,9 +115,9 @@ def get_ind_pathways(conn, metadata, args):
     res = conn.execute(sql.text(query))
 
     # header
-    print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
+    print('\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
                      'impact', 'sample', 'genotype', \
-                     'gene', 'transcript', 'pathway'])
+                     'gene', 'transcript', 'pathway']))
 
     _report_variant_pathways(res, args, idx_to_sample)
 
@@ -136,16 +136,16 @@ def get_ind_lof_pathways(conn, metadata, args):
     res = conn.execute(sql.text(query))
 
     # header
-    print '\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
+    print('\t'.join(['chrom', 'start', 'end', 'ref', 'alt', \
                      'impact', 'sample', 'genotype', \
-                     'gene', 'transcript', 'pathway'])
+                     'gene', 'transcript', 'pathway']))
 
     _report_variant_pathways(res, args, idx_to_sample)
 
 
 
 def pathways(parser, args):
-    import database
+    from . import database
 
     conn, metadata = database.get_session_metadata(args.db)
 

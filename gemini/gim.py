@@ -1,11 +1,18 @@
 #!/usr/bin/env python
+from __future__ import absolute_import, print_function
+
 import sys
 from collections import Counter, defaultdict
-import GeminiQuery
-import sql_utils
-import compiler
-from gemini_constants import *
+from . import GeminiQuery
+from . import sql_utils
+try:
+    from compiler import compile
+except ImportError:
+    basestring = str
+
+from .gemini_constants import *
 from .gemini_bcolz import filter, NoGTIndexException
+from .gemini_utils import to_str, PY3
 from .mendelianerror import mendelian_error
 import itertools as it
 import operator as op
@@ -192,14 +199,14 @@ class GeminiInheritanceModel(object):
                 for k, mask in mdict.items():
                     m[k] = 'False' if mask is None or mask.strip("(").strip(")") == 'False' else mask
                     if m[k] != 'False':
-                        m[k] = compiler.compile(m[k], m[k], 'eval')
+                        m[k] = compile(m[k], m[k], 'eval')
 
                 masks.append(m)
         else:
             # 1 mask per family
             masks = ['False' if m is None or m is False or m.strip('(').strip(')') in
                      ('empty', 'False') else m for m in self.family_masks]
-            masks = [compiler.compile(m, m, 'eval') if m != 'False' else 'False' for m in masks]
+            masks = [compile(m, m, 'eval') if m != 'False' else 'False' for m in masks]
 
         requested_fams = None if not args.families else set(args.families.split(","))
 
@@ -249,7 +256,11 @@ class GeminiInheritanceModel(object):
                     # populate with the fields required by the tools.
                     pdict["family_id"] = fam.family_id
                     pdict["family_members"] = ",".join("%s" % m for m in fam.subjects)
-                    pdict["family_genotypes"] = ",".join(eval(str(s), cols) for s in fam.gts)
+                    if PY3:
+                        pdict["family_genotypes"] = to_str(",".join(eval(str(to_str(s)), cols) for s in fam.gts))
+                    else:
+                        pdict["family_genotypes"] = ",".join(eval(str(s), cols) for s in fam.gts)
+
                     pdict["samples"] = ",".join(x.name or x.sample_id for x in fam.subjects if x.affected)
                     pdict["family_count"] = len(fams)
                     if is_mendel:
@@ -296,7 +307,7 @@ class GeminiInheritanceModel(object):
         for i, s in enumerate(self.report_candidates()):
             if i == 0:
                 has_gts = [x[0] for x in gt_cols_types if x[0] in s] or False
-                print "\t".join(s.keys())
+                print("\t".join(s.keys()))
             if has_gts:
                 for col in has_gts:
                     s[col] = str(s[col]).replace('\n', '')
@@ -365,14 +376,14 @@ class CompoundHet(GeminiInheritanceModel):
             custom_columns = self._add_necessary_columns(str(args.columns))
             query = "SELECT " + custom_columns + \
                     " FROM variants " + \
-                    " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+                    " WHERE (%s) " % args.where
         else:
             # report the kitchen sink
             query = "SELECT *" + \
                     ", gts, gt_types, gt_phases, gt_depths, \
                     gt_ref_depths, gt_alt_depths, gt_quals" + \
                     " FROM variants " + \
-                    " WHERE (is_exonic = 1 or impact_severity != 'LOW') "
+                    " WHERE (%s) " % args.where
         if args.filter: query += " AND " + args.filter
         # we need to order results by gene so that we can sweep through the results
         return query + " ORDER BY chrom, gene"

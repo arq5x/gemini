@@ -142,6 +142,8 @@ Where possible, `comp_hets` will phase by transmission. Once this has been
 done, the `comp_hets` tool will provide a report of candidate compound
 heterozygotes for each sample/gene.
 
+Non-exonic/non-coding analyses: `comp_hets` excludes intronic/non-coding variants for which `impact_severity == 'LOW' AND is_exonic == FALSE`. Therefore, `comp_hets` will not retrieve most pairs of variants that are downstream or upstream of a gene or are intronic unless otherwise annotated with medium or high `impact_severity`.
+
 .. note::
 
   As of version 0.16.0 the ``comp_het`` tool will perform family-based phasing
@@ -270,6 +272,14 @@ We may also specify the families of interest:
 
     $ gemini comp_hets --families 1 my.db
     $ gemini comp_hets --families 1,7 my.db
+
+----------
+gene-where
+----------
+
+The default selection of genes is by the clause: `"is_exonic = 1 or impact_severity != 'LOW'"`
+This can be specified to limit to a different subset, e.g.  `"gene != ''`
+
 
 ===========================================================================
 ``mendelian_error``: Identify non-mendelian transmission.
@@ -804,6 +814,20 @@ E.g.
 
 will required that all samples meet the minimum depth filter and then keep
 the subset of those that meet 2 out of the 3 `--gt-filters`.
+
+---------------
+``--where``
+---------------
+
+By default `gene_wise` limits to variants passing the clause: 
+
+`is_exonic = 1 AND impact_severity != 'LOW'`
+
+but this can be changed with the --where clause, e.g.:
+
+::
+
+    --where "(is_exonic = 1 or is_splicing = 1) AND impact_severity != 'LOW'"
 
 
 ===========================================================================

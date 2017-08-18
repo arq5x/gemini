@@ -2,9 +2,34 @@
 Release History
 #############################
 
-0.20.0 (future)
+0.21.0 (future)
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
+
+0.20.1
+======
+#. Allow `--gt-filter` to specify the gt_type, e.g. `(gt_quals).(=HET).(<20).(all)` (thanks Jessica for suggesting)
+#. Add `--gene-where` argument to `comp_hets` tool to dictate how variants are restricted to genes. (thanks Jessica for suggesting)
+#. genewise: don't show any variants that don't meet the required number of optional filters.
+#. Fix AF for decomposed gnomad variants (thanks @mbootwalla).
+
+0.20.0
+======
+#. Include gnomad exome allele frequencies for all populations and include these in calc of max_aaf_all.
+#. Initial support for python 3.
+#. Support annotating with bcftools BCSQ (http://biorxiv.org/content/early/2016/12/01/090811) in addition to VEP and SnpEff.
+#. Fix bug that resulted in the message: `UnsupportedOperation: IOStream has no fileno.` when loading. (Thanks Andrew O. and Ryan R.)
+#. Fix bug where gemini annotate would never finish (see: arq5x/gemini#809 (Thanks @mmoisse)
+#. Add extra columns from VEP when -t all is used (previously extra VEP columns were ignored under -t all. thanks @hoppman #816).
+#. Fix gemini annotate (would stop after updating 100K variants)
+#. Fix browser query report (thanks @Nmael see #818).
+#. Allow specifying a --where clause for `gene_wise` to filter considered variants. (Thanks Uma for suggestion).
+#. Fix bug in propagating vep-extras to variant_impacts table (Thanks Sergey for reporting).
+#. Update clinvar annotation.
+#. Add new `gemini load` flag `--skip-pls` which can give size reductions for the database and speed Improvements
+   for querying and loading. If you never use `gt_phred_ll_homalt/het/homref` then you can load with this flag.
+#. Add new `gt_alt_freqs` column which is `gt_alt_dephts / (gt_ref_depths + gt_alt_depths)`.
+#. Update CADD to v1.3
 
 0.19.1
 ======

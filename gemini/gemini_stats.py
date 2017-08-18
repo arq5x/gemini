@@ -1,13 +1,14 @@
 #!/usr/bin/env python
+from __future__ import absolute_import, print_function
 import numpy as np
 import collections
 from collections import Counter
-import compression as Z
+from . import compression as Z
 
 import sqlalchemy as sql
-import gemini_utils as util
-from gemini_constants import *
-import GeminiQuery
+from . import gemini_utils as util
+from .gemini_constants import *
+from . import GeminiQuery
 
 
 def get_tstv(conn, metadata, args):
@@ -29,11 +30,11 @@ def get_tstv(conn, metadata, args):
     res = conn.execute(sql.text(tv_cmd))
     tv = res.fetchone()[0]
     # report the transitions, transversions, and the ts/tv ratio
-    print "ts" + '\t' + \
-          "tv" + '\t' + "ts/tv"
-    print str(ts) + '\t' + \
+    print("ts" + '\t' + \
+          "tv" + '\t' + "ts/tv")
+    print(str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(tstv(ts, tv))
+        str(tstv(ts, tv)))
 
 
 def get_tstv_coding(conn, metadata, args):
@@ -59,11 +60,11 @@ def get_tstv_coding(conn, metadata, args):
     tv = res.fetchone()[0]
 
     # report the transitions, transversions, and the ts/tv ratio
-    print "ts" + '\t' + \
-          "tv" + '\t' + "ts/tv"
-    print str(ts) + '\t' + \
+    print("ts" + '\t' + \
+          "tv" + '\t' + "ts/tv")
+    print(str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(tstv(ts, tv))
+        str(tstv(ts, tv)))
 
 
 def get_tstv_noncoding(conn, metadata, args):
@@ -89,11 +90,11 @@ def get_tstv_noncoding(conn, metadata, args):
     tv = res.fetchone()[0]
 
     # report the transitions, transversions, and the ts/tv ratio
-    print "ts" + '\t' + \
-          "tv" + '\t' + "ts/tv"
-    print str(ts) + '\t' + \
+    print("ts" + '\t' + \
+          "tv" + '\t' + "ts/tv")
+    print(str(ts) + '\t' + \
         str(tv) + '\t' + \
-        str(tstv(ts, tv))
+        str(tstv(ts, tv)))
 
 
 def tstv(ts, tv):
@@ -116,10 +117,10 @@ def get_snpcounts(conn, metadata, args):
 
     # get the ref and alt alleles for all snps.
     res = conn.execute(sql.text(query))
-    print '\t'.join(['type', 'count'])
+    print('\t'.join(['type', 'count']))
     for row in res:
-        print '\t'.join([str(row['ref']) + "->" + str(row['alt']),
-                         str(row['count(1)'])])
+        print('\t'.join([str(row['ref']) + "->" + str(row['alt']),
+                         str(row['count(1)'])]))
 
 
 def get_sfs(conn, metadata, args):
@@ -132,9 +133,9 @@ def get_sfs(conn, metadata, args):
              GROUP BY round(aaf," + str(precision) + ")"
 
     res = conn.execute(sql.text(query))
-    print '\t'.join(['aaf', 'count'])
+    print('\t'.join(['aaf', 'count']))
     for row in res:
-        print '\t'.join([str(row[0]), str(row[1])])
+        print('\t'.join([str(row[0]), str(row[1])]))
 
 
 def get_mds(conn, metadata, args):
@@ -208,9 +209,9 @@ def get_mds(conn, metadata, args):
             mds[pair] = eucl_dist
 
     # report the pairwise MDS for each sample pair.
-    print "sample1\tsample2\tdistance"
+    print("sample1\tsample2\tdistance")
     for pair in mds:
-        print "\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair], 4))])
+        print("\t".join([str(pair[0]), str(pair[1]), str(round(mds[pair], 4))]))
 
 
 def get_variants_by_sample(conn, metadata, args):
@@ -221,7 +222,7 @@ def get_variants_by_sample(conn, metadata, args):
     idx_to_sample = util.map_indices_to_samples(metadata)
 
     # report.
-    print '\t'.join(['sample', 'total'])
+    print('\t'.join(['sample', 'total']))
 
     query = "SELECT sample_id, \
              (num_het + num_hom_alt) as total \
@@ -229,8 +230,8 @@ def get_variants_by_sample(conn, metadata, args):
     res = conn.execute(sql.text(query))
     for row in res:
         sample = idx_to_sample[row['sample_id'] - 1]
-        print "\t".join(str(s) for s in [sample,
-                                         row['total']])
+        print("\t".join(str(s) for s in [sample,
+                                         row['total']]))
 
 
 def get_gtcounts_by_sample(conn, metadata, args):
@@ -241,8 +242,8 @@ def get_gtcounts_by_sample(conn, metadata, args):
     idx_to_sample = util.map_indices_to_samples(metadata)
 
     # report.
-    print '\t'.join(['sample', 'num_hom_ref', 'num_het',
-                     'num_hom_alt', 'num_unknown', 'total'])
+    print('\t'.join(['sample', 'num_hom_ref', 'num_het',
+                     'num_hom_alt', 'num_unknown', 'total']))
 
     query = "SELECT *, \
              (num_hom_ref + num_het + num_hom_alt + num_unknown) as total \
@@ -251,12 +252,12 @@ def get_gtcounts_by_sample(conn, metadata, args):
     # count the number of each genotype type obs. for each sample.
     for row in res:
         sample = idx_to_sample[row['sample_id'] -1]
-        print "\t".join(str(s) for s in [sample,
+        print("\t".join(str(s) for s in [sample,
                                          row['num_hom_ref'],
                                          row['num_het'],
                                          row['num_hom_alt'],
                                          row['num_unknown'],
-                                         row['total']])
+                                         row['total']]))
 
 
 def summarize_query_by_sample(args):
@@ -266,7 +267,8 @@ def summarize_query_by_sample(args):
     het_counts = Counter()
     hom_alt_counts = Counter()
     hom_ref_counts = Counter()
-    print "\t".join(["sample", "total", "num_het", "num_hom_alt", "num_hom_ref"])
+    print("\t".join(["sample", "total", "num_het", "num_hom_alt",
+                     "num_hom_ref"]))
     for row in gq:
         total_counts.update(row["variant_samples"])
         het_counts.update(row["het_samples"])
@@ -275,12 +277,12 @@ def summarize_query_by_sample(args):
     for key in total_counts.keys():
         count_row = [key, total_counts.get(key, 0), het_counts.get(key, 0),
                      hom_alt_counts.get(key, 0), hom_ref_counts.get(key, 0)]
-        print "\t".join(map(str, count_row))
+        print("\t".join(map(str, count_row)))
 
 
 def stats(parser, args):
 
-    import database
+    from . import database
     conn, metadata = database.get_session_metadata(args.db)
 
     if args.tstv:

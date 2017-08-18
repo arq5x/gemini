@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function, absolute_import
 
 # native Python imports
 import os.path
@@ -14,17 +15,17 @@ import geneimpacts
 import cyvcf2 as vcf
 
 # gemini modules
-import version
-from ped import load_ped_file
-import gene_table
-import infotag
-import database
-import annotations
-import popgen
-import structural_variants as svs
-from gemini_constants import *
-from compression import pack_blob
-from gemini.config import read_gemini_config
+from . import version
+from .ped import load_ped_file
+from . import gene_table
+from . import infotag
+from . import database
+from . import annotations
+from . import popgen
+from . import structural_variants as svs
+from .gemini_constants import *
+from .compression import pack_blob
+from .config import read_gemini_config
 
 class empty(object):
     def __getattr__(self, key):
@@ -69,7 +70,8 @@ def load_clinvar(cpath):
         info = v.INFO
         gene = info.get('GENEINFO')
         if gene is None: continue
-        diseases = [x.decode('utf8', 'ignore').encode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
+        #diseases = [x.decode('utf8', 'ignore').encode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
+        diseases = [x.encode('ascii', 'ignore').decode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
         if diseases == []: continue
 
         genes = [x.split(":")[0] for x in gene.split("|")]
@@ -98,11 +100,22 @@ class GeminiLoader(object):
         self.vcf_reader = self._get_vcf_reader()
         # load sample information
         expected = "consequence,codons,amino_acids,gene,symbol,feature,exon,polyphen,sift,protein_position,biotype,warning".split(",")
+        self._effect_fields = []
+        self._extra_effect_fields = []
 
         if self.args.anno_type == "VEP":
             self._effect_fields = self._get_vep_csq(self.vcf_reader)
             # tuples of (db_column, CSQ name)
             self._extra_effect_fields = [("vep_%s" % x.lower(), x) for x in self._effect_fields if not x.lower() in expected]
+        elif self.args.anno_type == "all":
+            try:
+                self.vcf_reader["CSQ"]
+            except KeyError:
+                pass
+            else:
+                self._effect_fields = self._get_vep_csq(self.vcf_reader)
+                # tuples of (db_column, CSQ name)
+                self._extra_effect_fields = [("vep_%s" % x.lower(), x) for x in self._effect_fields if not x.lower() in expected]
 
         else:
             self._effect_fields = []
@@ -181,12 +194,17 @@ class GeminiLoader(object):
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(", reader["EFF"]["Description"].split(":", 1)[1].strip())]
                 anno_keys["EFF"] = parts
             else:
-                print "snpEff header not found"
+                print("snpEff header not found")
         if self.args.anno_type in ("VEP", "all"):
             if "CSQ" in reader:
                 parts = [x.strip(" [])'(\"") for x in re.split("\||\(",
                                                                reader["CSQ"]["Description"].split(":", 1)[1].strip())]
                 anno_keys["CSQ"] = parts
+        if self.args.anno_type in ("BCFT", "all"):
+            if "BCSQ" in reader:
+                desc = reader["BCSQ"]["Description"]
+                parts = desc.split(']', 1)[1].split(']')[0].replace('[','').split("|")
+                anno_keys['BCSQ'] = parts
 
         # process and load each variant in the VCF file
         for var in self.vcf_reader:
@@ -198,9 +216,7 @@ class GeminiLoader(object):
             if self.args.passonly and (var.FILTER is not None and var.FILTER != "."):
                 self.skipped += 1
                 continue
-            (variant, variant_impacts, extra_fields) = self._prepare_variation(var, anno_keys)
-            variant.update(extra_fields)
-            [v_.update(extra_fields) for v_ in variant_impacts]
+            (variant, variant_impacts) = self._prepare_variation(var, anno_keys)
             obj_buffer.append(var)
             # add the core variant info to the variant buffer
             self.var_buffer.append(variant)
@@ -294,6 +310,14 @@ class GeminiLoader(object):
                 self.args.raw_version = toks[0]  # *version*, etc
             # e.g., 3.0a -> 3
             self.args.maj_version = int(self.args.raw_version.split('.')[0])
+        elif self.args.anno_type == "BCFT":
+            ##bcftools/csqVersion=1.3.1-179-gd7f6692+htslib-1.3.2-138-g4811eab
+            lines = self.vcf_reader.raw_header.split("\n")
+            try:
+                x = next(l for l in lines if l.startswith("##bcftools/csqVersion"))
+                self.args.raw_version = x[len("##bcftools/csqVersion="):]
+            except StopIteration:
+                pass
 
         elif self.args.anno_type == "VEP":
             pass
@@ -330,7 +354,7 @@ class GeminiLoader(object):
         db_path = self.args.db if not hasattr(self.args, 'tmp_db') else self.args.tmp_db
         if os.path.exists(db_path):
             os.remove(db_path)
-        self.c, self.metadata = database.create_tables(db_path, effect_fields or [])
+        self.c, self.metadata = database.create_tables(db_path, effect_fields or [], not self.args.skip_pls)
         session = self.c
         if session.bind.name == "sqlite":
             self.c.execute('PRAGMA synchronous=OFF')
@@ -396,6 +420,7 @@ class GeminiLoader(object):
             cosmic_ids = annotations.get_cosmic_info(var)
             fitcons = annotations.get_fitcons(var)
             Exac = annotations.get_exac_info(var)
+            gnomad = annotations.get_gnomad_info(var)
 
             #load CADD scores by default
             if self.args.skip_cadd is False:
@@ -421,6 +446,7 @@ class GeminiLoader(object):
             esp = annotations.ESPInfo(False, -1, -1, -1, 0)
             thousandG = annotations.EMPTY_1000G
             Exac = annotations.EXAC_EMPTY
+            gnomad = annotations.GNOMAD_EMPTY
             recomb_rate = None
             gms = annotations.GmsTechs(None, None, None)
             grc = None
@@ -448,6 +474,12 @@ class GeminiLoader(object):
                         impacts += [geneimpacts.OldSnpEff(e, anno_keys["EFF"]) for e in var.INFO["EFF"].split(",")]
                     elif "ANN" in anno_keys:
                         impacts += [geneimpacts.SnpEff(e, anno_keys["ANN"]) for e in var.INFO["ANN"].split(",")]
+                except KeyError:
+                    pass
+
+            if self.args.anno_type in ("all", "BCFT"):
+                try:
+                    impacts += [geneimpacts.BCFT(e, anno_keys["BCSQ"]) for e in var.INFO["BCSQ"].split(",")]
                 except KeyError:
                     pass
 
@@ -492,17 +524,19 @@ class GeminiLoader(object):
             gt_depths = var.gt_depths
             gt_ref_depths = var.gt_ref_depths
             gt_alt_depths = var.gt_alt_depths
+            gt_alt_freqs = var.gt_alt_freqs
             gt_quals = var.gt_quals
             #gt_copy_numbers = np.array(var.gt_copy_numbers, np.float32)  # 1.0 2.0 2.1 -1
             gt_copy_numbers = None
-            gt_phred_ll_homref = var.gt_phred_ll_homref
-            gt_phred_ll_het = var.gt_phred_ll_het
-            gt_phred_ll_homalt = var.gt_phred_ll_homalt
+            if not self.args.skip_pls:
+                gt_phred_ll_homref = var.gt_phred_ll_homref
+                gt_phred_ll_het = var.gt_phred_ll_het
+                gt_phred_ll_homalt = var.gt_phred_ll_homalt
             # tally the genotypes
             self._update_sample_gt_counts(gt_types)
         else:
             gt_bases = gt_types = gt_phases = gt_depths = gt_ref_depths = None
-            gt_alt_depths = gt_quals = gt_copy_numbers = None
+            gt_alt_freqs = gt_alt_depths = gt_quals = gt_copy_numbers = None
 
         if self.args.skip_info_string:
             info = None
@@ -512,32 +546,12 @@ class GeminiLoader(object):
         assert isinstance(thousandG.aaf_AMR, (int, float))
         # were functional impacts predicted by SnpEFF or VEP?
         # if so, build up a row for each of the impacts / transcript
-        variant_impacts = []
-        for idx, impact in enumerate(impacts or [], start=1):
-
-            var_impact = dict(variant_id=self.v_id, anno_id=idx, gene=impact.gene,
-                          transcript=impact.transcript, is_exonic=impact.is_exonic,
-                          is_coding=impact.is_coding, is_lof=impact.is_lof,
-                          is_splicing=impact.is_splicing,
-                          exon=impact.exon, codon_change=impact.codon_change,
-                          aa_change=impact.aa_change, aa_length=impact.aa_length,
-                          biotype=impact.biotype, impact=impact.top_consequence,
-                          impact_so=impact.so, impact_severity=impact.effect_severity,
-                          polyphed_pred=impact.polyphen_pred, polyphen_score=impact.polyphen_score,
-                          sift_pred=impact.sift_pred,
-                          sift_score=impact.sift_score)
-            variant_impacts.append(var_impact)
 
         # extract structural variants
         sv = svs.StructuralVariant(var)
         ci_left = sv.get_ci_left()
         ci_right = sv.get_ci_right()
 
-        if top_impact is not empty:
-            for dbkey, infokey in self._extra_effect_fields:
-                extra_fields[dbkey] = top_impact.effects[infokey]
-                if dbkey.endswith("_num"):
-                    extra_fields[dbkey] = float(extra_fields[dbkey])
         # construct the core variant record.
         # 1 row per variant to VARIANTS table
         variant = dict(chrom=chrom, start=var.start, end=var.end,
@@ -548,10 +562,8 @@ class GeminiLoader(object):
                    gt_types=pack_blob(gt_types),
                    gt_phases=pack_blob(gt_phases), gt_depths=pack_blob(gt_depths),
                    gt_ref_depths=pack_blob(gt_ref_depths), gt_alt_depths=pack_blob(gt_alt_depths),
+                   gt_alt_freqs=pack_blob(gt_alt_freqs),
                    gt_quals=pack_blob(gt_quals), gt_copy_numbers=pack_blob(gt_copy_numbers),
-                   gt_phred_ll_homref=pack_blob(gt_phred_ll_homref),
-                   gt_phred_ll_het=pack_blob(gt_phred_ll_het),
-                   gt_phred_ll_homalt=pack_blob(gt_phred_ll_homalt),
                    call_rate=call_rate, in_dbsnp=bool(in_dbsnp),
                    rs_ids=rs_ids,
 
@@ -665,7 +677,28 @@ class GeminiLoader(object):
                    aaf_adj_exac_sas=Exac.aaf_SAS,
                    exac_num_het=Exac.num_het,
                    exac_num_hom_alt=Exac.num_hom_alt,
-                   exac_num_chroms=Exac.num_chroms)
+                   exac_num_chroms=Exac.num_chroms,
+
+                   aaf_gnomad_all=gnomad.aaf_ALL,
+                   aaf_gnomad_afr=gnomad.aaf_AFR,
+                   aaf_gnomad_amr=gnomad.aaf_AMR,
+                   aaf_gnomad_asj=gnomad.aaf_ASJ,
+                   aaf_gnomad_eas=gnomad.aaf_EAS,
+                   aaf_gnomad_fin=gnomad.aaf_FIN,
+                   aaf_gnomad_nfe=gnomad.aaf_NFE,
+                   aaf_gnomad_oth=gnomad.aaf_OTH,
+                   aaf_gnomad_sas=gnomad.aaf_SAS,
+
+                   gnomad_num_het=gnomad.num_het,
+                   gnomad_num_hom_alt=gnomad.num_hom_alt,
+                   gnomad_num_chroms=gnomad.num_chroms,
+
+
+                   )
+        if not self.args.skip_pls:
+           variant['gt_phred_ll_homref'] = pack_blob(gt_phred_ll_homref)
+           variant['gt_phred_ll_het'] = pack_blob(gt_phred_ll_het)
+           variant['gt_phred_ll_homalt'] = pack_blob(gt_phred_ll_homalt)
 
         variant['max_aaf_all'] = max(-1,
                                      variant['aaf_esp_ea'],
@@ -679,10 +712,48 @@ class GeminiLoader(object):
                                      variant['aaf_adj_exac_amr'],
                                      variant['aaf_adj_exac_eas'],
                                      variant['aaf_adj_exac_nfe'],
-                                     variant['aaf_adj_exac_sas'])
+                                     variant['aaf_adj_exac_sas'],
+
+                                     variant['aaf_gnomad_afr'],
+                                     variant['aaf_gnomad_amr'],
+                                     variant['aaf_gnomad_eas'],
+                                     variant['aaf_gnomad_nfe'],
+                                     variant['aaf_gnomad_sas'],
+                                     )
 
         variant.update(self._extra_empty)
-        return variant, variant_impacts, extra_fields
+
+        variant_impacts = []
+        for idx, impact in enumerate(impacts or [], start=1):
+            is_top = impact == top_impact
+
+            var_impact = dict(variant_id=self.v_id, anno_id=idx, gene=impact.gene,
+                          transcript=impact.transcript, is_exonic=impact.is_exonic,
+                          is_coding=impact.is_coding, is_lof=impact.is_lof,
+                          is_splicing=impact.is_splicing,
+                          exon=impact.exon, codon_change=impact.codon_change,
+                          aa_change=impact.aa_change, aa_length=impact.aa_length,
+                          biotype=impact.biotype, impact=impact.top_consequence,
+                          impact_so=impact.so, impact_severity=impact.effect_severity,
+                          polyphed_pred=impact.polyphen_pred, polyphen_score=impact.polyphen_score,
+                          sift_pred=impact.sift_pred,
+                          sift_score=impact.sift_score)
+            for dbkey, infokey in self._extra_effect_fields:
+                if not infokey in impact.effects: continue
+                if dbkey[-1] == "m" and dbkey.endswith("_num"):
+                    try:
+                        var_impact[dbkey] = float(impact.effects[infokey])
+                        if is_top: variant[dbkey] = float(impact.effects[infokey])
+                    except ValueError:
+                        var_impact[dbkey] = None
+                        if is_top: variant[dbkey] = None
+                else:
+                    var_impact[dbkey] = impact.effects[infokey]
+                    if is_top: variant[dbkey] = impact.effects[infokey]
+
+            variant_impacts.append(var_impact)
+
+        return variant, variant_impacts
 
     def _prepare_samples(self):
         """
@@ -822,7 +893,7 @@ def load(parser, args):
     if (args.db is None or args.vcf is None):
         parser.print_help()
         exit("ERROR: load needs both a VCF file and a database file\n")
-    if args.anno_type not in ['snpEff', 'VEP', None, "all"]:
+    if args.anno_type not in ['snpEff', 'VEP', 'BCFT', None, "all"]:
         parser.print_help()
         exit("\nERROR: Unsupported selection for -t\n")
 
@@ -850,7 +921,7 @@ def load(parser, args):
             if try_count > 0:
                 shutil.move(args.tmp_db, args.db)
             break
-        except sql.exc.OperationalError, e:
+        except sql.exc.OperationalError as e:
             sys.stderr.write("sqlalchemy.OperationalError: %s\n" % e)
     else:
         raise Exception(("Attempted workaround for SQLite locking issue on NFS "

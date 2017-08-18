@@ -17,10 +17,9 @@ Chrom	Pos	Ref	RawScore	PHRED
 1	10002	A	-0.64,-0.65,-0.53	1.17,1.15,1.57
 
 
-#compression
-zcat whole_genome_SNVs.tsv.gz | grep -v "^#" | awk '{printf("%s\t%d\t%s\t%s\t%0.2f\t%0.2f\n",$1,$2,$3,$4,$5,$6)}' \
-| bedtools groupby -g 1,2,3 -c 5,6 -o collapse,collapse | bgzip > whole_genome_SNVs.tsv.compressed.gz
 
-#index
+wget -O - http://krishna.gs.washington.edu/download/CADD/v1.3/whole_genome_SNVs.tsv.gz \
+    | zgrep -v ^# \
+    | awk '{printf("%s\t%d\t%s\t%s\t%0.2f\t%0.2f\n",$1,$2,$3,$4,$5,$6)}' \
+    | bedtools groupby -g 1,2,3 -c 5,6 -o collapse,collapse | bgzip -c > whole_genome_SNVs.tsv.compressed.gz
 tabix -b 2 -e 2 whole_genome_SNVs.tsv.compressed.gz
-

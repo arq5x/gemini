@@ -17,6 +17,7 @@ It is using carray rather than ctable because with ctable, we'd be limited to
 samples on ext3. These limits are not an issue for ext4.
 
 """
+from __future__ import absolute_import
 
 import os
 import sys
@@ -32,10 +33,10 @@ import numexpr as ne
 bcolz.blosc_set_nthreads(2)
 ne.set_num_threads(2)
 import sqlalchemy as sql
-import database
+from . import database
 
-import compression
-from gemini_utils import get_gt_cols
+from . import compression
+from .gemini_utils import get_gt_cols
 
 def get_samples(metadata):
     return [x['name'] for x in metadata.tables['samples'].select().order_by("sample_id").execute()]
@@ -57,6 +58,7 @@ gt_cols_types = (
     ('gt_depths', np.int32),
     ('gt_ref_depths', np.int32),
     ('gt_alt_depths', np.int32),
+    ('gt_alt_freqs', np.float32),
     ('gt_quals', np.float32),
     ('gt_copy_numbers', np.int32),
     ('gt_phred_ll_homref', np.int32),
@@ -73,9 +75,9 @@ def mkdir(path):
 def create(db, cols=None):
     if cols is None:
         cols = [x[0] for x in gt_cols_types if x[0] != 'gts']
-        print >>sys.stderr, (
+        sys.stderr.write(
                 "indexing all columns except 'gts'; to index that column, "
-                "run gemini bcolz_index %s --cols gts" % db)
+                "run gemini bcolz_index %s --cols gts\n" % db)
 
     conn, metadata = database.get_session_metadata(db)
     gt_cols = [x for x in get_gt_cols(metadata) if x in cols]
@@ -136,18 +138,19 @@ def create(db, cols=None):
                         carrays[gt_col][isamp].flush()
 
             if i % step == 0 and i > 0:
-                print >>sys.stderr, "at %.1fM (%.0f rows / second)" % (i / 1000000., i / float(time.time() - t0))
+                sys.stderr.write("at %.1fM (%.0f rows / second)\n" % (i / 1000000., i / float(time.time() - t0)))
 
         t = float(time.time() - t0)
-        print >>sys.stderr, "loaded %d variants at %.1f / second" % (len(carrays[gt_col][0]), nv / t)
+        sys.stderr.write("loaded %d variants at %.1f / second\n" %
+                         (len(carrays[gt_col][0]), nv / t))
     except:
         # on error, we remove the dirs so we can't have weird problems.
         for k, li in carrays.items():
             for i, ca in enumerate(li):
                 if i < 5:
-                    print >>sys.stderr, "removing:", ca.rootdir
+                    sys.stderr("removing: %s\n" % ca.rootdir)
                 if i == 5:
-                    print >>sys.stderr, "not reporting further removals for %s" % k
+                    sys.stderr("not reporting further removals for %s\n" % k)
                 ca.flush()
                 shutil.rmtree(ca.rootdir)
         raise
@@ -159,7 +162,6 @@ class NoGTIndexException(Exception):
 # TODO: since we call this from query, we can improve speed by only loading
 # samples that appear in the query with an optional query=None arg to load.
 def load(db, query=None):
-    import database
 
     t0 = time.time()
     conn, metadata = database.get_session_metadata(db)
@@ -183,8 +185,8 @@ def load(db, query=None):
                 carrays[gtc].append(bcolz.open(path, mode="r"))
                 n += 1
     if os.environ.get("GEMINI_DEBUG") == "TRUE":
-        print >>sys.stderr, "it took %.2f seconds to load %d arrays" \
-            % (time.time() - t0, n)
+        sys.stderr.write("it took %.2f seconds to load %d arrays\n" \
+            % (time.time() - t0, n))
     return carrays
 
 def fix_sample_name(s):
@@ -213,7 +215,6 @@ def filter(db, query, user_dict):
     query = " & ".join("(%s)" % token for token in query.split(" and "))
     query = " | ".join("(%s)" % token for token in query.split(" or "))
 
-    import database
     conn, metadata = database.get_session_metadata(db)
     samples = get_samples(metadata)
     # convert gt_col[index] to gt_col__sample_name
@@ -227,7 +228,7 @@ def filter(db, query, user_dict):
 
     query = re.sub(patt, subfn, query)
     if os.environ.get('GEMINI_DEBUG') == 'TRUE':
-        print >>sys.stderr, query[:250] + "..."
+        sys.stderr.write(query[:250] + "...\n")
     carrays = load(db, query=query)
 
     if len(carrays) == 0 or max(len(carrays[c]) for c in carrays) == 0 or \
@@ -280,8 +281,8 @@ if __name__ == "__main__":
     else:
         q = "gt_types.1094PC0012 == HET and gt_types.1719PC0016 == HET and gts.1094PC0012 == 'A/C'"
 
-    print filter(db, carrays, q, user_dict=dict(HET=1, HOM_REF=0, HOM_ALT=3,
-        UNKNOWN=2))
-    print "compare to:", ("""gemini query -q "select variant_id, gts.1719PC0016 from variants" """
-                          """ --gt-filter "%s" %s""" % (q, db))
+    print(filter(db, carrays, q, user_dict=dict(HET=1, HOM_REF=0, HOM_ALT=3,
+        UNKNOWN=2)))
+    print("compare to:", ("""gemini query -q "select variant_id, gts.1719PC0016 from variants" """
+                          """ --gt-filter "%s" %s""" % (q, db)))
 

@@ -1,9 +1,17 @@
 #!/usr/bin/env python
+from __future__ import absolute_import, print_function
 
 import os
 import sys
 import re
-import compiler
+try:
+    from compiler import compile
+except ImportError:
+    unicode = str
+    pass
+
+PY3 = sys.version_info[0] ==  3
+
 import collections
 import json
 import abc
@@ -13,16 +21,16 @@ flatten = chain.from_iterable
 
 # gemini imports
 import sqlalchemy as sql
-import gemini_utils as util
-import database
-from gemini_constants import HOM_REF, HET, HOM_ALT, UNKNOWN
+from . import gemini_utils as util
+from . import database
+from .gemini_constants import HOM_REF, HET, HOM_ALT, UNKNOWN
 
-from gemini_utils import (OrderedSet, itersubclasses)
-from gemini_subjects import Subject
+from .gemini_utils import (OrderedSet, itersubclasses)
+from .gemini_subjects import Subject
 from .pdict import PDict
-import compression
-from sql_utils import ensure_columns, get_select_cols_and_rest
-from gemini_subjects import get_subjects
+from . import compression
+from .sql_utils import ensure_columns, get_select_cols_and_rest
+from .gemini_subjects import get_subjects
 
 class GeminiError(Exception):
     pass
@@ -73,8 +81,7 @@ class DefaultRowFormat(RowFormat):
         pass
 
     def format(self, row):
-        r = row.print_fields
-        return '\t'.join(str(v.encode('utf-8') if isinstance(v, (str, unicode)) else v) if not isinstance(v, np.ndarray) else ",".join(map(str, v)) for v in r._vals)
+        return str(row.print_fields)
 
     def format_query(self, query):
         return query
@@ -167,7 +174,7 @@ class TPEDRowFormat(RowFormat):
     name = "tped"
     NULL_GENOTYPES = ["."]
     PED_MISSING = ["0", "0"]
-    VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
+    VALID_CHROMOSOMES = list(map(str, range(1, 23))) + ["X", "Y", "XY", "MT"]
     POSSIBLE_HAPLOID = ["X", "Y"]
 
     def __init__(self, args):
@@ -177,14 +184,14 @@ class TPEDRowFormat(RowFormat):
         self.samples = [gq.idx_to_sample_object[x] for x in range(len(subjects))]
 
     def format(self, row):
-        VALID_CHROMOSOMES = map(str, range(1, 23)) + ["X", "Y", "XY", "MT"]
+        VALID_CHROMOSOMES = list(map(str, range(1, 23))) + ["X", "Y", "XY", "MT"]
         chrom = row['chrom'].split("chr")[1]
         chrom = chrom if chrom in VALID_CHROMOSOMES else "0"
         start = str(row.row['start'])
         end = str(row.row['end'])
         ref = row['ref']
         alt = row['alt']
-        geno = [re.split('\||/', x) for x in row['gts']]
+        geno = [re.split('\||/', util.to_str(x)) for x in row['gts']]
         geno = [self._fix_genotype(chrom, start, genotype, self.samples[i].sex)
                 for i, genotype in enumerate(geno)]
         genotypes = " ".join(list(flatten(geno)))
@@ -197,7 +204,10 @@ class TPEDRowFormat(RowFormat):
 
 
     def predicate(self, row, _splitter=re.compile("\||/")):
-        geno = [_splitter.split(x) for x in row['gts']]
+        if PY3:
+            geno = [_splitter.split(util.to_str(x)) for x in row['gts']]
+        else:
+            geno = [_splitter.split(x) for x in row['gts']]
         geno = list(flatten(geno))
         num_alleles = len(set(geno).difference(self.NULL_GENOTYPES))
         return num_alleles > 0 and num_alleles <= 2 and row['type'] != "sv"
@@ -306,7 +316,7 @@ class VCFRowFormat(RowFormat):
         vcf_rec += [istr(row['info']), 'GT']
 
         # construct genotypes
-        gts = list(row['gts'])
+        gts = [util.to_str(r) for r in row['gts']]
         gt_types = list(row['gt_types'])
         gt_phases = list(row['gt_phases'])
         for idx, gt_type in enumerate(gt_types):
@@ -339,7 +349,7 @@ class VCFRowFormat(RowFormat):
         """
         try:
             self.gq.run('select vcf_header from vcf_header')
-            return str(self.gq.next()).strip()
+            return str(next(self.gq)).strip()
         except:
             raise ValueError("Your database does not contain the vcf_header table. Therefore, you cannot use --header.\n")
 
@@ -437,6 +447,8 @@ class GeminiRow(object):
         elif key in self.query.gt_cols:
             if key not in self.cache:
                 self.cache[key] = self.unpack(self.row[key])
+                if PY3 and key == 'gts':
+                    self.cache[key] = self.cache[key].astype(str)
             return self.cache[key]
         raise KeyError(key)
 
@@ -448,12 +460,15 @@ class GeminiRow(object):
 
     def __repr__(self):
         return self.formatter.format(self)
+    __str__ = __repr__
 
     def next(self):
         try:
             return self.row.keys()
         except:
             raise StopIteration
+
+    __next__ = next
 
 
 class GeminiQuery(object):
@@ -472,13 +487,13 @@ class GeminiQuery(object):
     the results by using the ``run()`` method::
 
         for row in gq:
-            print row
+            print(row)
 
     Instead of printing the entire row, one access print specific columns::
 
         gq.run("select chrom, start, end from variants")
         for row in gq:
-            print row['chrom']
+            print(row['chrom'])
 
     Also, all of the underlying numpy genotype arrays are
     always available::
@@ -486,7 +501,7 @@ class GeminiQuery(object):
         gq.run("select chrom, start, end from variants")
         for row in gq:
             gts = row.gts
-            print row['chrom'], gts
+            print(row['chrom'], gts)
             # yields "chr1" ['A/G' 'G/G' ... 'A/G']
 
     The ``run()`` methods also accepts genotype filter::
@@ -495,7 +510,7 @@ class GeminiQuery(object):
         gt_filter = "gt_types.NA20814 == HET"
         gq.run(query)
         for row in gq:
-            print row
+            print(row)
 
     Lastly, one can use the ``sample_to_idx`` and ``idx_to_sample``
     dictionaries to gain access to sample-level genotype information
@@ -509,13 +524,13 @@ class GeminiQuery(object):
         gq.run(query, gt_filter)
 
         # print a header listing the selected columns
-        print gq.header
+        print(gq.header)
         for row in gq:
             # access a NUMPY array of the sample genotypes.
             gts = row['gts']
             # use the smp2idx dict to access sample genotypes
             idx = smp2idx['NA20814']
-            print row, gts[idx]
+            print(row, gts[idx])
     """
 
     def __init__(self, db, include_gt_cols=False,
@@ -617,7 +632,7 @@ class GeminiQuery(object):
             # here's how we use the fast
             if self.variant_id_getter:
                 if os.environ.get('GEMINI_DEBUG') == 'TRUE':
-                    print >>sys.stderr, "bcolz: using index"
+                    sys.stderr.write("bcolz: using index\n")
 
                 user_dict = dict(HOM_REF=0, HET=1, UNKNOWN=2, HOM_ALT=3,
                                  sample_info=self.sample_info,
@@ -626,14 +641,14 @@ class GeminiQuery(object):
                 t0 = time.time()
                 vids = self.variant_id_getter(self.db, self.gt_filter, user_dict)
                 if vids is None:
-                    print >>sys.stderr, "bcolz: can't parse this filter (falling back to gemini): %s" % self.gt_filter
+                    sys.stderr.write("bcolz: can't parse this filter (falling back to gemini): %s\n" % self.gt_filter)
                 else:
                     if os.environ.get('GEMINI_DEBUG') == 'TRUE':
-                        print >>sys.stderr, "bcolz: %.2f seconds to get %d rows." % (time.time() - t0, len(vids))
+                        sys.stderr.write("bcolz: %.2f seconds to get %d rows.\n" % (time.time() - t0, len(vids)))
                     self.add_vids_to_query(vids)
 
         if self.gt_filter:
-            self.gt_filter_compiled = compiler.compile(self.gt_filter, self.gt_filter, 'eval')
+            self.gt_filter_compiled = compile(self.gt_filter, self.gt_filter, 'eval')
 
         self.result_proxy = res = iter(self._apply_query())
         self.query_executed = True
@@ -678,7 +693,7 @@ class GeminiQuery(object):
             gq = GeminiQuery("my.db")
             s2i = gq.sample2index
 
-            print s2i['NA20814']
+            print(s2i['NA20814'])
             # yields 1088
         """
         return self.sample_to_idx
@@ -692,7 +707,7 @@ class GeminiQuery(object):
             gq = GeminiQuery("my.db")
             i2s = gq.index2sample
 
-            print i2s[1088]
+            print(i2s[1088])
             # yields "NA20814"
         """
         return self.idx_to_sample
@@ -704,7 +719,7 @@ class GeminiQuery(object):
         # we use a while loop since we may skip records based upon
         # genotype filters.  if we need to skip a record, we just
         # throw a continue and keep trying. the alternative is to just
-        # recursively call self.next() if we need to skip, but this
+        # recursively call next(self) if we need to skip, but this
         # can quickly exceed the stack.
         while (1):
             try:
@@ -719,7 +734,8 @@ class GeminiQuery(object):
             if self.gt_filter:
                 try:
                     if 'False' == self.gt_filter: continue
-                    unpacked = {'sample_info': self.sample_info}
+                    unpacked = {'sample_info': self.sample_info, 'HET': HET,
+                            'HOM_REF': HOM_REF, 'HOM_ALT': HOM_ALT}
                     for col in self.gt_cols:
                         if col in self.gt_filter:
                             unpacked[col] = row[col]
@@ -789,6 +805,7 @@ class GeminiQuery(object):
                         print_fields=fields, unpacker=self.unpacker)
             else:
                 return fields
+    __next__ = next
 
     def _filter_samples(self, samples):
         """Respect --sample-filter when outputting lists of sample information.
@@ -862,7 +879,7 @@ class GeminiQuery(object):
             res = self.conn.execute(sql.text(self.query))
         except sql.exc.OperationalError as e:
             msg = "SQL error: {0}\n".format(e)
-            print msg
+            print(msg)
             sys.stderr.write(msg)
             raise ValueError("The query issued (%s) has a syntax error." % self.query)
         return res
@@ -1026,21 +1043,29 @@ class GeminiQuery(object):
                 if token.count('.') != 3 or \
                    token.count('(') != 4 or \
                    token.count(')') != 4:
+                    toks = token.split(".")
                     raise ValueError("Wildcard filter should consist of 4 elements. Exiting.")
-
                 (column, wildcard, wildcard_rule, wildcard_op) = token.split('.')
 
                 # remove the syntactic parentheses
                 column = column.strip('(').strip(')').strip()
+                # allow commands like (gt_quals).(=HET).(>=20).(all)
                 wildcard = wildcard.strip('(').strip(')').strip()
+                is_gt_expression = "=HET" == wildcard or "=HOM_REF" == wildcard or "=HOM_ALT" == wildcard
+
                 wildcard_rule = wildcard_rule.strip('(').strip(')').strip()
                 wildcard_op = wildcard_op.strip('(').strip(')').strip()
+                extra_filter = None
 
                 # collect and save all of the samples that meet the wildcard criteria
                 # for each clause.
                 # these will be used in the list comprehension for the eval expression
                 # constructed below.
-                self.sample_info[token_idx] = self._get_matching_sample_ids(wildcard)
+                if is_gt_expression:
+                    self.sample_info[token_idx] = self._get_matching_sample_ids("*")
+                    extra_filter = " if gt_types[sample[0]] == %s" % wildcard[1:]
+                else:
+                    self.sample_info[token_idx] = self._get_matching_sample_ids(wildcard)
 
                 # Replace HET, etc. with 1, et.c to avoid eval() issues.
                 wildcard_rule = _swap_genotype_for_number(wildcard_rule)
@@ -1049,16 +1074,19 @@ class GeminiQuery(object):
                 if wildcard_op in ["all", "any"]:
                     if self.variant_id_getter:
                         joiner = " and " if wildcard_op == "all" else " or "
-                        rule = joiner.join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
+                        rule = joiner.join("{column}[{sample}]{rule}".format(column=column, sample=s[0],
+                                                                             rule=wildcard_rule) for s in self.sample_info[token_idx])
                         rule = "(" + rule + ")"
                     else:
-                        rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
+                        rule = wildcard_op + "(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "]%s)"
+                        rule %= (extra_filter or "")
                 elif wildcard_op == "none":
                     if self.variant_id_getter:
                         rule = " or ".join("%s[%s]%s" % (column, s[0], wildcard_rule) for s in self.sample_info[token_idx])
                         rule = "~ ((" + rule + "))"
                     else:
-                        rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])"
+                        rule = "not any(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "]%s)"
+                        rule %= (extra_filter or "")
                 elif "count" in wildcard_op:
                     # break "count>=2" into ['', '>=2']
                     tokens = wildcard_op.split('count')
@@ -1068,7 +1096,8 @@ class GeminiQuery(object):
                         rule = "%s|count|%s" % (rule, count_comp.strip())
                         seen_count = True
                     else:
-                        rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "])" + count_comp
+                        rule = "sum(" + column + '[sample[0]]' + wildcard_rule + " for sample in sample_info[" + str(token_idx) + "]%s)" + count_comp
+                        rule %= (extra_filter or "")
                 else:
                     raise ValueError("Unsupported wildcard operation: (%s). Exiting." % wildcard_op)
 
@@ -1321,58 +1350,58 @@ if __name__ == "__main__":
 
     gq = GeminiQuery(db)
 
-    print "test a basic query with no genotypes"
+    print("test a basic query with no genotypes")
     query = "select chrom, start, end from variants limit 5"
     gq.run(query)
     for row in gq:
-        print row
+        print(row)
 
-    print "test a basic query with no genotypes using a header"
+    print("test a basic query with no genotypes using a header")
     query = "select chrom, start, end from variants limit 5"
     gq.run(query)
-    print gq.header
+    print(gq.header)
     for row in gq:
-        print row
+        print(row)
 
-    print "test query that selects a sample genotype"
+    print("test query that selects a sample genotype")
     query = "select chrom, start, end, gts.NA20814 from variants limit 5"
     gq.run(query)
     for row in gq:
-        print row
+        print(row)
 
-    print "test query that selects a sample genotype and uses a header"
+    print("test query that selects a sample genotype and uses a header")
     query = "select chrom, start, end, gts.NA20814 from variants limit 5"
     gq.run(query)
-    print gq.header
+    print(gq.header)
     for row in gq:
-        print row
+        print(row)
 
-    print "test query that selects and _filters_ on a sample genotype"
+    print("test query that selects and _filters_ on a sample genotype")
     query = "select chrom, start, end, gts.NA20814 from variants limit 50"
     db_filter = "gt_types.NA20814 == HET"
     gq.run(query, db_filter)
     for row in gq:
-        print row
+        print(row)
 
-    print "test query that selects and _filters_ on a sample genotype and uses a filter"
+    print("test query that selects and _filters_ on a sample genotype and uses a filter")
     query = "select chrom, start, end, gts.NA20814 from variants limit 50"
     db_filter = "gt_types.NA20814 == HET"
     gq.run(query, db_filter)
-    print gq.header
+    print(gq.header)
     for row in gq:
-        print row
+        print(row)
 
-    print "test query that selects and _filters_ on a sample genotype and uses a filter and a header"
+    print("test query that selects and _filters_ on a sample genotype and uses a filter and a header")
     query = "select chrom, start, end, gts.NA20814 from variants limit 50"
     db_filter = "gt_types.NA20814 == HET"
     gq.run(query, db_filter)
-    print gq.header
+    print(gq.header)
     for row in gq:
-        print row
+        print(row)
 
-    print "demonstrate accessing individual columns"
+    print("demonstrate accessing individual columns")
     query = "select chrom, start, end, gts.NA20814 from variants limit 50"
     db_filter = "gt_types.NA20814 == HET"
     gq.run(query, db_filter)
     for row in gq:
-        print row['chrom'], row['start'], row['end'], row['gts.NA20814']
+        print(row['chrom'], row['start'], row['end'], row['gts.NA20814'])

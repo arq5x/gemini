@@ -4,6 +4,7 @@ check()
         echo ok
     else
         echo fail
+        exit 1
     fi
 }
 export -f check

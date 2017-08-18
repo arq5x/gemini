@@ -1,15 +1,17 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
+
 import os
 from collections import defaultdict
 
 # gemini imports
-import GeminiQuery
-from GeminiQuery import select_formatter
-from gemini_constants import *
-from gemini_region import add_region_to_query
-from gemini_subjects import (get_subjects, get_subjects_in_family,
+from gemini import GeminiQuery
+from gemini.GeminiQuery import select_formatter
+from gemini.gemini_constants import *
+from gemini.gemini_region import add_region_to_query
+from gemini.gemini_subjects import (get_subjects, get_subjects_in_family,
                              get_family_dict)
-from dgidb import query_dgidb
+from gemini.dgidb import query_dgidb
 
 def all_samples_predicate(args):
     """ returns a predicate that returns True if, for a variant,
@@ -124,7 +126,7 @@ def run_query(args):
         subjects = []
     kwargs = {}
     if args.bcolz:
-        import gemini_bcolz
+        from . import gemini_bcolz
         kwargs['variant_id_getter'] = gemini_bcolz.filter
 
     gq = GeminiQuery.GeminiQuery(args.db, out_format=formatter, **kwargs)
@@ -133,11 +135,11 @@ def run_query(args):
            gene_needed, args.show_families, subjects=subjects)
 
     if args.use_header and gq.header:
-        print gq.header
+        print(gq.header)
 
     if not args.dgidb:
         for row in gq:
-            print row
+            print(row)
     else:
         # collect a list of all the genes that need to be queried
         # from DGIdb
@@ -156,7 +158,7 @@ def run_query(args):
 
         # report the query results with DGIdb info added at the end.
         for row in gq:
-            print str(row) + "\t" + str(dgidb_info[row['gene']])
+            print(str(row) + "\t" + str(dgidb_info[row['gene']]))
 
 
 def query(parser, args):

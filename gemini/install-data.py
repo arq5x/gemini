@@ -20,7 +20,7 @@ The recommended Gemini install location is /usr/local/share/gemini.
 anno_files = \
 ['hg19_fitcons_fc-i6-0_V1-01.bed.gz',
 'dbsnp.b147.20160601.tidy.vcf.gz',
-'clinvar_20160203.tidy.vcf.gz',
+'clinvar_20170130.tidy.vcf.gz',
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
 'hg19.pfam.ucscgenes.bed.gz',
@@ -52,6 +52,7 @@ anno_files = \
 'summary_gene_table_v75',
 'cancer_gene_census.20140120.tsv',
 'ExAC.r0.3.sites.vep.tidy.vcf.gz',
+'gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz',
 'geno2mp.variants.tidy.vcf.gz',
 ]
 extra_anno_files = {"gerp_bp": "hg19.gerp.bw", "cadd_score": "whole_genome_SNVs.tsv.compressed.gz"}
@@ -64,7 +65,7 @@ anno_versions = {
     "ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz": 4,
     "GRCh37-gms-mappability.vcf.gz": 2,
     "dbsnp.b147.20160601.tidy.vcf.gz": 1,
-    "clinvar_20160203.tidy.vcf.gz": 5,
+    "clinvar_20170130.tidy.vcf.gz": 5,
     "hg19.rmsk.bed.gz": 2,
     "detailed_gene_table_v75": 2,
     "summary_gene_table_v75": 2,
@@ -72,6 +73,8 @@ anno_versions = {
     "ESP6500SI.all.snps_indels.tidy.v2.vcf.gz": 2,
     'ExAC.r0.3.sites.vep.tidy.vcf.gz': 4,
     'geno2mp.variants.tidy.vcf.gz': 1,
+    'gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz': 2,
+    "whole_genome_SNVs.tsv.compressed.gz": 2,
     }
 
 def install_annotation_files(anno_root_dir, dl_files=False, extra=None):
@@ -124,7 +127,7 @@ def _download_to_dir(url, out_fname, dirname, version, cur_version):
     """
     Grab an annotation file and place in /usr/share/gemini/data
     """
-    print "* downloading " + url + " to " + dirname + "\n"
+    print("* downloading " + url + " to " + dirname + "\n")
     dest = os.path.join(dirname, out_fname)
     if not os.path.exists(dest) or version > cur_version:
         # download data file to staging directory instead of current
@@ -138,12 +141,13 @@ def _download_to_dir(url, out_fname, dirname, version, cur_version):
         max_retries = 2
         retries = 0
         while 1:
-            cmd = ["wget", "--continue", "-O", out_fname, url]
+            cmd = ["wget", "--no-check-certificate", "--continue", "-O", out_fname, url]
             retcode = subprocess.call(cmd)
             if retcode == 0:
                 break
             else:
-                print "wget failed with non-zero exit code %s. Retrying" % retcode
+                print("wget failed with non-zero exit code %s. Retrying" %
+                      retcode)
                 if retries >= max_retries:
                     raise ValueError("Failed to download with wget")
                 time.sleep(10)

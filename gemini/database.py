@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 
 import os
 import contextlib
@@ -8,7 +9,7 @@ import sqlalchemy as sql
 from sqlalchemy.orm import mapper, create_session
 import sqlalchemy
 
-from ped import get_ped_fields
+from gemini.ped import get_ped_fields
 
 
 def index_variation(cursor):
@@ -98,10 +99,18 @@ def get_path(path):
 
     return path
 
-def create_tables(path, effect_fields=None):
+def create_tables(path, effect_fields=None, pls=True):
     """
     Create our master DB tables
     """
+    if pls:
+        pls = """\
+    gt_phred_ll_homref blob,
+    gt_phred_ll_het blob,
+    gt_phred_ll_homalt blob,
+"""
+    else:
+        pls = ""
     if effect_fields:
         effect_string = "".join(e + (" float,\n" if e.endswith("_num") else " TEXT,\n") for e in effect_fields)
     else:
@@ -126,11 +135,10 @@ def create_tables(path, effect_fields=None):
     gt_depths blob,
     gt_ref_depths blob,
     gt_alt_depths blob,
+    gt_alt_freqs blob,
     gt_quals blob,
     gt_copy_numbers blob,
-    gt_phred_ll_homref blob,
-    gt_phred_ll_het blob,
-    gt_phred_ll_homalt blob,
+    %s,
     call_rate float,
     max_aaf_all float,
     in_dbsnp bool,
@@ -258,7 +266,21 @@ def create_tables(path, effect_fields=None):
     exac_num_het int,
     exac_num_hom_alt int,
     exac_num_chroms int,
-    %s""" % effect_string.rstrip(","),
+
+    aaf_gnomad_all decimal(2,7),
+    aaf_gnomad_afr decimal(2,7),
+    aaf_gnomad_amr decimal(2,7),
+    aaf_gnomad_asj decimal(2,7),
+    aaf_gnomad_eas decimal(2,7),
+    aaf_gnomad_fin decimal(2,7),
+    aaf_gnomad_nfe decimal(2,7),
+    aaf_gnomad_oth decimal(2,7),
+    aaf_gnomad_sas decimal(2,7),
+
+    gnomad_num_het int,
+    gnomad_num_hom_alt int,
+    gnomad_num_chroms int,
+    %s""" % (pls, effect_string.rstrip(",")),
 
     variant_impacts="""
     variant_id integer,
@@ -356,7 +378,7 @@ def create_tables(path, effect_fields=None):
     for table in db:
 
         db[table] = db[table].strip().strip(",").split(",\n")
-        db[table] = [x.strip().split() for x in db[table]]
+        db[table] = [x.strip().split() for x in db[table] if x.strip()]
         cols = [sql.Column(c[0], lookup[c[1].lower()]) for c in db[table]]
 
         if table != "variant_impacts":
@@ -420,7 +442,10 @@ def insert_variation(session, metadata, buffer):
         session.commit()
     except:
         sys.stderr.write("insert error trying 1 at a time:\n")
-        session.rollback()
+        try:
+            session.rollback()
+        except sql.exc.OperationalError:
+            pass
         stmt = tbl.insert()
         with session.bind.begin() as trans:
             for b in buffer:
@@ -469,7 +494,7 @@ def insert_gene_detailed(session, metadata, table_contents):
     cols = _get_cols(t)
 
     n = 1000
-    for chunk in (table_contents[i:i+n] for i in xrange(0, len(table_contents), n)):
+    for chunk in (table_contents[i:i+n] for i in range(0, len(table_contents), n)):
         session.execute(t.insert(), list(gen_gene_vals(cols, chunk)))
 
 def insert_gene_summary(session, metadata, contents):
