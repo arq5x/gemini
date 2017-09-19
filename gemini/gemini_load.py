@@ -348,7 +348,7 @@ def load_chunk(chunk_step, kwargs):
     args["vcf"] = os.path.abspath(args["vcf"])
     gemini_load = gemini_pipe_load_cmd().format(**args)
     subprocess.check_call(gemini_load, shell=True)
-    chunk_db = kwargs["chunk_dir"] + args["vcf"] + ".chunk" + str(chunk_num) + ".db"
+    chunk_db = kwargs["chunk_dir"] + os.path.basename(args["vcf"]) + ".chunk" + str(chunk_num) + ".db"
     return chunk_db
 
 def wait_until_finished(procs):
