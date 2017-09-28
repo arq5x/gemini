@@ -6,6 +6,10 @@ Release History
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
 
+0.20.2
+======
+#. fix unicode errors in gemini annotate and load
+
 0.20.1
 ======
 #. Allow `--gt-filter` to specify the gt_type, e.g. `(gt_quals).(=HET).(<20).(all)` (thanks Jessica for suggesting)

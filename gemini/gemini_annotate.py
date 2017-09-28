@@ -112,7 +112,7 @@ def _annotate_variants(args, conn, metadata, get_val_fn, col_names=None, col_typ
             update_data.append(str(row["variant_id"]))
             to_update.append(tuple(update_data))
 
-        if len(to_update) > update_size:
+        if len(to_update) >= update_size:
             _update_variants(metadata, to_update, col_names, cursor)
             total += len(to_update)
             to_update = []
@@ -182,10 +182,10 @@ def gemops_sum(li, col_type):
     return np.sum(_map_list_types(li, col_type))
 
 def gemops_list(li, col_type):
-    return ",".join(li)
+    return ",".join(x.encode('utf8', 'ignore') for x in li)
 
 def gemops_uniq_list(li, col_type):
-    return ",".join(set(li))
+    return ",".join(x.encode('utf8', 'ignore') for x in set(li))
 
 def gemops_median(li, col_type):
     return np.median(_map_list_types(li, col_type))
