@@ -8,7 +8,7 @@ Release History
 
 0.20.2
 ======
-#. fix unicode errors in gemini annotate and load
+#. fix unicode errors in gemini annotate and load. this was occuring for some clinvar variants.
 
 0.20.1
 ======
