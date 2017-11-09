@@ -91,7 +91,7 @@ def query():
         gt_filter = request.GET.get('gt_filter', '').strip()
         use_header = request.GET.get('use_header')
         igv_links = request.GET.get('igv_links')
-        return query, gt_filter, use_header, igv_links
+        return query, gt_filter or None, use_header, igv_links
 
     # user clicked the "submit" button
     if request.GET.get('submit', '').strip():
