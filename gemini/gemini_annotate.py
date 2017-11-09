@@ -342,9 +342,11 @@ def annotate(parser, args):
         parser.print_help()
         exit(1)
     if not os.path.exists(args.anno_file):
-        sys.stderr.write("Error: cannot find annotation file.")
+        sys.stderr.write("Error: cannot find annotation file.\n")
         exit(1)
-
+    if not os.access(args.db, os.W_OK):
+        sys.stderr.write("Error: database to annotate must be writable.\n")
+        sys.exit(1)
     conn, metadata = database.get_session_metadata(args.db)
 
     if args.anno_type == "boolean":

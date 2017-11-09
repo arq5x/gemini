@@ -600,6 +600,7 @@ def main():
             help='The name of the database to be updated.')
     parser_get.add_argument('-f',
             dest='anno_file',
+            required=True,
             help='The TABIX\'ed BED file containing the annotations')
     parser_get.add_argument('-c',
             dest='col_names',

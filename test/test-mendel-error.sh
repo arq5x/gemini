@@ -43,7 +43,7 @@ check obs exp
 
 # with a high enough limit, we get all the variants
 gemini mendel_errors --columns "chrom,start,end" test.mendel.db --gt-pl-max 1000 | wc -l > obs
-echo "22" > exp
+echo "20" > exp
 echo "    mendel_error.t4..."
 check obs exp
 
@@ -52,7 +52,7 @@ check obs exp
 ###############
 
 gemini mendel_errors --columns "chrom,start,end" test.mendel.db --families CEPH1463 | wc -l > obs
-echo "22" > exp
+echo "20" > exp
 echo "    mendel_error.t5..."
 check obs exp
 
