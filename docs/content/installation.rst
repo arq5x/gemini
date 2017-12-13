@@ -95,7 +95,7 @@ has options to install in "non-root" environments:
 
 .. code-block:: bash
 
-  $ python gemini_install.py ~/gemini ~/gemini --nosudo
+  $ python gemini_install.py ~/gemini ~/gemini
 
 
 Updating your PATH to find the GEMINI executable
