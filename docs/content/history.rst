@@ -9,6 +9,7 @@ Release History
 0.20.2
 ======
 #. fix unicode errors in gemini annotate and load. this was occuring for some clinvar variants.
+#. normalize vep names (#887)
 
 0.20.1
 ======

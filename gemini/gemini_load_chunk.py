@@ -85,6 +85,10 @@ def load_clinvar(cpath):
         lookup[k] = "|".join(sorted(set(lookup[k]))).lower()
     return lookup
 
+def fix_col_name(s, patt=re.compile('-|\s|\\\\')):
+    if s in ('0', '-9'): return s
+    return patt.sub("_", s)
+
 
 class GeminiLoader(object):
     """
@@ -106,7 +110,7 @@ class GeminiLoader(object):
         if self.args.anno_type == "VEP":
             self._effect_fields = self._get_vep_csq(self.vcf_reader)
             # tuples of (db_column, CSQ name)
-            self._extra_effect_fields = [("vep_%s" % x.lower(), x) for x in self._effect_fields if not x.lower() in expected]
+            self._extra_effect_fields = [("vep_%s" % fix_col_name(x.lower()), x) for x in self._effect_fields if not x.lower() in expected]
         elif self.args.anno_type == "all":
             try:
                 self.vcf_reader["CSQ"]
@@ -115,7 +119,7 @@ class GeminiLoader(object):
             else:
                 self._effect_fields = self._get_vep_csq(self.vcf_reader)
                 # tuples of (db_column, CSQ name)
-                self._extra_effect_fields = [("vep_%s" % x.lower(), x) for x in self._effect_fields if not x.lower() in expected]
+                self._extra_effect_fields = [("vep_%s" % fix_col_name(x.lower()), x) for x in self._effect_fields if not x.lower() in expected]
 
         else:
             self._effect_fields = []
