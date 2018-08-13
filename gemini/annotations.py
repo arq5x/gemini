@@ -53,7 +53,7 @@ def get_anno_files(args):
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bed.gz"),
      'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
      'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz'),
-     'gnomad': os.path.join(anno_dirname, 'gnomad.exomes.r2.0.1.sites.no-VEP.nohist.tidy.vcf.gz'),
+     'gnomad': os.path.join(anno_dirname, 'gnomad.exomes.r2.0.2.sites.no-VEP.nohist.tidy.vcf.gz'),
      'geno2mp': os.path.join(anno_dirname, 'geno2mp.variants.tidy.vcf.gz'),
     }
     # optional annotations
