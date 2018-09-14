@@ -1,7 +1,7 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
-gemini=0.18.2=py27_2
+gemini=0.18.2=py27_1
 bx-python=0.7.3=py27_0
 cyvcf2>=0.2.3
 conda=3.5.5=py27_0
