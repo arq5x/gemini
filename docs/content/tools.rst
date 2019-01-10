@@ -706,6 +706,7 @@ Genotype Requirements
 - Unaffected females are HET or HOM_REF
 - Affected males are not HOM_REF
 - Unaffected males are HOM_REF
+- exclude sites where affected male is HET and parents are HOM_REF
 
 ===========================================================================
 ``x_linked_dominant``: x-linked dominant inheritance
@@ -739,7 +740,7 @@ Genotype Requirements
 
 - affected female child must be het
 - affected male child must be hom_alt (or het)
-- parents should be unaffected and hom_ref
+- both parents must be present, unaffected, and hom_ref
 
 ===========================================================================
 ``gene_wise``: Custom genotype filtering by gene. 
