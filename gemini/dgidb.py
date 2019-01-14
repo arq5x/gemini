@@ -25,12 +25,12 @@ def query_dgidb(genes):
             return input
 
     # make a single request to DGIdb for all of the genes requested
-    dgidb_url = 'http://dgidb.genome.wustl.edu/api/v1/interactions.json?genes='
-    
+    dgidb_url = 'http://www.dgidb.org/api/v2/interactions.json?genes='
+
     # None is present by default. Make sure we have more than None
     if len(genes) > 1:
         query = dgidb_url + ','.join(genes.keys())
-        
+
         response = urlopen(query)
         data = convert(json.load(response))
         matches = data['matchedTerms']
