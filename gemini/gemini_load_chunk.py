@@ -71,7 +71,7 @@ def load_clinvar(cpath):
         gene = info.get('GENEINFO')
         if gene is None: continue
         #diseases = [x.decode('utf8', 'ignore').encode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
-        diseases = [x.encode('ascii', 'ignore').decode('ascii', 'ignore') for x in info.get('CLNDBN').split("|") if not x in (".", "not_specified", "not_provided")]
+        diseases = [x.encode('ascii', 'ignore').decode('ascii', 'ignore') for x in info.get('CLNDN', '.').split("|") if not x in (".", "not_specified", "not_provided")]
         if diseases == []: continue
 
         genes = [x.split(":")[0] for x in gene.split("|")]
@@ -586,15 +586,11 @@ class GeminiLoader(object):
                    in_omim=bool(clinvar_info.clinvar_in_omim),
                    clinvar_sig=clinvar_info.clinvar_sig,
                    clinvar_disease_name=clinvar_info.clinvar_disease_name,
-                   clinvar_dbsource=clinvar_info.clinvar_dbsource,
-                   clinvar_dbsource_id=clinvar_info.clinvar_dbsource_id,
                    clinvar_origin=clinvar_info.clinvar_origin,
                    clinvar_dsdb=clinvar_info.clinvar_dsdb,
                    clinvar_dsdbid=clinvar_info.clinvar_dsdbid,
-                   clinvar_disease_acc=clinvar_info.clinvar_disease_acc,
                    clinvar_in_locus_spec_db=bool(clinvar_info.clinvar_in_locus_spec_db),
                    clinvar_on_diag_assay=bool(clinvar_info.clinvar_on_diag_assay),
-                   clinvar_causal_allele=clinvar_info.clinvar_causal_allele,
                    clinvar_gene_phenotype=clinvar_gene_phenotype,
                    geno2mp_hpo_ct=annotations.get_geno2mp_ct(var),
                    pfam_domain=pfam_domain, cyto_band=cyto_band, rmsk=rmsk_hits,

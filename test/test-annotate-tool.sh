@@ -526,7 +526,6 @@ tabix -p bed anno.bed.gz
 echo $'ValueError: Column operation [model] not supported.\n' > exp
 
 gemini annotate -f anno.bed.gz -a extract -c anno27,anno28 -e 4,5 -t text,float -o last,model  test.snpeff.vcf.db 2> obs
-gemini annotate -a extract -t text,text -o list,list -e CLNDBN,CLNSIG unicode.test.db -f unicode.vcf.gz
 
 check <(tail -n2 obs | grep -v ^$) <(tail -n2 exp | grep -v ^$) annotate-tool.t17
 rm obs exp

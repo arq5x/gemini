@@ -203,8 +203,6 @@ clinvar_sig               STRING        | The clinical significance scores for e
                                         | *pathogenic*, *drug-response*, *histocompatibility*
                                         | *other*
 clinvar_disease_name      STRING        The name of the disease to which the variant is relevant
-clinvar_dbsource          STRING        Variant Clinical Channel IDs
-clinvar_dbsource_id       STRING        The record id in the above database
 clinvar_origin            STRING        | The type of variant.
                                         | Any of:
                                         | *unknown*, *germline*, *somatic*,
@@ -214,7 +212,6 @@ clinvar_origin            STRING        | The type of variant.
                                         | *other*
 clinvar_dsdb              STRING        Variant disease database name
 clinvar_dsdbid            STRING        Variant disease database ID
-clinvar_disease_acc       STRING        Variant Accession and Versions
 clinvar_in_locus_spec_db  BOOL          Submitted from a locus-specific database?
 clinvar_on_diag_assay     BOOL          Variation is interrogated in a clinical diagnostic assay?
 clinvar_gene_phenotype    STRING        '|' delimited list of phenotypes associated with this gene (includes any variant in the same 

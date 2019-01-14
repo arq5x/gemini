@@ -25,7 +25,7 @@ def get_anno_files(args):
      'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
      'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
      'dbsnp': os.path.join(anno_dirname, 'dbsnp.b147.20160601.tidy.vcf.gz'),
-     'clinvar': os.path.join(anno_dirname, 'clinvar_20170130.tidy.vcf.gz'),
+     'clinvar': os.path.join(anno_dirname, 'clinvar_20190102.tidy.vcf.gz'),
      'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
      'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),
      'segdup': os.path.join(anno_dirname, 'hg19.segdup.bed.gz'),
@@ -65,18 +65,14 @@ def get_anno_files(args):
 
 class ClinVarInfo(object):
     def __init__(self):
-        self.clinvar_dbsource = None
-        self.clinvar_dbsource_id = None
         self.clinvar_origin = None
         self.clinvar_sig = None
         self.clinvar_dsdb = None
         self.clinvar_dsdbid = None
         self.clinvar_disease_name = None
-        self.clinvar_disease_acc = None
         self.clinvar_in_omim = None
         self.clinvar_in_locus_spec_db = None
         self.clinvar_on_diag_assay = None
-        self.clinvar_causal_allele = None
 
         self.origin_code_map = {'0': 'unknown',
                                 '1': 'germline',
@@ -104,14 +100,11 @@ class ClinVarInfo(object):
 
     def __repr__(self):
         return '\t'.join(map(str, [
-                          self.clinvar_dbsource,
-                          self.clinvar_dbsource_id,
                           self.clinvar_origin,
                           self.clinvar_sig,
                           self.clinvar_dsdb,
                           self.clinvar_dsdbid,
                           self.clinvar_disease_name,
-                          self.clinvar_disease_acc,
                           str(self.clinvar_in_omim),
                           str(self.clinvar_in_locus_spec_db),
                           str(self.clinvar_on_diag_assay),
@@ -632,55 +625,38 @@ def get_clinvar_info(var):
                 info_map[key] = value
             else:
                 info_map[info] = True
+        """
+##INFO=<ID=CLNDN,Number=.,Type=String,Description="ClinVar's preferred disease name for the concept specified by disease identifiers in CLNDISDB">
+##INFO=<ID=CLNDNINCL,Number=.,Type=String,Description="For included Variant : ClinVar's preferred disease name for the concept specified by disease identifiers in CLNDISDB">
+##INFO=<ID=CLNDISDB,Number=.,Type=String,Description="Tag-value pairs of disease database name and identifier, e.g. OMIM:NNNNNN">
+##INFO=<ID=CLNDISDBINCL,Number=.,Type=String,Description="For included Variant: Tag-value pairs of disease database name and identifier, e.g. OMIM:NNNNNN">
+##INFO=<ID=CLNHGVS,Number=.,Type=String,Description="Top-level (primary assembly, alt, or patch) HGVS expression.">
+##INFO=<ID=CLNREVSTAT,Number=.,Type=String,Description="ClinVar review status for the Variation ID">
+##INFO=<ID=CLNSIG,Number=.,Type=String,Description="Clinical significance for this single variant">
+##INFO=<ID=CLNSIGCONF,Number=.,Type=String,Description="Conflicting clinical significance for this single variant">
+##INFO=<ID=CLNSIGINCL,Number=.,Type=String,Description="Clinical significance for a haplotype or genotype that includes this variant. Reported as pairs of VariationID:clinical significance.">
+##INFO=<ID=CLNVC,Number=1,Type=String,Description="Variant type">
+##INFO=<ID=CLNVCSO,Number=1,Type=String,Description="Sequence Ontology id for variant type">
+##INFO=<ID=CLNVI,Number=.,Type=String,Description="the variant's clinical sources reported as tag-value pairs of database and variant identifier">
+        """
 
-        raw_dbsource = info_map['CLNSRC']
         #interpret 8-bit strings and convert to plain text
-        clinvar.clinvar_dbsource_id = info_map['CLNSRCID'] or None
-        clinvar.clinvar_origin           = \
-            clinvar.lookup_clinvar_origin(info_map['CLNORIGIN'])
-        clinvar.clinvar_sig              = \
-            clinvar.lookup_clinvar_significance(info_map['CLNSIG'])
-        clinvar.clinvar_dsdb = info_map['CLNDSDB'] or None
-        clinvar.clinvar_dsdbid = info_map['CLNDSDBID'] or None
+        clinvar.clinvar_origin = clinvar.lookup_clinvar_origin(info_map.get('ORIGIN', '0'))
+        clinvar.clinvar_sig = info_map['CLNSIG'].lower()
+        clinvar.clinvar_dsdb = info_map['CLNDISDB'] or None
         # Remap all unicode characters into plain text string replacements
-        raw_disease_name = info_map['CLNDBN']
+        raw_disease_name = info_map['CLNDN']
         try:
             clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8')).decode('string_escape')
-            clinvar.clinvar_dbsource = unidecode(raw_dbsource.decode('utf-8'))
         except:
             clinvar.clinvar_disease_name = unidecode(raw_disease_name.encode('utf-8').decode())
-            clinvar.clinvar_dbsource = unidecode(raw_dbsource.encode('utf-8').decode())
         # Clinvar represents commas as \x2c.  Make them commas.
 
-        clinvar.clinvar_disease_acc = info_map['CLNACC'] or None
         clinvar.clinvar_in_omim = 1 if 'OM' in info_map else 0
         clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
         clinvar.clinvar_on_diag_assay = 1 if 'CDA' in info_map else 0
 
-        causal_allele_numbers = [x for x in info_map['CLNALLE'].split(',') if x
-                != '.'] # CLNALLE=0,1 or CLNALLE=0 or CLNALLE=1
-        if len(causal_allele_numbers) == 1:
-            causal_allele_number = int(causal_allele_numbers[0])
-            if causal_allele_number == -1 or causal_allele_number is None:
-              clinvar.clinvar_causal_allele = None
-            elif causal_allele_number == 0:
-              clinvar.clinvar_causal_allele = hit.ref
-            elif causal_allele_number > 0:
-                # alt should alwasy be length 1 if they decomposed, but just in
-                # case ...
-                clinvar.clinvar_causal_allele = hit.alt.split(',')[causal_allele_number - 1]
-        else:
-            clinvar_causal_allele = ""
-            for idx, allele_num in enumerate(causal_allele_numbers):
-                causal_allele_number = int(allele_num)
-                if idx > 0:
-                    clinvar_causal_allele += ","
-                if causal_allele_number == 0:
-                    clinvar_causal_allele += hit.ref
-                elif causal_allele_number > 0:
-                    clinvar_causal_allele += hit.alt.split(',')[causal_allele_number - 1]
-
-            clinvar.clinvar_causal_allele = clinvar_causal_allele
+        clinvar.clinvar_causal_allele = hit.alt
     return clinvar
 
 

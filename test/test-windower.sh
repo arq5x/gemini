@@ -1,6 +1,16 @@
 #############################################################################
 # 1. Test window data for hwe (mean)                                         
 #############################################################################
+  check()
+  {
+      if diff "$1" "$2"; then
+          echo ok
+      else
+          echo fail
+      fi
+  }
+  export -f check
+
 hash bedtools 2>/dev/null || { echo "skiping windower tests since we can't find bedtools"; exit; }
 
 echo "    window.t01...\c"                                                   
