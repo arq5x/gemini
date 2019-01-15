@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import pysam
+import cyvcf2
 import os
 import sys
 import collections
@@ -53,7 +54,7 @@ def get_anno_files(args):
      'fitcons': os.path.join(anno_dirname, "hg19_fitcons_fc-i6-0_V1-01.bed.gz"),
      'cosmic': os.path.join(anno_dirname, 'cosmic-v68-GRCh37.tidy.vcf.gz'),
      'exac': os.path.join(anno_dirname, 'ExAC.r0.3.sites.vep.tidy.vcf.gz'),
-     'gnomad': os.path.join(anno_dirname, 'gnomad.exomes.r2.0.2.sites.no-VEP.nohist.tidy.vcf.gz'),
+     'gnomad': os.path.join(anno_dirname, 'gnomad.exomes.r2.1.tidy.bcf'),
      'geno2mp': os.path.join(anno_dirname, 'geno2mp.variants.tidy.vcf.gz'),
     }
     # optional annotations
@@ -206,6 +207,9 @@ def load_annos(args):
                                                   encoding='utf8')
                 else:
                     annos[anno] = pysam.Tabixfile(anno_files[anno])
+
+            elif anno_files[anno].endswith(".bcf"):
+                annos[anno] = cyvcf2.VCF(anno_files[anno])
             # .bw denotes BigWig files.
             elif anno_files[anno].endswith(".bw"):
                 from bx.bbi.bigwig_file import BigWigFile
@@ -236,6 +240,10 @@ def _get_hits(coords, annotation, parser_type, _parsers=PARSERS):
     except KeyError:
         raise ValueError("Unexpected parser type: %s" % parser)
     chrom, start, end = coords
+    if isinstance(annotation, pysam.VariantFile):
+        return annotation.fetch(chrom, start, end)
+    elif isinstance(annotation, cyvcf2.VCF):
+        return annotation("%s:%d-%d" % (chrom, start - 1, end))
     try:
         hit_iter = annotation.fetch(str(chrom), start, end, parser=parser)
     # catch invalid region errors raised by ctabix
@@ -244,6 +252,9 @@ def _get_hits(coords, annotation, parser_type, _parsers=PARSERS):
     # recent versions of pysam return KeyError
     except KeyError:
         hit_iter = []
+    except:
+        print(annotation.__class__, file=sys.stderr)
+        raise
     return hit_iter
 
 def _get_bw_summary(coords, annotation):
@@ -279,15 +290,18 @@ def guess_contig_naming(anno):
 def _get_var_coords(var, naming):
     """Retrieve variant coordinates from multiple input objects.
     """
-    try:
-        # todo: check isinstance resultproxy?
-        chrom = var["chrom"]
-        start = int(var["start"])
-        end = int(var["end"])
-    except TypeError:
-        chrom = var.CHROM
-        start = var.start
-        end = var.end
+    if isinstance(var, cyvcf2.Variant):
+      chrom, start, end = var.CHROM, var.start, var.end
+    else:
+        try:
+            # todo: check isinstance resultproxy?
+            chrom = var["chrom"]
+            start = int(var["start"])
+            end = int(var["end"])
+        except TypeError:
+            chrom = var.CHROM
+            start = var.start
+            end = var.end
     if naming == "ucsc":
         chrom = _get_chr_as_ucsc(chrom)
     elif naming == "grch37":
@@ -297,9 +311,13 @@ def _get_var_coords(var, naming):
 def _get_var_ref_and_alt(var):
     """Retrieve variant reference and alternate alleles from multiple input objects.
     """
+    if isinstance(var, cyvcf2.Variant):
+      return var.REF, var.ALT
+    if isinstance(var, pysam.VariantRecord):
+      return var.ref, var.alts
     if isinstance(var, basestring):
         # Assume var is a line from a VCF.
-        ref, alt = var.split('\t')[3:5]
+        ref, alt = var.split('\t', 6)[3:5]
     else:
         try:
             ref = var["ref"]
@@ -401,26 +419,24 @@ def annotations_in_vcf(var, anno, parser_type=None, naming="ucsc", region_only=F
         # Filter hits to those that match ref and alt.
         matched_hits = []
         for h in hits:
-            # Get annotation fields.
+            if isinstance(h, (cyvcf2.Variant, pysam.VariantRecord)):
+                start = h.start
+            elif isinstance(h, basestring):
+                start = int(h.split('\t', 2)[1]) - 1
+            else:
+                start = h.pos
+            if start != coords[1]: continue
+
             anno_ref, anno_alt = _get_var_ref_and_alt(h)
             anno_alt = set(anno_alt)
 
-            # Warn for multiple alleles.
-            if isinstance(h, basestring):
-                start = int(h.split('\t', 2)[1])
-            else:
-                # Assume it's a Pysam entry.
-                # start is 0-based for pysam so we add 1.
-                start = h.pos + 1
-            multiallele_warning(chrom, start - 1, anno_alt, True)
+            multiallele_warning(chrom, start, anno_alt, True)
 
             # Match via ref and set intersection of alternates.
             # the mappability uses "." as the alt for all rows. so
             if var_ref == anno_ref and (len(var_alt & anno_alt) >= 1 \
                     or anno_alt == set(".")):
-                # also need to match on the start coord.
-                if start -1 == coords[1]:
-                    matched_hits.append(h)
+                matched_hits.append(h)
         hits = matched_hits
     return hits
 
@@ -625,22 +641,6 @@ def get_clinvar_info(var):
                 info_map[key] = value
             else:
                 info_map[info] = True
-        """
-##INFO=<ID=CLNDN,Number=.,Type=String,Description="ClinVar's preferred disease name for the concept specified by disease identifiers in CLNDISDB">
-##INFO=<ID=CLNDNINCL,Number=.,Type=String,Description="For included Variant : ClinVar's preferred disease name for the concept specified by disease identifiers in CLNDISDB">
-##INFO=<ID=CLNDISDB,Number=.,Type=String,Description="Tag-value pairs of disease database name and identifier, e.g. OMIM:NNNNNN">
-##INFO=<ID=CLNDISDBINCL,Number=.,Type=String,Description="For included Variant: Tag-value pairs of disease database name and identifier, e.g. OMIM:NNNNNN">
-##INFO=<ID=CLNHGVS,Number=.,Type=String,Description="Top-level (primary assembly, alt, or patch) HGVS expression.">
-##INFO=<ID=CLNREVSTAT,Number=.,Type=String,Description="ClinVar review status for the Variation ID">
-##INFO=<ID=CLNSIG,Number=.,Type=String,Description="Clinical significance for this single variant">
-##INFO=<ID=CLNSIGCONF,Number=.,Type=String,Description="Conflicting clinical significance for this single variant">
-##INFO=<ID=CLNSIGINCL,Number=.,Type=String,Description="Clinical significance for a haplotype or genotype that includes this variant. Reported as pairs of VariationID:clinical significance.">
-##INFO=<ID=CLNVC,Number=1,Type=String,Description="Variant type">
-##INFO=<ID=CLNVCSO,Number=1,Type=String,Description="Sequence Ontology id for variant type">
-##INFO=<ID=CLNVI,Number=.,Type=String,Description="the variant's clinical sources reported as tag-value pairs of database and variant identifier">
-        """
-
-        #interpret 8-bit strings and convert to plain text
         clinvar.clinvar_origin = clinvar.lookup_clinvar_origin(info_map.get('ORIGIN', '0'))
         clinvar.clinvar_sig = info_map['CLNSIG'].lower()
         clinvar.clinvar_dsdb = info_map['CLNDISDB'] or None
@@ -771,61 +771,48 @@ def get_geno2mp_ct(var):
     return -1
 
 def get_gnomad_info(var, empty=GNOMAD_EMPTY):
-    info_map = {}
     afs = {}
     for hit in annotations_in_vcf(var, "gnomad", "vcf", "grch37"):
         # Does not handle anything beyond var.ALT[0] in the VCF (in case of multi-allelic variants)
         # var.start is used since the chromosomal pos in pysam.asVCF is zero based (hit.pos)
         # and would be equivalent to (POS-1) i.e var.start
-        if var.start != hit.pos or var.REF != hit.ref:
+        # TODO: change to REF
+        if var.start != hit.start or var.REF != hit.REF or var.ALT[0] != hit.ALT[0]:
             continue
 
         # This would look for var.ALT[0] matches to
         # any of the multiple alt alleles represented in the EXAC file
-        ALT = hit.alt.split(",")
-        for allele_num, each in enumerate(ALT):
-            if each != var.ALT[0]:
+        # Population independent raw (non-adjusted) allele frequencies given by AF
+        info_map = hit.INFO
+        aaf_ALL = info_map.get("AF", -1.0)
+
+        for grp in ('_afr', '_amr', '_asj', '_eas', '_fin', '_nfe', '_oth', '_sas'):
+            ac = info_map.get('AC' + grp)
+            if ac is None: continue
+
+            an = info_map.get('AN' + grp)
+            if an is None: continue
+
+            if an == 0:
+                afs[grp] = 0
                 continue
 
-            # Store the allele index of the match to retrieve the right frequencies
-            for info in hit.info.split(";"):
-                if "=" in info:
-                    (key, value) = info.split("=", 1)
-                    info_map[key] = value
+            afs[grp] = float(ac) / float(an)
+        if ac is None or an is None: continue
 
-            # Population independent raw (non-adjusted) allele frequencies given by AF
-            if info_map.get('AF', '.') != '.':
-                aaf_ALL = float(info_map['AF'].split(",")[allele_num])
-            else:
-                aaf_ALL = -1
+        nhm = sum(map(int, info_map.get('GC_Male', '').split(",")[1:-1]))
+        nhf = sum(map(int, info_map.get('GC_Female', '').split(",")[1:-1]))
 
-            for grp in ('_AFR', '_AMR', '_ASJ', '_EAS', '_FIN', '_NFE', '_OTH', '_SAS'):
-                ac = info_map.get('AC' + grp)
-                if ac is None: continue
+        num_hets = nhm + nhf
+        num_homs = int(info_map.get("Hom", -1))
 
-                an = info_map.get('AN' + grp)
-                if an is None: continue
+        called_chroms = int(info_map.get('AN', -1))
 
-                if an == '0':
-                    afs[grp] = 0
-                    continue
-
-                ac_list = ac.split(",")
-                afs[grp] = float(ac_list[allele_num]) / float(an)
-
-            nhm = sum(map(int, info_map.get('GC_Male', '').split(",")[1:-1]))
-            nhf = sum(map(int, info_map.get('GC_Female', '').split(",")[1:-1]))
-
-            num_hets = nhm + nhf
-            num_homs = int(info_map.get("Hom", -1))
-        
-            called_chroms = int(info_map.get('AN', -1))
-
-            return GnomadInfo(aaf_ALL, float(afs['_AFR']),
-                              float(afs['_AMR']), float(afs['_ASJ']),
-                              float(afs['_EAS']), float(afs['_FIN']),
-                              float(afs['_NFE']), float(afs['_OTH']),
-                              float(afs['_SAS']), num_hets, num_homs,
+        return GnomadInfo(aaf_ALL, float(afs['_afr']),
+                              float(afs['_amr']), float(afs['_asj']),
+                              float(afs['_eas']), float(afs['_fin']),
+                              float(afs['_nfe']), float(afs['_oth']),
+                              float(afs['_sas']), num_hets, num_homs,
                               called_chroms)
 
     return empty
