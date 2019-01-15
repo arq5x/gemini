@@ -1,0 +1,5 @@
+fam1	kid	dad	mom	2	2
+fam1	mom	gpa	gma	2	2
+fam1	dad	-9	-9	1	1
+fam1	gma	-9	-9	2	1
+fam1	gpa	-9	-9	2	1

@@ -38,6 +38,7 @@ gemini load --skip-gene-tables --test-mode -v test.comp_het.5.vcf --skip-gerp-bp
 gemini load --skip-gene-tables --test-mode -v test.comp_het.6.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.2.ped test.comp_het_default.6.db
 gemini load --skip-gene-tables --test-mode -v test.comp_het.7.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.comp_het.2.ped test.comp_het_default.7.db &
 gemini load --skip-gene-tables --test-mode -v test.auto_dom.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.auto_dom.ped test.auto_dom.db &
+gemini load --skip-gene-tables --test-mode -v inherited-dn.vcf  --skip-gerp-bp --skip-cadd -t VEP -p inherited-dn.ped test.inherited_dn.db &
 gemini load --skip-gene-tables --test-mode -v test.auto_dom.no_parents.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.auto_dom.no_parents.ped test.auto_dom.no_parents.db
 wait
 gemini load --skip-gene-tables --test-mode -v test.auto_dom.no_parents.2.vcf --skip-gerp-bp --skip-cadd -t snpEff -p test.auto_dom.no_parents.2.ped test.auto_dom.no_parents.2.db
