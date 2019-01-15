@@ -377,8 +377,8 @@ Genotype Requirements
 
 - all affecteds must be het
 - [affected] all unaffected must be homref or homalt
-- at least 1 affected kid must have unaffected parents
-- [strict] if an affected has affected parents, it's not de_novo
+- at least 1 affected kid must have unaffected parents (unless it's the parent who has the de novo in a multigen pedigree)
+- [strict] if an affected has affected parents, it's not de_novo (in that kid, but could be in one of the parents)
 - [strict] all affected kids must have unaffected (or no) parents
 - [strict] warning if none of the affected samples have parents.
 
