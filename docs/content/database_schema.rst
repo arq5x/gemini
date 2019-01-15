@@ -181,6 +181,9 @@ aaf_gnomad_fin            FLOAT         Allele frequency (FIN population) of the
 aaf_gnomad_nfe            FLOAT         Allele frequency (NFE population) of the variant in gnomad 
 aaf_gnomad_oth            FLOAT         Allele frequency (OTH population) of the variant in gnomad 
 aaf_gnomad_sas            FLOAT         Allele frequency (SAS population) of the variant in gnomad 
+aaf_gnomad_non_neuro      FLOAT         Allele frequency in non_neuro samples
+aaf_gnomad_controls       FLOAT         Allele frequency in control samples
+
 gnomad_num_het            INTEGER       Number of het genotypes observed in gnomad
 gnomad_num_hom_alt        INTEGER       Number of hom_alt genotypes observed in gnomad
 gnomad_num_chroms         INTEGER       Number of chromosomes genotyped in gnomad

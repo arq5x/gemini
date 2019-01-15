@@ -12,7 +12,7 @@ check()
 export -f check
 
 
-echo "    gnomad.t01...\c"
+echo "    gnomad.t01...\n"
 echo "chrom	start	end	ref	alt	aaf_gnomad_all	aaf_gnomad_all	aaf_gnomad_afr	aaf_gnomad_amr	aaf_gnomad_eas	aaf_gnomad_fin	aaf_gnomad_nfe	aaf_gnomad_oth	aaf_gnomad_sas
 chr1	985954	985955	G	C	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0
 chr1	1199488	1199489	G	A	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0	-1.0
@@ -30,5 +30,21 @@ gemini query --header -q "select chrom, start, end, ref, alt, aaf_gnomad_all, aa
 
 check obs.$$ exp.$$
 rm obs.$$ exp.$$
+
+echo "    gnomad.t02...\n"
+gemini query --header -q "select chrom, start, end, ref, alt, aaf_gnomad_non_neuro, aaf_gnomad_controls from variants" test.exac.db > obs.$$
+echo "chrom	start	end	ref	alt	aaf_gnomad_non_neuro	aaf_gnomad_controls
+chr1	985954	985955	G	C	-1.0	-1.0
+chr1	1199488	1199489	G	A	-1.0	-1.0
+chr1	1959698	1959699	G	A	0.0164560005069	0.0170828998089
+chr1	161276552	161276553	G	T	-1.0	-1.0
+chr1	247587092	247587093	C	T	-1.0	-1.0
+chr9	112185055	112185056	C	G	9.61224031926e-06	0.0
+chr12	121432116	121432118	GC	G	5.28017008037e-05	6.08346999798e-05
+chr14	105420589	105420590	C	T	0.0016407299554	0.00138945004437" > exp.$$
+
+check obs.$$ exp.$$
+
+#############################################
 
 #############################################

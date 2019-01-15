@@ -180,11 +180,13 @@ GnomadInfo = collections.namedtuple('GnomadInfo',
                                    aaf_NFE \
                                    aaf_OTH \
                                    aaf_SAS \
+                                   aaf_non_neuro \
+                                   aaf_controls \
                                    num_het \
                                    num_hom_alt \
                                    num_chroms")
 
-GNOMAD_EMPTY = GnomadInfo(-1, -1, -1, -1, -1, -1,
+GNOMAD_EMPTY = GnomadInfo(-1, -1, -1, -1, -1, -1, -1, -1,
                           -1, -1, -1, -1, -1, -1)
 
 def load_annos(args):
@@ -799,6 +801,8 @@ def get_gnomad_info(var, empty=GNOMAD_EMPTY):
 
             afs[grp] = float(ac) / float(an)
         if ac is None or an is None: continue
+        afs['non_neuro'] = info_map.get('non_neuro_AF', 0.0)
+        afs['control'] = info_map.get('controls_AF', 0.0)
 
         nhm = sum(map(int, info_map.get('GC_Male', '').split(",")[1:-1]))
         nhf = sum(map(int, info_map.get('GC_Female', '').split(",")[1:-1]))
@@ -812,7 +816,10 @@ def get_gnomad_info(var, empty=GNOMAD_EMPTY):
                               float(afs['_amr']), float(afs['_asj']),
                               float(afs['_eas']), float(afs['_fin']),
                               float(afs['_nfe']), float(afs['_oth']),
-                              float(afs['_sas']), num_hets, num_homs,
+                              float(afs['_sas']),
+                              info_map.get('non_neuro_AF', 0.0),
+                              info_map.get('controls_AF', 0.0),
+                              num_hets, num_homs,
                               called_chroms)
 
     return empty

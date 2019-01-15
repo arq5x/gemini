@@ -272,6 +272,8 @@ def create_tables(path, effect_fields=None, pls=True):
     aaf_gnomad_nfe decimal(2,7),
     aaf_gnomad_oth decimal(2,7),
     aaf_gnomad_sas decimal(2,7),
+    aaf_gnomad_non_neuro decimal(2,7),
+    aaf_gnomad_controls decimal(2,7),
 
     gnomad_num_het int,
     gnomad_num_hom_alt int,

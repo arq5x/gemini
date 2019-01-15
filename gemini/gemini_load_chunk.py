@@ -688,6 +688,9 @@ class GeminiLoader(object):
                    aaf_gnomad_nfe=gnomad.aaf_NFE,
                    aaf_gnomad_oth=gnomad.aaf_OTH,
                    aaf_gnomad_sas=gnomad.aaf_SAS,
+                   aaf_gnomad_non_neuro=gnomad.aaf_non_neuro,
+                   aaf_gnomad_controls=gnomad.aaf_controls,
+
 
                    gnomad_num_het=gnomad.num_het,
                    gnomad_num_hom_alt=gnomad.num_hom_alt,
