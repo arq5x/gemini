@@ -32,18 +32,19 @@ check obs.$$ exp.$$
 rm obs.$$ exp.$$
 
 echo "    gnomad.t02...\n"
-gemini query --header -q "select chrom, start, end, ref, alt, aaf_gnomad_non_neuro, aaf_gnomad_controls from variants" test.exac.db > obs.$$
-echo "chrom	start	end	ref	alt	aaf_gnomad_non_neuro	aaf_gnomad_controls
-chr1	985954	985955	G	C	-1.0	-1.0
-chr1	1199488	1199489	G	A	-1.0	-1.0
-chr1	1959698	1959699	G	A	0.0164560005069	0.0170828998089
-chr1	161276552	161276553	G	T	-1.0	-1.0
-chr1	247587092	247587093	C	T	-1.0	-1.0
-chr9	112185055	112185056	C	G	9.61224031926e-06	0.0
-chr12	121432116	121432118	GC	G	5.28017008037e-05	6.08346999798e-05
-chr14	105420589	105420590	C	T	0.0016407299554	0.00138945004437" > exp.$$
+gemini query --header -q "select chrom, start, end, ref, alt, aaf_gnomad_non_neuro, aaf_gnomad_controls, aaf_gnomad_non_cancer from variants" test.exac.db > obs.$$
+echo "chrom	start	end	ref	alt	aaf_gnomad_non_neuro	aaf_gnomad_controls	aaf_gnomad_non_cancer
+chr1	985954	985955	G	C	-1.0	-1.0	-1.0
+chr1	1199488	1199489	G	A	-1.0	-1.0	-1.0
+chr1	1959698	1959699	G	A	0.0164560005069	0.0170828998089	0.0171958003193
+chr1	161276552	161276553	G	T	-1.0	-1.0	-1.0
+chr1	247587092	247587093	C	T	-1.0	-1.0	-1.0
+chr9	112185055	112185056	C	G	9.61224031926e-06	0.0	4.22193988925e-06
+chr12	121432116	121432118	GC	G	5.28017008037e-05	6.08346999798e-05	5.99675004196e-05
+chr14	105420589	105420590	C	T	0.0016407299554	0.00138945004437	0.00172107003164" > exp.$$
 
 check obs.$$ exp.$$
+rm obs.$$ exp.$$
 
 #############################################
 
