@@ -25,9 +25,8 @@ check obs exp
 
 echo "    multiple-alts.t02...\c"
 # this should not filter any as 0 is homozygous ref:
-awk '(NR == 1) { print $0} NR > 1 { split($1,a, "/"); if($1 == "." || a[1] == a[2]) { print $0 }  }' obs0 > obs
+awk '(NR == 1) { print $0} NR > 1 { split($1,a, "/"); if($1 == "." || a[1] == a[2] || a[2] == ".") { print $0 }  }' obs0 > obs
 check obs obs0
-
 
 echo "    multiple-alts.t03...\c"
 

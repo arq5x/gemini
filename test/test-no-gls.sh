@@ -12,7 +12,7 @@ echo " nogls.t1"
 python drop-gl-columns.py test.query.db test.nogls.db
 gemini bcolz_index test.nogls.db
 sed 's/test.query.db/test.nogls.db/g' test-query.sh | bash | sed 's/query/nogls-sub/' 
-echo "NOTE: we expect t14 to fail due to LIMIT"
+echo "NOTE: we expect t14,t43 to fail due to LIMIT"
 sed 's/test.query.db/test.nogls.db/g' test-query.sh | sed 's/gemini query/gemini query --use-bcolz/' | bash | sed 's/query/nogls-sub-bcolz/'
 wait
 

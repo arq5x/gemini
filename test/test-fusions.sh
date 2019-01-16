@@ -27,7 +27,7 @@ rm obs exp
 ####################################################################
 echo -e "    fusions.t02...\c"
 
-echo "chr3	176909953	176909982	chr3	178906001	178906030	1233	9.57999992371	-	+	complex	TBL1XR1	PIK3CA	LUMPY	PE	1	H_LS-E2-A14P-01A-31D-A19H-09" > exp
+echo "chr3	176909953	176909982	chr3	178906001	178906030	1233	9.57999992371	-	+	complex	TBL1XR1	PIK3CA	LUMPY	PE	0	H_LS-E2-A14P-01A-31D-A19H-09" > exp
 
 gemini fusions test.fusions.db > obs
 

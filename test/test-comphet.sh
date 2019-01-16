@@ -8,42 +8,24 @@ check()
 }
 export -f check
 ###############################################################################
-# 1. Test basic comp-het functionality (for phased genotypes)
-###############################################################################
-echo "    comp_het.t1...\c"
-# NOTE the families all have id=0 in the db, so they all show up.
-gemini comp_hets \
-    --column "chrom,start,end,ref,alt,gene,impact" \
-	--allow-unaffected \
-    test.comp_het_default.db > obs
-echo "chrom	start	end	ref	alt	gene	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id
-chr1	17362	17366	TTCT	T	WASH7P	splice_acceptor	1	0	child_1(child_1;unknown),child_2(child_2;unknown),dad_2(dad_2;unknown),mom_2(mom_2;unknown),dad_1(dad_1;unknown),mom_1(mom_1;unknown),child_3(child_3;unknown),dad_3(dad_3;unknown),mom_3(mom_3;unknown),child_4(child_4;unknown),dad_4(dad_4;unknown),mom_4(mom_4;unknown)	TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|TTCT,TTCT|T,TTCT|T,TTCT|TTCT		1	1_1_2
-chr1	17729	17730	C	A	WASH7P	splice_acceptor	2	0	child_1(child_1;unknown),child_2(child_2;unknown),dad_2(dad_2;unknown),mom_2(mom_2;unknown),dad_1(dad_1;unknown),mom_1(mom_1;unknown),child_3(child_3;unknown),dad_3(dad_3;unknown),mom_3(mom_3;unknown),child_4(child_4;unknown),dad_4(dad_4;unknown),mom_4(mom_4;unknown)	C|C,C|C,C|C,C|C,C|A,C|C,C|A,C|C,C|C,A|C,C|A,C|A		1	1_1_2" > exp
-
-echo "skipping"
-#check obs exp
-rm obs exp
-
-###############################################################################
 # 2. Test comp-het with 
 ###############################################################################
-# CHANGE: no longer include dad_4 in output since he is unaffected.
-echo "    comp_het.t2...\c"
+echo "    comp_het.t1...\c"
 echo "chrom	start	end	gene	ref	alt	impact	variant_id	family_id	family_members	family_genotypes	samples	family_count	comp_het_id	priority
 chr1	17362	17366	WASH7P	TTCT	T	splice_acceptor_variant	3	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	TTCT|T,TTCT/T,TTCT/TTCT	child_4	1	1_3_7	3
-chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	3" > exp
+chr1	17729	17730	WASH7P	C	A	splice_acceptor_variant	7	4	child_4(child_4;affected;male),dad_4(dad_4;unaffected;male),mom_4(mom_4;unaffected;female)	C/A,C/A,C/A	child_4	1	1_3_7	3" > exp.$$
 
 gemini comp_hets \
     --column "chrom,start,end,gene,ref,alt,impact" \
 	--allow-unaffected \
 	--max-priority 3 \
     --filter "impact_severity = 'HIGH'" \
-     test.comp_het.db > obs
-check obs exp
-rm obs exp
+     test.comp_het.db > obs.$$
+check obs.$$ exp.$$
+rm obs.$$ exp.$$
 
 ##### change max priority to default.
-echo "    comp_het.t2b...\c"
+echo "    comp_het.t2...\c"
 
 touch exp
 gemini comp_hets \
