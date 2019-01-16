@@ -701,10 +701,10 @@ def main():
             default=False)
 
     parser_comp_hets.add_argument('--max-priority',
-            type=int,
+            type=float,
             help='Default (1) is to show only confident compound hets. Set to 2' \
              + ' or higher to include pairs that are less likely true comp-hets',
-            default=1)
+            default=1.6)
 
     def comp_hets_fn(parser, args):
         from gemini.gim import CompoundHet
