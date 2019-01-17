@@ -19,7 +19,7 @@ The recommended Gemini install location is /usr/local/share/gemini.
 
 anno_files = \
 ['hg19_fitcons_fc-i6-0_V1-01.bed.gz',
-'dbsnp.b147.20160601.tidy.vcf.gz',
+'dbsnp.151.20180423.tidy.vcf.gz',
 'clinvar_20190102.tidy.vcf.gz',
 '29way_pi_lods_elements_12mers.chr_specific.fdr_0.1_with_scores.txt.hg19.merged.bed.gz',
 'hg19.CpG.bed.gz',
@@ -64,7 +64,6 @@ toadd_anno_files = []
 anno_versions = {
     "ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.tidy.vcf.gz": 4,
     "GRCh37-gms-mappability.vcf.gz": 2,
-    "dbsnp.b147.20160601.tidy.vcf.gz": 1,
     "hg19.rmsk.bed.gz": 2,
     "detailed_gene_table_v75": 2,
     "summary_gene_table_v75": 2,

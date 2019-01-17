@@ -25,7 +25,7 @@ def get_anno_files(args):
     annos = {
      'pfam_domain': os.path.join(anno_dirname, 'hg19.pfam.ucscgenes.bed.gz'),
      'cytoband': os.path.join(anno_dirname, 'hg19.cytoband.bed.gz'),
-     'dbsnp': os.path.join(anno_dirname, 'dbsnp.b147.20160601.tidy.vcf.gz'),
+     'dbsnp': os.path.join(anno_dirname, 'dbsnp.151.20180423.tidy.vcf.gz'),
      'clinvar': os.path.join(anno_dirname, 'clinvar_20190102.tidy.vcf.gz'),
      'gwas': os.path.join(anno_dirname, 'hg19.gwas.bed.gz'),
      'rmsk': os.path.join(anno_dirname, 'hg19.rmsk.bed.gz'),

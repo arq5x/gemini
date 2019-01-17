@@ -36,6 +36,6 @@ fields=$(bcftools view -h $f | grep INFO | grep -Po "ID=[^,]+" | awk '{ print "I
 bcftools annotate -x $fields $f --threads 3 \
     | vt decompose -s - \
 	| vt normalize -r /data/human/g1k_v37_decoy.fa - \
-    | bcftools annotate -x INFO/OLD_MULTIALLELIC -O z -o dbsnp.$v.$date.tidy.vcf.gz \
+    | bcftools annotate -x INFO/OLD_MULTIALLELIC,INFO/OLD_VARIANT -O z -o dbsnp.$v.$date.tidy.vcf.gz \
 	&& tabix dbsnp.$v.$date.tidy.vcf.gz 
 
