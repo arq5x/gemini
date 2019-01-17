@@ -60,8 +60,8 @@ def get_anno_files(args):
     # optional annotations
     if os.path.exists(os.path.join(anno_dirname, 'hg19.gerp.bw')):
         annos['gerp_bp'] = os.path.join(anno_dirname, 'hg19.gerp.bw')
-    if os.path.exists(os.path.join(anno_dirname, 'whole_genome_SNVs.tsv.compressed.gz')):
-        annos['cadd_score'] = os.path.join(anno_dirname, 'whole_genome_SNVs.tsv.compressed.gz')
+    if os.path.exists(os.path.join(anno_dirname, 'caddv1.4.compressed.gz')):
+        annos['cadd_score'] = os.path.join(anno_dirname, 'caddv1.4.compressed.gz')
     return annos
 
 class ClinVarInfo(object):

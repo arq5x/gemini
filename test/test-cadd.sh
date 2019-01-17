@@ -4,7 +4,7 @@
 gemini load -v test.cadd.vcf --skip-gerp-bp test.cadd.db > /dev/null 2>&1
 
 path=`gemini_python ../gemini/anno_info.py`
-file="whole_genome_SNVs.tsv.compressed.gz"
+file="caddv1.4.compressed.gz"
 
 if [ -f $path/$file ]; then
 
