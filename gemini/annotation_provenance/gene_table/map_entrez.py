@@ -12,7 +12,7 @@ outfile.write("\n")
 
 entrez = defaultdict(list)
 
-for lines in open("ensembl75_3",'r'):
+for lines in open("ensembl_3",'r'):
     if lines.startswith("Ensembl") is False:
         seq = lines.strip().split("\t")
         (key,value) = (seq[1],seq[2])

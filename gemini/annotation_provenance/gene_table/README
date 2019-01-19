@@ -1,5 +1,5 @@
 # Ensembl biomart download: 
-# Ensembl gene version: Ensembl 75
+# Ensembl gene version: Ensembl 95
 ############################################################
 1) Retrieve all gene ids: query1.pl -> mart_export1
 2) Retrieve CDS length: query2.pl -> mart_export2
@@ -16,11 +16,11 @@
 #processing to add None for blank columns
 ##########################################
 
-a) cat mart_export1 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl75_1
-b) cat mart_export2 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl75_2
-c) cat mart_export3 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl75_3
+a) cat mart_export1 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl_1
+b) cat mart_export2 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl_2
+c) cat mart_export3 | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > ensembl_3
 d) cat HGNC_download | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > hgnc_file
-e) cat HMD_HumanPhenotype.rpt | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > HMD_HumanPhenotype
+e) cat anno_files/HMD_HumanPhenotype.rpt | awk -F'\t' '{ OFS = "\t" }; {for(n=1; n<=NF; n++) sub(/^$/, "None", $n); print $0}' > HMD_HumanPhenotype
 ###########################################################################
 # Linking CDS length to gene ids (i.e. joining on a & b)
 # Connector for both these files is the ensembl transcript id
@@ -96,5 +96,5 @@ python combined_gene_table.py (outfiles: detailed_gene_table, summary_gene_table
   "transcript_max_start","Phenotype_id")					 
 
 
-# rm gene_table ensembl_75* ensembl_format hgnc_file HMD_HumanPhenotype
+# rm gene_table ensembl_* hgnc_file HMD_HumanPhenotype
 

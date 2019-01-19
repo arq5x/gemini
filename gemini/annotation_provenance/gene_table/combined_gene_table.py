@@ -7,10 +7,10 @@ For a detailed gene table and a summary gene table
 from collections import defaultdict
 
 
-filename = 'detailed_gene_table_v75'
+filename = 'detailed_gene_table'
 detailed_out = open(filename, 'w')
 
-file = 'summary_gene_table_v75'
+file = 'summary_gene_table'
 summary_out = open(file, 'w')
 
 # write out files for detailed and summary gene table
@@ -35,7 +35,7 @@ transcript_max = defaultdict(list)
 lines_seen = set()
 
 
-for line in open("genic_intolerance_dataset2", 'r'):
+for line in open("anno_files/genic_intolerance_dataset2", 'r'):
     if line.startswith("#") is False:
         field = line.strip().split("\t")
         name = str(field[0])

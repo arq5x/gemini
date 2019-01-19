@@ -15,6 +15,7 @@ for lines in open("hgnc_file",'r'):
     if lines.startswith("HGNC") is False:
         seq = lines.strip().split("\t")
         (key,value) = (seq[0],(seq[2],seq[3]))
+        #print seq
         hgncfile[key].append(value)
     
 with open("ensembl_format") as f:
@@ -22,6 +23,8 @@ with open("ensembl_format") as f:
         if each.startswith("Chromosome") is False:
             field = each.strip().split("\t")
             hgncid = field[7]
+            if hgncid != 'None':
+                hgncid = hgncid.split(":")[1]
             if hgncid in hgncfile:
                 for values in hgncfile[hgncid]:
                     #print values[0], values[1]
