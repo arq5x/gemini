@@ -15,7 +15,6 @@ for lines in open("hgnc_file",'r'):
     if lines.startswith("HGNC") is False:
         seq = lines.strip().split("\t")
         (key,value) = (seq[0],(seq[2],seq[3]))
-        #print seq
         hgncfile[key].append(value)
     
 with open("ensembl_format") as f:
