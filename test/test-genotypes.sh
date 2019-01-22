@@ -312,12 +312,12 @@ echo "    genotypes.$n x..."
 echo "-1.0	-1	-1
 0.0	0	2
 0.0	0	3
-0.666666666667	2	1
+0.6666666666666666	2	1
 -1.0	-1	-1
 -1.0	-1	-1
 0.0	0	79
 -1.0	-1	-1
-0.142857142857	1	6
+0.14285714285714285	1	6
 0.0	0	4" > exp
 gemini query -q "select gt_alt_freqs.1094PC0009, gt_alt_depths.1094PC0009, gt_ref_depths.1094PC0009 from variants" test.snpeff.vcf.db \
        > obs

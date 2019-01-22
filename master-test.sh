@@ -47,9 +47,6 @@ bash test-query.sh
 # Test database dumping
 bash test-dump.sh
 
-# Test burden tests
-bash test-burden.sh
-
 # Test basic functionality
 bash test-columns.sh
 
@@ -95,9 +92,6 @@ bash test-comphet.sh
 
 # Test pathway tool
 bash test-pathtool.sh
-
-# Test interaction tool
-bash test-interactions.sh
 
 # Test lof sieve tool
 bash test-lofsieve.sh

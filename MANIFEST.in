@@ -4,7 +4,7 @@ include *.py
 include *.sh
 include LICENSE
 include MANIFEST.in
-graft gemini/annotation_provenance
+exclude gemini/annotation_provenance/*
 graft gemini/data
 graft gemini/scripts
 graft gemini/static
