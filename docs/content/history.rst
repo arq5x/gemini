@@ -2,15 +2,17 @@
 Release History
 #############################
 
-0.21.0 (future)
+1.X (future)
 ===============
 #. Use vcfanno for faster, more generalized variant annotation and database creation.
 
-0.20.2
+0.30.0
 ======
 #. fix unicode errors in gemini annotate and load. this was occuring for some clinvar variants.
 #. normalize vep names (#887)
-#. see #912
+#. see #912 (update dbsnp, gnomad, CADD, etc)
+#. support de novos in compound hets.
+#. allow detection of transmitted de novo variants (in multi-gen pedigrees).
 
 0.20.1
 ======
