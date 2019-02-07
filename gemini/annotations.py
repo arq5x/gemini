@@ -72,8 +72,6 @@ class ClinVarInfo(object):
         self.clinvar_dsdbid = None
         self.clinvar_disease_name = None
         self.clinvar_in_omim = None
-        self.clinvar_in_locus_spec_db = None
-        self.clinvar_on_diag_assay = None
 
         self.origin_code_map = {'0': 'unknown',
                                 '1': 'germline',
@@ -107,8 +105,6 @@ class ClinVarInfo(object):
                           self.clinvar_dsdbid,
                           self.clinvar_disease_name,
                           str(self.clinvar_in_omim),
-                          str(self.clinvar_in_locus_spec_db),
-                          str(self.clinvar_on_diag_assay),
                           str(self.clinvar_causal_allele)]))
 
     def lookup_clinvar_origin(self, origin_code):
@@ -625,8 +621,6 @@ def get_clinvar_info(var):
     # clinvar_disease_name     = CLNDBN=Myasthenia\x2c limb-girdle\x2c familial;
     # clinvar_disease_acc      = CLNACC=RCV000019902.1
     # clinvar_in_omim          = OM
-    # clinvar_in_locus_spec_db = LSD
-    # clinvar_on_diag_assay    = CDA
     # clinvar_causal_allele    = CLNALLE=1
     """
 
@@ -645,19 +639,17 @@ def get_clinvar_info(var):
             else:
                 info_map[info] = True
         clinvar.clinvar_origin = clinvar.lookup_clinvar_origin(info_map.get('ORIGIN', '0'))
-        clinvar.clinvar_sig = info_map['CLNSIG'].lower()
-        clinvar.clinvar_dsdb = info_map['CLNDISDB'] or None
+        clinvar.clinvar_sig = info_map.get('CLNSIG', info_map.get('CLNDISDBINCL', '')).lower()
+        clinvar.clinvar_dsdb = info_map.get('CLNDISDB') or None
         # Remap all unicode characters into plain text string replacements
-        raw_disease_name = info_map['CLNDN']
+        raw_disease_name = info_map.get('CLNDN', '')
         try:
             clinvar.clinvar_disease_name = unidecode(raw_disease_name.decode('utf-8')).decode('string_escape')
         except:
             clinvar.clinvar_disease_name = unidecode(raw_disease_name.encode('utf-8').decode())
         # Clinvar represents commas as \x2c.  Make them commas.
 
-        clinvar.clinvar_in_omim = 1 if 'OM' in info_map else 0
-        clinvar.clinvar_in_locus_spec_db = 1 if 'LSD' in info_map else 0
-        clinvar.clinvar_on_diag_assay = 1 if 'CDA' in info_map else 0
+        clinvar.clinvar_in_omim = 1 if 'OMIM' in hit.info else 0
 
         clinvar.clinvar_causal_allele = hit.alt
     return clinvar

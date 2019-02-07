@@ -90,9 +90,6 @@ bash test-annotate-tool.sh
 # Test comp_hets tool
 bash test-comphet.sh
 
-# Test pathway tool
-bash test-pathtool.sh
-
 # Test lof sieve tool
 bash test-lofsieve.sh
 

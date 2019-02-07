@@ -589,8 +589,6 @@ class GeminiLoader(object):
                    clinvar_origin=clinvar_info.clinvar_origin,
                    clinvar_dsdb=clinvar_info.clinvar_dsdb,
                    clinvar_dsdbid=clinvar_info.clinvar_dsdbid,
-                   clinvar_in_locus_spec_db=bool(clinvar_info.clinvar_in_locus_spec_db),
-                   clinvar_on_diag_assay=bool(clinvar_info.clinvar_on_diag_assay),
                    clinvar_gene_phenotype=clinvar_gene_phenotype,
                    geno2mp_hpo_ct=annotations.get_geno2mp_ct(var),
                    pfam_domain=pfam_domain, cyto_band=cyto_band, rmsk=rmsk_hits,

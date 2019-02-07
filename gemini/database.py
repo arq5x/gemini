@@ -160,8 +160,6 @@ def create_tables(path, effect_fields=None, pls=True):
     clinvar_origin text default NULL,
     clinvar_dsdb text default NULL,
     clinvar_dsdbid text default NULL,
-    clinvar_in_locus_spec_db bool,
-    clinvar_on_diag_assay bool,
     clinvar_gene_phenotype text,
     geno2mp_hpo_ct integer,
     pfam_domain text,
