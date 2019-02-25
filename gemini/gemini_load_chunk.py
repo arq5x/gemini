@@ -689,7 +689,7 @@ class GeminiLoader(object):
                    aaf_gnomad_non_neuro=gnomad.aaf_non_neuro,
                    aaf_gnomad_controls=gnomad.aaf_controls,
                    aaf_gnomad_non_cancer=gnomad.aaf_non_cancer,
-
+                   gnomad_popmax_AF=gnomad.popmax_AF,
 
                    gnomad_num_het=gnomad.num_het,
                    gnomad_num_hom_alt=gnomad.num_hom_alt,

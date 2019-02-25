@@ -184,6 +184,7 @@ aaf_gnomad_sas            FLOAT         Allele frequency (SAS population) of the
 aaf_gnomad_non_neuro      FLOAT         Allele frequency in non_neuro samples
 aaf_gnomad_controls       FLOAT         Allele frequency in control samples
 aaf_gnomad_non_cancer     FLOAT         Allele frequency in non-cancer samples
+gnomad_popmax_AF          FLOAT         popmax_AF field from gnomad
 
 gnomad_num_het            INTEGER       Number of het genotypes observed in gnomad
 gnomad_num_hom_alt        INTEGER       Number of hom_alt genotypes observed in gnomad
