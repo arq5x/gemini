@@ -811,7 +811,7 @@ def get_gnomad_info(var, empty=GNOMAD_EMPTY):
                               info_map.get('non_neuro_AF', -1.0),
                               info_map.get('controls_AF', -1.0),
                               info_map.get('non_cancer_AF', -1.0),
-                              info_map.get("popmax_AF", -1.0),
+                              info_map.get("AF_popmax", -1.0),
                               num_hets, num_homs,
                               called_chroms)
 
