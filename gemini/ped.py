@@ -29,7 +29,7 @@ def get_ped_fields(ped_file):
 def load_ped_file(ped_file):
     ped_dict = {}
     for line in open(ped_file, 'r'):
-        if line.startswith("#") or len(line) == 0:
+        if line.startswith("#") or len(line.strip()) == 0:
             continue
         parts = line.rstrip().split("\t") if line.count("\t") > 1 else line.split()
         fields = [x.strip() for x in _fix_ped_family_fields(parts)]
