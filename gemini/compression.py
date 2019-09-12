@@ -20,7 +20,7 @@ True
 
 >>> exp = ['A', 'XSDFSDFSD', "A/A,B"]
 >>> obs = snappy_unpack_blob(snappy_pack_blob(np.array(exp)))
->>> assert exp == list(obs)
+>>> assert exp == list(obs), (list(obs), exp)
 
 >>> try:
 ...    b = snappy_pack_blob(a)
@@ -79,25 +79,49 @@ import numpy as np
 lookup = {dt(1).dtype.char: dt for dt in (np.uint8, np.uint32, np.int32,
           np.float32, np.int64, np.float64, np.bool_)}
 
-SEP = '\0'
+if sys.version_info[0] == 3:
+    SEP = '\0'
 
-def snappy_pack_blob(obj, sep=SEP):
-    if obj is None: return ''
-    c = obj.dtype.char
-    if c == 'S': return 'S' + snappy.compress(sep.join(obj))
-    return buffer(c + snappy.compress(obj.tobytes()))
+    def snappy_pack_blob(obj, sep=SEP):
+        if obj is None: return ''
+        c = obj.dtype.char
+        if c == 'S' or c == 'U':
+            return b'U' + snappy.compress(sep.join(obj))
+        return buffer(c.encode('utf-8') + snappy.compress(obj.tobytes(), 'utf8'))
 
-def snappy_unpack_blob(blob, sep=SEP):
-    if len(blob) == 0: return None
-    if blob[0] == 'S':
-        return np.array(snappy.decompress(blob[1:]).split(sep))
-    dt = lookup[blob[0]]
-    arr = np.frombuffer(snappy.decompress(blob[1:]), dtype=dt)
-    # hack since arrays arent writable from buffer and we need this for comp_het
-    # phasing.
-    if blob[0] == '?':
-        arr.setflags(write=True)
-    return arr
+    def snappy_unpack_blob(blob, sep=SEP):
+        if len(blob) == 0: return None
+        if blob[0] in (ord('S'), ord('U')):
+            return np.array(snappy.decompress(blob[1:], "utf8").split(sep))
+        dt = lookup[chr(blob[0])]
+        arr = np.frombuffer(snappy.decompress(blob[1:]), dtype=dt)
+        # hack since arrays arent writable from buffer and we need this for comp_het
+        # phasing.
+        if blob[0] == ord('?'):
+            arr = np.array(arr)
+            arr.setflags(write=True)
+        return arr
+
+else:
+
+    SEP = '\0'
+    def snappy_pack_blob(obj, sep=SEP):
+        if obj is None: return ''
+        c = obj.dtype.char
+        if c == 'S': return 'S' + snappy.compress(sep.join(obj))
+        return buffer(c + snappy.compress(obj.tobytes()))
+
+    def snappy_unpack_blob(blob, sep=SEP):
+        if len(blob) == 0: return None
+        if blob[0] == 'S':
+            return np.array(snappy.decompress(blob[1:]).split(sep))
+        dt = lookup[blob[0]]
+        arr = np.frombuffer(snappy.decompress(blob[1:]), dtype=dt)
+        # hack since arrays arent writable from buffer and we need this for comp_het
+        # phasing.
+        if blob[0] == '?':
+            arr.setflags(write=True)
+        return arr
 
 if __name__ == "__main__":
     import doctest
