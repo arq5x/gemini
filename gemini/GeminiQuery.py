@@ -453,7 +453,7 @@ class GeminiRow(object):
         raise KeyError(key)
 
     def keys(self):
-        return self.row.keys() + self.cache.keys()
+        return self.row.keys() + list(self.cache.keys())
 
     def __iter__(self):
         return self
