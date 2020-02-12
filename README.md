@@ -3,6 +3,14 @@ GEMINI - integrative exploration of genetic variation and genome annotations.
 
 ![overview](https://github.com/arq5x/gemini/blob/master/docs/images/overview.png)
 
+NOTE
+====
+
+Gemini is largely replaced by [slivar](https://github.com/brentp/slivar). We
+recommend to update your pipelines and software to use `slivar` when possible.
+The installation is simpler and the tool is more flexible and includes [extensive
+support for rare disease analysis](https://github.com/brentp/slivar/wiki/rare-disease)
+
 Overview
 ========
 The intent of ``GEMINI`` (GEnome MINIing) is to provide a simple, flexible, and 
