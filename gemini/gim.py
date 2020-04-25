@@ -384,7 +384,7 @@ class CompoundHet(GeminiInheritanceModel):
                     gt_ref_depths, gt_alt_depths, gt_quals" + \
                     " FROM variants " + \
                     " WHERE (%s) " % args.where
-        if args.filter: query += " AND " + args.filter
+        if args.filter: query += " AND (" + args.filter + ")"
         # we need to order results by gene so that we can sweep through the results
         return query + " ORDER BY chrom, gene"
 
