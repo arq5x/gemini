@@ -50,7 +50,7 @@ class GeminiInheritanceModel(object):
         query = sql_utils.ensure_columns(query, ['variant_id', 'gene'])
         # add any non-genotype column limits to the where clause
         if self.args.filter:
-            query += " WHERE " + self.args.filter
+            query += " WHERE (" + self.args.filter + ")"
 
         if hasattr(self.args, 'X'):
             if self.args.X == []:
