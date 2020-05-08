@@ -903,6 +903,11 @@ def main():
                   recessive inheritance model')
     add_inheritance_args(parser_auto_rec, gt_ll=True)
 
+    parser_auto_rec.add_argument('--format',
+                    dest='format',
+                    default='default',
+                    help='Format of output (JSON or default)'
+                    )
 
     def autosomal_recessive_fn(parser, args):
         from gemini.gim import AutoRec
@@ -917,6 +922,12 @@ def main():
                   dominant inheritance model')
     add_inheritance_args(parser_auto_dom, gt_ll=True)
 
+    parser_auto_dom.add_argument('--format',
+                    dest='format',
+                    default='default',
+                    help='Format of output (JSON or default)'
+                    )
+
     def autosomal_dominant_fn(parser, args):
         from gemini.gim import AutoDom
         AutoDom(args).run()
@@ -929,6 +940,12 @@ def main():
             help='Identify candidate de novo mutations')
 
     add_inheritance_args(parser_de_novo, min_kindreds=1, gt_ll=True)
+
+    parser_de_novo.add_argument('--format',
+                    dest='format',
+                    default='default',
+                    help='Format of output (JSON or default)'
+                    )
 
     def de_novo_fn(parser, args):
         from gemini.gim import DeNovo

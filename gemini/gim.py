@@ -18,6 +18,7 @@ import itertools as it
 import operator as op
 from inheritance import Family
 from unidecode import unidecode
+import json
 
 
 class GeminiInheritanceModel(object):
@@ -302,17 +303,26 @@ class GeminiInheritanceModel(object):
                     yield item
 
     def run(self):
+        test = []
+        res = []
         has_gts = False
         from .gemini_bcolz import gt_cols_types
         for i, s in enumerate(self.report_candidates()):
             if i == 0:
                 has_gts = [x[0] for x in gt_cols_types if x[0] in s] or False
-                print("\t".join(s.keys()))
+                if self.args.format is 'default': print("\t".join(s.keys()))
+                header = s.keys()
             if has_gts:
                 for col in has_gts:
                     s[col] = str(s[col]).replace('\n', '')
             try:
-                print("\t".join(map(str, s.values())))
+                if self.args.format is 'default': 
+                    print("\t".join(map(str, s.values())))
+                else:
+                    val = [(x.split(',') if (type(x)==str or isinstance(x, unicode)) else x) for x in s.values()]
+                    val = [(x[0] if type(x)==list and len(x)==1 else x) for x in val]
+                    test.append(val)
+
             except UnicodeEncodeError:
                 vals = []
                 for v in s.values():
@@ -320,7 +330,13 @@ class GeminiInheritanceModel(object):
                         vals.append(unidecode(v))
                     else:
                         vals.append(str(v))
-                print("\t".join(vals))
+                if self.args.format is 'default':  print("\t".join(vals))
+                test.append(vals)
+
+            if self.args.format == 'json':
+                for toks in test:
+                    res.append(dict(zip(header, toks)))
+                print(json.dumps(res, indent=2))
 
 
 class XRec(GeminiInheritanceModel):
