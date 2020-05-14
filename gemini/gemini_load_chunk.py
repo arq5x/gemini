@@ -796,7 +796,7 @@ class GeminiLoader(object):
 
         config = read_gemini_config(args=self.args)
         path_dirname = config["annotation_dir"]
-        file_handle = os.path.join(path_dirname, 'detailed_gene_table_v75')
+        file_handle = os.path.join(path_dirname, 'detailed_gene_table_v95')
 
         for line in open(file_handle, 'r'):
             field = line.strip().split("\t")
@@ -825,7 +825,7 @@ class GeminiLoader(object):
 
         config = read_gemini_config(args=self.args)
         path_dirname = config["annotation_dir"]
-        file = os.path.join(path_dirname, 'summary_gene_table_v75')
+        file = os.path.join(path_dirname, 'summary_gene_table_v95')
 
         for line in open(file, 'r'):
             col = line.strip().split("\t")

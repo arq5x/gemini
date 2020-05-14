@@ -22,6 +22,8 @@ with open("ensembl_format") as f:
         if each.startswith("Chromosome") is False:
             field = each.strip().split("\t")
             hgncid = field[7]
+            #if hgncid != 'None':
+            #    hgncid = hgncid.split(":")[1]
             if hgncid in hgncfile:
                 for values in hgncfile[hgncid]:
                     #print values[0], values[1]
